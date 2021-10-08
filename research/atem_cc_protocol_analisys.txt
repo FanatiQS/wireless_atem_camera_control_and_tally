@@ -1,0 +1,74 @@
+This file for analysing the atem camera control protocol since it is not structured the same as the sdi camera control protocol.
+
+0  1  2  3  4  5  6  7  8  9  10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31
+04 00 00 80 00 00 00 01 00 00 00 00 00 da 00 00 00 5d 00 00 00 20 65 64 00 20 64 50 43 43 64 50
+04 00 02 80 00 00 00 01 00 00 00 00 00 00 4e 20 0c 00 00 00 00 20 56 4d 00 20 64 50 43 43 64 50
+04 01 0d 01 00 01 00 00 00 00 00 00 00 1a 00 00 20 00 00 00 00 20 0e d2 00 20 64 50 43 43 64 50
+04 01 01 01 00 01 00 00 00 00 00 00 00 1c 00 00 20 00 00 00 00 20 0f 2b 00 20 64 50 43 43 64 50
+04 01 02 02 00 00 00 01 00 00 00 00 00 00 00 00 18 38 01 5e 00 20 50 72 00 20 64 50 43 43 64 50
+04 01 05 03 00 00 00 00 00 01 00 00 00 00 00 00 00 00 2b 67 00 20 00 00 00 20 64 50 43 43 64 50
+04 01 08 01 00 01 00 00 00 00 00 00 00 00 08 00 01 00 08 00 00 20 00 02 00 20 64 50 43 43 64 50
+04 04 04 01 00 01 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 20 0b c2 00 20 64 50 43 43 64 50
+04 08 00 80 00 00 00 04 00 00 00 00 00 00 08 00 10 00 00 00 00 00 00 1c 00 20 64 50 43 43 64 50
+04 08 01 80 00 00 00 04 00 00 00 00 00 00 00 00 01 94 00 00 00 00 00 00 00 20 64 50 43 43 64 50
+04 08 02 80 00 00 00 04 00 00 00 00 00 00 08 00 08 00 08 00 0a 10 08 00 00 00 00 00 00 00 00 00
+04 08 03 80 00 00 00 04 00 00 00 00 00 50 72 70 00 00 00 00 00 00 00 00 00 20 43 50 43 43 64 50
+04 08 04 80 00 00 00 02 00 00 00 00 00 50 72 70 04 00 10 00 00 00 00 00 00 20 07 d1 43 43 64 50
+04 08 05 80 00 00 00 01 00 00 00 00 00 50 72 70 07 00 00 00 00 00 00 00 00 20 00 00 43 43 64 50
+04 08 06 80 00 00 00 02 00 00 00 00 00 50 72 70 02 1e 0f 0a 00 00 00 00 00 20 00 50 43 43 64 50
+04 0b 00 80 00 00 00 02 00 00 00 00 00 50 72 70 00 00 00 00 00 00 00 00 00 20 00 43 43 43 64 50
+04 00 01 00 00 00 00 00 00 00 00 00 00 00 00 00 00 20 01 5e 43 43 64 50
+04 00 09 80 00 00 00 01 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 0c 2b 67 49 6e 43 6d
+
+
+
+Editable*	Category 			Parameter 							Data Type			Byte 5 		Byte 7 		Byte 9
+√ 			Lens 				Focus 								fixed16				0 			1			0
+√ 			Lens 				Aperture (f-stop) 					fixed16				0 			1			0
+√ 			Video 				Gain 								int8				1 			0			0
+√ 			Video 				Gain 								int8 				1 			0			0
+√ 			Video 				Manual White Balance 				int16 				0 			1			0
+√ 			Video 				Exposure (us) 						int32 				0 			0			1
+√			Video 				Video sharpening level 				int8 				1 			0			0
+√			Display 			Color bars display time (seconds) 	int8 				1 			0			0
+√ 			Color Correction 	Lift Adjust 						fixed16 			0 			4			0
+√			Color Correction 	Gamma Adjust 						fixed16 			0 			4			0
+√			Color Correction 	Gain Adjust 						fixed16 			0 			4			0
+			Color Correction 	Offset Adjust 						fixed16 			0 			4			0
+√			Color Correction 	Contrast Adjust 					fixed16 			0 			2			0
+√			Color Correction 	Luma mix 							fixed16 			0 			1			0
+√			Color Correction 	Color Adjust 						fixed16 			0 			2			0
+			PTZ Control 		Pan/Tilt Velocity 					fixed16 			0 			2			0
+√			Lens 				Instantaneous autofocus 			void / Boolean 		0 			0			0
+√			Lens 				Set continuous zoom (speed) 		fixed16 			0 			1			0
+√			Video				ND									fixed16				0			1			0
+
+
+
+// Edited same value on 2 cameras to maybe identify the last 8 bytes
+04 01 0d 01 00 01 00 00  00 00 00 00 00 00 00 00  f8 bb 10 00 10 00 ff 2f  00 20 43 50 43 43 64 50
+03 01 0d 01 00 01 00 00  00 00 00 00 00 00 00 00  f8 bb 10 00 10 00 ff 2f  00 20 43 50 43 43 64 50
+
+
+
+// Compare examples from documentation
+a  b  c  d  e  f  g  h
+04 04 00 00 00 01 00 00
+04 00 01 00 00 00 00 00 00 00 00 00 00 00 00 00 00 06 00 00 02 01 00 00
+a  e  f  g
+Calc length: 	0 / 4 * 4 + 4
+				0 + 4
+				4
+
+a  b  c  d  e  f  g  h  i  j  k  l
+04 08 00 00 01 05 03 00 10 27 00 00
+04 01 05 03 00 00 00 00 00 01 00 00 00 00 00 00 00 00 27 10 00 00 00 00 00 20 00 00 43 43 64 50
+a  e  f  g                                      l  k  j  i
+Calc length: 	8 / 4 * 4 + 4
+				4 + 4
+				8
+
+a  b  c  d  e  f  g  h  i  j  k  l  m  n  o  p
+04 0c 00 00 08 01 80 00 00 00 9a fd 9a fd 00 00
+04 08 01 80 00 00 00 04 00 00 00 00 00 00 00 00 00 00 fd 9a fd 9a 00 00 00 20 43 50 43 43 64 50
+a  e  f  g                                      j  i  l  k  n  m  p  o

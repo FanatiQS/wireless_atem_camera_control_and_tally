@@ -1,0 +1,33 @@
+ATEM protocol:
+The ATEM protocol is sent between Blackmagic ATEM switchers and their clients connecting over a UDP socket on port 9910.
+It is a proprietary protocol, so thanks to everyone that has documented their findings when reverse engineering the protocol.
+Especially Skaarhoj's with their open source C++ Arduino library and commands documentation, NRK's open source NodeJS library as well as openswitcher.org's documentation.
+
+Header:
+The ATEM protocol header is always 12 bytes long.
+
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++---------+---------------------+-------------------------------+
+|  flags  |         len         |           session id          |
++---------+---------------------+-------------------------------+
+|         ack packet id         |         from packet id        |
++-------------------------------+-------------------------------+
+|               ?               |        remote packet id       |
++-------------------------------+-------------------------------+
+|                           payload...                          |
++---------------------------------------------------------------+
+
+Flags:
+	0. (0x80) ack reply
+		Is set when the other party has acknowledged a packet that requested an ack.
+		It is also sent with the heartbeat for some reason even if an ack is not requested.
+		The packet that was acknowledged is the packet with the id "ack packet id"
+	1. (0x40) retransmit request
+	2. (0x20) is retransmit
+	3. (0x10) SYN
+	4. (0x08) ack request
+
+Len:
+	The length part (len) is 11 bytes long and represents the entire length of the packet including the header.
+	With 11 bytes, the packet length has a maximum length of 2048 bytes.

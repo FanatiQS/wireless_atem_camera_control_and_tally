@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+	<head>
+		<meta charset="utf-8">
+		<title></title>
+	</head>
+	<body>
+		<script>
+			const ws = new WebSocket("ws://127.0.0.1:8080");
+			ws.binaryType = "arraybuffer";
+			ws.onmessage = function (e) {
+				let data = new Uint8Array(e.data);
+				console.log(data);
+			};
+		</script>
+	</body>
+</html>

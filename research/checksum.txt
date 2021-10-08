@@ -1,0 +1,9 @@
+Figuring out last 8 bytes in commands
+The last 8 bytes in every command might be a checksum.
+They are the same if the data payload is the same?
+
+// Version
+00 02 00 1e 00 34 73 80 5f 70 69 6e
+
+Data: 00 02 00 1e
+Checksum?: 00 34 73 80 5f 70 69 6e

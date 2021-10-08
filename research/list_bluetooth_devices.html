@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+	<head>
+		<meta charset="utf-8">
+		<title>List BLE devices</title>
+	</head>
+	<body>
+		<button id="list">List all bluetooth devices</button>
+		<pre id="result"></pre>
+
+		<script>
+			// Abort if web bluetooth api is not available
+			if (!navigator.bluetooth) {
+				document.body.textContent = "Web Bluetooth API not available";
+			}
+
+			// Display list of all available bluetooth devices
+			document.querySelector("#list").onclick = async function listDevices() {
+				const device = await navigator.bluetooth.requestDevice({
+					acceptAllDevices: true
+				});
+
+				document.querySelector('#result').innerHTML = `
+					Name: ${device.name}
+					ID: ${device.id}
+					UUID?: ${toUUID(device.id)}
+				`;
+				console.log(device);
+			};
+
+			// Converts a base64 string to a hex array
+			function toUUID(value) {
+				value = atob(value);
+				const output = [];
+				for (let i = 0; i < value.length; i++) {
+					if (i === 4 || i === 6 || i === 8 || i === 10) output.push('-');
+					output.push(value.charCodeAt(i).toString(16).toUpperCase().padStart(2, 0));
+				}
+				output.toString = () => output.join('');
+				return output;
+			}
+		</script>
+	</body>
+</html>
