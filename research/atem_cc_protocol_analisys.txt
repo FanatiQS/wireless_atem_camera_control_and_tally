@@ -45,12 +45,6 @@ Editable*	Category 			Parameter 							Data Type			Byte 5 		Byte 7 		Byte 9
 
 
 
-// Edited same value on 2 cameras to maybe identify the last 8 bytes
-04 01 0d 01 00 01 00 00  00 00 00 00 00 00 00 00  f8 bb 10 00 10 00 ff 2f  00 20 43 50 43 43 64 50
-03 01 0d 01 00 01 00 00  00 00 00 00 00 00 00 00  f8 bb 10 00 10 00 ff 2f  00 20 43 50 43 43 64 50
-
-
-
 // Compare examples from documentation
 a  b  c  d  e  f  g  h
 04 04 00 00 00 01 00 00
