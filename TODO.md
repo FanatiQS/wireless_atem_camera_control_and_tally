@@ -13,9 +13,6 @@
 * Create function to convert atem camera control protocol to sdi camera control protocol (requires length and data pointer)
 * Add functions/macros for converting atem tally data to sdi tally data (requires length and data pointer)
 
-### test/
-* Add clicker script to switch cameras super fast to increment remote id faster than just heartbeat
-
 ### test/client.c
 * Use ATEM_CMDNAME_VERSION to indicate connection status
 * Move packet dropper thing into client test code
