@@ -109,8 +109,16 @@ int main(int argc, char** argv) {
 		}
 	}
 
+	// Requires camera id to be defined if tally or camera control is enabled
+	if ((flagPrintTally || flagPrintCameraControl) && camid == 0) {
+		fprintf(stderr, "Camera ID is required to be defined if --printTally or --printCameraControl is used\n");
+		exit(EXIT_FAILURE);
+	}
+
 	// Prints result from command line arguments
-	printf("Host address: %s\nCamera index: %d\n\n", addr, camid);
+	printf("Host address: %s\n", addr);
+	if (camid) printf("Camera index: %d\n", camid);
+	printf("\n");
 
 	//!! for tcp relay
 	int socktcp;
