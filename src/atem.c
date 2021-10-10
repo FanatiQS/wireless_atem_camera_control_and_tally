@@ -47,16 +47,16 @@ bool parseAtemData(struct atem_t *atem) {
 		// Gets remote id of packet
 		const uint16_t remoteId = atem->readBuf[10] << 8 | atem->readBuf[11];
 
-		// Sets acknowledge id to last acknowledged packet id if packets were missed
-		if (remoteId > atem->lastRemoteId + 1) {
-			ackBuf[ATEM_ACK_INDEX] = atem->lastRemoteId >> 8;
-			ackBuf[ATEM_ACK_INDEX + 1] = atem->lastRemoteId & 0xff;
-		}
-		// Acknowledge this packet and set it as the last received id is not already processed
-		else {
+		// Acknowledge this packet and set it as the last received remote id if next in line
+		if (remoteId == (atem->lastRemoteId + 1) % 0x8000) {
 			ackBuf[ATEM_ACK_INDEX] = atem->readBuf[10];
 			ackBuf[ATEM_ACK_INDEX + 1] = atem->readBuf[11];
-			if (remoteId > atem->lastRemoteId) atem->lastRemoteId = remoteId;
+			atem->lastRemoteId = remoteId;
+		}
+		// Sets response acknowledge id to last acknowledged packet id if it is not the next in line
+		else {
+			ackBuf[ATEM_ACK_INDEX] = atem->lastRemoteId >> 8;
+			ackBuf[ATEM_ACK_INDEX + 1] = atem->lastRemoteId & 0xff;
 		}
 
 		// Set up for parsing ATEM commands in payload

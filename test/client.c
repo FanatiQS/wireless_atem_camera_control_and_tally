@@ -47,6 +47,8 @@ int main(int argc, char** argv) {
 	bool flagPrintRecv = 0;
 	bool flagPrintSend = 0;
 	bool flagPrintCommands = 0;
+	bool flagPrintStructLastRemoteId = 0;
+	bool flagAutoReconnect = 0;
 	bool flagRelay = 0;
 	if (argv[3] != NULL) {
 		for (int i = 0; i < strlen(argv[3]); i++) {
@@ -113,7 +115,7 @@ int main(int argc, char** argv) {
 	// Processes received packets until an error occurs
 	while (1) {
 		// Separate prints for each cycle with double line break
-		if (flagPrintRecv || flagPrintSend) printf("\n\n");
+		if (flagPrintRecv || flagPrintSend) printf("\n");
 
 		// Sends data to server
 		size_t sentLen = sendto(sock, atem.writeBuf, atem.writeLen, 0, (const struct sockaddr *) &servaddr, sizeof(servaddr));
@@ -144,6 +146,13 @@ int main(int argc, char** argv) {
 			printTime(stdout);
 			printf("Connection timed out\n");
 			resetAtemState(&atem);
+			if (!flagAutoReconnect) {
+				printf("Exiting\n");
+				exit(EXIT_SUCCESS);
+			}
+			else {
+				printf("Restarting connection\n");
+			}
 			continue;
 		}
 
@@ -178,6 +187,9 @@ int main(int argc, char** argv) {
 			exit(EXIT_SUCCESS);
 		}
 
+		// Prints values from the atem_t struct
+		if (flagPrintStructLastRemoteId) printf("Struct value [ lastRemoteId ] = %d\n", atem.lastRemoteId);
+
 		// Makes sure packet length matches protocol defined length
 		if (recvLen != atem.readLen) {
 			printTime(stderr);
@@ -188,7 +200,13 @@ int main(int argc, char** argv) {
 		// Logs extra message if connection is restarted
 		if (atem.writeLen == 20) {
 			printTime(stdout);
-			printf("Connection restarted\n");
+			if (!flagAutoReconnect) {
+				printf("Connection wanted to restart, exiting\n");
+				exit(EXIT_SUCCESS);
+			}
+			else {
+				printf("Connection restarted\n");
+			}
 		}
 
 		// Processes command data in the ATEM packet

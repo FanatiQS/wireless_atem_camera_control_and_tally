@@ -10,7 +10,6 @@
 
 ### src/atem.c
 * Add a macro that would allow for no syn flag to return -1 instead of 0 for debugging, do the same for index error in parseTally
-* Make sure remote id works when wrapped
 * Create function to convert atem camera control protocol to sdi camera control protocol (requires length and data pointer)
 * Add functions/macros for converting atem tally data to sdi tally data (requires length and data pointer)
 
@@ -19,6 +18,7 @@
 
 ### test/client.c
 * Use ATEM_CMDNAME_VERSION to indicate connection status
+* Add flag for autorestart
 
 
 
