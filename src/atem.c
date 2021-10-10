@@ -44,9 +44,20 @@ bool parseAtemData(struct atem_t *atem) {
 
 	// Sends ACK requested by this packet
 	if (atem->readBuf[0] & ATEM_FLAG_ACKREQUEST) {
-		// Updates lastRemoteId if no packets were missing
+		// Gets remote id of packet
 		const uint16_t remoteId = atem->readBuf[10] << 8 | atem->readBuf[11];
-		if (remoteId <= atem->lastRemoteId + 1) atem->lastRemoteId = remoteId;
+
+		// Sets acknowledge id to last acknowledged packet id if packets were missed
+		if (remoteId > atem->lastRemoteId + 1) {
+			ackBuf[ATEM_ACK_INDEX] = atem->lastRemoteId >> 8;
+			ackBuf[ATEM_ACK_INDEX + 1] = atem->lastRemoteId & 0xff;
+		}
+		// Acknowledge this packet and set it as the last received id is not already processed
+		else {
+			ackBuf[ATEM_ACK_INDEX] = atem->readBuf[10];
+			ackBuf[ATEM_ACK_INDEX + 1] = atem->readBuf[11];
+			if (remoteId > atem->lastRemoteId) atem->lastRemoteId = remoteId;
+		}
 
 		// Set up for parsing ATEM commands in payload
 		atem->cmdIndex = ATEM_LEN_HEADER;
@@ -57,6 +68,8 @@ bool parseAtemData(struct atem_t *atem) {
 	}
 	// Sends SYNACK without processing payload to complete handshake
 	else if (atem->readBuf[ATEM_LEN_HEADER] == ATEM_CONNECTION_SUCCESS) {
+		ackBuf[ATEM_ACK_INDEX] = atem->lastRemoteId >> 8;
+		ackBuf[ATEM_ACK_INDEX + 1] = atem->lastRemoteId & 0xff;
 		atem->lastRemoteId = 0x00;
 		atem->cmdIndex = ATEM_LEN_SYNACK;
 	}
@@ -71,10 +84,6 @@ bool parseAtemData(struct atem_t *atem) {
 	else {
 		return 1;
 	}
-
-	// Sets acknowledge number for response ACK
-	ackBuf[ATEM_ACK_INDEX] = atem->lastRemoteId >> 8;
-	ackBuf[ATEM_ACK_INDEX + 1] = atem->lastRemoteId & 0xff;
 
 	// Copies over session id from incomming packet to ACK packet
 	ackBuf[ATEM_SESSION_INDEX] = atem->readBuf[ATEM_SESSION_INDEX];
