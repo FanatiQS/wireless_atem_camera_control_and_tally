@@ -18,13 +18,14 @@
 
 ### test/client.c
 * Use ATEM_CMDNAME_VERSION to indicate connection status
-* Add flag for autorestart
+* Move packet dropper thing into client test code
 
 
 
 ## Not required
 
 ### src/atem.h
+* Move tally status variable from client.c into the atem_t struct?
 * Should there be a way to only read in header, synack and commands separately to not buffer entire packet at once? The biggest problem is that I don't know how big to make the buffer since commands could technically be up to 2^16 bytes long.
 
 ### src/client.c
@@ -34,6 +35,7 @@
 ### test/server.c
 * Add support for emulating a switcher
 * GPIO tally on rpi for tally from other switchers
+* Extend heartbeat interval?
 
 
 
@@ -48,3 +50,4 @@
 * Check if CCdP parameters sent are the same with control software and hardware panel
 * Check what TlIn looks like on big switcher (make sure length and index work correctly)
 * Test connecting with bluetooth to the camera and send payload
+* Put SDI to HDMI and HDMI to SDI converters between URSA and URSAs studio monitor. Does it still display its camera id?
