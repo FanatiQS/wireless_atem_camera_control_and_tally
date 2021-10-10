@@ -35,36 +35,78 @@ char* tallyTable[] = { "NONE", "\x1b[31mPGM\x1b[0m", "\x1b[32mPVW\x1b[0m" };
 
 int main(int argc, char** argv) {
 	// Prints usage text if not enough arguments are given
-	if (argc < 3) {
-		printf("Usage: %s hostIp cameraId [flags]\n", argv[0]);
-		printf("Flags:\n\tr = Prints received data\n\ts = Prints sent data\n\tc = Prints ignored commands\nx = Relays data to TCP server on localhost\n");
+	if (argc < 2) {
+		printf("Usage: %s hostIp [flags]\n", argv[0]);
+		printf("Flags:\n\t\
+--cameraId number: The camera id to filter out tally and/or camera control data for\n\t\
+--autoReconnect: Automatically reconnects if timed out or requested\n\t\
+--printSend: Prints sent data\n\t\
+--printRecv: Prints received data\n\t\
+--printLastRemoteId: Prints the stored value lastRemoteId\n\t\
+--printCommands: Prints all commands\n\t\
+--printProtocolVersion: Prints the protocol version received from the switcher\n\t\
+--printTally: Prints the tally state for cameraId when it is updated\n\t\
+--printCameraControl: Prints camera control data received for cameraId\n\t\
+--help: Prints usage text\n\t\
+--tcpRelay = Relays data to TCP server on localhost\n");
 		exit(EXIT_FAILURE);
 	}
 
-	// Sets host address, camera id and print flags from command line arguments
+	// Sets host address to value of first command line argument
 	char* addr = argv[1];
-	uint8_t camid = atoi(argv[2]);
-	bool flagPrintRecv = 0;
-	bool flagPrintSend = 0;
-	bool flagPrintCommands = 0;
-	bool flagPrintStructLastRemoteId = 0;
+
+	// Initializes flags
+	uint8_t camid;
 	bool flagAutoReconnect = 0;
+	bool flagPrintSend = 0;
+	bool flagPrintRecv = 0;
+	bool flagPrintLastRemoteId = 0;
+	bool flagPrintCommands = 0;
+	bool flagPrintProtocolVersion = 0;
+	bool flagPrintTally = 0;
+	bool flagPrintCameraControl = 0;
 	bool flagRelay = 0;
-	if (argv[3] != NULL) {
-		for (int i = 0; i < strlen(argv[3]); i++) {
-			char c = argv[3][i];
-			if (c == 'r') {
-				flagPrintRecv = 1;
-			}
-			else if (c == 's') {
-				flagPrintSend = 1;
-			}
-			else if (c == 'c') {
-				flagPrintCommands = 1;
-			}
-			else if (c == 'x') {
-				flagRelay = 1;
-			}
+
+	// Parses command line arguments
+	for (int i = 2; i < argc; i++) {
+		printf("%d - %s\n", i, argv[i]);
+		if (!strcmp(argv[i], "--help")) {
+			char* charptrptr[] = { argv[0] };
+			main(1, charptrptr);
+			exit(EXIT_SUCCESS);
+		}
+		else if (!strcmp(argv[i], "--cameraId")) {
+			camid = atoi(argv[++i]);
+		}
+		else if (!strcmp(argv[i], "--autoReconnect")) {
+			flagAutoReconnect = 1;
+		}
+		else if (!strcmp(argv[i], "--printSend")) {
+			flagPrintSend = 1;
+		}
+		else if (!strcmp(argv[i], "--printRecv")) {
+			flagPrintRecv = 1;
+		}
+		else if (!strcmp(argv[i], "--printLastRemoteId")) {
+			flagPrintLastRemoteId = 1;
+		}
+		else if (!strcmp(argv[i], "--printCommands")) {
+			flagPrintCommands = 1;
+		}
+		else if (!strcmp(argv[i], "--printProtocolVersion")) {
+			flagPrintProtocolVersion = 1;
+		}
+		else if (!strcmp(argv[i], "--printTally")) {
+			flagPrintTally = 1;
+		}
+		else if (!strcmp(argv[i], "--printCameraControl")) {
+			flagPrintCameraControl = 1;
+		}
+		else if (!strcmp(argv[i], "--tcpRelay")) {
+			flagRelay = 1;
+		}
+		else {
+			fprintf(stderr, "Invalid argument [ %s ]\n", argv[i]);
 		}
 	}
 
@@ -188,7 +230,7 @@ int main(int argc, char** argv) {
 		}
 
 		// Prints values from the atem_t struct
-		if (flagPrintStructLastRemoteId) printf("Struct value [ lastRemoteId ] = %d\n", atem.lastRemoteId);
+		if (flagPrintLastRemoteId) printf("Struct value [ lastRemoteId ] = %d\n", atem.lastRemoteId);
 
 		// Makes sure packet length matches protocol defined length
 		if (recvLen != atem.readLen) {
@@ -219,8 +261,8 @@ int main(int argc, char** argv) {
 					// 	digitalWrite(pvwPin, tally == ATEM_TALLY_PVW);
 					// }
 
-					// Prints tally state for selected camera id
-					if (parseAtemTally(&atem, camid, &tally) > 0) {
+					// Prints tally state for selected camera id if flag is set
+					if (parseAtemTally(&atem, camid, &tally) > 0 && flagPrintTally) {
 						printf("Camera %d (tally) - %s\n", camid, tallyTable[tally]);
 					}
 					break;
@@ -232,6 +274,9 @@ int main(int argc, char** argv) {
 						send(socktcp, atem.cmdBuf, atem.cmdLen, 0);
 						usleep(100);
 					}
+
+					// Only print camera control data when flag is set
+					if (!flagPrintCameraControl) break;
 
 					// Only prints for selected camera
 					if (atem.cmdBuf[0] != camid) break;
@@ -384,15 +429,16 @@ int main(int argc, char** argv) {
 				}
 				case ATEM_CMDNAME_VERSION: {
 					//!! there should be some kind of version validation available. Maybe a macro defined tested version?
+					if (!flagPrintProtocolVersion) break;
 					printf("Protocol version: %d.%d\n", atem.cmdBuf[0] << 8 | atem.cmdBuf[1], atem.cmdBuf[2] << 8 | atem.cmdBuf[3]);
 					break;
 				}
-				default: {
-					if (!flagPrintCommands) break;
-					printf("%c%c%c%c - %d - ", atem.cmdBuf[-4], atem.cmdBuf[-3], atem.cmdBuf[-2], atem.cmdBuf[-1], atem.cmdLen);
-					printBuffer(stdout, atem.cmdBuf, ((atem.cmdLen - 8) < 16) ? atem.cmdLen - 8 : 16);
-					break;
-				}
+			}
+
+			// Prints command data if flag is set
+			if (flagPrintCommands) {
+				printf("%c%c%c%c - %d - ", atem.cmdBuf[-4], atem.cmdBuf[-3], atem.cmdBuf[-2], atem.cmdBuf[-1], atem.cmdLen);
+				printBuffer(stdout, atem.cmdBuf, ((atem.cmdLen - 8) < 16) ? atem.cmdLen - 8 : 16);//!! set clamp number with argument
 			}
 		}
 	}
