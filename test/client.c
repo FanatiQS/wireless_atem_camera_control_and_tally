@@ -448,5 +448,11 @@ int main(int argc, char** argv) {
 				printBuffer(stdout, atem.cmdBuf, ((atem.cmdLen - 8) < 16) ? atem.cmdLen - 8 : 16);//!! set clamp number with argument
 			}
 		}
+
+		// Ensures that parsing of commands was done exactly to the end
+		if (atem.cmdIndex != atem.readLen) {
+			fprintf(stderr, "Structs cmdIndex and readLen were not equal after command data was processed: %d %d\n", atem.cmdIndex, atem.readLen);
+			exit(EXIT_FAILURE);
+		}
 	}
 }
