@@ -31,3 +31,6 @@ Flags:
 Len:
 	The length part (len) is 11 bytes long and represents the entire length of the packet including the header.
 	With 11 bytes, the packet length has a maximum length of 2048 bytes.
+
+Session id:
+	The first byte in the session id might be a flag indicating if the session id was given by the ATEM switcher. If set in the random session id send in handshake, the switcher will not respond.
