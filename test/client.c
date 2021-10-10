@@ -69,7 +69,6 @@ int main(int argc, char** argv) {
 
 	// Parses command line arguments
 	for (int i = 2; i < argc; i++) {
-		printf("%d - %s\n", i, argv[i]);
 		if (!strcmp(argv[i], "--help")) {
 			char* charptrptr[] = { argv[0] };
 			main(1, charptrptr);
