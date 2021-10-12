@@ -287,15 +287,22 @@ int main(int argc, char** argv) {
 		}
 
 		// Processes the received packet
-		if (parseAtemData(&atem)) {
-			if (atem.readBuf[12] != 0x03) {
-				printTime(stderr);
-				fprintf(stderr, "Unexpected connection status\n");
+		switch (parseAtemData(&atem)) {
+			case 1: {
+				if (atem.readBuf[12] == 0x03) {
+					printTime(stdout);
+					printf("Connection rejected\n");
+				}
+				else {
+					printTime(stderr);
+					fprintf(stderr, "Unexpected connection status\n");
+				}
+				exit(EXIT_SUCCESS);
+			}
+			case -1: {
+				fprintf(stderr, "Received packet flags without 0x08 or 0x10\n");
 				exit(EXIT_FAILURE);
 			}
-			printTime(stdout);
-			printf("Connection rejected\n");
-			exit(EXIT_SUCCESS);
 		}
 
 		// Prints values from the atem_t struct
@@ -331,8 +338,18 @@ int main(int argc, char** argv) {
 					// }
 
 					// Prints tally state for selected camera id if flag is set
-					if (parseAtemTally(&atem, camid, &tally) > 0 && flagPrintTally) {
-						printf("Camera %d (tally) - %s\n", camid, tallyTable[tally]);
+					switch (parseAtemTally(&atem, camid, &tally)) {
+						case -1: {
+							fprintf(stderr, "Camera id out of range for switcher\n");
+							exit(EXIT_FAILURE);
+						}
+						case 0: break;
+						default: {
+							if (flagPrintTally) {
+								printf("Camera %d (tally) - %s\n", camid, tallyTable[tally]);
+							}
+							break;
+						}
 					}
 					break;
 				}

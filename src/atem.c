@@ -37,8 +37,8 @@ void resetAtemState(struct atem_t *atem) {
 }
 
 // Parses an ATEM UDP packet in the atem.readBuf
-// Returns: 0 = normal, 1 = rejected
-bool parseAtemData(struct atem_t *atem) {
+// Returns: 0 = normal, 1 = rejected, -1 = error
+int8_t parseAtemData(struct atem_t *atem) {
 	// Sets length of read buffer
 	atem->readLen = (atem->readBuf[0] & 0x07) << 8 | atem->readBuf[1];
 
@@ -64,7 +64,7 @@ bool parseAtemData(struct atem_t *atem) {
 	}
 	// Do nothing on non SYN or ACK request packets
 	else if (!(atem->readBuf[0] & ATEM_FLAG_SYN)) {
-		return 0;
+		return -1;
 	}
 	// Sends SYNACK without processing payload to complete handshake
 	else if (atem->readBuf[ATEM_LEN_HEADER] == ATEM_CONNECTION_SUCCESS) {
