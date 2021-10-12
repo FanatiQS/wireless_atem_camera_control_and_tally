@@ -13,6 +13,16 @@
 
 
 #define PAD_LEN_MAX 5
+#define FLAG_ATEM_REQUEST_RESEND 0x40
+#define OPCODE_ATEM_REJECT 0x03
+#define OPCODE_ATEM_INDEX 12
+#define SYN_LEN 20
+#define CAMERACONTROL_DESTINATION_INDEX 0
+#define CAMERACONTROL_COMMAND_INDEX 1
+#define CAMERACONTROL_PARAMETER_INDEX 2
+
+
+
 // Prints current time
 void printTime(FILE* dest) {
 	const time_t t = time(NULL);
@@ -309,7 +319,7 @@ int main(int argc, char** argv) {
 
 
 		// Throws on ATEM resend request since nothing has been sent that can be resent
-		if (atem.readBuf[0] & 0x40) {
+		if (atem.readBuf[0] & FLAG_ATEM_REQUEST_RESEND) {
 			printTime(stderr);
 			fprintf(stderr, "Received a resend request\n");
 			exit(EXIT_FAILURE);
@@ -320,7 +330,7 @@ int main(int argc, char** argv) {
 			// Returns 1 for non 0x02 SYN packet
 			case 1: {
 				// Prints message for reject opcode
-				if (atem.readBuf[12] == 0x03) {
+				if (atem.readBuf[OPCODE_ATEM_INDEX] == OPCODE_ATEM_REJECT) {
 					printTime(stdout);
 					printf("Connection rejected\n");
 				}
@@ -349,7 +359,7 @@ int main(int argc, char** argv) {
 		}
 
 		// Logs extra message if connection is restarted
-		if (atem.writeLen == 20) {
+		if (atem.writeLen == SYN_LEN) {
 			printTime(stdout);
 			if (!flagAutoReconnect) {
 				printf("Connection wanted to restart, exiting\n");
@@ -401,13 +411,13 @@ int main(int argc, char** argv) {
 					if (atem.cmdBuf[0] != camid) break;
 
 					// Destination
-					printf("Camera %d (camera control) - ", atem.cmdBuf[0]);
+					printf("Camera %d (camera control) - ", atem.cmdBuf[CAMERACONTROL_DESTINATION_INDEX]);
 
 					// Prints category and paramteter
-					switch (atem.cmdBuf[1]) {
+					switch (atem.cmdBuf[CAMERACONTROL_COMMAND_INDEX]) {
 						case 0x00: {
 							printf("Lens - ");
-							switch (atem.cmdBuf[2]) {
+							switch (atem.cmdBuf[CAMERACONTROL_PARAMETER_INDEX]) {
 								case 0x00: {
 									printf("Focus");
 									break;
@@ -425,7 +435,7 @@ int main(int argc, char** argv) {
 									break;
 								}
 								default: {
-									printf("? [%d] ?\n\t", atem.cmdBuf[2]);
+									printf("? [%d] ?\n\t", atem.cmdBuf[CAMERACONTROL_PARAMETER_INDEX]);
 									printBuffer(stdout, atem.cmdBuf, atem.cmdLen);
 									break;
 								}
@@ -434,7 +444,7 @@ int main(int argc, char** argv) {
 						}
 						case 0x01: {
 							printf("Video - ");
-							switch (atem.cmdBuf[2]) {
+							switch (atem.cmdBuf[CAMERACONTROL_PARAMETER_INDEX]) {
 								case 0x01: {
 									printf("Gain");
 									break;
@@ -460,7 +470,7 @@ int main(int argc, char** argv) {
 									break;
 								}
 								default: {
-									printf("? [%d] ?\n\t", atem.cmdBuf[2]);
+									printf("? [%d] ?\n\t", atem.cmdBuf[CAMERACONTROL_PARAMETER_INDEX]);
 									printBuffer(stdout, atem.cmdBuf, atem.cmdLen);
 									break;
 								}
@@ -469,13 +479,13 @@ int main(int argc, char** argv) {
 						}
 						case 0x04: {
 							printf("Display - ");
-							switch (atem.cmdBuf[2]) {
+							switch (atem.cmdBuf[CAMERACONTROL_PARAMETER_INDEX]) {
 								case 0x04: {
 									printf("Color bars display time (seconds)");
 									break;
 								}
 								default: {
-									printf("? [%d] ?\n\t", atem.cmdBuf[2]);
+									printf("? [%d] ?\n\t", atem.cmdBuf[CAMERACONTROL_PARAMETER_INDEX]);
 									printBuffer(stdout, atem.cmdBuf, atem.cmdLen);
 									break;
 								}
@@ -484,7 +494,7 @@ int main(int argc, char** argv) {
 						}
 						case 0x08: {
 							printf("Color Correction - ");
-							switch (atem.cmdBuf[2]) {
+							switch (atem.cmdBuf[CAMERACONTROL_PARAMETER_INDEX]) {
 								case 0x00: {
 									printf("Lift Adjust");
 									break;
@@ -514,7 +524,7 @@ int main(int argc, char** argv) {
 									break;
 								}
 								default: {
-									printf("? [%d] ?\n\t", atem.cmdBuf[2]);
+									printf("? [%d] ?\n\t", atem.cmdBuf[CAMERACONTROL_PARAMETER_INDEX]);
 									printBuffer(stdout, atem.cmdBuf, atem.cmdLen);
 									break;
 								}
@@ -523,13 +533,13 @@ int main(int argc, char** argv) {
 						}
 						case 0x0b: {
 							printf("PTZ Control - ");
-							switch (atem.cmdBuf[2]) {
+							switch (atem.cmdBuf[CAMERACONTROL_PARAMETER_INDEX]) {
 								case 0x00: {
 									printf("Pan/Tilt Velocity");
 									break;
 								}
 								default: {
-									printf("? [%d] ?\n\t", atem.cmdBuf[2]);
+									printf("? [%d] ?\n\t", atem.cmdBuf[CAMERACONTROL_PARAMETER_INDEX]);
 									printBuffer(stdout, atem.cmdBuf, atem.cmdLen);
 									break;
 								}
@@ -537,7 +547,7 @@ int main(int argc, char** argv) {
 							break;
 						}
 						default: {
-							printf("? [%d] ? - ? [%d] ?\n\t", atem.cmdBuf[1], atem.cmdBuf[2]);
+							printf("? [%d] ? - ? [%d] ?\n\t", atem.cmdBuf[CAMERACONTROL_COMMAND_INDEX], atem.cmdBuf[CAMERACONTROL_PARAMETER_INDEX]);
 							printBuffer(stdout, atem.cmdBuf, atem.cmdLen);
 							break;
 						}
