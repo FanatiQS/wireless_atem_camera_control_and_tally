@@ -359,6 +359,14 @@ int main(int argc, char** argv) {
 			exit(EXIT_FAILURE);
 		}
 
+		// Ensures SYNACK packets are 20 bytes long
+		if (atem.lastRemoteId == 0 && atem.readLen != SYN_LEN) {
+			fprintf(stderr, "SYNACK packet was %d bytes:", atem.readLen);
+			padPrint(atem.readLen);
+			printBuffer(stderr, atem.readBuf, atem.readLen);
+			exit(EXIT_FAILURE);
+		}
+
 		// Logs extra message if connection is restarted
 		if (atem.writeLen == SYN_LEN) {
 			printTime(stdout);
