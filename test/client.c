@@ -343,7 +343,7 @@ int main(int argc, char** argv) {
 
 		// Processes the received packet
 		switch (parseAtemData(&atem)) {
-			// Returns 1 for non 0x02 SYN packet
+			// Returns 1 for non 0x02 SYN packet opcode
 			case 1: {
 				// Prints message for reject opcode
 				if (atem.readBuf[OPCODE_ATEM_INDEX] == OPCODE_ATEM_REJECT) {
@@ -357,7 +357,7 @@ int main(int argc, char** argv) {
 				}
 				exit(EXIT_SUCCESS);
 			}
-			// Returns -1 for non ACKREQUEST or SYNACK packet
+			// Returns -1 for non ACKREQUEST or SYNACK packet flags
 			case -1: {
 				fprintf(stderr, "Received packet flags without 0x08 or 0x10\n");
 				exit(EXIT_FAILURE);
