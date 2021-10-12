@@ -38,7 +38,7 @@ int main(int argc, char** argv) {
 	if (argc < 2) {
 		printf("Usage: %s hostIp [flags]\n", argv[0]);
 		printf("Flags:\n\t\
---cameraId number: The camera id to filter out tally and/or camera control data for\n\t\
+--cameraId <number>: The camera id to filter out tally and/or camera control data for\n\t\
 --autoReconnect: Automatically reconnects if timed out or requested\n\t\
 --packetDropChanceSend: <chance> The percentage for a sending packet to be dropped\n\t\
 --packetDropChanceRecv: <chance> The percentage for a receiving packet to be dropped\n\t\
