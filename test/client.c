@@ -63,6 +63,8 @@ int main(int argc, char** argv) {
 --packetDropChanceSend: <chance> The percentage for a sending packet to be dropped\n\t\
 --packetDropChanceRecv: <chance> The percentage for a receiving packet to be dropped\n\t\
 --packetDropChanceSeed: <seed> The random seed to use, defaults to random number\n\t\
+--packetDropStartSend: <number> The number of packets to allow to send before start dropping packets\n\t\
+--packetDropStartRecv: <number> The number of packets to allow to receive before start dropping packets\n\t\
 --printSeparate: Prints a double new line between each cycle of the infinite loop\n\t\
 --printSend: Prints sent data\n\t\
 --printDroppedSend: Prints dropped send data\n\t\
@@ -84,7 +86,9 @@ int main(int argc, char** argv) {
 	// Initializes flags
 	uint8_t camid;
 	uint32_t packetDropChanceSend = 0;
+	uint32_t packetDropStartSend = 0;
 	uint32_t packetDropChanceRecv = 0;
+	uint32_t packetDropStartRecv = 0;
 	uint32_t packetDropChanceSeed = 0;
 	bool flagAutoReconnect = 0;
 	bool flagPrintSeparate = 0;
@@ -112,8 +116,14 @@ int main(int argc, char** argv) {
 		else if (!strcmp(argv[i], "--packetDropChanceSend")) {
 			packetDropChanceSend = atoi(argv[++i]);
 		}
+		else if (!strcmp(argv[i], "--packetDropStartSend")) {
+			packetDropStartSend = atoi(argv[++i]);
+		}
 		else if (!strcmp(argv[i], "--packetDropChanceRecv")) {
 			packetDropChanceRecv = atoi(argv[++i]);
+		}
+		else if (!strcmp(argv[i], "--packetDropStartRecv")) {
+			packetDropStartRecv = atoi(argv[++i]);
 		}
 		else if (!strcmp(argv[i], "--packetDropChanceSeed")) {
 			packetDropChanceSeed = atoi(argv[++i]);
@@ -226,7 +236,10 @@ int main(int argc, char** argv) {
 		// Only send data if last receive was not dropped
 		if (atem.writeLen != 0) {
 			// Sends data to server with a chance for it to be dropped
-			if (rand() % 100 > packetDropChanceSend) {
+			if (packetDropStartSend > 0 || rand() % 100 > packetDropChanceSend) {
+				// Decrement packetDropStartSend until it reaches 0
+				if (packetDropStartSend > 0) packetDropStartSend--;
+
 				// Sends data
 				size_t sentLen = sendto(sock, atem.writeBuf, atem.writeLen, 0, (const struct sockaddr *) &servaddr, sizeof(servaddr));
 
@@ -296,7 +309,8 @@ int main(int argc, char** argv) {
 		}
 
 		// Random chance for read packet to be dropped
-		if (rand() % 100 <= packetDropChanceRecv) {
+		if (packetDropStartRecv <= 0 && rand() % 100 <= packetDropChanceRecv) {
+
 			// Prints dropped read data if flag is set
 			if (flagPrintDroppedRecv) {
 				printf("Dropped a %zu byte recv: ", recvLen);
@@ -308,6 +322,9 @@ int main(int argc, char** argv) {
 			atem.writeLen = 0;
 			continue;
 		}
+
+		// Decrement packetDropStartRecv until it reaches 0
+		if (packetDropStartRecv > 0) packetDropStartRecv--;
 
 		// Prints read data if flag is set
 		if (flagPrintRecv) {

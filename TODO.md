@@ -13,7 +13,6 @@
 * Add functions/macros for converting atem tally data to sdi tally data (requires length and data pointer)
 
 ### test/client.c
-* Add feature to force handshake to not be dropped (probably only syn since that is only resent with reconnect)
 * Add packet delay feature?
 
 
