@@ -15,7 +15,7 @@
 
 ### test/client.c
 * Use ATEM_CMDNAME_VERSION to indicate connection status
-* Move packet dropper thing into client test code
+* Add feature to force handshake to not be dropped (probably only syn since that is only resent with reconnect)
 
 
 

@@ -1,6 +1,6 @@
 #include <stdio.h> // printf, perror, fprintf, stderr, stdout, FILE
 #include <string.h> // strlen, bzero
-#include <stdlib.h> // exit, EXIT_FAILURE, EXIT_SUCCESS, atoi
+#include <stdlib.h> // exit, EXIT_FAILURE, EXIT_SUCCESS, atoi, rand, srand
 #include <time.h> // time, struct tm, time_t, localtime,
 
 #include <sys/socket.h> // recv, sendto, sockaddr_in, SOCK_DGRAM, AF_INET, socket
@@ -40,8 +40,13 @@ int main(int argc, char** argv) {
 		printf("Flags:\n\t\
 --cameraId number: The camera id to filter out tally and/or camera control data for\n\t\
 --autoReconnect: Automatically reconnects if timed out or requested\n\t\
+--packetDropChanceSend: <chance> The percentage for a sending packet to be dropped\n\t\
+--packetDropChanceRecv: <chance> The percentage for a receiving packet to be dropped\n\t\
+--packetDropChanceSeed: <seed> The random seed to use, defaults to random number\n\t\
 --printSend: Prints sent data\n\t\
+--printDroppedSend: Prints dropped send data\n\t\
 --printRecv: Prints received data\n\t\
+--printDroppedRecv: Prints dropped receive data\n\t\
 --printLastRemoteId: Prints the stored value lastRemoteId\n\t\
 --printCommands: Prints all commands\n\t\
 --printProtocolVersion: Prints the protocol version received from the switcher\n\t\
@@ -57,9 +62,14 @@ int main(int argc, char** argv) {
 
 	// Initializes flags
 	uint8_t camid;
+	uint32_t packetDropChanceSend = 0;
+	uint32_t packetDropChanceRecv = 0;
+	uint32_t packetDropChanceSeed = 0;
 	bool flagAutoReconnect = 0;
 	bool flagPrintSend = 0;
+	bool flagPrintDroppedSend = 0;
 	bool flagPrintRecv = 0;
+	bool flagPrintDroppedRecv = 0;
 	bool flagPrintLastRemoteId = 0;
 	bool flagPrintCommands = 0;
 	bool flagPrintProtocolVersion = 0;
@@ -77,14 +87,29 @@ int main(int argc, char** argv) {
 		else if (!strcmp(argv[i], "--cameraId")) {
 			camid = atoi(argv[++i]);
 		}
+		else if (!strcmp(argv[i], "--packetDropChanceSend")) {
+			packetDropChanceSend = atoi(argv[++i]);
+		}
+		else if (!strcmp(argv[i], "--packetDropChanceRecv")) {
+			packetDropChanceRecv = atoi(argv[++i]);
+		}
+		else if (!strcmp(argv[i], "--packetDropChanceSeed")) {
+			packetDropChanceSeed = atoi(argv[++i]);
+		}
 		else if (!strcmp(argv[i], "--autoReconnect")) {
 			flagAutoReconnect = 1;
 		}
 		else if (!strcmp(argv[i], "--printSend")) {
 			flagPrintSend = 1;
 		}
+		else if (!strcmp(argv[i], "--printDroppedSend")) {
+			flagPrintDroppedSend = 1;
+		}
 		else if (!strcmp(argv[i], "--printRecv")) {
 			flagPrintRecv = 1;
+		}
+		else if (!strcmp(argv[i], "--printDroppedRecv")) {
+			flagPrintDroppedRecv = 1;
 		}
 		else if (!strcmp(argv[i], "--printLastRemoteId")) {
 			flagPrintLastRemoteId = 1;
@@ -115,9 +140,15 @@ int main(int argc, char** argv) {
 		exit(EXIT_FAILURE);
 	}
 
+	// Sets random seed for packet dropper to command line argument or random number
+	srand((packetDropChanceSeed) ? packetDropChanceSeed : (packetDropChanceSeed = clock()));
+
 	// Prints result from command line arguments
 	printf("Host address: %s\n", addr);
 	if (camid) printf("Camera index: %d\n", camid);
+	if (packetDropChanceSend || packetDropChanceRecv) {
+		printf("Packet drop chance seed: %d\n", packetDropChanceSeed);
+	}
 	printf("\n");
 
 	//!! for tcp relay
@@ -165,17 +196,31 @@ int main(int argc, char** argv) {
 	while (1) {
 		// Separate prints for each cycle with double line break
 		if (flagPrintRecv || flagPrintSend) printf("\n");
+		// Only send data if last receive was not dropped
+		if (atem.writeLen != 0) {
+			// Sends data to server with a chance for it to be dropped
+			if (rand() % 100 > packetDropChanceSend) {
+				// Sends data
+				size_t sentLen = sendto(sock, atem.writeBuf, atem.writeLen, 0, (const struct sockaddr *) &servaddr, sizeof(servaddr));
 
-		// Sends data to server
-		size_t sentLen = sendto(sock, atem.writeBuf, atem.writeLen, 0, (const struct sockaddr *) &servaddr, sizeof(servaddr));
-		if (sentLen != atem.writeLen) {
-			printTime(stderr);
-			fprintf(stderr, "Got an error sending data\n");
-			exit(EXIT_FAILURE);
-		}
-		if (flagPrintSend) {
-			printf("Sent %zu bytes:  \t", sentLen);
-			printBuffer(stdout, atem.writeBuf, atem.writeLen);
+				// Ensures all data was written
+				if (sentLen != atem.writeLen) {
+					printTime(stderr);
+					fprintf(stderr, "Got an error sending data\n");
+					exit(EXIT_FAILURE);
+				}
+
+				// Prints written data if flag is set
+				if (flagPrintSend) {
+					printf("Sent %hu bytes:  \t", atem.writeLen);
+					printBuffer(stdout, atem.writeBuf, atem.writeLen);
+				}
+			}
+			// Prints dropped data if flag is set
+			else if (flagPrintDroppedSend) {
+				printf("Dropped a %hu byte send:\t", atem.writeLen);
+				printBuffer(stdout, atem.writeBuf, atem.writeLen);
+			}
 		}
 
 		// Await data on socket or times out
@@ -207,11 +252,25 @@ int main(int argc, char** argv) {
 
 		// Reads data from server
 		size_t recvLen = recv(sock, atem.readBuf, ATEM_MAX_PACKET_LEN, 0);
+
+		// Ensures data was actually read
 		if (recvLen <= 0) {
 			printTime(stderr);
 			fprintf(stderr, "Received no data: %zu\n", recvLen);
 			exit(EXIT_FAILURE);
 		}
+
+		// Random chance for read packet to be dropped
+		if (rand() % 100 <= packetDropChanceRecv) {
+			if (flagPrintDroppedRecv) {
+				printf("Dropped a %hu byte recv:\t");
+				printBuffer(stdout, atem.readBuf, (recvLen > 32) ? 32 : recvLen);
+			}
+			atem.writeLen = 0;
+			continue;
+		}
+
+		// Prints read data if flag is set
 		if (flagPrintRecv) {
 			printf("Recv %zu bytes:  \t", recvLen);
 			printBuffer(stdout, atem.readBuf, (recvLen > 32) ? 32 : recvLen);
