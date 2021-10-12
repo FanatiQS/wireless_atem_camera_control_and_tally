@@ -43,6 +43,7 @@ int main(int argc, char** argv) {
 --packetDropChanceSend: <chance> The percentage for a sending packet to be dropped\n\t\
 --packetDropChanceRecv: <chance> The percentage for a receiving packet to be dropped\n\t\
 --packetDropChanceSeed: <seed> The random seed to use, defaults to random number\n\t\
+--printSeparate: Prints a double new line between each cycle of the infinite loop\n\t\
 --printSend: Prints sent data\n\t\
 --printDroppedSend: Prints dropped send data\n\t\
 --printRecv: Prints received data\n\t\
@@ -66,6 +67,7 @@ int main(int argc, char** argv) {
 	uint32_t packetDropChanceRecv = 0;
 	uint32_t packetDropChanceSeed = 0;
 	bool flagAutoReconnect = 0;
+	bool flagPrintSeparate = 0;
 	bool flagPrintSend = 0;
 	bool flagPrintDroppedSend = 0;
 	bool flagPrintRecv = 0;
@@ -98,6 +100,9 @@ int main(int argc, char** argv) {
 		}
 		else if (!strcmp(argv[i], "--autoReconnect")) {
 			flagAutoReconnect = 1;
+		}
+		else if (!strcmp(argv[i], "--printSeparate")) {
+			flagPrintSeparate = 1;
 		}
 		else if (!strcmp(argv[i], "--printSend")) {
 			flagPrintSend = 1;
@@ -195,6 +200,9 @@ int main(int argc, char** argv) {
 
 	// Processes received packets until an error occurs
 	while (1) {
+		// Prints new lines between each cycle if flag is set
+		if (flagPrintSeparate) printf("\n\n");
+
 		// Only send data if last receive was not dropped
 		if (atem.writeLen != 0) {
 			// Sends data to server with a chance for it to be dropped
