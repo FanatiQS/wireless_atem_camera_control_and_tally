@@ -28,7 +28,6 @@
 * Use ATEM_CMDNAME_VERSION to indicate connection status
 * Add incrementing packet id individually for send and recv?
 * Maybe add feature for packet reordering? (probably not)
-* Add feature to customise how many bytes recv and cmds are clamped to
 
 ### test/server.c
 * Add support for emulating a switcher

@@ -21,6 +21,7 @@
 #define CAMERACONTROL_DESTINATION_INDEX 0
 #define CAMERACONTROL_COMMAND_INDEX 1
 #define CAMERACONTROL_PARAMETER_INDEX 2
+#define CLAMP_LEN 32
 
 
 
@@ -47,6 +48,11 @@ void padPrint(size_t number) {
 		printf(" ");
 		i++;
 	}
+}
+
+// Clamps a buffer length to fit on one line
+uint16_t clampBufferLen(uint16_t len) {
+	return (len < CLAMP_LEN) ? len : CLAMP_LEN;
 }
 
 // Table for how to print tally states
@@ -315,7 +321,7 @@ int main(int argc, char** argv) {
 			if (flagPrintDroppedRecv) {
 				printf("Dropped a %zu byte recv: ", recvLen);
 				padPrint(recvLen);
-				printBuffer(stdout, atem.readBuf, (recvLen > 32) ? 32 : recvLen);
+				printBuffer(stdout, atem.readBuf, clampBufferLen(recvLen));
 			}
 
 			// Skips directly to awaiting more data
@@ -330,7 +336,7 @@ int main(int argc, char** argv) {
 		if (flagPrintRecv) {
 			printf("Recv %zu bytes: ", recvLen);
 			padPrint(recvLen);
-			printBuffer(stdout, atem.readBuf, (recvLen > 32) ? 32 : recvLen);
+			printBuffer(stdout, atem.readBuf, clampBufferLen(recvLen));
 		}
 
 
@@ -594,7 +600,7 @@ int main(int argc, char** argv) {
 			if (flagPrintCommands) {
 				printf("%c%c%c%c - %d: ", atem.cmdBuf[-4], atem.cmdBuf[-3], atem.cmdBuf[-2], atem.cmdBuf[-1], atem.cmdLen);
 				padPrint(atem.cmdLen);
-				printBuffer(stdout, atem.cmdBuf, ((atem.cmdLen - 8) < 16) ? atem.cmdLen - 8 : 16);//!! set clamp number with argument
+				printBuffer(stdout, atem.cmdBuf, clampBufferLen(atem.cmdLen));
 			}
 		}
 
