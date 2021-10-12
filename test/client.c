@@ -131,6 +131,7 @@ int main(int argc, char** argv) {
 		}
 		else {
 			fprintf(stderr, "Invalid argument [ %s ]\n", argv[i]);
+			exit(EXIT_FAILURE);
 		}
 	}
 
