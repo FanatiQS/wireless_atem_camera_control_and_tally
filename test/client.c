@@ -264,7 +264,7 @@ int main(int argc, char** argv) {
 		// Random chance for read packet to be dropped
 		if (rand() % 100 <= packetDropChanceRecv) {
 			if (flagPrintDroppedRecv) {
-				printf("Dropped a %hu byte recv:\t");
+				printf("Dropped a %zu byte recv:\t", recvLen);
 				printBuffer(stdout, atem.readBuf, (recvLen > 32) ? 32 : recvLen);
 			}
 			atem.writeLen = 0;
