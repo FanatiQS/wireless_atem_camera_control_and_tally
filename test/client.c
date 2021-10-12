@@ -240,14 +240,12 @@ int main(int argc, char** argv) {
 		if (!selectLen) {
 			printTime(stdout);
 			printf("Connection timed out\n");
-			resetAtemState(&atem);
 			if (!flagAutoReconnect) {
 				printf("Exiting\n");
 				exit(EXIT_SUCCESS);
 			}
-			else {
-				printf("Restarting connection\n");
-			}
+			resetAtemState(&atem);
+			printf("Restarting connection\n");
 			continue;
 		}
 
