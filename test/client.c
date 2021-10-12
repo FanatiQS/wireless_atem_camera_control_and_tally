@@ -12,6 +12,7 @@
 
 
 
+#define PAD_LEN_MAX 5
 // Prints current time
 void printTime(FILE* dest) {
 	const time_t t = time(NULL);
@@ -26,6 +27,15 @@ void printBuffer(FILE* dest, uint8_t *buf, uint16_t len) {
 		fprintf(dest, "%c%c ", hexTable[buf[i] >> 4], hexTable[buf[i] & 0x0f]);
 	}
 	fprintf(dest, "\n");
+}
+
+// Pad message to start printing buffer at same terminal X position
+void padPrint(size_t number) {
+	int i = snprintf(NULL, 0, "%zu", number);
+	while (i < PAD_LEN_MAX) {
+		printf(" ");
+		i++;
+	}
 }
 
 // Table for how to print tally states
@@ -219,13 +229,15 @@ int main(int argc, char** argv) {
 
 				// Prints written data if flag is set
 				if (flagPrintSend) {
-					printf("Sent %hu bytes:  \t", atem.writeLen);
+					printf("Sent %hu bytes: ", atem.writeLen);
+					padPrint(atem.writeLen);
 					printBuffer(stdout, atem.writeBuf, atem.writeLen);
 				}
 			}
 			// Prints dropped data if flag is set
 			else if (flagPrintDroppedSend) {
-				printf("Dropped a %hu byte send:\t", atem.writeLen);
+				printf("Dropped a %hu byte send: ", atem.writeLen);
+				padPrint(atem.writeLen);
 				printBuffer(stdout, atem.writeBuf, atem.writeLen);
 			}
 		}
@@ -277,7 +289,8 @@ int main(int argc, char** argv) {
 		if (rand() % 100 <= packetDropChanceRecv) {
 			// Prints dropped read data if flag is set
 			if (flagPrintDroppedRecv) {
-				printf("Dropped a %zu byte recv:\t", recvLen);
+				printf("Dropped a %zu byte recv: ", recvLen);
+				padPrint(recvLen);
 				printBuffer(stdout, atem.readBuf, (recvLen > 32) ? 32 : recvLen);
 			}
 
@@ -288,7 +301,8 @@ int main(int argc, char** argv) {
 
 		// Prints read data if flag is set
 		if (flagPrintRecv) {
-			printf("Recv %zu bytes:  \t", recvLen);
+			printf("Recv %zu bytes: ", recvLen);
+			padPrint(recvLen);
 			printBuffer(stdout, atem.readBuf, (recvLen > 32) ? 32 : recvLen);
 		}
 
@@ -542,7 +556,8 @@ int main(int argc, char** argv) {
 
 			// Prints command data if flag is set
 			if (flagPrintCommands) {
-				printf("%c%c%c%c - %d - ", atem.cmdBuf[-4], atem.cmdBuf[-3], atem.cmdBuf[-2], atem.cmdBuf[-1], atem.cmdLen);
+				printf("%c%c%c%c - %d: ", atem.cmdBuf[-4], atem.cmdBuf[-3], atem.cmdBuf[-2], atem.cmdBuf[-1], atem.cmdLen);
+				padPrint(atem.cmdLen);
 				printBuffer(stdout, atem.cmdBuf, ((atem.cmdLen - 8) < 16) ? atem.cmdLen - 8 : 16);//!! set clamp number with argument
 			}
 		}
