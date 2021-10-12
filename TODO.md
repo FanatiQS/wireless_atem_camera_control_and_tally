@@ -9,14 +9,12 @@
 * Add links to skaarhojs library, nrks library, openswitcher.org and so on
 
 ### src/atem.c
-* Add a macro that would allow for no syn flag to return -1 instead of 0 for debugging, do the same for index error in parseTally
 * Create function to convert atem camera control protocol to sdi camera control protocol (requires length and data pointer)
 * Add functions/macros for converting atem tally data to sdi tally data (requires length and data pointer)
 
 ### test/client.c
-* Add check for atem.readLen to make sure it is 20 bytes for SYNACK
-* Use ATEM_CMDNAME_VERSION to indicate connection status
 * Add feature to force handshake to not be dropped (probably only syn since that is only resent with reconnect)
+* Add packet delay feature?
 
 
 
@@ -28,6 +26,10 @@
 
 ### test/client.c
 * Should there be some kind of auto-detect to find a server with port 9910 open?
+* Use ATEM_CMDNAME_VERSION to indicate connection status
+* Add incrementing packet id individually for send and recv?
+* Maybe add feature for packet reordering? (probably not)
+* Add feature to customise how many bytes recv and cmds are clamped to
 
 ### test/server.c
 * Add support for emulating a switcher
@@ -37,7 +39,7 @@
 
 
 ## Research
-* Find out why all clients on my computer disconnects sometimes
+* Find out why all clients on my computer disconnects sometimes (has kinda stopped now)
 * Should warn messages be filtered out?
 * Is ATEM maxing out on session ids or sockets? If it is sockets, I could write a proxy software that just sends content to switcher and makes it much easier to dump all atem states since there will not be any need to buffer it in the proxy software.
 
