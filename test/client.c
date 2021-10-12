@@ -236,7 +236,7 @@ int main(int argc, char** argv) {
 		// Only send data if last receive was not dropped
 		if (atem.writeLen != 0) {
 			// Sends data to server with a chance for it to be dropped
-			if (packetDropStartSend > 0 || rand() % 100 > packetDropChanceSend) {
+			if (packetDropStartSend > 0 || rand() % 100 >= packetDropChanceSend) {
 				// Decrement packetDropStartSend until it reaches 0
 				if (packetDropStartSend > 0) packetDropStartSend--;
 
@@ -309,8 +309,7 @@ int main(int argc, char** argv) {
 		}
 
 		// Random chance for read packet to be dropped
-		if (packetDropStartRecv <= 0 && rand() % 100 <= packetDropChanceRecv) {
-
+		if (packetDropStartRecv <= 0 && rand() % 100 < packetDropChanceRecv) {
 			// Prints dropped read data if flag is set
 			if (flagPrintDroppedRecv) {
 				printf("Dropped a %zu byte recv: ", recvLen);
