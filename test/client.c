@@ -221,6 +221,8 @@ int main(int argc, char** argv) {
 			}
 		}
 
+
+
 		// Await data on socket or times out
 		fd_set fds;
 		FD_ZERO(&fds);
@@ -248,6 +250,8 @@ int main(int argc, char** argv) {
 			continue;
 		}
 
+
+
 		// Reads data from server
 		size_t recvLen = recv(sock, atem.readBuf, ATEM_MAX_PACKET_LEN, 0);
 
@@ -273,6 +277,8 @@ int main(int argc, char** argv) {
 			printf("Recv %zu bytes:  \t", recvLen);
 			printBuffer(stdout, atem.readBuf, (recvLen > 32) ? 32 : recvLen);
 		}
+
+
 
 		// Throws on ATEM resend request since nothing has been sent that can be resent
 		if (atem.readBuf[0] & 0x40) {
