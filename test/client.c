@@ -351,10 +351,11 @@ int main(int argc, char** argv) {
 		// Prints values from the atem_t struct
 		if (flagPrintLastRemoteId) printf("Struct value [ lastRemoteId ] = %d\n", atem.lastRemoteId);
 
-		// Makes sure packet length matches protocol defined length
+		// Ensures packet length matches protocol defined length
 		if (recvLen != atem.readLen) {
 			printTime(stderr);
-			fprintf(stderr, "Packet length did not match length from ATEM protocol\n\tPacket length: %zu\n\tProtocol length: %d\n", recvLen, atem.readLen);
+			fprintf(stderr, "Packet length did not match length from ATEM protocol\n\t");
+			fprintf(stderr, "Packet length: %zu\n\tProtocol length: %d\n", recvLen, atem.readLen);
 			exit(EXIT_FAILURE);
 		}
 
