@@ -6,7 +6,7 @@
 #include <sys/socket.h> // recv, sendto, sockaddr_in, SOCK_DGRAM, AF_INET, socket
 #include <arpa/inet.h> // inet_addr, htons
 #include <sys/select.h> // fd_set, FD_ZERO, FD_SET, select
-#include <unistd.h> // sleep
+#include <unistd.h> // usleep
 
 #include "../src/atem.h"
 
