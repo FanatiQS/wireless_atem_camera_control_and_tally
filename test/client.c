@@ -194,8 +194,6 @@ int main(int argc, char** argv) {
 
 	// Processes received packets until an error occurs
 	while (1) {
-		// Separate prints for each cycle with double line break
-		if (flagPrintRecv || flagPrintSend) printf("\n");
 		// Only send data if last receive was not dropped
 		if (atem.writeLen != 0) {
 			// Sends data to server with a chance for it to be dropped
