@@ -33,4 +33,6 @@ Len:
 	With 11 bytes, the packet length has a maximum length of 2048 bytes.
 
 Session id:
-	The first byte in the session id might be a flag indicating if the session id was given by the ATEM switcher. If set in the random session id send in handshake, the switcher will not respond.
+	* The first byte in the session id seems to be a flag indicating if the session id was given by the ATEM switcher.
+	* The session id is first randomly generated between 0x0000 and 0x7fff. When the handshake is complete, the server assigns the a new id that is between 0x8000 and 0xffff.
+	* In the handshake, the new session id the server assigns seems to be defined in byte 14 and 15 of the SYNACK but without the MSB set.
