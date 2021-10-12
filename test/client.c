@@ -232,11 +232,15 @@ int main(int argc, char** argv) {
 		bzero(&tv, sizeof(tv));
 		tv.tv_sec = 1;
 		int selectLen = select(sock + 1, &fds, NULL, NULL, &tv);
+
+		// Throws on select error
 		if (selectLen == -1) {
 			printTime(stderr);
 			fprintf(stderr, "Select got an error\n");
 			exit(EXIT_FAILURE);
 		}
+
+		// Prints message on timeout and restarts connection if flag is set
 		if (!selectLen) {
 			printTime(stdout);
 			printf("Connection timed out\n");
@@ -263,10 +267,13 @@ int main(int argc, char** argv) {
 
 		// Random chance for read packet to be dropped
 		if (rand() % 100 <= packetDropChanceRecv) {
+			// Prints dropped read data if flag is set
 			if (flagPrintDroppedRecv) {
 				printf("Dropped a %zu byte recv:\t", recvLen);
 				printBuffer(stdout, atem.readBuf, (recvLen > 32) ? 32 : recvLen);
 			}
+
+			// Skips directly to awaiting more data
 			atem.writeLen = 0;
 			continue;
 		}
@@ -288,17 +295,21 @@ int main(int argc, char** argv) {
 
 		// Processes the received packet
 		switch (parseAtemData(&atem)) {
+			// Returns 1 for non 0x02 SYN packet
 			case 1: {
+				// Prints message for reject opcode
 				if (atem.readBuf[12] == 0x03) {
 					printTime(stdout);
 					printf("Connection rejected\n");
 				}
+				// Throws on unknown opcode
 				else {
 					printTime(stderr);
 					fprintf(stderr, "Unexpected connection status\n");
 				}
 				exit(EXIT_SUCCESS);
 			}
+			// Returns -1 for non ACKREQUEST or SYNACK packet
 			case -1: {
 				fprintf(stderr, "Received packet flags without 0x08 or 0x10\n");
 				exit(EXIT_FAILURE);
@@ -370,7 +381,7 @@ int main(int argc, char** argv) {
 					// Destination
 					printf("Camera %d (camera control) - ", atem.cmdBuf[0]);
 
-					// Category and paramteter
+					// Prints category and paramteter
 					switch (atem.cmdBuf[1]) {
 						case 0x00: {
 							printf("Lens - ");
