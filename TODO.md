@@ -14,6 +14,7 @@
 * Add functions/macros for converting atem tally data to sdi tally data (requires length and data pointer)
 
 ### test/client.c
+* Add check for atem.readLen to make sure it is 20 bytes for SYNACK
 * Use ATEM_CMDNAME_VERSION to indicate connection status
 * Add feature to force handshake to not be dropped (probably only syn since that is only resent with reconnect)
 
@@ -25,9 +26,8 @@
 * Move tally status variable from client.c into the atem_t struct?
 * Should there be a way to only read in header, synack and commands separately to not buffer entire packet at once? The biggest problem is that I don't know how big to make the buffer since commands could technically be up to 2^16 bytes long.
 
-### src/client.c
+### test/client.c
 * Should there be some kind of auto-detect to find a server with port 9910 open?
-* Add check for atem.readLen to make sure it is 20 bytes for SYNACK
 
 ### test/server.c
 * Add support for emulating a switcher
