@@ -14,6 +14,7 @@
 
 #define PAD_LEN_MAX 5
 #define FLAG_ATEM_REQUEST_RESEND 0x40
+#define FLAG_ATEM_SYN 0x10
 #define OPCODE_ATEM_REJECT 0x03
 #define OPCODE_ATEM_INDEX 12
 #define SYN_LEN 20
@@ -376,8 +377,8 @@ int main(int argc, char** argv) {
 		}
 
 		// Ensures SYNACK packets are 20 bytes long
-		if (atem.lastRemoteId == 0 && atem.readLen != SYN_LEN) {
-			fprintf(stderr, "SYNACK packet was %d bytes:", atem.readLen);
+		if (atem.readBuf[0] & FLAG_ATEM_SYN && atem.readLen != SYN_LEN) {
+			fprintf(stderr, "SYNACK packet was %d bytes: ", atem.readLen);
 			padPrint(atem.readLen);
 			printBuffer(stderr, atem.readBuf, atem.readLen);
 			exit(EXIT_FAILURE);
