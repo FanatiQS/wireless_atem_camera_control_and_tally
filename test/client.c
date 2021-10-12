@@ -228,6 +228,12 @@ int main(int argc, char** argv) {
 	servaddr.sin_port = htons(ATEM_PORT);
 	servaddr.sin_addr.s_addr = inet_addr(addr);
 
+	// Ensures string address was successfully converted to an int
+	if (servaddr.sin_addr.s_addr == -1) {
+		printf("Invalid host address: %s\n", addr);
+		exit(EXIT_FAILURE);
+	}
+
 	// Tally state
 	uint8_t tally = 0;
 
