@@ -21,6 +21,8 @@
 #define CAMERACONTROL_DESTINATION_INDEX 0
 #define CAMERACONTROL_COMMAND_INDEX 1
 #define CAMERACONTROL_PARAMETER_INDEX 2
+#define CAMERACONTROL_CMD_LEN 32
+#define PROTOCOLVERSION_CMD_LEN 12
 #define CLAMP_LEN 32
 
 
@@ -457,6 +459,14 @@ int main(int argc, char** argv) {
 						usleep(100);
 					}
 
+					// Ensures camera control data is structured as expected
+					if (atem.cmdLen != CAMERACONTROL_CMD_LEN) {
+						printTime(stderr);
+						fprintf(stderr, "Camera control data was not %d bytes long\n\t", CAMERACONTROL_CMD_LEN);
+						printBuffer(stderr, atem.cmdBuf, atem.cmdLen);
+						exit(EXIT_FAILURE);
+					}
+
 					// Only print camera control data when flag is set
 					if (!flagPrintCameraControl) break;
 
@@ -614,7 +624,19 @@ int main(int argc, char** argv) {
 				}
 				case ATEM_CMDNAME_VERSION: {
 					//!! there should be some kind of version validation available. Maybe a macro defined tested version?
+
+					// Ensures protocol version data is structured as expected
+					if (atem.cmdLen != PROTOCOLVERSION_CMD_LEN) {
+						printTime(stderr);
+						fprintf(stderr, "Protocol version data was not %d bytes long\n\t", PROTOCOLVERSION_CMD_LEN);
+						printBuffer(stderr, atem.cmdBuf, atem.cmdLen);
+						exit(EXIT_FAILURE);
+					}
+
+					// Only print protocol version when flag is set
 					if (!flagPrintProtocolVersion) break;
+
+					// Prints protocol version
 					printTime(stdout);
 					printf("Protocol version: %d.%d\n", atem.cmdBuf[0] << 8 | atem.cmdBuf[1], atem.cmdBuf[2] << 8 | atem.cmdBuf[3]);
 					break;
