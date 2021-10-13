@@ -17,11 +17,11 @@
 
 // Atem protocol lengths
 #define ATEM_LEN_HEADER 12
-#define ATEM_LEN_SYNACK 20
+#define ATEM_LEN_SYN 20
 #define ATEM_LEN_ACK 12
 
 // Buffer to send to establish connection
-uint8_t synAckBuf[ATEM_LEN_SYNACK] = { ATEM_FLAG_SYN, ATEM_LEN_SYNACK,
+uint8_t synBuf[ATEM_LEN_SYN] = { ATEM_FLAG_SYN, ATEM_LEN_SYN,
 	0x74, 0x40, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 	0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
 
@@ -31,9 +31,9 @@ uint8_t ackBuf[ATEM_LEN_ACK] = { ATEM_FLAG_ACK, ATEM_LEN_ACK, 0x00,
 
 // Resets write buffer to SYN packet for starting handshake
 void resetAtemState(struct atem_t *atem) {
-	synAckBuf[0] = ATEM_FLAG_SYN | ((atem->writeBuf == synAckBuf) * ATEM_FLAG_RETRANSMIT);
-	atem->writeBuf = synAckBuf;
-	atem->writeLen = ATEM_LEN_SYNACK;
+	synBuf[0] = ATEM_FLAG_SYN | ((atem->writeBuf == synBuf) * ATEM_FLAG_RETRANSMIT);
+	atem->writeBuf = synBuf;
+	atem->writeLen = ATEM_LEN_SYN;
 }
 
 // Parses an ATEM UDP packet in the atem.readBuf
@@ -71,13 +71,13 @@ int8_t parseAtemData(struct atem_t *atem) {
 		ackBuf[ATEM_ACK_INDEX] = atem->lastRemoteId >> 8;
 		ackBuf[ATEM_ACK_INDEX + 1] = atem->lastRemoteId & 0xff;
 		atem->lastRemoteId = 0x00;
-		atem->cmdIndex = ATEM_LEN_SYNACK;
+		atem->cmdIndex = ATEM_LEN_SYN;
 	}
 	// Restarts handshake without processing payload
 	else if (atem->readBuf[ATEM_LEN_HEADER] == ATEM_CONNECTION_RESTART) {
-		atem->writeBuf = synAckBuf;
-		atem->writeLen = ATEM_LEN_SYNACK;
-		atem->cmdIndex = ATEM_LEN_SYNACK;
+		atem->writeBuf = synBuf;
+		atem->writeLen = ATEM_LEN_SYN;
+		atem->cmdIndex = ATEM_LEN_SYN;
 		return 0;
 	}
 	// Returns 1 on ATEM connection state rejected
