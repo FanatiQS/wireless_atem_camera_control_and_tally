@@ -265,6 +265,7 @@ int main(int argc, char** argv) {
 
 				// Prints written data if flag is set
 				if (flagPrintSend) {
+					printTime(stdout);
 					printf("Sent %hu bytes: ", atem.writeLen);
 					padPrint(atem.writeLen);
 					printBuffer(stdout, atem.writeBuf, atem.writeLen);
@@ -272,6 +273,7 @@ int main(int argc, char** argv) {
 			}
 			// Prints dropped data if flag is set
 			else if (flagPrintDroppedSend) {
+				printTime(stdout);
 				printf("Dropped a %hu byte send: ", atem.writeLen);
 				padPrint(atem.writeLen);
 				printBuffer(stdout, atem.writeBuf, atem.writeLen);
@@ -325,6 +327,7 @@ int main(int argc, char** argv) {
 		if (packetDropStartRecv <= 0 && rand() % 100 < packetDropChanceRecv) {
 			// Prints dropped read data if flag is set
 			if (flagPrintDroppedRecv) {
+				printTime(stdout);
 				printf("Dropped a %zu byte recv: ", recvLen);
 				padPrint(recvLen);
 				printBuffer(stdout, atem.readBuf, clampBufferLen(recvLen));
@@ -340,6 +343,7 @@ int main(int argc, char** argv) {
 
 		// Prints read data if flag is set
 		if (flagPrintRecv) {
+			printTime(stdout);
 			printf("Recv %zu bytes: ", recvLen);
 			padPrint(recvLen);
 			printBuffer(stdout, atem.readBuf, clampBufferLen(recvLen));
@@ -372,6 +376,7 @@ int main(int argc, char** argv) {
 			}
 			// Returns -1 for non ACKREQUEST or SYNACK packet flags
 			case -1: {
+				printTime(stderr);
 				fprintf(stderr, "Received packet flags without 0x08 or 0x10\n");
 				exit(EXIT_FAILURE);
 			}
@@ -390,6 +395,7 @@ int main(int argc, char** argv) {
 
 		// Ensures SYNACK packets are 20 bytes long
 		if (atem.readBuf[0] & FLAG_ATEM_SYN && atem.readLen != SYN_LEN) {
+			printTime(stderr);
 			fprintf(stderr, "SYNACK packet was %d bytes: ", atem.readLen);
 			padPrint(atem.readLen);
 			printBuffer(stderr, atem.readBuf, atem.readLen);
@@ -421,12 +427,14 @@ int main(int argc, char** argv) {
 					// Prints tally state for selected camera id if flag is set
 					switch (parseAtemTally(&atem, camid, &tally)) {
 						case -1: {
+							printTime(stderr);
 							fprintf(stderr, "Camera id out of range for switcher\n");
 							exit(EXIT_FAILURE);
 						}
 						case 0: break;
 						default: {
 							if (flagPrintTally) {
+								printTime(stdout);
 								printf("Camera %d (tally) - %s\n", camid, tallyTable[tally]);
 							}
 							break;
@@ -447,6 +455,9 @@ int main(int argc, char** argv) {
 
 					// Only prints for selected camera
 					if (atem.cmdBuf[0] != camid) break;
+
+					// Prints timestamp
+					printTime(stdout);
 
 					// Destination
 					printf("Camera %d (camera control) - ", atem.cmdBuf[CAMERACONTROL_DESTINATION_INDEX]);
@@ -597,6 +608,7 @@ int main(int argc, char** argv) {
 				case ATEM_CMDNAME_VERSION: {
 					//!! there should be some kind of version validation available. Maybe a macro defined tested version?
 					if (!flagPrintProtocolVersion) break;
+					printTime(stdout);
 					printf("Protocol version: %d.%d\n", atem.cmdBuf[0] << 8 | atem.cmdBuf[1], atem.cmdBuf[2] << 8 | atem.cmdBuf[3]);
 					break;
 				}
@@ -604,6 +616,7 @@ int main(int argc, char** argv) {
 
 			// Prints command data if flag is set
 			if (flagPrintCommands) {
+				printTime(stdout);
 				printf("%c%c%c%c - %d: ", atem.cmdBuf[-4], atem.cmdBuf[-3], atem.cmdBuf[-2], atem.cmdBuf[-1], atem.cmdLen);
 				padPrint(atem.cmdLen);
 				printBuffer(stdout, atem.cmdBuf, clampBufferLen(atem.cmdLen));
@@ -612,6 +625,7 @@ int main(int argc, char** argv) {
 
 		// Ensures that parsing of commands was done exactly to the end
 		if (atem.cmdIndex != atem.readLen) {
+			printTime(stderr);
 			fprintf(stderr, "Structs cmdIndex and readLen were not equal after command data was processed: %d %d\n", atem.cmdIndex, atem.readLen);
 			exit(EXIT_FAILURE);
 		}
