@@ -424,6 +424,14 @@ int main(int argc, char** argv) {
 					// 	digitalWrite(pvwPin, tally == ATEM_TALLY_PVW);
 					// }
 
+					// Ensures tally data is structured as expected
+					if (atem.cmdLen != (atem.cmdBuf[0] << 8 | atem.cmdBuf[1]) + 10) {
+						printTime(stdout);
+						printf("Tally command did not match expected length:\n\tcmdLen: %d\n\tcmdBuf: ", atem.cmdLen);
+						printBuffer(stdout, atem.cmdBuf, atem.cmdLen);
+						exit(EXIT_FAILURE);
+					}
+
 					// Prints tally state for selected camera id if flag is set
 					switch (parseAtemTally(&atem, camid, &tally)) {
 						case -1: {
