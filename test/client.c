@@ -28,8 +28,7 @@
 // Prints current time
 void printTime(FILE* dest) {
 	const time_t t = time(NULL);
-	const struct tm *time = localtime(&t);
-	fprintf(dest, "%d:%d:%d - ", time->tm_hour, time->tm_min, time->tm_sec);
+	fprintf(dest, "%.8s - ", asctime(localtime(&t)) + 11);
 }
 
 // Prints uint8 buffer in hex
