@@ -244,9 +244,6 @@ int main(int argc, char** argv) {
 
 	// Processes received packets until an error occurs
 	while (1) {
-		// Prints new lines between each cycle if flag is set
-		if (flagPrintSeparate) printf("\n\n");
-
 		// Only send data if last receive was not dropped
 		if (atem.writeLen != 0) {
 			// Sends data to server with a chance for it to be dropped
@@ -282,6 +279,9 @@ int main(int argc, char** argv) {
 		}
 
 
+
+		// Prints new lines between each cycle if flag is set
+		if (flagPrintSeparate) printf("\n\n");
 
 		// Await data on socket or times out
 		fd_set fds;
