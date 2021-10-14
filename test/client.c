@@ -368,6 +368,11 @@ int main(int argc, char** argv) {
 					printTime(stdout);
 					printf("Connection rejected\n");
 				}
+				// Prints message for closed opcode
+				else if (atem.readBuf[OPCODE_ATEM_INDEX] == OPCODE_ATEM_CLOSED) {
+					printTime(stdout);
+					printf("Connection successfully closed, initiated by client\n");
+				}
 				// Throws on unknown opcode
 				else {
 					printTime(stderr);
