@@ -13,7 +13,7 @@
 // Atem protocol handshake states
 #define ATEM_CONNECTION_SUCCESS 0x02
 #define ATEM_CONNECTION_REJECTED 0x03
-#define ATEM_CONNECTION_RESTART 0x04
+#define ATEM_CONNECTION_CLOSING 0x04
 
 // Atem protocol lengths
 #define ATEM_LEN_HEADER 12
@@ -68,21 +68,15 @@ int8_t parseAtemData(struct atem_t *atem) {
 	}
 	// Sends SYNACK without processing payload to complete handshake
 	else if (atem->readBuf[ATEM_LEN_HEADER] == ATEM_CONNECTION_SUCCESS) {
-		ackBuf[ATEM_ACK_INDEX] = atem->lastRemoteId >> 8;
-		ackBuf[ATEM_ACK_INDEX + 1] = atem->lastRemoteId & 0xff;
+		ackBuf[ATEM_ACK_INDEX] = 0x00;
+		ackBuf[ATEM_ACK_INDEX + 1] = 0x00;
 		atem->lastRemoteId = 0x00;
 		atem->cmdIndex = ATEM_LEN_SYN;
 	}
-	// Restarts handshake without processing payload
-	else if (atem->readBuf[ATEM_LEN_HEADER] == ATEM_CONNECTION_RESTART) {
-		atem->writeBuf = synBuf;
-		atem->writeLen = ATEM_LEN_SYN;
-		atem->cmdIndex = ATEM_LEN_SYN;
-		return 0;
-	}
-	// Returns 1 on ATEM connection state rejected
+	// Reset opcode returns 1 and reject opcode relies on timeout to restart connection
 	else {
-		return 1;
+		atem->cmdIndex = ATEM_LEN_SYN;
+		if (atem->readBuf[ATEM_LEN_HEADER] != ATEM_CONNECTION_CLOSING) return 1;
 	}
 
 	// Copies over session id from incomming packet to ACK packet
