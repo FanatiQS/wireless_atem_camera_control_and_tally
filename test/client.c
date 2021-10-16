@@ -23,6 +23,7 @@
 #define CAMERACONTROL_COMMAND_INDEX 1
 #define CAMERACONTROL_PARAMETER_INDEX 2
 #define CAMERACONTROL_CMD_LEN 32
+#define CAMERACONTROL_CMD_LEN2 24
 #define PROTOCOLVERSION_CMD_LEN 12
 #define CLAMP_LEN 32
 
@@ -466,7 +467,7 @@ int main(int argc, char** argv) {
 					}
 
 					// Ensures camera control data is structured as expected
-					if (atem.cmdLen != CAMERACONTROL_CMD_LEN) {
+					if (atem.cmdLen != CAMERACONTROL_CMD_LEN && atem.cmdLen != CAMERACONTROL_CMD_LEN2) {
 						printTime(stderr);
 						fprintf(stderr, "Camera control data was not %d bytes long\n\t", CAMERACONTROL_CMD_LEN);
 						printBuffer(stderr, atem.cmdBuf, atem.cmdLen);
