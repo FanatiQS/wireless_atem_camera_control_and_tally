@@ -118,7 +118,7 @@ int8_t parseAtemTally(struct atem_t *atem, uint16_t index, uint8_t *tally) {
 }
 
 // Translates camera control data from ATEMs protocol to Blackmagis SDI camera control protocol
-void translateCameraControl(struct atem_t *atem) {
+void translateAtemCameraControl(struct atem_t *atem) {
 	// Gets data length
 	uint8_t len = atem->cmdBuf[5] + atem->cmdBuf[7] * 2 + atem->cmdBuf[9] * 4;
 
