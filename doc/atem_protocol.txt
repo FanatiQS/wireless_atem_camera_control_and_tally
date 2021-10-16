@@ -1,7 +1,7 @@
 ATEM protocol:
 The ATEM protocol is sent between Blackmagic ATEM switchers and their clients connecting over a UDP socket on port 9910.
 It is a proprietary protocol, so thanks to everyone that has documented their findings when reverse engineering the protocol.
-Especially Skaarhoj's with their open source C++ Arduino library and commands documentation, NRK's open source NodeJS library as well as openswitcher.org's documentation.
+Especially Skaarhoj with their open source C++ Arduino library and commands documentation, NRK's open source NodeJS library as well as openswitcher.org's documentation.
 
 Header:
 The ATEM protocol header is always 12 bytes long.
@@ -36,3 +36,10 @@ Session id:
 	* The first byte in the session id seems to be a flag indicating if the session id was given by the ATEM switcher.
 	* The session id is first randomly generated between 0x0000 and 0x7fff. When the handshake is complete, the server assigns the a new id that is between 0x8000 and 0xffff.
 	* In the handshake, the new session id the server assigns seems to be defined in byte 14 and 15 of the SYNACK but without the MSB set.
+
+Handshake opcodes:
+	0x01: Opening connection
+	0x02: Connection opened successfully
+	0x03: Connection failed to open
+	0x04: Closing connection
+	0x05: Connection closed
