@@ -35,6 +35,7 @@ void resetAtemState(struct atem_t *atem);
 int8_t parseAtemData(struct atem_t *atem);
 uint32_t parseAtemCommand(struct atem_t *atem);
 int8_t parseAtemTally(struct atem_t *atem, uint16_t index, uint8_t *tally);
+void translateCameraControl(struct atem_t *atem);
 
 // Gets boolean indicating if there are more commands to parse
 #define hasAtemCommand(atem) ((atem)->cmdIndex < (atem)->readLen)

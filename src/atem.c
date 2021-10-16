@@ -116,3 +116,36 @@ int8_t parseAtemTally(struct atem_t *atem, uint16_t index, uint8_t *tally) {
 	return *tally ^ (*tally = (atem->cmdBuf[1 + index] & ATEM_TALLY_PGM) |
 		((atem->cmdBuf[1 + index] == ATEM_TALLY_PVW) << 1));
 }
+
+// Translates camera control data from ATEMs protocol to Blackmagis SDI camera control protocol
+void translateCameraControl(struct atem_t *atem) {
+	// Gets data length
+	uint8_t len = atem->cmdBuf[5] + atem->cmdBuf[7] * 2 + atem->cmdBuf[9] * 4;
+
+	// Header
+	atem->cmdBuf[-3] = atem->cmdBuf[0]; // Destination
+	atem->cmdBuf[-2] = 4 + len; // Length
+	atem->cmdBuf[-1] = 0x00; // Command
+	atem->cmdBuf[0] = 0x00; // Reserved
+
+	// Command
+	// Retains byte 1 - 4 to indicate: category, parameter, data type and operation
+
+	// Data
+	uint8_t step = (atem->cmdBuf[5] > 0) + (atem->cmdBuf[7] > 0) * 2 + (atem->cmdBuf[9] > 0) * 4;
+	uint8_t i = 0;
+	while (i < len) {
+		for (uint8_t j = i; i < j + step; i++) {
+			atem->cmdBuf[step - i + j * 2 - 1 + 5] = atem->cmdBuf[i + 16];
+		}
+	}
+
+	// Updates translated pointer and length
+	atem->cmdLen = 8 + (len + 3) / 4 * 4;
+	atem->cmdBuf -= 3;
+
+	// Clears padding bytes
+	for (uint8_t i = 8 + len; i < atem->cmdLen; i++) {
+		atem->cmdBuf[i] = 0x00;
+	}
+}
