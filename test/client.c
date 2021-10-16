@@ -101,7 +101,7 @@ int main(int argc, char** argv) {
 	uint32_t packetDropChanceRecv = 0;
 	uint32_t packetDropStartRecv = 0;
 	uint32_t packetDropChanceSeed = 0;
-	uint32_t packetTimeoutAt = 0;
+	int32_t packetTimeoutAt = -1;
 	bool flagAutoReconnect = 0;
 	bool flagPrintSeparate = 0;
 	bool flagPrintSend = 0;
@@ -293,7 +293,8 @@ int main(int argc, char** argv) {
 		// Await data on socket or times out
 		fd_set fds;
 		FD_ZERO(&fds);
-		if ((packetTimeoutAt--) > 0) FD_SET(sock, &fds);
+		if (packetTimeoutAt != 0) FD_SET(sock, &fds);
+		if (packetTimeoutAt >= 0) packetTimeoutAt--;
 		struct timeval tv;
 		bzero(&tv, sizeof(tv));
 		tv.tv_sec = 1;
