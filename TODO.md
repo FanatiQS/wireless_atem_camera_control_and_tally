@@ -12,9 +12,6 @@
 * Create function to convert atem camera control protocol to sdi camera control protocol (requires length and data pointer)
 * Add functions/macros for converting atem tally data to sdi tally data (requires length and data pointer)
 
-### test/client.c
-* Add packet delay feature?
-
 
 
 ## Not required

@@ -74,6 +74,7 @@ int main(int argc, char** argv) {
 --packetDropChanceRecv: <chance> The percentage for a receiving packet to be dropped\n\t\
 --packetDropChanceSeed: <seed> The random seed to use, defaults to random number\n\t\
 --packetDropStartSend: <number> The number of packets to allow to send before start dropping packets\n\t\
+--packetTimeoutAt: <number> The packet in order that should be simulated to be timed out\n\t\
 --packetDropStartRecv: <number> The number of packets to allow to receive before start dropping packets\n\t\
 --printSeparate: Prints a double new line between each cycle of the infinite loop\n\t\
 --printSend: Prints sent data\n\t\
@@ -100,6 +101,7 @@ int main(int argc, char** argv) {
 	uint32_t packetDropChanceRecv = 0;
 	uint32_t packetDropStartRecv = 0;
 	uint32_t packetDropChanceSeed = 0;
+	uint32_t packetTimeoutAt = 0;
 	bool flagAutoReconnect = 0;
 	bool flagPrintSeparate = 0;
 	bool flagPrintSend = 0;
@@ -137,6 +139,9 @@ int main(int argc, char** argv) {
 		}
 		else if (!strcmp(argv[i], "--packetDropChanceSeed")) {
 			packetDropChanceSeed = atoi(argv[++i]);
+		}
+		else if (!strcmp(argv[i], "--packetTimeoutAt")) {
+			packetTimeoutAt = atoi(argv[++i]);
 		}
 		else if (!strcmp(argv[i], "--autoReconnect")) {
 			flagAutoReconnect = 1;
@@ -288,7 +293,7 @@ int main(int argc, char** argv) {
 		// Await data on socket or times out
 		fd_set fds;
 		FD_ZERO(&fds);
-		FD_SET(sock, &fds);
+		if ((packetTimeoutAt--) > 0) FD_SET(sock, &fds);
 		struct timeval tv;
 		bzero(&tv, sizeof(tv));
 		tv.tv_sec = 1;
