@@ -29,6 +29,7 @@ There might be apps created in the future to display tally and send camera contr
 * 4-pin XLR to barrel connector (or other power solution)
 * Connector for tally (like RJ11 or 3.5mm TRS)
 * Some kind of housing
+* Red and Green LEDs
 
 ## Build
 No data yet, the arduino implementation is not ready for documentation.
