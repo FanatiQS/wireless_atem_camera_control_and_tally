@@ -94,3 +94,10 @@
 	* SSID passphrase
 	* ATEM ip address
 	* Camera ID
+
+
+
+## Other platforms
+* iOS
+* Android
+* Linux(rpi)
