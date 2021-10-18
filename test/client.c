@@ -472,13 +472,6 @@ int main(int argc, char** argv) {
 					break;
 				}
 				case ATEM_CMDNAME_CAMERACONTROL: {
-					//!! tcp relays camera control data to websocket clients
-					if (flagRelay) {
-						//!! needs to reorder command buffer to conform to sdi protocol
-						send(socktcp, atem.cmdBuf, atem.cmdLen, 0);
-						usleep(100);
-					}
-
 					// Ensures camera control data is structured as expected
 					if (atem.cmdLen != CAMERACONTROL_CMD_LEN && atem.cmdLen != CAMERACONTROL_CMD_LEN2) {
 						printTime(stderr);
@@ -645,6 +638,12 @@ int main(int argc, char** argv) {
 					printf("Translated Camera Control Buffer - ");
 					translateAtemCameraControl(&atem);
 					printBuffer(stdout, atem.cmdBuf, atem.cmdLen);
+
+					//!! tcp relays camera control data to websocket clients
+					if (flagRelay) {
+						send(socktcp, atem.cmdBuf, atem.cmdLen, 0);
+						usleep(100);
+					}
 
 					break;
 				}
