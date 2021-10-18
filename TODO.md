@@ -26,7 +26,6 @@
 
 ### test/client.c
 * Should there be some kind of auto-detect to find a server with port 9910 open?
-* Use ATEM_CMDNAME_VERSION to indicate connection status
 * Add incrementing packet id individually for send and recv?
 * Maybe add feature for packet reordering? (probably not)
 
@@ -45,16 +44,19 @@
 
 
 ## Check other hardware
-* Check if CCdP parameters sent are the same with control software and hardware panel
-* Check what TlIn looks like on big switcher (make sure length and index work correctly)
+* Check what TlIn looks like on big switcher (check out `research/tally_cmd_len.md`)
 * Put SDI to HDMI and HDMI to SDI converters between URSA and URSAs studio monitor. Does it still display its camera id?
 
-### hardware tests more priority
+### Camera test
 * Test if camera updates gain in same step size as my bluetooth code when connected over SDI.
 	* Currently only updates -6, 0, 6, 12, 18
 * Update initial state (states chanced when software was not connected)
 	* Try only relaying packets for selected camera to not overload initial bluetooth gatt writes.
 * Try updating luma mix
+
+### Camera control panel
+* Check if CCdP parameters sent are the same with control software and hardware panel
+* Test that with a hardware panel connected, my clients max out at 4 instances. It should. (this just makes extra sure what I have written in the readme is not a lie)
 
 
 
