@@ -40,6 +40,11 @@ No data yet, the arduino implementation is not ready for documentation.
 ## Usage
 No data yet, the arduino implementation is not ready for documentation.
 
+## Test
+The test directory contains a client that can be used to test the protocol parser.
+Whenever the ATEM firmware updates, there is a risk of something breaking since the protocol is proprietary.
+Using that test client will help in finding out if something affecting this project has changed.
+
 ## Notes
 
 #### Concurrent connections
