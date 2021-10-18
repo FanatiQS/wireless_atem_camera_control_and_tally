@@ -66,3 +66,31 @@
 ## Future maybe plans
 * Feature for device to chance aux input on switcher to be able to switch return feed on the camera. Was able to switch between 2 sdi feeds for return on monitor on LDK8000.
 * Extract PTZ from ATEM and output it on a d-sub connector.
+
+
+
+## Arduino implementation features
+* Camera control and tally should transmit all data over SDI.
+* Some kind of logging system. Maybe one that transmits logs over tcp to a log server?
+* Filter out tally and output pgm and pvw state for a specific camera on digital pints.
+* Connectors for tally should be some kind of 3+ pin connector. Maybe RJ11 or 3.5mm TRS.
+* Find a good way to set camera id.
+	* Maybe reading data from SDI out to find camera id (studio viewfinder displays camera id)
+	* Maybe set with rotary dial like skaarhojs devices
+	* Maybe update over serial
+	* Maybe update in web interface
+	* Maybe have OLED and buttons on device
+* Find a good way to handle unvalidated protocol versions
+* Have an LED to indicate connection to switcher status. Turn on light when receiving protocol version?
+* Needs some way to see signal strength, either on server or client.
+	* Maybe signal strength could be indicated over audio? An audio signal goes in to the camera representing the signal strength. That signal can be viewed on both the camera and in the switcher software.
+	* The signal strength should be able to be indicated on the AP. That direction is probably better anyway since the AP would have a stronger signal than the device.
+	* If there is an OLED on the client, it could display the signal strength there.
+	* Signal strength for wifi is called RSSI and is measured in dB.
+* Some way to connect another ESP to this client to allow wireless tally.
+	* Another way is to create some kind of hub software to extend number of clients connected to the switcher.
+* Needs to be able to configure these settings:
+	* SSID
+	* SSID passphrase
+	* ATEM ip address
+	* Camera ID
