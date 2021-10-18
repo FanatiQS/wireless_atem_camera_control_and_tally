@@ -461,6 +461,14 @@ int main(int argc, char** argv) {
 							break;
 						}
 					}
+
+					// Translates ATEMs tally protocol to Blackmagics Embedded Tally Protocol
+					if (flagPrintTally) {
+						printf("Translated Tally Buffer - ");
+						translateAtemTally(&atem);
+						printBuffer(stdout, atem.cmdBuf, atem.cmdLen);
+					}
+
 					break;
 				}
 				case ATEM_CMDNAME_CAMERACONTROL: {
@@ -632,6 +640,12 @@ int main(int argc, char** argv) {
 					}
 
 					printf("\n");
+
+					// Translates ATEMs camera control protocol to the Blackmagic SDI protocol and prints it
+					printf("Translated Camera Control Buffer - ");
+					translateAtemCameraControl(&atem);
+					printBuffer(stdout, atem.cmdBuf, atem.cmdLen);
+
 					break;
 				}
 				case ATEM_CMDNAME_VERSION: {
