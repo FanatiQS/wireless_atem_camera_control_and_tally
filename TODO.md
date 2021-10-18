@@ -40,7 +40,6 @@
 ## Research
 * Find out why all clients on my computer disconnects sometimes (has kinda stopped now)
 * Should warn messages be filtered out?
-* Is ATEM maxing out on session ids or sockets? If it is sockets, I could write a proxy software that just sends content to switcher and makes it much easier to dump all atem states since there will not be any need to buffer it in the proxy software.
 * What happens when assigned session id passes 0x8fff. Would probably wrap around to 0x8000.
 
 
