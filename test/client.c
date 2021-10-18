@@ -443,7 +443,6 @@ int main(int argc, char** argv) {
 						printTime(stdout);
 						printf("Tally command did not match expected length:\n\tcmdLen: %d\n\tcmdBuf: ", atem.cmdLen);
 						printBuffer(stdout, atem.cmdBuf, atem.cmdLen);
-						exit(EXIT_FAILURE);
 					}
 
 					// Prints tally state for selected camera id if flag is set
