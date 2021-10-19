@@ -16,6 +16,7 @@
 #define FLAG_ATEM_REQUEST_RESEND 0x40
 #define FLAG_ATEM_SYN 0x10
 #define OPCODE_ATEM_REJECT 0x03
+#define OPCODE_ATEM_CLOSING 0x04
 #define OPCODE_ATEM_CLOSED 0x05
 #define OPCODE_ATEM_INDEX 12
 #define SYN_LEN 20
@@ -408,23 +409,24 @@ int main(int argc, char** argv) {
 		}
 
 		// Ensures SYNACK packets are 20 bytes long
-		if (atem.readBuf[0] & FLAG_ATEM_SYN && atem.readLen != SYN_LEN) {
-			printTime(stderr);
-			fprintf(stderr, "SYNACK packet was %d bytes: ", atem.readLen);
-			padPrint(atem.readLen);
-			printBuffer(stderr, atem.readBuf, atem.readLen);
-			exit(EXIT_FAILURE);
-		}
-
-		// Logs extra message if connection is restarted
-		if (atem.writeLen == SYN_LEN) {
-			printTime(stdout);
-			if (!flagAutoReconnect) {
-				printf("Connection wanted to restart, exiting\n");
-				exit(EXIT_SUCCESS);
+		if (atem.readBuf[0] & FLAG_ATEM_SYN) {
+			if (atem.readLen != SYN_LEN) {
+				printTime(stderr);
+				fprintf(stderr, "SYNACK packet was %d bytes: ", atem.readLen);
+				padPrint(atem.readLen);
+				printBuffer(stderr, atem.readBuf, atem.readLen);
+				exit(EXIT_FAILURE);
 			}
-			else {
-				printf("Connection restarted\n");
+			// Logs extra message if connection is restarted
+			else if (atem.readBuf[OPCODE_ATEM_INDEX] == OPCODE_ATEM_CLOSING) {
+				printTime(stdout);
+				if (!flagAutoReconnect) {
+					printf("Connection wanted to restart, exiting\n");
+					exit(EXIT_SUCCESS);
+				}
+				else {
+					printf("Connection restarted\n");
+				}
 			}
 		}
 
