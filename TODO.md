@@ -90,6 +90,7 @@
 	* SSID passphrase
 	* ATEM ip address
 	* Camera ID
+* A good way to know if it should update serial data or run normally is to identify if the sdi shield is available. If not, read from serial. If it is, run normally. That way, just connect a usb cable to the microcontroller to update data and connect power to sdi shield to handle cc data.
 
 
 
