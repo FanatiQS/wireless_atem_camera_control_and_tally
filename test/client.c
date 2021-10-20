@@ -432,7 +432,17 @@ int main(int argc, char** argv) {
 
 		// Processes command data in the ATEM packet
 		while (hasAtemCommand(&atem)) {
-			switch (parseAtemCommand(&atem)) {
+			const uint32_t cmdName = parseAtemCommand(&atem);
+
+			// Prints command data if flag is set
+			if (flagPrintCommands) {
+				printTime(stdout);
+				printf("%c%c%c%c - %d: ", atem.cmdBuf[-4], atem.cmdBuf[-3], atem.cmdBuf[-2], atem.cmdBuf[-1], atem.cmdLen);
+				padPrint(atem.cmdLen);
+				printBuffer(stdout, atem.cmdBuf, clampBufferLen(atem.cmdLen));
+			}
+
+			switch (cmdName) {
 				case ATEM_CMDNAME_TALLY: {
 					//!! mockup for arduino
 					// if (parseTally(&atem, 4, &tally) > 0) {
@@ -672,14 +682,6 @@ int main(int argc, char** argv) {
 					printf("Protocol version: %d.%d\n", atem.cmdBuf[0] << 8 | atem.cmdBuf[1], atem.cmdBuf[2] << 8 | atem.cmdBuf[3]);
 					break;
 				}
-			}
-
-			// Prints command data if flag is set
-			if (flagPrintCommands) {
-				printTime(stdout);
-				printf("%c%c%c%c - %d: ", atem.cmdBuf[-4], atem.cmdBuf[-3], atem.cmdBuf[-2], atem.cmdBuf[-1], atem.cmdLen);
-				padPrint(atem.cmdLen);
-				printBuffer(stdout, atem.cmdBuf, clampBufferLen(atem.cmdLen));
 			}
 		}
 
