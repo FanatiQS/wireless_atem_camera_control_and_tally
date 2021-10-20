@@ -128,3 +128,11 @@ A list of all confirmed camera models and protocol version can be found in the m
 	1. Connect test client to switcher with no flags
 	2. Repeat step one with another client until the newest test client quits with "Connection rejected"
 
+* Test reconnect flags
+	1. Launch test client with flags: --packetDropChanceRecv 95 --packetDropChanceSeed 2417 --autoReconnect --printSend
+	2. The very first packets first byte should be hex 10
+	3. Then there should be a few with first byte set to hex 30
+	4. Then there should be some acks sent with first byte set to hex 80
+	5. After a while, the client should timeout
+	6. The first packet after the timeout should have first byte set to hex 10 again
+	7. After the that packet there should again be a few with the first byte set to hex 30
