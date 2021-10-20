@@ -511,6 +511,10 @@ int main(int argc, char** argv) {
 									printf("Aperture (f-stop)");
 									break;
 								}
+								case 0x05: {
+									printf("Instantaneous auto aperture");
+									break;
+								}
 								case 0x09: {
 									printf("Set continuous zoom (speed)");
 									break;
