@@ -33,8 +33,7 @@
 			async function connectBluetooth() {
 				// Requests connection to camera
 				const device = await navigator.bluetooth.requestDevice({
-					acceptAllDevices: true,
-					optionalServices: [ blackmagicCameraServiceUuid ]
+					filters: [ { services: [ blackmagicCameraServiceUuid ] } ]
 				});
 
 				// Connects to camera
