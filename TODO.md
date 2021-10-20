@@ -53,10 +53,6 @@
 	* Try only relaying packets for selected camera to not overload initial bluetooth gatt writes.
 * Try updating luma mix
 
-### Camera control panel
-* Check if CCdP parameters sent are the same with control software and hardware panel
-* Test that with a hardware panel connected, my clients max out at 4 instances. It should. (this just makes extra sure what I have written in the readme is not a lie)
-
 
 
 ## Untested
