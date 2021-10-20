@@ -49,6 +49,8 @@
 ### Camera test
 * Figure out why Gain is 6db higher on the camera when updated wirelessly while over SDI it updates correctly
 * Try updating luma mix
+* Confirm auto iris works, requires hardware control panel to test
+* Test if ND works, requires camera other than URSA
 
 
 
