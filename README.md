@@ -17,6 +17,18 @@ It connects directly to the ATEM switcher over Wi-Fi, reads the tally and camera
 <!-- For a more inexpensive solution, it is also possible to send the camera control data to some Blackmagic cameras over Bluetooth.
 There might be apps created in the future to display tally and send camera control data over bluetooth. -->
 
+## Support
+Camera models and protocol versions that have been tested to work.
+If a camera model is not tested, it does not indicate it does not work, just that some special features might not have been tested to update correctly.
+
+| Camera Model      | Status    |
+| ----------------- | --------- |
+| URSA Broadcast    | Testing   |
+
+| Protocol version | Status  |
+| ---------------- | ------- |
+| 2.30             | Testing |
+
 ## Requirements
 ##### Tools
 * Soldering equipment
