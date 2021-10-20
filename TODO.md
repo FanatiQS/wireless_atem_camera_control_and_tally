@@ -47,10 +47,7 @@
 * Put SDI to HDMI and HDMI to SDI converters between URSA and URSAs studio monitor. Does it still display its camera id?
 
 ### Camera test
-* Test if camera updates gain in same step size as my bluetooth code when connected over SDI.
-	* Currently only updates -6, 0, 6, 12, 18
-* Update initial state (states chanced when software was not connected)
-	* Try only relaying packets for selected camera to not overload initial bluetooth gatt writes.
+* Figure out why Gain is 6db higher on the camera when updated wirelessly while over SDI it updates correctly
 * Try updating luma mix
 
 
