@@ -45,6 +45,7 @@ Parameters:
 		0: Focus
 		1: Instantaneous autofocus
 		2: Aperture (f-stop)
+		5: Instantaneous auto aperture
 		9: Set continuous zoom (speed)
 	Video:
 		1: Gain
