@@ -45,14 +45,14 @@
 				const outgoingCharacteristic = await service.getCharacteristic(outgoingCameraControlCharacteristic);
 
 				// Returns callback function to write data over bluetooth
-				// Loop is because of GATT operation in progress error
-				const queue = [];
-				setInterval(() => {
-					const value = queue.shift();
-					if (!value) return;
-					outgoingCharacteristic.writeValue(value); //!! replace with writeValueWithResponse?
-				}, 10);
-				return async (value) => queue.push(value);
+				const queue = Promise.resolve();
+				return async (value) => {
+					queue.then(() => {
+						return outgoingCharacteristic.writeValueWithoutResponse(value).catch((err) => {
+							console.error(err);
+						});
+					});
+				};
 			}
 
 			// Binds connect button
