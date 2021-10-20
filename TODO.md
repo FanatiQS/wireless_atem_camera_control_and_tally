@@ -39,7 +39,6 @@
 ## Research
 * Find out why all clients on my computer disconnects sometimes (has kinda stopped now)
 * Should warn messages be filtered out?
-* What happens when assigned session id passes 0x8fff. Would probably wrap around to 0x8000.
 
 
 

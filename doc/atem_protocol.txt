@@ -37,6 +37,7 @@ Session id:
 	* The session id is first randomly generated between 0x0000 and 0x7fff. When the handshake is complete, the server assigns the a new id that is between 0x8000 and 0xffff.
 	* In the handshake, the new session id the server assigns seems to be defined in byte 14 and 15 of the SYNACK but without the MSB set.
 	* ATEM can only keep a maximum of 5 connections open at a time. It uses the session id to know how many active connections it has.
+	* Server assigned session ids are incremented by 1 for every new client connected. Wraps around to 0x0000 when reached 0x7fff in handshake, or to 0x8000 from 0xffff in header.
 
 Handshake opcodes:
 	0x01: Opening connection
