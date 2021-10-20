@@ -8,6 +8,7 @@ This document is hopefully going to help figure out the correlation between the 
 
 ### ATEM television studio HD
 * indexes = 8
+* cmdLen = 20
 
 ### ATEM 2M/E Production Switcher
 * indexes = 10
