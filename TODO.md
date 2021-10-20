@@ -10,8 +10,6 @@
 
 ### src/atem.c
 * Add functions/macros for converting atem tally data to sdi tally data (requires length and data pointer)
-* Add function/macro to validate the protocol version is tested
-* Find out why length of tally command does not match the number of indexes it has (tested 3 switchers)
 
 
 
@@ -19,6 +17,8 @@
 
 ### src/atem.c
 * Is there a reason to actually process all packets dumping ATEM state after handshake before sending first acknowledge or send acknowledges for each packet?
+* Find out why length of tally command does not match the number of indexes it has (tested 3 switchers)
+* Add function/macro to validate the protocol version is tested
 
 ### src/atem.h
 * Move tally status variable from client.c into the atem_t struct?
@@ -73,9 +73,10 @@
 
 ## Arduino implementation features
 * Camera control and tally should transmit all data over SDI.
-* Some kind of logging system. Maybe one that transmits logs over tcp to a log server?
 * Filter out tally and output pgm and pvw state for a specific camera on digital pints.
+* Some kind of logging system. Maybe one that transmits logs over tcp to a log server?
 * Connectors for tally should be some kind of 3+ pin connector. Maybe RJ11 or 3.5mm TRS.
+* Have an LED to indicate connection to switcher status. Turn on light when receiving protocol version?
 * Find a good way to set camera id.
 	* Maybe reading data from SDI out to find camera id (studio viewfinder displays camera id)
 	* Maybe set with rotary dial like skaarhojs devices
@@ -83,7 +84,6 @@
 	* Maybe update in web interface
 	* Maybe have OLED and buttons on device
 * Find a good way to handle unvalidated protocol versions
-* Have an LED to indicate connection to switcher status. Turn on light when receiving protocol version?
 * Needs some way to see signal strength, either on server or client.
 	* Maybe signal strength could be indicated over audio? An audio signal goes in to the camera representing the signal strength. That signal can be viewed on both the camera and in the switcher software.
 	* The signal strength should be able to be indicated on the AP. That direction is probably better anyway since the AP would have a stronger signal than the device.
