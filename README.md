@@ -19,7 +19,7 @@ There might be apps created in the future to display tally and send camera contr
 
 ## Support
 Camera models and protocol versions that have been tested to work.
-If a camera model is not tested, it does not indicate it does not work, just that some special features might not have been tested to update correctly.
+If a camera model is not tested, it does not indicate it does not work, just that if it has some special features not available on other cameras, there is a small chance those features might no work correctly.
 
 | Camera Model      | Status    |
 | ----------------- | --------- |
