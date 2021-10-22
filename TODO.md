@@ -48,7 +48,6 @@
 
 ### Camera test
 * Try updating luma mix
-* Confirm auto iris works, requires hardware control panel to test
 * Test if ND works, requires camera other than URSA
 
 
