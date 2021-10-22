@@ -54,6 +54,7 @@
 				const callback = await connectBluetooth();
 				await connectWebSocket((buf) => {
 					console.log(buf);
+					if (buf[4] == 0x01 && buf[5] == 0x01) return; // Ignores other gain parm since it sets gain 6db to low
 					callback(buf);
 				});
 				document.querySelector("#status").innerText = "Connected";
