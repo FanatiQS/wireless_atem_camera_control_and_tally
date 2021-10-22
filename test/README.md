@@ -99,7 +99,7 @@ A list of all confirmed camera models and protocol version can be found in the m
 	4. The camera should update with the setting from the switcher.
 
 * Test camera control to camera on demand
-	Go through all settings in the control software/hardware and make sure everything updates correctly.
+	Go through all settings in the control software/hardware and make sure everything updates correctly (compare data in camera and in switcher and make sure they match).
 	* Iris
 	* Auto iris (not available in control software)
 	* Focus
