@@ -49,6 +49,7 @@
 ### Camera test
 * Try updating luma mix
 * Test if ND works, requires camera other than URSA
+* Figure out why message grouping does not work. Is it just an SDI feature but not documented as such?
 
 
 
