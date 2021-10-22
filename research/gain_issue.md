@@ -1,5 +1,6 @@
 # Issue
 The camera has 6db lower gain on all positive gain values.
+Tested with URSA Broadcast that only displays gain in db and not iso.
 
 # Gain is updated in 2 ways
 * The `0x01 0x0d` does not update the camera on all values, but when updated, the value in the camera matches what is in the switcher.
