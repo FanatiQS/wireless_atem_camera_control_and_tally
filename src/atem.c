@@ -90,7 +90,7 @@ int8_t parseAtemData(struct atem_t *atem) {
 }
 
 // Gets next command name and sets buffer to its data and length to length of its data
-uint32_t parseAtemCommand(struct atem_t *atem) {
+uint32_t nextAtemCommand(struct atem_t *atem) {
 	// Gets start index of command
 	const uint16_t index = atem->cmdIndex;
 

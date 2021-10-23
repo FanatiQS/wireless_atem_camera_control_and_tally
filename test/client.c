@@ -432,7 +432,7 @@ int main(int argc, char** argv) {
 
 		// Processes command data in the ATEM packet
 		while (hasAtemCommand(&atem)) {
-			const uint32_t cmdName = parseAtemCommand(&atem);
+			const uint32_t cmdName = nextAtemCommand(&atem);
 
 			// Prints command data if flag is set
 			if (flagPrintCommands) {
