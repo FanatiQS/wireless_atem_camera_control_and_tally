@@ -503,6 +503,13 @@ int main(int argc, char** argv) {
 						exit(EXIT_FAILURE);
 					}
 
+					// Ensures all data type received can be converted correctly
+					if (atem.cmdBuf[3] > 0x03 && atem.cmdBuf[3] != 0x80) {
+						printTime(stderr);
+						fprintf(stderr, "Unknown or unimplemented data type: %x\n", atem.cmdBuf[3]);
+						exit(EXIT_FAILURE);
+					}
+
 					// Only print camera control data when flag is set
 					if (!flagPrintCameraControl) break;
 
