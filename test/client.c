@@ -361,6 +361,17 @@ int main(int argc, char** argv) {
 
 
 
+		// Makes sure ack id and local id is never set
+		if (
+			atem.readBuf[4] != 0x00 || atem.readBuf[5] != 0x00 ||
+			atem.readBuf[6] != 0x00 || atem.readBuf[7] != 0x00
+		) {
+			printTime(stderr);
+			fprintf(stderr, "The acknowledge identifier or the local identifier was set\n\t");
+			printBuffer(stderr, atem.readBuf, recvLen);
+			exit(EXIT_FAILURE);
+		}
+
 		// Throws on ATEM resend request since nothing has been sent that can be resent
 		if (atem.readBuf[0] & FLAG_ATEM_REQUEST_RESEND) {
 			printTime(stderr);
