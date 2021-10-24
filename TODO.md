@@ -8,6 +8,10 @@
 ### src/atem.c
 * Add functions/macros for converting atem tally data to sdi tally data (requires length and data pointer)
 
+### /readme.md
+* Add notes about what version of control software was tested?
+* Add some info about hardware control panel working but not been fully tested.
+
 
 
 ## Not required
