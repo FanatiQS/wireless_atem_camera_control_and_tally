@@ -29,18 +29,18 @@ The ATEM protocol header is always 12 bytes long.
 ```
 
 ### Flags
-0. (0x80) ack reply
-	Is set when the other party has acknowledged a packet that requested an ack.
-	It is also sent with the heartbeat for some reason even if an ack is not requested.
-	The packet that was acknowledged is the packet with the id "ack packet id"
-1. (0x40) retransmit request
-2. (0x20) is retransmit
-3. (0x10) SYN
-4. (0x08) ack request
+###### 0x80: ack reply
+Is set when the other party has acknowledged a packet that requested an ack.
+It is also sent with the heartbeat for some reason even if an ack is not requested.
+The packet that was acknowledged is the packet with the id "ack packet id"
+###### 0x40: retransmit request
+###### 0x20: is retransmit
+###### 0x10: SYN
+###### 0x08: ack request
 
 ### Length
-	The length part is 11 bytes long and represents the entire length of the packet including the header.
-	With 11 bytes, the packet length has a maximum length of 2048 bytes.
+The length part is 11 bytes long and represents the entire length of the packet including the header.
+With 11 bytes, the packet length has a maximum length of 2048 bytes.
 
 ### Session id
 * The first byte in the session id seems to be a flag indicating if the session id was given by the ATEM switcher.
