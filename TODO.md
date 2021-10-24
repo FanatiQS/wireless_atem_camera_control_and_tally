@@ -5,9 +5,6 @@
 ### test/README.md
 * Create a list of tests to run
 
-### doc/atem_protocol.txt
-* Add links to skaarhojs library, nrks library, openswitcher.org and so on
-
 ### src/atem.c
 * Add functions/macros for converting atem tally data to sdi tally data (requires length and data pointer)
 

@@ -4,12 +4,12 @@ The ATEM protocol is sent between Blackmagic ATEM switchers and their clients co
 ### Other resources
 Since it is a proprietary protocol it has been very helpful to read what others have found out and documented while reverse engineering it.
 I have listed the ones that have been the most useful to me.
-* Skaarhojs Arduino library
-* Skaarhojs command documentation
-* NRKs NodeJS library
-* Documentation on openswitcher.org
-* Documentation on node-atem
-* Blackmagics camera control protocol documentation
+* [Skaarhojs Arduino library](https://github.com/kasperskaarhoj/SKAARHOJ-Open-Engineering/tree/master/ArduinoLibs/ATEMbase)
+* [Skaarhojs command documentation](https://www.skaarhoj.com/discover/blackmagic-atem-switcher-protocol)
+* [NRKs NodeJS library](https://github.com/nrkno/tv-automation-atem-connection)
+* [Documentation on openswitcher.org](https://docs.openswitcher.org/udptransport.html)
+* [Documentation on node-atem](https://github.com/miyukki/node-atem/blob/master/specification.md)
+* [Blackmagics camera control protocol documentation](https://documents.blackmagicdesign.com/DeveloperManuals/BlackmagicCameraControl.pdf)
 
 # The header
 The ATEM protocol header is always 12 bytes long.
