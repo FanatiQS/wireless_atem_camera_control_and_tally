@@ -510,6 +510,18 @@ int main(int argc, char** argv) {
 						exit(EXIT_FAILURE);
 					}
 
+					// Ensures assumed zero bytes are never non-zero
+					if (
+						atem.cmdBuf[4] != 0x00 || atem.cmdBuf[6] != 0x00 ||
+						atem.cmdBuf[8] != 0x00 || atem.cmdBuf[10] != 0x00 ||
+						atem.cmdBuf[11] != 0x00 || atem.cmdBuf[12] != 0x00
+					) {
+						printTime(stderr);
+						fprintf(stderr, "One of the bytes assumed to be zero was not zero\n\t");
+						printBuffer(stderr, atem.cmdBuf, atem.cmdLen);
+						exit(EXIT_FAILURE);
+					}
+
 					// Only print camera control data when flag is set
 					if (!flagPrintCameraControl) break;
 
