@@ -1,7 +1,7 @@
-#include <stdio.h> // printf, perror, fprintf, stderr, stdout, FILE
-#include <string.h> // strlen, bzero
+#include <stdio.h> // printf, perror, fprintf, snprintf, stderr, stdout, FILE
+#include <string.h> // bzero
 #include <stdlib.h> // exit, EXIT_FAILURE, EXIT_SUCCESS, atoi, rand, srand
-#include <time.h> // time, struct tm, time_t, localtime,
+#include <time.h> // time, time_t, localtime,
 
 #include <sys/socket.h> // recv, sendto, sockaddr_in, SOCK_DGRAM, AF_INET, socket
 #include <arpa/inet.h> // inet_addr, htons
