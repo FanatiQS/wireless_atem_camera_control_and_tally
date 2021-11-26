@@ -55,7 +55,8 @@
 
 
 ## Untested
-* PTZ control is not tested at all, neither updating it from the switcher side or sending it to the camera.
+* PTZ control is tested that it sends the ptz data from the switcher and parsed correctly by my code.
+Not tested sending it to the camera.
 
 
 
