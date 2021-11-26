@@ -44,7 +44,6 @@
 
 
 ## Check other hardware
-* Check what TlIn looks like on big switcher (check out `research/tally_cmd_len.md`)
 * Put SDI to HDMI and HDMI to SDI converters between URSA and URSAs studio monitor. Does it still display its camera id?
 
 ### Camera test
