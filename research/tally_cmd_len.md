@@ -11,5 +11,9 @@ This document is hopefully going to help figure out the correlation between the 
 * cmdLen = 20
 
 ### ATEM 2M/E Production Switcher
-* indexes = 10
+* indexes = 10 (cant remember if it was hex or base 10)
 * cmdLen = 28
+
+### ATEM Constelation
+* indexes = 0x28 (40)
+* cmdLen = 52
