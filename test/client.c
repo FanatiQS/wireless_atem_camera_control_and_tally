@@ -75,8 +75,8 @@ int main(int argc, char** argv) {
 --packetDropChanceRecv: <chance> The percentage for a receiving packet to be dropped\n\t\
 --packetDropChanceSeed: <seed> The random seed to use, defaults to random number\n\t\
 --packetDropStartSend: <number> The number of packets to allow to send before start dropping packets\n\t\
---packetTimeoutAt: <number> The packet in order that should be simulated to be timed out\n\t\
 --packetDropStartRecv: <number> The number of packets to allow to receive before start dropping packets\n\t\
+--packetTimeoutAt: <number> The packet in order that should be simulated to be timed out\n\t\
 --printSeparate: Prints a double new line between each cycle of the infinite loop\n\t\
 --printSend: Prints sent data\n\t\
 --printDroppedSend: Prints dropped send data\n\t\
@@ -86,7 +86,9 @@ int main(int argc, char** argv) {
 --printCommands: Prints all commands\n\t\
 --printProtocolVersion: Prints the protocol version received from the switcher\n\t\
 --printTally: Prints the tally state for cameraId when it is updated\n\t\
+--printTallyTranslated: Prints the translated tally packet when tally is being updated\n\t\
 --printCameraControl: Prints camera control data received for cameraId\n\t\
+--printCameraControlTranslated: Prints the translated camera control data when received for any camera\n\t\
 --help: Prints usage text\n\t\
 --tcpRelay = Relays data to TCP server on localhost\n");
 		exit(EXIT_FAILURE);
@@ -113,7 +115,9 @@ int main(int argc, char** argv) {
 	bool flagPrintCommands = 0;
 	bool flagPrintProtocolVersion = 0;
 	bool flagPrintTally = 0;
+	bool flagPrintTallyTranslated = 0;
 	bool flagPrintCameraControl = 0;
+	bool flagPrintCameraControlTranslated = 0;
 	bool flagRelay = 0;
 
 	// Parses command line arguments
@@ -174,8 +178,14 @@ int main(int argc, char** argv) {
 		else if (!strcmp(argv[i], "--printTally")) {
 			flagPrintTally = 1;
 		}
+		else if (!strcmp(argv[i], "--printTallyTranslated")) {
+			flagPrintTallyTranslated = 1;
+		}
 		else if (!strcmp(argv[i], "--printCameraControl")) {
 			flagPrintCameraControl = 1;
+		}
+		else if (!strcmp(argv[i], "--printCameraControlTranslated")) {
+			flagPrintCameraControlTranslated = 1;
 		}
 		else if (!strcmp(argv[i], "--tcpRelay")) {
 			flagRelay = 1;
@@ -486,9 +496,9 @@ int main(int argc, char** argv) {
 					}
 
 					// Translates ATEMs tally protocol to Blackmagics Embedded Tally Protocol
-					if (flagPrintTally) {
+					translateAtemTally(&atem);
+					if (flagPrintTallyTranslated) {
 						printf("Translated Tally Buffer - ");
-						translateAtemTally(&atem);
 						printBuffer(stdout, atem.cmdBuf, atem.cmdLen);
 					}
 
@@ -523,167 +533,169 @@ int main(int argc, char** argv) {
 					}
 
 					// Only print camera control data when flag is set
-					if (!flagPrintCameraControl) break;
+					if (flagPrintCameraControl) {
+						// Only prints for selected camera
+						if (atem.cmdBuf[0] != camid) break;
 
-					// Only prints for selected camera
-					if (atem.cmdBuf[0] != camid) break;
+						// Prints timestamp
+						printTime(stdout);
 
-					// Prints timestamp
-					printTime(stdout);
+						// Destination
+						printf("Camera %d (camera control) - ", atem.cmdBuf[CAMERACONTROL_DESTINATION_INDEX]);
 
-					// Destination
-					printf("Camera %d (camera control) - ", atem.cmdBuf[CAMERACONTROL_DESTINATION_INDEX]);
+						// Prints category and paramteter
+						switch (atem.cmdBuf[CAMERACONTROL_COMMAND_INDEX]) {
+							case 0x00: {
+								printf("Lens - ");
+								switch (atem.cmdBuf[CAMERACONTROL_PARAMETER_INDEX]) {
+									case 0x00: {
+										printf("Focus");
+										break;
+									}
+									case 0x01: {
+										printf("Instantaneous autofocus");
+										break;
+									}
+									case 0x02: {
+										printf("Aperture (f-stop)");
+										break;
+									}
+									case 0x05: {
+										printf("Instantaneous auto aperture");
+										break;
+									}
+									case 0x09: {
+										printf("Set continuous zoom (speed)");
+										break;
+									}
+									default: {
+										printf("? [%d] ?\n\t", atem.cmdBuf[CAMERACONTROL_PARAMETER_INDEX]);
+										printBuffer(stdout, atem.cmdBuf, atem.cmdLen);
+										break;
+									}
+								}
+								break;
+							}
+							case 0x01: {
+								printf("Video - ");
+								switch (atem.cmdBuf[CAMERACONTROL_PARAMETER_INDEX]) {
+									case 0x01: {
+										printf("Gain");
+										break;
+									}
+									case 0x02: {
+										printf("Manual White Balance");
+										break;
+									}
+									case 0x05: {
+										printf("Exposure (us)");
+										break;
+									}
+									case 0x08: {
+										printf("Video sharpening level");
+										break;
+									}
+									case 0x0d: {
+										printf("Gain (db)");
+										break;
+									}
+									case 0x10: {
+										printf("ND");
+										break;
+									}
+									default: {
+										printf("? [%d] ?\n\t", atem.cmdBuf[CAMERACONTROL_PARAMETER_INDEX]);
+										printBuffer(stdout, atem.cmdBuf, atem.cmdLen);
+										break;
+									}
+								}
+								break;
+							}
+							case 0x04: {
+								printf("Display - ");
+								switch (atem.cmdBuf[CAMERACONTROL_PARAMETER_INDEX]) {
+									case 0x04: {
+										printf("Color bars display time (seconds)");
+										break;
+									}
+									default: {
+										printf("? [%d] ?\n\t", atem.cmdBuf[CAMERACONTROL_PARAMETER_INDEX]);
+										printBuffer(stdout, atem.cmdBuf, atem.cmdLen);
+										break;
+									}
+								}
+								break;
+							}
+							case 0x08: {
+								printf("Color Correction - ");
+								switch (atem.cmdBuf[CAMERACONTROL_PARAMETER_INDEX]) {
+									case 0x00: {
+										printf("Lift Adjust");
+										break;
+									}
+									case 0x01: {
+										printf("Gamma Adjust");
+										break;
+									}
+									case 0x02: {
+										printf("Gain Adjust");
+										break;
+									}
+									case 0x03: {
+										printf("Offset Adjust");
+										break;
+									}
+									case 0x04: {
+										printf("Contrast Adjust");
+										break;
+									}
+									case 0x05: {
+										printf("Luma mix");
+										break;
+									}
+									case 0x06: {
+										printf("Color Adjust");
+										break;
+									}
+									default: {
+										printf("? [%d] ?\n\t", atem.cmdBuf[CAMERACONTROL_PARAMETER_INDEX]);
+										printBuffer(stdout, atem.cmdBuf, atem.cmdLen);
+										break;
+									}
+								}
+								break;
+							}
+							case 0x0b: {
+								printf("PTZ Control - ");
+								switch (atem.cmdBuf[CAMERACONTROL_PARAMETER_INDEX]) {
+									case 0x00: {
+										printf("Pan/Tilt Velocity");
+										break;
+									}
+									default: {
+										printf("? [%d] ?\n\t", atem.cmdBuf[CAMERACONTROL_PARAMETER_INDEX]);
+										printBuffer(stdout, atem.cmdBuf, atem.cmdLen);
+										break;
+									}
+								}
+								break;
+							}
+							default: {
+								printf("? [%d] ? - ? [%d] ?\n\t", atem.cmdBuf[CAMERACONTROL_COMMAND_INDEX], atem.cmdBuf[CAMERACONTROL_PARAMETER_INDEX]);
+								printBuffer(stdout, atem.cmdBuf, atem.cmdLen);
+								break;
+							}
+						}
 
-					// Prints category and paramteter
-					switch (atem.cmdBuf[CAMERACONTROL_COMMAND_INDEX]) {
-						case 0x00: {
-							printf("Lens - ");
-							switch (atem.cmdBuf[CAMERACONTROL_PARAMETER_INDEX]) {
-								case 0x00: {
-									printf("Focus");
-									break;
-								}
-								case 0x01: {
-									printf("Instantaneous autofocus");
-									break;
-								}
-								case 0x02: {
-									printf("Aperture (f-stop)");
-									break;
-								}
-								case 0x05: {
-									printf("Instantaneous auto aperture");
-									break;
-								}
-								case 0x09: {
-									printf("Set continuous zoom (speed)");
-									break;
-								}
-								default: {
-									printf("? [%d] ?\n\t", atem.cmdBuf[CAMERACONTROL_PARAMETER_INDEX]);
-									printBuffer(stdout, atem.cmdBuf, atem.cmdLen);
-									break;
-								}
-							}
-							break;
-						}
-						case 0x01: {
-							printf("Video - ");
-							switch (atem.cmdBuf[CAMERACONTROL_PARAMETER_INDEX]) {
-								case 0x01: {
-									printf("Gain");
-									break;
-								}
-								case 0x02: {
-									printf("Manual White Balance");
-									break;
-								}
-								case 0x05: {
-									printf("Exposure (us)");
-									break;
-								}
-								case 0x08: {
-									printf("Video sharpening level");
-									break;
-								}
-								case 0x0d: {
-									printf("Gain (db)");
-									break;
-								}
-								case 0x10: {
-									printf("ND");
-									break;
-								}
-								default: {
-									printf("? [%d] ?\n\t", atem.cmdBuf[CAMERACONTROL_PARAMETER_INDEX]);
-									printBuffer(stdout, atem.cmdBuf, atem.cmdLen);
-									break;
-								}
-							}
-							break;
-						}
-						case 0x04: {
-							printf("Display - ");
-							switch (atem.cmdBuf[CAMERACONTROL_PARAMETER_INDEX]) {
-								case 0x04: {
-									printf("Color bars display time (seconds)");
-									break;
-								}
-								default: {
-									printf("? [%d] ?\n\t", atem.cmdBuf[CAMERACONTROL_PARAMETER_INDEX]);
-									printBuffer(stdout, atem.cmdBuf, atem.cmdLen);
-									break;
-								}
-							}
-							break;
-						}
-						case 0x08: {
-							printf("Color Correction - ");
-							switch (atem.cmdBuf[CAMERACONTROL_PARAMETER_INDEX]) {
-								case 0x00: {
-									printf("Lift Adjust");
-									break;
-								}
-								case 0x01: {
-									printf("Gamma Adjust");
-									break;
-								}
-								case 0x02: {
-									printf("Gain Adjust");
-									break;
-								}
-								case 0x03: {
-									printf("Offset Adjust");
-									break;
-								}
-								case 0x04: {
-									printf("Contrast Adjust");
-									break;
-								}
-								case 0x05: {
-									printf("Luma mix");
-									break;
-								}
-								case 0x06: {
-									printf("Color Adjust");
-									break;
-								}
-								default: {
-									printf("? [%d] ?\n\t", atem.cmdBuf[CAMERACONTROL_PARAMETER_INDEX]);
-									printBuffer(stdout, atem.cmdBuf, atem.cmdLen);
-									break;
-								}
-							}
-							break;
-						}
-						case 0x0b: {
-							printf("PTZ Control - ");
-							switch (atem.cmdBuf[CAMERACONTROL_PARAMETER_INDEX]) {
-								case 0x00: {
-									printf("Pan/Tilt Velocity");
-									break;
-								}
-								default: {
-									printf("? [%d] ?\n\t", atem.cmdBuf[CAMERACONTROL_PARAMETER_INDEX]);
-									printBuffer(stdout, atem.cmdBuf, atem.cmdLen);
-									break;
-								}
-							}
-							break;
-						}
-						default: {
-							printf("? [%d] ? - ? [%d] ?\n\t", atem.cmdBuf[CAMERACONTROL_COMMAND_INDEX], atem.cmdBuf[CAMERACONTROL_PARAMETER_INDEX]);
-							printBuffer(stdout, atem.cmdBuf, atem.cmdLen);
-							break;
-						}
+						printf("\n");
 					}
 
-					printf("\n");
-
 					// Translates ATEMs camera control protocol to the Blackmagic SDI protocol and prints it
-					printf("Translated Camera Control Buffer - ");
 					translateAtemCameraControl(&atem);
-					printBuffer(stdout, atem.cmdBuf, atem.cmdLen);
+					if (flagPrintCameraControlTranslated) {
+						printf("Translated Camera Control Buffer - ");
+						printBuffer(stdout, atem.cmdBuf, atem.cmdLen);
+					}
 
 					//!! tcp relays camera control data to websocket clients
 					if (flagRelay) {
