@@ -2,9 +2,6 @@
 
 ## Required
 
-### test/README.md
-* Create a list of tests to run
-
 ### src/atem.c
 * Add functions/macros for converting atem tally data to sdi tally data (requires length and data pointer)
 
@@ -16,9 +13,11 @@
 
 ## Not required
 
+### test/
+* Try to automate some tests
+
 ### src/atem.c
 * Is there a reason to actually process all packets dumping ATEM state after handshake before sending first acknowledge or send acknowledges for each packet?
-* Find out why length of tally command does not match the number of indexes it has (tested 3 switchers)
 * Add function/macro to validate the protocol version is tested
 
 ### src/atem.h
