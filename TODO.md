@@ -51,12 +51,7 @@
 * Test if ND works, requires camera other than URSA
 * Figure out why message grouping does not work. Is it just an SDI feature but not documented as such?
 * Test if BMPCC4K updates with `0x01 0x0d` at all and if it does, does it update the same as URSA Broadcast with `0x01 0x01`?
-
-
-
-## Untested
-* PTZ control is tested that it sends the ptz data from the switcher and parsed correctly by my code.
-Not tested sending it to the camera.
+* PTZ control sending to the camera.
 
 
 
