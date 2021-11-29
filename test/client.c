@@ -565,23 +565,23 @@ int main(int argc, char** argv) {
 								printf("Lens - ");
 								switch (atem.cmdBuf[CAMERACONTROL_PARAMETER_INDEX]) {
 									case 0x00: {
-										printf("Focus");
+										printf("Focus\n");
 										break;
 									}
 									case 0x01: {
-										printf("Instantaneous autofocus");
+										printf("Instantaneous autofocus\n");
 										break;
 									}
 									case 0x02: {
-										printf("Aperture (f-stop)");
+										printf("Aperture (f-stop)\n");
 										break;
 									}
 									case 0x05: {
-										printf("Instantaneous auto aperture");
+										printf("Instantaneous auto aperture\n");
 										break;
 									}
 									case 0x09: {
-										printf("Set continuous zoom (speed)");
+										printf("Set continuous zoom (speed)\n");
 										break;
 									}
 									default: {
@@ -596,27 +596,27 @@ int main(int argc, char** argv) {
 								printf("Video - ");
 								switch (atem.cmdBuf[CAMERACONTROL_PARAMETER_INDEX]) {
 									case 0x01: {
-										printf("Gain");
+										printf("Gain\n");
 										break;
 									}
 									case 0x02: {
-										printf("Manual White Balance");
+										printf("Manual White Balance\n");
 										break;
 									}
 									case 0x05: {
-										printf("Exposure (us)");
+										printf("Exposure (us)\n");
 										break;
 									}
 									case 0x08: {
-										printf("Video sharpening level");
+										printf("Video sharpening level\n");
 										break;
 									}
 									case 0x0d: {
-										printf("Gain (db)");
+										printf("Gain (db)\n");
 										break;
 									}
 									case 0x10: {
-										printf("ND");
+										printf("ND\n");
 										break;
 									}
 									default: {
@@ -631,7 +631,7 @@ int main(int argc, char** argv) {
 								printf("Display - ");
 								switch (atem.cmdBuf[CAMERACONTROL_PARAMETER_INDEX]) {
 									case 0x04: {
-										printf("Color bars display time (seconds)");
+										printf("Color bars display time (seconds)\n");
 										break;
 									}
 									default: {
@@ -646,31 +646,31 @@ int main(int argc, char** argv) {
 								printf("Color Correction - ");
 								switch (atem.cmdBuf[CAMERACONTROL_PARAMETER_INDEX]) {
 									case 0x00: {
-										printf("Lift Adjust");
+										printf("Lift Adjust\n");
 										break;
 									}
 									case 0x01: {
-										printf("Gamma Adjust");
+										printf("Gamma Adjust\n");
 										break;
 									}
 									case 0x02: {
-										printf("Gain Adjust");
+										printf("Gain Adjust\n");
 										break;
 									}
 									case 0x03: {
-										printf("Offset Adjust");
+										printf("Offset Adjust\n");
 										break;
 									}
 									case 0x04: {
-										printf("Contrast Adjust");
+										printf("Contrast Adjust\n");
 										break;
 									}
 									case 0x05: {
-										printf("Luma mix");
+										printf("Luma mix\n");
 										break;
 									}
 									case 0x06: {
-										printf("Color Adjust");
+										printf("Color Adjust\n");
 										break;
 									}
 									default: {
@@ -685,7 +685,7 @@ int main(int argc, char** argv) {
 								printf("PTZ Control - ");
 								switch (atem.cmdBuf[CAMERACONTROL_PARAMETER_INDEX]) {
 									case 0x00: {
-										printf("Pan/Tilt Velocity");
+										printf("Pan/Tilt Velocity\n");
 										break;
 									}
 									default: {
@@ -702,8 +702,6 @@ int main(int argc, char** argv) {
 								break;
 							}
 						}
-
-						printf("\n");
 					}
 
 					// Prints camera control buffer before translation if flag is set
