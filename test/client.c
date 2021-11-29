@@ -86,8 +86,10 @@ int main(int argc, char** argv) {
 --printCommands: Prints all commands\n\t\
 --printProtocolVersion: Prints the protocol version received from the switcher\n\t\
 --printTally: Prints the tally state for cameraId when it is updated\n\t\
+--printTallySource: Prints the tally buffer before it gets translated\n\t\
 --printTallyTranslated: Prints the translated tally packet when tally is being updated\n\t\
 --printCameraControl: Prints camera control data received for cameraId\n\t\
+--printCameraControlSource: Prints the camera control buffer before it gets translated\n\t\
 --printCameraControlTranslated: Prints the translated camera control data when received for any camera\n\t\
 --help: Prints usage text\n\t\
 --tcpRelay = Relays data to TCP server on localhost\n");
@@ -115,8 +117,10 @@ int main(int argc, char** argv) {
 	bool flagPrintCommands = 0;
 	bool flagPrintProtocolVersion = 0;
 	bool flagPrintTally = 0;
+	bool flagPrintTallySource = 0;
 	bool flagPrintTallyTranslated = 0;
 	bool flagPrintCameraControl = 0;
+	bool flagPrintCameraControlSource = 0;
 	bool flagPrintCameraControlTranslated = 0;
 	bool flagRelay = 0;
 
@@ -178,11 +182,17 @@ int main(int argc, char** argv) {
 		else if (!strcmp(argv[i], "--printTally")) {
 			flagPrintTally = 1;
 		}
+		else if (!strcmp(argv[i], "--printTallySource")) {
+			flagPrintTallySource = 1;
+		}
 		else if (!strcmp(argv[i], "--printTallyTranslated")) {
 			flagPrintTallyTranslated = 1;
 		}
 		else if (!strcmp(argv[i], "--printCameraControl")) {
 			flagPrintCameraControl = 1;
+		}
+		else if (!strcmp(argv[i], "--printCameraControlSource")) {
+			flagPrintCameraControlSource = 1;
 		}
 		else if (!strcmp(argv[i], "--printCameraControlTranslated")) {
 			flagPrintCameraControlTranslated = 1;
@@ -495,6 +505,12 @@ int main(int argc, char** argv) {
 						}
 					}
 
+					// Prints tally buffer before translation if flag is set
+					if (flagPrintTallySource) {
+						printf("Tally Source Buffer - ");
+						printBuffer(stdout, atem.cmdBuf, atem.cmdLen);
+					}
+
 					// Translates ATEMs tally protocol to Blackmagics Embedded Tally Protocol
 					translateAtemTally(&atem);
 					if (flagPrintTallyTranslated) {
@@ -688,6 +704,12 @@ int main(int argc, char** argv) {
 						}
 
 						printf("\n");
+					}
+
+					// Prints camera control buffer before translation if flag is set
+					if (flagPrintCameraControlSource) {
+						printf("Camera Control Source Buffer - ");
+						printBuffer(stdout, atem.cmdBuf, atem.cmdLen);
 					}
 
 					// Translates ATEMs camera control protocol to the Blackmagic SDI protocol and prints it
