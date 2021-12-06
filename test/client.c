@@ -482,7 +482,7 @@ int main(int argc, char** argv) {
 					// }
 
 					// Ensures tally data is structured as expected
-					if ((atem.cmdLen / 4) != ((atem.cmdBuf[0] << 8 | atem.cmdBuf[1]) + 10) / 4) {
+					if ((atem.cmdLen / 4) != ((atem.cmdBuf[0] << 8 | atem.cmdBuf[1]) + 13) / 4) {
 						printTime(stdout);
 						printf("Tally command did not match expected length:\n\tcmdLen: %d\n\tcmdBuf: ", atem.cmdLen);
 						printBuffer(stdout, atem.cmdBuf, atem.cmdLen);
