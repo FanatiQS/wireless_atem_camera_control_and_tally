@@ -87,6 +87,21 @@
 	* Camera ID
 * A good way to know if it should update serial data or run normally is to identify if the sdi shield is available. If not, read from serial. If it is, run normally. That way, just connect a usb cable to the microcontroller to update data and connect power to sdi shield to handle cc data.
 
+### Configuration
+* Maybe build it like this:
+1. Device starts without
+2. User presses a button on the device to start AP
+3. User connects other device to that network and is informed to press the button again
+4. User can configure device
+* Configuration can both be done over existing network or over AP
+* Pressing button should flash a light indicating AP is active
+* If AP is active and no one connects, pressing the button again will shut down AP
+* If no one connects over AP for n seconds, the AP shuts down
+* After configuration is done, the AP shuts down
+* The problem with configuring over existing network is that the IP is not known unless set to static ip.
+This makes it so you need to know the IP to configure the device
+* Configure over AP could use captive portals
+
 
 
 ## Other platforms
