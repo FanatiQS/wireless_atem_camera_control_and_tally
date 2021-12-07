@@ -434,9 +434,7 @@ int main(int argc, char** argv) {
 					printf("Connection is closing, exiting\n");
 					exit(EXIT_SUCCESS);
 				}
-				else {
-					printf("Connection is closing, restarting\n");
-				}
+				printf("Connection is closing, restarting\n");
 				break;
 			}
 			// Prints message for closed opcode
