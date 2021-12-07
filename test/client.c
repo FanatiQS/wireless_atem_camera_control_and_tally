@@ -89,6 +89,7 @@ int main(int argc, char** argv) {
 --printCameraControl: Prints camera control data received for cameraId\n\t\
 --printCameraControlSource: Prints the camera control buffer before it gets translated\n\t\
 --printCameraControlTranslated: Prints the translated camera control data when received for any camera\n\t\
+--customCountdown <number>: Sets the number of packets to wait until running some custom code\n\t\
 --help: Prints usage text\n\t\
 --tcpRelay = Relays data to TCP server on localhost\n");
 		exit(EXIT_FAILURE);
@@ -121,6 +122,7 @@ int main(int argc, char** argv) {
 	bool flagPrintCameraControlSource = 0;
 	bool flagPrintCameraControlTranslated = 0;
 	bool flagRelay = 0;
+	int customCountdown = -1;
 
 	// Parses command line arguments
 	for (int i = 2; i < argc; i++) {
@@ -198,6 +200,9 @@ int main(int argc, char** argv) {
 		else if (!strcmp(argv[i], "--tcpRelay")) {
 			flagRelay = 1;
 		}
+		else if (!strcmp(argv[i], "--customCountdown")) {
+			customCountdown = atoi(argv[++i]);
+		}
 		else {
 			fprintf(stderr, "Invalid argument [ %s ]\n", argv[i]);
 			exit(EXIT_FAILURE);
@@ -270,6 +275,9 @@ int main(int argc, char** argv) {
 
 	// Processes received packets until an error occurs
 	while (1) {
+		// Decrement customCountdown until it reaches 0
+		if (customCountdown > -1) customCountdown--;
+
 		// Only send data if last receive was not dropped
 		if (atem.writeLen != 0) {
 			// Sends data to server with a chance for it to be dropped
