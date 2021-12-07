@@ -34,7 +34,7 @@ A list of all confirmed camera models and protocol version can be found in the m
 * Test getting closing connection state (0x04)
 	1. Launch the test client with the flags: --packetDropChanceSend 100 --packetDropStartSend 10
 	2. Wait for client to quit (takes a few seconds)
-	3. Test client should quit with the message "Connection wanted to restart, exiting"
+	3. Test client should quit with the message "Connection is closing, exiting"
 
 * Test tally states
 	1. Open ATEM Software Control
