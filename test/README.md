@@ -19,6 +19,10 @@ A list of all confirmed camera models and protocol version can be found in the m
 	4. Do an auto transition between cam1 and cam2. If connection to the server is lost, it is okay to restart the test client as long as it does not happen over and over again.
 	5. Make sure no numbers are skipped or are out of order. Multiple of the same is okay.
 
+* Test bad network simulator 2
+	1. Launch the test client with the flags: --packetTimeoutAt 10 --autoReconnect --printRecv
+	2. After a few packets are sent, the connection is going to restart but still have the old connectin alive. After a few seconds of panicing, the test client should restart again and this time be stabile.
+
 * Test timing out restarts
 	1. Launch the test client with the flags: --packetTimeoutAt 0 --autoReconnect --printProtocolVersion
 	2. The client should print "Connection timed out Restarting connection" and then print the protocol version
