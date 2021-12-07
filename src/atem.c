@@ -62,6 +62,7 @@ int8_t parseAtemData(struct atem_t *atem) {
 	}
 	// Do nothing on non SYN or ACK request packets
 	else if (!(atem->readBuf[0] & ATEM_FLAG_SYN)) {
+		atem->writeLen = 0;
 		return -1;
 	}
 	// Sends SYNACK without processing payload to complete handshake
