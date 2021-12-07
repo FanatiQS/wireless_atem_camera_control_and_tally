@@ -27,11 +27,25 @@ uint8_t synBuf[ATEM_LEN_SYN] = { ATEM_FLAG_SYN, ATEM_LEN_SYN, 0x74, 0x40,
 uint8_t ackBuf[ATEM_LEN_ACK] = { ATEM_FLAG_ACK, ATEM_LEN_ACK, 0x00, 0x00,
 	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
 
+// Buffer to modify and send to close connection
+uint8_t closeBuf[ATEM_LEN_SYN] = { ATEM_FLAG_SYN, ATEM_LEN_SYN, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	0x04, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
+
 // Resets write buffer to SYN packet for starting handshake
 void resetAtemState(struct atem_t *atem) {
 	synBuf[0] = ATEM_FLAG_SYN | ((atem->writeBuf == synBuf) * ATEM_FLAG_RETRANSMIT);
 	atem->writeBuf = synBuf;
 	atem->writeLen = ATEM_LEN_SYN;
+}
+
+// Sends a close packet to the switcher
+void closeAtemConnection(struct atem_t *atem) {
+	closeBuf[ATEM_SESSION_INDEX] = atem->readBuf[ATEM_SESSION_INDEX];
+	closeBuf[ATEM_SESSION_INDEX + 1] = atem->readBuf[ATEM_SESSION_INDEX + 1];
+	atem->writeBuf = closeBuf;
+	atem->writeLen = ATEM_LEN_SYN;
+	//!! it is not guaranteed that this packet is received and it is not resent
 }
 
 // Parses an ATEM UDP packet in the atem.readBuf

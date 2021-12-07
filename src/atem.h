@@ -37,6 +37,7 @@ struct atem_t {
 
 // Function prototypes
 void resetAtemState(struct atem_t *atem);
+void closeAtemConnection(struct atem_t *atem);
 int8_t parseAtemData(struct atem_t *atem);
 uint32_t nextAtemCommand(struct atem_t *atem);
 int8_t parseAtemTally(struct atem_t *atem, uint16_t index, uint8_t *tally);
