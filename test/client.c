@@ -15,9 +15,7 @@
 #define PAD_LEN_MAX 5
 #define FLAG_ATEM_REQUEST_RESEND 0x40
 #define FLAG_ATEM_SYN 0x10
-#define OPCODE_ATEM_REJECT 0x03
 #define OPCODE_ATEM_CLOSING 0x04
-#define OPCODE_ATEM_CLOSED 0x05
 #define OPCODE_ATEM_INDEX 12
 #define SYN_LEN 20
 #define CAMERACONTROL_DESTINATION_INDEX 0
@@ -401,26 +399,27 @@ int main(int argc, char** argv) {
 
 		// Processes the received packet
 		switch (parseAtemData(&atem)) {
-			// Returns 1 for non 0x02 SYN packet opcode
-			case 1: {
-				// Prints message for reject opcode
-				if (atem.readBuf[OPCODE_ATEM_INDEX] == OPCODE_ATEM_REJECT) {
-					printTime(stdout);
-					printf("Connection rejected\n");
-				}
-				// Prints message for closed opcode
-				else if (atem.readBuf[OPCODE_ATEM_INDEX] == OPCODE_ATEM_CLOSED) {
-					printTime(stdout);
-					printf("Connection successfully closed, initiated by client\n");
-				}
-				// Throws on unknown opcode
-				else {
-					printTime(stderr);
-					fprintf(stderr, "Unexpected connection status\n");
-				}
+			// Packet has 0x02 SYN packet opcode
+			case 0: break;
+			// Prints message for reject opcode
+			case ATEM_CONNECTION_REJECTED: {
+				printTime(stdout);
+				printf("Connection rejected\n");
 				exit(EXIT_SUCCESS);
 			}
-			// Returns -1 for non ACKREQUEST or SYNACK packet flags
+			// Prints message for closed opcode
+			case ATEM_CONNECTION_CLOSED: {
+				printTime(stdout);
+				printf("Connection successfully closed, initiated by client\n");
+				exit(EXIT_SUCCESS);
+			}
+			// Throws on unknown opcode
+			default: {
+				printTime(stderr);
+				fprintf(stderr, "Unexpected connection status %x\n", atem.readBuf[OPCODE_ATEM_INDEX]);
+				exit(EXIT_SUCCESS);
+			}
+			// Prints and exits for non ACKREQUEST or SYNACK packet flags
 			case -1: {
 				printTime(stderr);
 				fprintf(stderr, "Received packet flags without 0x08 or 0x10\n");

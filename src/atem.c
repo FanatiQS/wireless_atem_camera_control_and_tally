@@ -12,7 +12,6 @@
 
 // Atem protocol handshake states
 #define ATEM_CONNECTION_SUCCESS 0x02
-#define ATEM_CONNECTION_REJECTED 0x03
 #define ATEM_CONNECTION_CLOSING 0x04
 
 // Atem protocol lengths
@@ -37,7 +36,7 @@ void resetAtemState(struct atem_t *atem) {
 }
 
 // Parses an ATEM UDP packet in the atem.readBuf
-// Returns: 0 = normal, 1 = rejected, -1 = error
+// Returns: 0 = normal, 1 = connecting client, 3 = rejected, 5 = closed, -1 = error
 int8_t parseAtemData(struct atem_t *atem) {
 	// Sets length of read buffer
 	atem->readLen = (atem->readBuf[0] & 0x07) << 8 | atem->readBuf[1];
@@ -73,10 +72,12 @@ int8_t parseAtemData(struct atem_t *atem) {
 		atem->lastRemoteId = 0x00;
 		atem->cmdIndex = ATEM_LEN_SYN;
 	}
-	// Reset opcode returns 1 and reject opcode relies on timeout to restart connection
+	// Restarts connection on reset, closing or closed opcodes
 	else {
 		atem->cmdIndex = ATEM_LEN_SYN;
-		if (atem->readBuf[ATEM_LEN_HEADER] != ATEM_CONNECTION_CLOSING) return 1;
+		if (atem->readBuf[ATEM_LEN_HEADER] != ATEM_CONNECTION_CLOSING) {
+			return atem->readBuf[ATEM_LEN_HEADER];
+		}
 	}
 
 	// Copies over session id from incomming packet to ACK packet

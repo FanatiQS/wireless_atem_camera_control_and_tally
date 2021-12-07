@@ -10,6 +10,10 @@
 #define ATEM_CMDNAME_TALLY ('T' << 24) | ('l' << 16) | ('I' << 8) | 'n'
 #define ATEM_CMDNAME_VERSION ('_' << 24) | ('v' << 16) | ('e' << 8) | 'r'
 
+// ATEM opcodes available as return value from parseAtemData
+#define ATEM_CONNECTION_REJECTED 0x03
+#define ATEM_CONNECTION_CLOSED 0x05
+
 // Tally flags
 #define ATEM_TALLY_PGM 0x01
 #define ATEM_TALLY_PVW 0x02
