@@ -12,7 +12,6 @@
 
 // Atem protocol handshake states
 #define ATEM_CONNECTION_SUCCESS 0x02
-#define ATEM_CONNECTION_CLOSING 0x04
 
 // Atem protocol lengths
 #define ATEM_LEN_HEADER 12

@@ -12,6 +12,7 @@
 
 // ATEM opcodes available as return value from parseAtemData
 #define ATEM_CONNECTION_REJECTED 0x03
+#define ATEM_CONNECTION_CLOSING 0x04
 #define ATEM_CONNECTION_CLOSED 0x05
 
 // Tally flags
