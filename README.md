@@ -22,9 +22,9 @@ If a camera model is not tested, it does not indicate it does not work, just tha
 | Pocket Cinema Camera 4k | Untested |
 | Micro Studio Camera | Untested |
 
-| Protocol version | Status  |
-| ---------------- | ------- |
-| 2.30             | Testing |
+| Protocol version | ATEM firmware version | Status  |
+| ---------------- | --------------------- | ------- |
+| 2.30             | 8.0 - 8.6             | Testing |
 
 ## Requirements
 ##### Tools
