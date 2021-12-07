@@ -19,6 +19,12 @@
 #define ATEM_LEN_SYN 20
 #define ATEM_LEN_ACK 12
 
+// Atem and camera control protocol lengths and offsets
+#define CC_HEADER_LEN 4
+#define CC_CMD_HEADER_LEN 4
+#define CC_HEADER_OFFSET -3
+#define CC_ATEM_DATA_OFFSET 16
+
 // Buffer to send to establish connection
 uint8_t synBuf[ATEM_LEN_SYN] = { ATEM_FLAG_SYN, ATEM_LEN_SYN, 0x74, 0x40,
 	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -154,29 +160,28 @@ void translateAtemCameraControl(struct atem_t *atem) {
 	uint8_t len = atem->cmdBuf[5] + atem->cmdBuf[7] * 2 + atem->cmdBuf[9] * 4;
 
 	// Header
-	atem->cmdBuf[-3] = atem->cmdBuf[0]; // Destination
-	atem->cmdBuf[-2] = 4 + len; // Length
-	atem->cmdBuf[-1] = 0x00; // Command
-	atem->cmdBuf[0] = 0x00; // Reserved
+	atem->cmdBuf[CC_HEADER_OFFSET + 0] = atem->cmdBuf[0]; // Destination
+	atem->cmdBuf[CC_HEADER_OFFSET + 1] = CC_HEADER_LEN + len; // Length
+	atem->cmdBuf[CC_HEADER_OFFSET + 2] = 0x00; // Command
+	atem->cmdBuf[CC_HEADER_OFFSET + 3] = 0x00; // Reserved
 
 	// Command
 	// Retains byte 1 - 4 to indicate: category, parameter, data type and operation
 
 	// Data
-	uint8_t step = (atem->cmdBuf[5] > 0) + (atem->cmdBuf[7] > 0) * 2 + (atem->cmdBuf[9] > 0) * 4;
-	uint8_t i = 0;
-	while (i < len) {
-		for (uint8_t j = i; i < j + step; i++) {
-			atem->cmdBuf[step - i + j * 2 - 1 + 5] = atem->cmdBuf[i + 16];
+	uint8_t typeSize = (atem->cmdBuf[5] > 0) + (atem->cmdBuf[7] > 0) * 2 + (atem->cmdBuf[9] > 0) * 4;
+	for (uint8_t i = 0; i < len;) {
+		for (uint8_t offset = i; i < offset + typeSize; i++) {
+			atem->cmdBuf[CC_HEADER_LEN + CC_CMD_HEADER_LEN + CC_HEADER_OFFSET + offset + typeSize - 1 + offset - i] = atem->cmdBuf[i + CC_ATEM_DATA_OFFSET];
 		}
 	}
 
-	// Updates translated pointer and length
-	atem->cmdLen = 8 + (len + 3) / 4 * 4;
-	atem->cmdBuf -= 3;
+	// Updates translated pointer and length padded to 32 bit boundary
+	atem->cmdLen = CC_HEADER_LEN + CC_CMD_HEADER_LEN + (len + 3) / 4 * 4;
+	atem->cmdBuf += CC_HEADER_OFFSET;
 
 	// Clears padding bytes
-	for (uint8_t i = 8 + len; i < atem->cmdLen; i++) {
+	for (uint8_t i = CC_HEADER_LEN + CC_CMD_HEADER_LEN + len; i < atem->cmdLen; i++) {
 		atem->cmdBuf[i] = 0x00;
 	}
 }
