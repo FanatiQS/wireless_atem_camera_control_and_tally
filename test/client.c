@@ -75,6 +75,7 @@ int main(int argc, char** argv) {
 --packetDropStartSend <number>: The number of packets to allow to send before start dropping packets\n\t\
 --packetDropStartRecv <number>: The number of packets to allow to receive before start dropping packets\n\t\
 --packetTimeoutAt <number>: The packet in order that should be simulated to be timed out\n\t\
+--packetResetDropAtTimeout: Resets packet dropping after a connection times out and restarts\n\t\
 --printSeparate: Prints a double new line between each cycle of the infinite loop\n\t\
 --printSend: Prints sent data\n\t\
 --printDroppedSend: Prints dropped send data\n\t\
@@ -106,6 +107,7 @@ int main(int argc, char** argv) {
 	uint32_t packetDropStartRecv = 0;
 	uint32_t packetDropChanceSeed = 0;
 	int32_t packetTimeoutAt = -1;
+	bool packetResetDropAtTimeout = 0;
 	bool flagAutoReconnect = 0;
 	bool flagPrintSeparate = 0;
 	bool flagPrintSend = 0;
@@ -151,6 +153,9 @@ int main(int argc, char** argv) {
 		}
 		else if (!strcmp(argv[i], "--packetTimeoutAt")) {
 			packetTimeoutAt = atoi(argv[++i]);
+		}
+		else if (!strcmp(argv[i], "--packetResetDropAtTimeout")) {
+			packetResetDropAtTimeout = 1;
 		}
 		else if (!strcmp(argv[i], "--autoReconnect")) {
 			flagAutoReconnect = 1;
@@ -344,6 +349,12 @@ int main(int argc, char** argv) {
 			}
 			resetAtemState(&atem);
 			printf("Restarting connection\n");
+
+			// Resets packet dropping after timeout if flag is set
+			if (packetResetDropAtTimeout) {
+				packetDropChanceRecv = 0;
+				packetDropChanceSend = 0;
+			}
 			continue;
 		}
 
