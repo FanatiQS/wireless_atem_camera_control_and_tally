@@ -415,10 +415,24 @@ int main(int argc, char** argv) {
 				printf("Connection rejected\n");
 				if (!flagAutoReconnect) exit(EXIT_SUCCESS);
 				atem.writeLen = 0;
-				continue;
+				break;
+			}
+			// Prints message if server is closing the connection
+			case ATEM_CONNECTIN_CLOSING: {
+				printTime(stdout);
+				if (!flagAutoReconnect) {
+					printf("Connection is closing, exiting\n");
+					exit(EXIT_SUCCESS);
+				}
+				else {
+					printf("Connection is closing, restarting\n");
+				}
+				atem.writeLen = 0;
+				break;
 			}
 			// Prints message for closed opcode
 			case ATEM_CONNECTION_CLOSED: {
+				// This case will only happen if a SYN packet with opcode 4 is sent and that is not something the API can do by itself unless a closeAtemConnection function is added
 				printTime(stdout);
 				printf("Connection successfully closed, initiated by client\n");
 				exit(EXIT_SUCCESS);
@@ -456,17 +470,6 @@ int main(int argc, char** argv) {
 				padPrint(atem.readLen);
 				printBuffer(stderr, atem.readBuf, atem.readLen);
 				exit(EXIT_FAILURE);
-			}
-			// Logs extra message if server is closing the connection
-			else if (atem.readBuf[OPCODE_ATEM_INDEX] == OPCODE_ATEM_CLOSING) {
-				printTime(stdout);
-				if (!flagAutoReconnect) {
-					printf("Connection is closing, exiting\n");
-					exit(EXIT_SUCCESS);
-				}
-				else {
-					printf("Connection is closing, restarting\n");
-				}
 			}
 		}
 
