@@ -24,7 +24,7 @@ If a camera model is not tested, it does not indicate it does not work, just tha
 
 | Protocol version | ATEM firmware version | Status  |
 | ---------------- | --------------------- | ------- |
-| 2.30             | 8.0 - 8.6             | Testing |
+| 2.30             | 8.1.1 - 8.6.3         | Testing |
 
 ## Requirements
 ##### Tools
