@@ -413,7 +413,9 @@ int main(int argc, char** argv) {
 			case ATEM_CONNECTION_REJECTED: {
 				printTime(stdout);
 				printf("Connection rejected\n");
-				exit(EXIT_SUCCESS);
+				if (!flagAutoReconnect) exit(EXIT_SUCCESS);
+				atem.writeLen = 0;
+				continue;
 			}
 			// Prints message for closed opcode
 			case ATEM_CONNECTION_CLOSED: {
