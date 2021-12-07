@@ -1,21 +1,16 @@
 ## Summary
-Wireless tally and camera control for a Blackmagic camera connected to an ATEM switcher
+Wired or wireless tally and camera control for a Blackmagic cameras connected to an ATEM switcher over IP.
 
 ## Description
-Blackmagics URSA cameras are great cameras to use with from their ATEM switchers.
-Just connect two BNC cables between the camera and switcher to not only get video from the camera to the switcher, but also return video to see what is currently live on the switcher from the camera.
-That is great feature, but what is arguably even more important in that SDI signal is the camera control.
-Connect the ATEM Software Control or a hardware camera control panel and change settings on the camera from the switcher.
-This is an important feature to be able to match multiple cameras with each other.
+Blackmagics URSA cameras are great cameras to use with their ATEM switchers.
+Just connecting two BNC cables between the camera and switcher to not only get video to and from the camera, but also getting tally and camera control over the SDI return signal is a fantastic feature for multicamera productions.
 
-The problem with transmitting the camera control data with the SDI signal though is when a camera needs to go wireless.
-The reason is because most wireless video transmitters strip out the part of the signal where the camera control resides unless it is a really expensive transmitter.
-Using only a basic wireless video transmitter to send the camera feed to the switcher works, but all camera control from the control room is lost and either relies on that cameras operator to match the cameras or that camera is not matched to the others.
+The problem with transmitting tally and camera control data over the SDI signal though is when a camera needs to go wireless.
+The reason is because most wireless video transmitters strip out the part of the signal where the camera control resides.
+Using a basic wireless video transmitter to send the camera feed to the switcher and skipping the return video feed altogether works, but all camera control Data from the switcher is lost and either relies on that cameras operator to set all the settings to match the other cameras or that camera is not going to match the others.
 
 That is where this project comes in to play.
-It connects directly to the ATEM switcher over Wi-Fi, reads the tally and camera control data, then sends that to the camera over SDI using the Blackmagic 3G-SDI Shield for Arduino.
-<!-- For a more inexpensive solution, it is also possible to send the camera control data to some Blackmagic cameras over Bluetooth.
-There might be apps created in the future to display tally and send camera control data over bluetooth. -->
+It connects directly to the ATEM switcher over IP, the same way the ATEM control software connects. By reading the tally and camera control data and sending that to the camera, either over SDI using the Blackmagic 3G-SDI Shield for Arduino or over bluetooth, The camera can get these features wirelessly using Wi-Fi.
 
 ## Support
 Camera models and protocol versions that have been tested to work.
@@ -39,7 +34,7 @@ If a camera model is not tested, it does not indicate it does not work, just tha
 * ESP8266
 * Blackmagic 3G-SDI Shield for Arduino
 * Some wires
-* 2x short BNC cables
+* Short BNC cable
 * 4-pin XLR to barrel connector (or other power solution)
 * Connector for tally (like RJ11 or 3.5mm TRS)
 * Some kind of housing
