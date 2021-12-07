@@ -457,15 +457,15 @@ int main(int argc, char** argv) {
 				printBuffer(stderr, atem.readBuf, atem.readLen);
 				exit(EXIT_FAILURE);
 			}
-			// Logs extra message if connection is restarted
+			// Logs extra message if server is closing the connection
 			else if (atem.readBuf[OPCODE_ATEM_INDEX] == OPCODE_ATEM_CLOSING) {
 				printTime(stdout);
 				if (!flagAutoReconnect) {
-					printf("Connection wanted to restart, exiting\n");
+					printf("Connection is closing, exiting\n");
 					exit(EXIT_SUCCESS);
 				}
 				else {
-					printf("Connection restarted\n");
+					printf("Connection is closing, restarting\n");
 				}
 			}
 		}
