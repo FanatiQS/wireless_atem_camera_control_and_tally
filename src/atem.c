@@ -74,7 +74,9 @@ int8_t parseAtemData(struct atem_t *atem) {
 	// Restarts connection on reset, closing or closed opcodes
 	else {
 		atem->cmdIndex = ATEM_LEN_SYN;
-		atem->writeLen = 0;
+		synBuf[0] = ATEM_FLAG_SYN;
+		atem->writeBuf = synBuf;
+		atem->writeLen = ATEM_LEN_SYN;
 		return atem->readBuf[ATEM_LEN_HEADER];
 	}
 

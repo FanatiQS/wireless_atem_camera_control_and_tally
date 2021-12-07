@@ -414,11 +414,11 @@ int main(int argc, char** argv) {
 				printTime(stdout);
 				printf("Connection rejected\n");
 				if (!flagAutoReconnect) exit(EXIT_SUCCESS);
-				atem.writeLen = 0;
+				usleep(1000000);
 				break;
 			}
 			// Prints message if server is closing the connection
-			case ATEM_CONNECTIN_CLOSING: {
+			case ATEM_CONNECTION_CLOSING: {
 				printTime(stdout);
 				if (!flagAutoReconnect) {
 					printf("Connection is closing, exiting\n");
@@ -427,7 +427,6 @@ int main(int argc, char** argv) {
 				else {
 					printf("Connection is closing, restarting\n");
 				}
-				atem.writeLen = 0;
 				break;
 			}
 			// Prints message for closed opcode
