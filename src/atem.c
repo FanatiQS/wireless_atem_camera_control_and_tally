@@ -141,7 +141,7 @@ int8_t parseAtemTally(struct atem_t *atem, uint16_t index, uint8_t *tally) {
 // Translates tally data from ATEMs protocol to Blackmagic Embedded Tally Control Protocol
 void translateAtemTally(struct atem_t *atem) {
 	// Gets the number of items in the tally index array
-	const uint16_t len = atem->cmdBuf[0] >> 8 | atem->cmdBuf[1];
+	const uint16_t len = atem->cmdBuf[0] << 8 | atem->cmdBuf[1];
 
 	// Remaps indexes to Blackmagic Embedded Tally Control Protocol
 	for (uint16_t i = 2; i <= len; i += 2) {
