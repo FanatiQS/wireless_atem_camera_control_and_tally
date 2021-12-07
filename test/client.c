@@ -71,12 +71,12 @@ int main(int argc, char** argv) {
 		printf("Flags:\n\t\
 --cameraId <number>: The camera id to filter out tally and/or camera control data for\n\t\
 --autoReconnect: Automatically reconnects if timed out or requested\n\t\
---packetDropChanceSend: <chance> The percentage for a sending packet to be dropped\n\t\
---packetDropChanceRecv: <chance> The percentage for a receiving packet to be dropped\n\t\
---packetDropChanceSeed: <seed> The random seed to use, defaults to random number\n\t\
---packetDropStartSend: <number> The number of packets to allow to send before start dropping packets\n\t\
---packetDropStartRecv: <number> The number of packets to allow to receive before start dropping packets\n\t\
---packetTimeoutAt: <number> The packet in order that should be simulated to be timed out\n\t\
+--packetDropChanceSend <chance>: The percentage for a sending packet to be dropped\n\t\
+--packetDropChanceRecv <chance>: The percentage for a receiving packet to be dropped\n\t\
+--packetDropChanceSeed <seed>: The random seed to use, defaults to random number\n\t\
+--packetDropStartSend <number>: The number of packets to allow to send before start dropping packets\n\t\
+--packetDropStartRecv <number>: The number of packets to allow to receive before start dropping packets\n\t\
+--packetTimeoutAt <number>: The packet in order that should be simulated to be timed out\n\t\
 --printSeparate: Prints a double new line between each cycle of the infinite loop\n\t\
 --printSend: Prints sent data\n\t\
 --printDroppedSend: Prints dropped send data\n\t\
