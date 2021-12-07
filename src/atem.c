@@ -9,6 +9,7 @@
 // Atem protocol indexes
 #define ATEM_SESSION_INDEX 2
 #define ATEM_ACK_INDEX 4
+#define ATEM_REMOTEID_INDEX 10
 
 // Atem protocol handshake states
 #define ATEM_CONNECTION_SUCCESS 0x02
@@ -57,12 +58,12 @@ int8_t parseAtemData(struct atem_t *atem) {
 	// Sends ACK requested by this packet
 	if (atem->readBuf[0] & ATEM_FLAG_ACKREQUEST) {
 		// Gets remote id of packet
-		const uint16_t remoteId = atem->readBuf[10] << 8 | atem->readBuf[11];
+		const uint16_t remoteId = atem->readBuf[ATEM_REMOTEID_INDEX] << 8 | atem->readBuf[ATEM_REMOTEID_INDEX + 1];
 
 		// Acknowledge this packet and set it as the last received remote id if next in line
 		if (remoteId == (atem->lastRemoteId + 1) % 0x8000) {
-			ackBuf[ATEM_ACK_INDEX] = atem->readBuf[10];
-			ackBuf[ATEM_ACK_INDEX + 1] = atem->readBuf[11];
+			ackBuf[ATEM_ACK_INDEX] = atem->readBuf[ATEM_REMOTEID_INDEX];
+			ackBuf[ATEM_ACK_INDEX + 1] = atem->readBuf[ATEM_REMOTEID_INDEX + 1];
 			atem->lastRemoteId = remoteId;
 		}
 		// Sets response acknowledge id to last acknowledged packet id if it is not the next in line
