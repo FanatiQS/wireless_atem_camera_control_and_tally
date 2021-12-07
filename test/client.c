@@ -414,7 +414,6 @@ int main(int argc, char** argv) {
 				printTime(stdout);
 				printf("Connection rejected\n");
 				if (!flagAutoReconnect) exit(EXIT_SUCCESS);
-				usleep(1000000);
 				break;
 			}
 			// Prints message if server is closing the connection
@@ -435,6 +434,7 @@ int main(int argc, char** argv) {
 				printTime(stdout);
 				printf("Connection successfully closed, initiated by client\n");
 				exit(EXIT_SUCCESS);
+				break;
 			}
 			// Throws on unknown opcode
 			default: {
