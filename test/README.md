@@ -35,6 +35,9 @@ A list of all confirmed camera models and protocol version can be found in the m
 	1. Launch the test client with the flags: --packetDropChanceSend 100 --packetDropStartSend 10
 	2. Wait for client to quit (takes a few seconds)
 	3. Test client should quit with the message "Connection is closing, exiting"
+	4. Relaunch the test client with the flags: --packetDropChanceSend 100 --packetDropStartSend 10 --autoReconnect --packetResetDropAtTimeout --printProtocolVersion
+	5. The test client should print the protocol version used right away and then wait a few seconds before the session starts closing. Closing might be printed printed multiple times.
+	6. After the session has closed, the connection is going to time out and reconnect by printing the protocol version once again.
 
 * Test tally states
 	1. Open ATEM Software Control
