@@ -4,6 +4,8 @@
 
 ### src/atem.c
 * Add functions/macros for converting atem tally data to sdi tally data (requires length and data pointer)
+* Maybe add closeAtemConnection function. This is ment to be used when socket gets errors so that the connection can be restarted
+* Maybe automatically close connection on non ackrequest or synack packet with same buffer as closeAtemConnection function uses
 
 ### /readme.md
 * Add notes about what version of control software was tested?
