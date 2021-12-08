@@ -44,7 +44,7 @@ void printBuffer(FILE* dest, uint8_t *buf, uint16_t len) {
 }
 
 // Pad message to start printing buffer at same terminal X position
-void padPrint(size_t number) {
+void printPaddedInt(size_t number) {
 	int i = snprintf(NULL, 0, "%zu", number);
 	while (i < PAD_LEN_MAX) {
 		printf(" ");
@@ -304,7 +304,7 @@ int main(int argc, char** argv) {
 				if (flagPrintSend) {
 					printTime(stdout);
 					printf("Sent %hu bytes: ", atem.writeLen);
-					padPrint(atem.writeLen);
+					printPaddedInt(atem.writeLen);
 					printBuffer(stdout, atem.writeBuf, atem.writeLen);
 				}
 			}
@@ -312,7 +312,7 @@ int main(int argc, char** argv) {
 			else if (flagPrintDroppedSend) {
 				printTime(stdout);
 				printf("Dropped a %hu byte send: ", atem.writeLen);
-				padPrint(atem.writeLen);
+				printPaddedInt(atem.writeLen);
 				printBuffer(stdout, atem.writeBuf, atem.writeLen);
 			}
 		}
@@ -376,7 +376,7 @@ int main(int argc, char** argv) {
 			if (flagPrintDroppedRecv) {
 				printTime(stdout);
 				printf("Dropped a %zu byte recv: ", recvLen);
-				padPrint(recvLen);
+				printPaddedInt(recvLen);
 				printBuffer(stdout, atem.readBuf, clampBufferLen(recvLen));
 			}
 
@@ -392,7 +392,7 @@ int main(int argc, char** argv) {
 		if (flagPrintRecv) {
 			printTime(stdout);
 			printf("Recv %zu bytes: ", recvLen);
-			padPrint(recvLen);
+			printPaddedInt(recvLen);
 			printBuffer(stdout, atem.readBuf, clampBufferLen(recvLen));
 		}
 
@@ -478,7 +478,7 @@ int main(int argc, char** argv) {
 		if (atem.readBuf[0] & FLAG_ATEM_SYN && atem.readLen != SYN_LEN) {
 			printTime(stderr);
 			fprintf(stderr, "SYNACK packet was %d bytes: ", atem.readLen);
-			padPrint(atem.readLen);
+			printPaddedInt(atem.readLen);
 			printBuffer(stderr, atem.readBuf, atem.readLen);
 			exit(EXIT_FAILURE);
 		}
@@ -491,7 +491,7 @@ int main(int argc, char** argv) {
 			if (flagPrintCommands) {
 				printTime(stdout);
 				printf("%c%c%c%c - %d: ", atem.cmdBuf[-4], atem.cmdBuf[-3], atem.cmdBuf[-2], atem.cmdBuf[-1], atem.cmdLen);
-				padPrint(atem.cmdLen);
+				printPaddedInt(atem.cmdLen);
 				printBuffer(stdout, atem.cmdBuf, clampBufferLen(atem.cmdLen));
 			}
 
