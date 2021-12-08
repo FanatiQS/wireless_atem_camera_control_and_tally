@@ -15,7 +15,7 @@
 #define PAD_LEN_MAX 5
 #define FLAG_ATEM_REQUEST_RESEND 0x40
 #define FLAG_ATEM_SYN 0x10
-#define OPCODE_ATEM_CLOSING 0x04
+#define OPCODE_ATEM_CLOSED 0x05
 #define OPCODE_ATEM_INDEX 12
 #define SYN_LEN 20
 #define CAMERACONTROL_DESTINATION_INDEX 0
@@ -439,7 +439,7 @@ int main(int argc, char** argv) {
 				break;
 			}
 			// Prints message for closed opcode
-			case ATEM_CONNECTION_CLOSED: {
+			case OPCODE_ATEM_CLOSED: {
 				// This will never happen as it will be stopped before by the writeBuf being closeBuf
 				printTime(stdout);
 				printf("Connection successfully closed, initiated by client\n");
