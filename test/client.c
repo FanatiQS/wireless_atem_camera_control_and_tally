@@ -440,7 +440,7 @@ int main(int argc, char** argv) {
 			}
 			// Prints message for closed opcode
 			case ATEM_CONNECTION_CLOSED: {
-				// This case will only happen if a SYN packet with opcode 4 is sent and that is not something the API can do by itself unless a closeAtemConnection function is added
+				// This will never happen as it will be stopped before by the writeBuf being closeBuf
 				printTime(stdout);
 				printf("Connection successfully closed, initiated by client\n");
 				exit(EXIT_SUCCESS);

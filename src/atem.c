@@ -14,6 +14,7 @@
 
 // Atem protocol handshake states (more states in header file)
 #define ATEM_CONNECTION_SUCCESS 0x02
+#define ATEM_CONNECTION_CLOSED 0x05
 
 // Atem protocol lengths
 #define ATEM_LEN_HEADER 12
@@ -57,7 +58,7 @@ void closeAtemConnection(struct atem_t *atem) {
 }
 
 // Parses an ATEM UDP packet in the atem.readBuf
-// Returns: 0 = normal, 1 = connecting client, 3 = rejected, 4 = closing, 5 = closed, -1 = error
+// Returns: 0 = normal, 1 = connecting client, 3 = rejected, 4 = closing, -1 = error
 int8_t parseAtemData(struct atem_t *atem) {
 	// Sets length of read buffer
 	atem->readLen = (atem->readBuf[0] & 0x07) << 8 | atem->readBuf[1];
