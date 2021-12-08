@@ -413,6 +413,7 @@ int main(int argc, char** argv) {
 		if (atem.readBuf[0] & FLAG_ATEM_REQUEST_RESEND) {
 			printTime(stderr);
 			fprintf(stderr, "Received a resend request\n");
+			printBuffer(stderr, atem.readBuf, atem.readLen);
 			exit(EXIT_FAILURE);
 		}
 
@@ -449,12 +450,14 @@ int main(int argc, char** argv) {
 			default: {
 				printTime(stderr);
 				fprintf(stderr, "Unexpected connection status %x\n", atem.readBuf[OPCODE_ATEM_INDEX]);
+				printBuffer(stderr, atem.readBuf, atem.readLen);
 				exit(EXIT_SUCCESS);
 			}
 			// Prints and exits for non ACKREQUEST or SYNACK packet flags
 			case -1: {
 				printTime(stderr);
 				fprintf(stderr, "Received packet flags without 0x08 or 0x10\n");
+				printBuffer(stderr, atem.readBuf, atem.readLen);
 				exit(EXIT_FAILURE);
 			}
 		}
@@ -467,6 +470,7 @@ int main(int argc, char** argv) {
 			printTime(stderr);
 			fprintf(stderr, "Packet length did not match length from ATEM protocol\n\t");
 			fprintf(stderr, "Packet length: %zu\n\tProtocol length: %d\n", recvLen, atem.readLen);
+			printBuffer(stderr, atem.readBuf, atem.readLen);
 			exit(EXIT_FAILURE);
 		}
 
@@ -513,6 +517,7 @@ int main(int argc, char** argv) {
 						case -1: {
 							printTime(stderr);
 							fprintf(stderr, "Camera id out of range for switcher\n");
+							printBuffer(stderr, atem.readBuf, atem.readLen);
 							exit(EXIT_FAILURE);
 						}
 						case 0: break;
@@ -777,6 +782,7 @@ int main(int argc, char** argv) {
 		if (atem.cmdIndex != atem.readLen) {
 			printTime(stderr);
 			fprintf(stderr, "Structs cmdIndex and readLen were not equal after command data was processed: %d %d\n", atem.cmdIndex, atem.readLen);
+			printBuffer(stdout, atem.readBuf, atem.readLen);
 			exit(EXIT_FAILURE);
 		}
 	}
