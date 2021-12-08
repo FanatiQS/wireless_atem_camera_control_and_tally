@@ -475,14 +475,12 @@ int main(int argc, char** argv) {
 		}
 
 		// Ensures SYNACK packets are 20 bytes long
-		if (atem.readBuf[0] & FLAG_ATEM_SYN) {
-			if (atem.readLen != SYN_LEN) {
-				printTime(stderr);
-				fprintf(stderr, "SYNACK packet was %d bytes: ", atem.readLen);
-				padPrint(atem.readLen);
-				printBuffer(stderr, atem.readBuf, atem.readLen);
-				exit(EXIT_FAILURE);
-			}
+		if (atem.readBuf[0] & FLAG_ATEM_SYN && atem.readLen != SYN_LEN) {
+			printTime(stderr);
+			fprintf(stderr, "SYNACK packet was %d bytes: ", atem.readLen);
+			padPrint(atem.readLen);
+			printBuffer(stderr, atem.readBuf, atem.readLen);
+			exit(EXIT_FAILURE);
 		}
 
 		// Processes command data in the ATEM packet
