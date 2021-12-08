@@ -95,7 +95,7 @@ If packet is only the length of the header, there is no command data.
 ```
 
 ## Command length
-* The command length is the length of the command data, not including the command header.
+* The command length is the length of the command data, including the command header.
 
 ## Command name
 * The command names are 4 ASCII characters and a compiled list can be found [here](https://www.skaarhoj.com/discover/blackmagic-atem-switcher-protocol).
