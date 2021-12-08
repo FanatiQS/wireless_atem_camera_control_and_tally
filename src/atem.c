@@ -10,8 +10,9 @@
 #define ATEM_SESSION_INDEX 2
 #define ATEM_ACK_INDEX 4
 #define ATEM_REMOTEID_INDEX 10
+#define ATEM_OPCODE_INDEX 12
 
-// Atem protocol handshake states
+// Atem protocol handshake states (more states in header file)
 #define ATEM_CONNECTION_SUCCESS 0x02
 
 // Atem protocol lengths
@@ -41,12 +42,12 @@ uint8_t closeBuf[ATEM_LEN_SYN] = { ATEM_FLAG_SYN, ATEM_LEN_SYN, 0x00, 0x00,
 
 // Resets write buffer to SYN packet for starting handshake
 void resetAtemState(struct atem_t *atem) {
-	synBuf[0] = ATEM_FLAG_SYN | ((atem->writeBuf == synBuf) * ATEM_FLAG_RETRANSMIT);
+	synBuf[0] = ATEM_FLAG_SYN | ((atem->writeBuf == synBuf) ? ATEM_FLAG_RETRANSMIT : 0);
 	atem->writeBuf = synBuf;
 	atem->writeLen = ATEM_LEN_SYN;
 }
 
-// Sends a close packet to the switcher
+// Sends a close packet to close the session
 void closeAtemConnection(struct atem_t *atem) {
 	closeBuf[ATEM_SESSION_INDEX] = atem->readBuf[ATEM_SESSION_INDEX];
 	closeBuf[ATEM_SESSION_INDEX + 1] = atem->readBuf[ATEM_SESSION_INDEX + 1];
@@ -81,23 +82,23 @@ int8_t parseAtemData(struct atem_t *atem) {
 		// Set up for parsing ATEM commands in payload
 		atem->cmdIndex = ATEM_LEN_HEADER;
 	}
-	// Do nothing on non SYN or ACK request packets
+	// Do not process payload or write response on non SYN or ACK request packets
 	else if (!(atem->readBuf[0] & ATEM_FLAG_SYN)) {
 		atem->writeLen = 0;
 		return -1;
 	}
 	// Sends SYNACK without processing payload to complete handshake
-	else if (atem->readBuf[ATEM_LEN_HEADER] == ATEM_CONNECTION_SUCCESS) {
+	else if (atem->readBuf[ATEM_OPCODE_INDEX] == ATEM_CONNECTION_SUCCESS) {
 		ackBuf[ATEM_ACK_INDEX] = 0x00;
 		ackBuf[ATEM_ACK_INDEX + 1] = 0x00;
 		atem->lastRemoteId = 0x00;
 		atem->cmdIndex = ATEM_LEN_SYN;
 	}
-	// Restarts connection on reset, closing or closed opcodes
+	// Restarts connection on reset, closing or closed opcodes by letting it timeout
 	else {
 		atem->cmdIndex = ATEM_LEN_SYN;
 		atem->writeLen = 0;
-		return atem->readBuf[ATEM_LEN_HEADER];
+		return atem->readBuf[ATEM_OPCODE_INDEX];
 	}
 
 	// Copies over session id from incomming packet to ACK packet
@@ -110,7 +111,7 @@ int8_t parseAtemData(struct atem_t *atem) {
 	return 0;
 }
 
-// Gets next command name and sets buffer to its data and length to length of its data
+// Gets next command name and sets buffer to its payload and length to length of its payload
 uint32_t nextAtemCommand(struct atem_t *atem) {
 	// Gets start index of command
 	const uint16_t index = atem->cmdIndex;
@@ -125,7 +126,8 @@ uint32_t nextAtemCommand(struct atem_t *atem) {
 	atem->cmdIndex += atem->cmdLen;
 
 	// Converts command name to a 32 bit integer for easy comparison
-	return (atem->readBuf[index + 4] << 24) | (atem->readBuf[index + 5] << 16) | (atem->readBuf[index + 6] << 8) | atem->readBuf[index + 7];
+	return (atem->readBuf[index + 4] << 24) | (atem->readBuf[index + 5] << 16) |
+		(atem->readBuf[index + 6] << 8) | atem->readBuf[index + 7];
 }
 
 // Gets update status for camera index and updates its tally state
