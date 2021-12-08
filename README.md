@@ -19,11 +19,11 @@ If a camera model is not tested, it does not indicate it does not work, just tha
 | Camera Model             | Status   | Features |
 | ------------------------ | -------- | -------- |
 | URSA Broadcast           | Testing  | SDI, BT  |
+| Micro Studio Camera      | Untested | SDI      |
+| Pocket Cinema Camera     | Untested | BT, HDMI |
 <!-- | URSA Mini Pro            | Untested | SDI, BT  | -->
 <!-- | URSA Mini                | Untested | SDI      | -->
-| Micro Studio Camera      | Untested | SDI      |
 <!-- | Pocket Cinema Camera Pro | Untested | BT, HDMI | -->
-| Pocket Cinema Camera     | Untested | BT, HDMI |
 
 | Protocol version | ATEM firmware version | Status  |
 | ---------------- | --------------------- | ------- |
