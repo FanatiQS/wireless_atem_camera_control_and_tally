@@ -107,23 +107,23 @@ int main(int argc, char** argv) {
 	uint32_t packetDropStartRecv = 0;
 	uint32_t packetDropChanceSeed = 0;
 	int32_t packetTimeoutAt = -1;
-	bool packetResetDropAtTimeout = 0;
-	bool flagAutoReconnect = 0;
-	bool flagPrintSeparate = 0;
-	bool flagPrintSend = 0;
-	bool flagPrintDroppedSend = 0;
-	bool flagPrintRecv = 0;
-	bool flagPrintDroppedRecv = 0;
-	bool flagPrintLastRemoteId = 0;
-	bool flagPrintCommands = 0;
-	bool flagPrintProtocolVersion = 0;
-	bool flagPrintTally = 0;
-	bool flagPrintTallySource = 0;
-	bool flagPrintTallyTranslated = 0;
-	bool flagPrintCameraControl = 0;
-	bool flagPrintCameraControlSource = 0;
-	bool flagPrintCameraControlTranslated = 0;
-	bool flagRelay = 0;
+	bool packetResetDropAtTimeout = false;
+	bool flagAutoReconnect = false;
+	bool flagPrintSeparate = false;
+	bool flagPrintSend = false;
+	bool flagPrintDroppedSend = false;
+	bool flagPrintRecv = false;
+	bool flagPrintDroppedRecv = false;
+	bool flagPrintLastRemoteId = false;
+	bool flagPrintCommands = false;
+	bool flagPrintProtocolVersion = false;
+	bool flagPrintTally = false;
+	bool flagPrintTallySource = false;
+	bool flagPrintTallyTranslated = false;
+	bool flagPrintCameraControl = false;
+	bool flagPrintCameraControlSource = false;
+	bool flagPrintCameraControlTranslated = false;
+	bool flagRelay = false;
 	int customCountdown = -1;
 
 	// Parses command line arguments
@@ -155,55 +155,55 @@ int main(int argc, char** argv) {
 			packetTimeoutAt = atoi(argv[++i]);
 		}
 		else if (!strcmp(argv[i], "--packetResetDropAtTimeout")) {
-			packetResetDropAtTimeout = 1;
+			packetResetDropAtTimeout = true;
 		}
 		else if (!strcmp(argv[i], "--autoReconnect")) {
-			flagAutoReconnect = 1;
+			flagAutoReconnect = true;
 		}
 		else if (!strcmp(argv[i], "--printSeparate")) {
-			flagPrintSeparate = 1;
+			flagPrintSeparate = true;
 		}
 		else if (!strcmp(argv[i], "--printSend")) {
-			flagPrintSend = 1;
+			flagPrintSend = true;
 		}
 		else if (!strcmp(argv[i], "--printDroppedSend")) {
-			flagPrintDroppedSend = 1;
+			flagPrintDroppedSend = true;
 		}
 		else if (!strcmp(argv[i], "--printRecv")) {
-			flagPrintRecv = 1;
+			flagPrintRecv = true;
 		}
 		else if (!strcmp(argv[i], "--printDroppedRecv")) {
-			flagPrintDroppedRecv = 1;
+			flagPrintDroppedRecv = true;
 		}
 		else if (!strcmp(argv[i], "--printLastRemoteId")) {
-			flagPrintLastRemoteId = 1;
+			flagPrintLastRemoteId = true;
 		}
 		else if (!strcmp(argv[i], "--printCommands")) {
-			flagPrintCommands = 1;
+			flagPrintCommands = true;
 		}
 		else if (!strcmp(argv[i], "--printProtocolVersion")) {
-			flagPrintProtocolVersion = 1;
+			flagPrintProtocolVersion = true;
 		}
 		else if (!strcmp(argv[i], "--printTally")) {
-			flagPrintTally = 1;
+			flagPrintTally = true;
 		}
 		else if (!strcmp(argv[i], "--printTallySource")) {
-			flagPrintTallySource = 1;
+			flagPrintTallySource = true;
 		}
 		else if (!strcmp(argv[i], "--printTallyTranslated")) {
-			flagPrintTallyTranslated = 1;
+			flagPrintTallyTranslated = true;
 		}
 		else if (!strcmp(argv[i], "--printCameraControl")) {
-			flagPrintCameraControl = 1;
+			flagPrintCameraControl = true;
 		}
 		else if (!strcmp(argv[i], "--printCameraControlSource")) {
-			flagPrintCameraControlSource = 1;
+			flagPrintCameraControlSource = true;
 		}
 		else if (!strcmp(argv[i], "--printCameraControlTranslated")) {
-			flagPrintCameraControlTranslated = 1;
+			flagPrintCameraControlTranslated = true;
 		}
 		else if (!strcmp(argv[i], "--tcpRelay")) {
-			flagRelay = 1;
+			flagRelay = true;
 		}
 		else if (!strcmp(argv[i], "--customCountdown")) {
 			customCountdown = atoi(argv[++i]);
@@ -279,7 +279,7 @@ int main(int argc, char** argv) {
 	resetAtemState(&atem);
 
 	// Processes received packets until an error occurs
-	while (1) {
+	while (true) {
 		// Decrement customCountdown until it reaches 0
 		if (customCountdown > -1) customCountdown--;
 
