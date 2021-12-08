@@ -75,7 +75,8 @@ int8_t parseAtemData(struct atem_t *atem) {
 	// Sends ACK requested by this packet
 	if (atem->readBuf[0] & ATEM_FLAG_ACKREQUEST) {
 		// Gets remote id of packet
-		const uint16_t remoteId = atem->readBuf[ATEM_REMOTEID_INDEX] << 8 | atem->readBuf[ATEM_REMOTEID_INDEX + 1];
+		const uint16_t remoteId = atem->readBuf[ATEM_REMOTEID_INDEX] << 8 |
+			atem->readBuf[ATEM_REMOTEID_INDEX + 1];
 
 		// Acknowledge this packet and set it as the last received remote id if next in line
 		if (remoteId == (atem->lastRemoteId + 1) % 0x8000) {
@@ -170,7 +171,7 @@ void translateAtemTally(struct atem_t *atem) {
 // Translates camera control data from ATEMs protocol to Blackmagis SDI camera control protocol
 void translateAtemCameraControl(struct atem_t *atem) {
 	// Gets data length
-	uint8_t len = atem->cmdBuf[5] + atem->cmdBuf[7] * 2 + atem->cmdBuf[9] * 4;
+	const uint8_t len = atem->cmdBuf[5] + atem->cmdBuf[7] * 2 + atem->cmdBuf[9] * 4;
 
 	// Header
 	atem->cmdBuf[CC_HEADER_OFFSET + 0] = atem->cmdBuf[0]; // Destination
@@ -182,9 +183,9 @@ void translateAtemCameraControl(struct atem_t *atem) {
 	// Retains byte 1 - 4 to indicate: category, parameter, data type and operation
 
 	// Data
-	uint8_t typeSize = (atem->cmdBuf[5] > 0) + (atem->cmdBuf[7] > 0) * 2 + (atem->cmdBuf[9] > 0) * 4;
+	const uint8_t typeSize = (atem->cmdBuf[5] > 0) + (atem->cmdBuf[7] > 0) * 2 + (atem->cmdBuf[9] > 0) * 4;
 	for (uint8_t i = 0; i < len;) {
-		for (uint8_t offset = i; i < offset + typeSize; i++) {
+		for (const uint8_t offset = i; i < offset + typeSize; i++) {
 			atem->cmdBuf[CC_HEADER_LEN + CC_CMD_HEADER_LEN + CC_HEADER_OFFSET + offset + typeSize - 1 + offset - i] = atem->cmdBuf[i + CC_ATEM_DATA_OFFSET];
 		}
 	}
