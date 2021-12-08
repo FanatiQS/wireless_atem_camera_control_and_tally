@@ -16,11 +16,14 @@ It connects directly to the ATEM switcher over IP, the same way the ATEM control
 Camera models and protocol versions that have been tested to work.
 If a camera model is not tested, it does not indicate it does not work, just that if it has some special features not available on other cameras, there is a small chance those features might no work correctly.
 
-| Camera Model      | Status   |
-| ----------------- | -------- |
-| URSA Broadcast    | Testing  |
-| Pocket Cinema Camera 4k | Untested |
-| Micro Studio Camera | Untested |
+| Camera Model             | Status   | Features |
+| ------------------------ | -------- | -------- |
+| URSA Broadcast           | Testing  | SDI, BT  |
+<!-- | URSA Mini Pro            | Untested | SDI, BT  | -->
+<!-- | URSA Mini                | Untested | SDI      | -->
+| Micro Studio Camera      | Untested | SDI      |
+<!-- | Pocket Cinema Camera Pro | Untested | BT, HDMI | -->
+| Pocket Cinema Camera     | Untested | BT, HDMI |
 
 | Protocol version | ATEM firmware version | Status  |
 | ---------------- | --------------------- | ------- |
