@@ -49,11 +49,11 @@ void resetAtemState(struct atem_t *atem) {
 
 // Sends a close packet to close the session
 void closeAtemConnection(struct atem_t *atem) {
+	closeBuf[0] = ATEM_FLAG_SYN;
 	closeBuf[ATEM_SESSION_INDEX] = atem->readBuf[ATEM_SESSION_INDEX];
 	closeBuf[ATEM_SESSION_INDEX + 1] = atem->readBuf[ATEM_SESSION_INDEX + 1];
 	atem->writeBuf = closeBuf;
 	atem->writeLen = ATEM_LEN_SYN;
-	//!! it is not guaranteed that this packet is received and it is not resent
 }
 
 // Parses an ATEM UDP packet in the atem.readBuf
@@ -61,6 +61,15 @@ void closeAtemConnection(struct atem_t *atem) {
 int8_t parseAtemData(struct atem_t *atem) {
 	// Sets length of read buffer
 	atem->readLen = (atem->readBuf[0] & 0x07) << 8 | atem->readBuf[1];
+
+	// Resends close buffer without processing read data
+	if (atem->writeBuf == closeBuf) {
+		closeBuf[0] = ATEM_FLAG_SYN | ATEM_FLAG_RETRANSMIT;
+		closeBuf[ATEM_SESSION_INDEX] = atem->readBuf[ATEM_SESSION_INDEX];
+		closeBuf[ATEM_SESSION_INDEX + 1] = atem->readBuf[ATEM_SESSION_INDEX + 1];
+		atem->cmdIndex = atem->readLen;
+		return 0;
+	}
 
 	// Sends ACK requested by this packet
 	if (atem->readBuf[0] & ATEM_FLAG_ACKREQUEST) {
