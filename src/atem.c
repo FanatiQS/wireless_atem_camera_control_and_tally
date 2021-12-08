@@ -84,6 +84,7 @@ int8_t parseAtemData(struct atem_t *atem) {
 	}
 	// Do not process payload or write response on non SYN or ACK request packets
 	else if (!(atem->readBuf[0] & ATEM_FLAG_SYN)) {
+		atem->cmdIndex = atem->readLen;
 		atem->writeLen = 0;
 		return -1;
 	}
