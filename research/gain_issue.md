@@ -4,7 +4,7 @@ Tested with URSA Broadcast that only displays gain in db and not iso.
 
 # Gain is updated in 2 ways
 * The `0x01 0x0d` does not update the camera on all values, but when updated, the value in the camera matches what is in the switcher.
-* The `0x01 0x01` is only sent when `0x01 0x0d` sends 6 12 and 18 db gain and it updates it too 0 6 and 12, so 6db to low.
+* The `0x01 0x01` is only sent when `0x01 0x0d` sends 6 12 and 18 db gain and it updates it to 0 6 and 12, so 6db too low.
 
 # Gain table
 ```
