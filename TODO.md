@@ -5,10 +5,12 @@
 ### src/atem.c
 * Add functions/macros for converting atem tally data to sdi tally data (requires length and data pointer)
 * Maybe automatically close connection on non ackrequest or synack packet with same buffer as closeAtemConnection function uses
+* Figure out why ATEM reconnect times out after 10 retries
 
 ### /readme.md
 * Add notes about what version of control software was tested?
 * Add some info about hardware control panel working but not been fully tested.
+* Document camera id 0 is invalid and does not work (gives PGM tally always if switcher has odd number of sources and never PVW tally)
 
 
 
@@ -34,6 +36,7 @@
 * Add support for emulating a switcher
 * GPIO tally on rpi for tally from other switchers
 * Extend heartbeat interval?
+* Another feature of the server thing is that it reduces the data sent over wifi
 
 
 
@@ -58,6 +61,7 @@
 ## Future maybe plans
 * Feature for device to chance aux input on switcher to be able to switch return feed on the camera. Was able to switch between 2 sdi feeds for return on monitor on LDK8000.
 * Extract PTZ from ATEM and output it on a d-sub connector.
+* Send PTZ data to gimbals.
 
 
 
@@ -69,7 +73,7 @@
 * Have an LED to indicate connection to switcher status. Turn on light when receiving protocol version?
 * Find a good way to set camera id.
 	* Maybe reading data from SDI out to find camera id (studio viewfinder displays camera id)
-	* Maybe set with rotary dial like skaarhojs devices
+	* Maybe set with rotary switch like skaarhojs devices
 	* Maybe update over serial
 	* Maybe update in web interface
 	* Maybe have OLED and buttons on device
