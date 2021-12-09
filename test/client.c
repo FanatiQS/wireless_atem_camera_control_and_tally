@@ -69,6 +69,7 @@ int main(int argc, char** argv) {
 		printf("Flags:\n\t\
 --cameraId <number>: The camera id to filter out tally and/or camera control data for\n\t\
 --autoReconnect: Automatically reconnects if timed out or requested\n\t\
+--closeConnectionAt <number>: Sends a close request after n packets has been received\n\t\
 --packetDropChanceSend <chance>: The percentage for a sending packet to be dropped\n\t\
 --packetDropChanceRecv <chance>: The percentage for a receiving packet to be dropped\n\t\
 --packetDropChanceSeed <seed>: The random seed to use, defaults to random number\n\t\
@@ -109,6 +110,7 @@ int main(int argc, char** argv) {
 	int32_t packetTimeoutAt = -1;
 	bool packetResetDropAtTimeout = false;
 	bool flagAutoReconnect = false;
+	int32_t closeConnectionAt = -1;
 	bool flagPrintSeparate = false;
 	bool flagPrintSend = false;
 	bool flagPrintDroppedSend = false;
@@ -159,6 +161,9 @@ int main(int argc, char** argv) {
 		}
 		else if (!strcmp(argv[i], "--autoReconnect")) {
 			flagAutoReconnect = true;
+		}
+		else if (!strcmp(argv[i], "--closeConnectionAt")) {
+			closeConnectionAt = atoi(argv[++i]);
 		}
 		else if (!strcmp(argv[i], "--printSeparate")) {
 			flagPrintSeparate = true;
@@ -282,6 +287,13 @@ int main(int argc, char** argv) {
 	while (true) {
 		// Decrement customCountdown until it reaches 0
 		if (customCountdown > -1) customCountdown--;
+
+		// Closes the connection after set number of packets recevied
+		if (closeConnectionAt > -1) {
+			if (closeConnectionAt == 0) closeAtemConnection(&atem);
+			closeConnectionAt--;
+		}
+
 
 		// Only send data if last receive was not dropped
 		if (atem.writeLen != 0) {
