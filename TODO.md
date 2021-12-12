@@ -62,6 +62,7 @@
 * Feature for device to chance aux input on switcher to be able to switch return feed on the camera. Was able to switch between 2 sdi feeds for return on monitor on LDK8000.
 * Extract PTZ from ATEM and output it on a d-sub connector.
 * Send PTZ data to gimbals.
+* Add HDMI CEC capability to support BMPCC over HDMI to not require bluetooth.
 
 
 
