@@ -1,10 +1,10 @@
-#include <stdio.h> // printf, perror, fprintf, snprintf, stderr, stdout, FILE
-#include <string.h> // bzero
+#include <stdio.h> // printf, perror, fprintf, snprintf, stderr, stdout, FILE, sprintf
+#include <string.h> // bzero, strcmp
 #include <stdlib.h> // exit, EXIT_FAILURE, EXIT_SUCCESS, atoi, rand, srand
-#include <time.h> // time, time_t, localtime,
+#include <time.h> // time, time_t, localtime, asctime, clock
 
-#include <sys/socket.h> // recv, sendto, sockaddr_in, SOCK_DGRAM, AF_INET, socket
-#include <arpa/inet.h> // inet_addr, htons
+#include <sys/socket.h> // recv, sendto, SOCK_DGRAM, AF_INET, socket, SOCK_STREAM, connect, sockaddr, send
+#include <arpa/inet.h> // inet_addr, htons, sockaddr_in
 #include <sys/select.h> // fd_set, FD_ZERO, FD_SET, select, timeval
 #include <unistd.h> // usleep
 
@@ -293,6 +293,7 @@ int main(int argc, char** argv) {
 			if (closeConnectionAt == 0) closeAtemConnection(&atem);
 			closeConnectionAt--;
 		}
+
 
 
 		// Only send data if last receive was not dropped
