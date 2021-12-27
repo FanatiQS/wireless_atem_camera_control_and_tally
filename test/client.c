@@ -3,8 +3,9 @@
 #include <stdlib.h> // exit, EXIT_FAILURE, EXIT_SUCCESS, atoi, rand, srand
 #include <time.h> // time, time_t, localtime, asctime, clock
 
-#include <sys/socket.h> // recv, sendto, SOCK_DGRAM, AF_INET, socket, SOCK_STREAM, connect, sockaddr, send
+#include <sys/socket.h> // recv, sendto, SOCK_DGRAM, AF_INET, socket, SOCK_STREAM, connect, sockaddr, send, setsockopt, SOL_SOCKET, SO_RCVTIMEO
 #include <arpa/inet.h> // inet_addr, htons, sockaddr_in
+#include <sys/time.h> // timeval
 #include <unistd.h> // usleep
 
 #include "../src/atem.h"
