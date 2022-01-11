@@ -42,9 +42,16 @@ httpServer.listen(8080);
 
 // Creates WebSocket server to relay all ATEM data to
 const wss = new ws.Server({ server: httpServer, clientTracking: true });
-wss.on("connection", () => {
+wss.on("connection", (ws) => {
 	console.log("WebSocket connected");
 	restartClient();
+	ws.on("close", () => {
+		console.log("WebSocket closed");
+	});
+	ws.on("error", (err) => {
+		console.log("WebSocket error");
+		console.error(err);
+	});
 });
 
 // Creates TCP server for receiving ATEM data
