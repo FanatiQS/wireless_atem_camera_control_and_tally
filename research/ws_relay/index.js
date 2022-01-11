@@ -2,6 +2,30 @@ const net = require("net");
 const ws = require("ws");
 const http = require("http");
 const fs = require("fs");
+const { spawn } = require("child_process");
+
+// Creates a child process for the atem parser
+let child = null;
+function restartClient() {
+	if (child) child.kill();
+	child = spawn(
+		"./client",
+		[
+			process.argv[2],
+			"--autoReconnect",
+			"--printProtocolVersion",
+			"--printTally",
+			"--tcpRelay",
+			"--cameraId",
+			process.argv[3]
+		],
+		{
+			cwd: "../../test",
+			shell: true,
+			stdio: "inherit"
+		}
+	);
+}
 
 // Servers the html
 const httpServer = http.createServer((req, res) => {
@@ -17,8 +41,11 @@ const httpServer = http.createServer((req, res) => {
 httpServer.listen(8080);
 
 // Creates WebSocket server to relay all ATEM data to
-wss.on("connection", () => console.log("WebSocket connected"));
 const wss = new ws.Server({ server: httpServer, clientTracking: true });
+wss.on("connection", () => {
+	console.log("WebSocket connected");
+	restartClient();
+});
 
 // Creates TCP server for receiving ATEM data
 const tcp = net.createServer();
@@ -29,7 +56,6 @@ tcp.on("connection", (sock) => {
 
 	// Relays ATEM data to all WebSocket clients
 	sock.on("data", (data) => {
-		console.log(data);
 		wss.clients.forEach((ws) => ws.send(data));
 	});
 
