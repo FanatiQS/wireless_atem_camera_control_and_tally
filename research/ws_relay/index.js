@@ -1,9 +1,24 @@
 const net = require("net");
 const ws = require("ws");
+const http = require("http");
+const fs = require("fs");
+
+// Servers the html
+const httpServer = http.createServer((req, res) => {
+	fs.readFile("./index.html", (err, data) => {
+		if (err) {
+			res.end(err);
+		}
+		else {
+			res.end(data);
+		}
+	});
+});
+httpServer.listen(8080);
 
 // Creates WebSocket server to relay all ATEM data to
-const wss = new ws.Server({ port: 8080, clientTracking: true });
 wss.on("connection", () => console.log("WebSocket connected"));
+const wss = new ws.Server({ server: httpServer, clientTracking: true });
 
 // Creates TCP server for receiving ATEM data
 const tcp = net.createServer();
@@ -41,5 +56,5 @@ tcp.on("close", () => {
 	console.log("TCP server closed");
 });
 
-// ATEM TCP server listens on port 991, the same as ATEM UDP port
+// ATEM TCP server listens on port 9910, the same as ATEM UDP port
 tcp.listen(9910);
