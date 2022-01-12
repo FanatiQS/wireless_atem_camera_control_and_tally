@@ -36,6 +36,9 @@ struct atem_t {
 };
 
 // Function prototypes
+#ifdef __cplusplus
+extern "C" {
+#endif
 void resetAtemState(struct atem_t *atem);
 void closeAtemConnection(struct atem_t *atem);
 int8_t parseAtemData(struct atem_t *atem);
@@ -43,6 +46,9 @@ uint32_t nextAtemCommand(struct atem_t *atem);
 int8_t parseAtemTally(struct atem_t *atem, uint16_t index, uint8_t *tally);
 void translateAtemTally(struct atem_t *atem);
 void translateAtemCameraControl(struct atem_t *atem);
+#ifdef __cplusplus
+}
+#endif
 
 // Gets boolean indicating if there are more commands to parse
 #define hasAtemCommand(atem) ((atem)->cmdIndex < (atem)->readLen)
