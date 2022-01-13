@@ -36,6 +36,11 @@
 					filters: [ { services: [ blackmagicCameraServiceUuid ] } ]
 				});
 
+				// Handles disconnection of bluetooth device
+				device.addEventListener("gattserverdisconnected", () => {
+					document.querySelector("#status").innerText = "Disconnected";
+				});
+
 				// Connects to camera
 				const gatt = await device.gatt.connect();
 
