@@ -420,7 +420,7 @@ int main(int argc, char** argv) {
 		// Processes the received packet
 		switch (parseAtemData(&atem)) {
 			// Packet has 0x02 SYN packet opcode
-			case 0: break;
+			case ATEM_CONNECTION_OK: break;
 			// Prints message for reject opcode
 			case ATEM_CONNECTION_REJECTED: {
 				printTime(stdout);
@@ -454,7 +454,7 @@ int main(int argc, char** argv) {
 				exit(EXIT_SUCCESS);
 			}
 			// Prints and exits for non ACKREQUEST or SYNACK packet flags
-			case -1: {
+			case ATEM_CONNECTION_ERROR: {
 				printTime(stderr);
 				fprintf(stderr, "Received packet flags without 0x08 or 0x10\n");
 				printBuffer(stderr, atem.readBuf, atem.readLen);

@@ -11,6 +11,8 @@
 #define ATEM_CMDNAME_VERSION ('_' << 24) | ('v' << 16) | ('e' << 8) | 'r'
 
 // ATEM opcodes available as return value from parseAtemData
+#define ATEM_CONNECTION_OK 0
+#define ATEM_CONNECTION_ERROR -1
 #define ATEM_CONNECTION_OPENING 0x01
 #define ATEM_CONNECTION_REJECTED 0x03
 #define ATEM_CONNECTION_CLOSING 0x04

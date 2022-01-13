@@ -77,7 +77,7 @@ int8_t parseAtemData(struct atem_t *atem) {
 		closeBuf[ATEM_SESSION_INDEX] = atem->readBuf[ATEM_SESSION_INDEX];
 		closeBuf[ATEM_SESSION_INDEX + 1] = atem->readBuf[ATEM_SESSION_INDEX + 1];
 		atem->cmdIndex = atem->readLen;
-		return 0;
+		return ATEM_CONNECTION_OK;
 	}
 
 	// Sends ACK requested by this packet
@@ -105,7 +105,7 @@ int8_t parseAtemData(struct atem_t *atem) {
 	else if (!(atem->readBuf[0] & ATEM_FLAG_SYN)) {
 		atem->cmdIndex = atem->readLen;
 		atem->writeLen = 0;
-		return -1;
+		return ATEM_CONNECTION_ERROR;
 	}
 	// Sends SYNACK without processing payload to complete handshake
 	else if (atem->readBuf[ATEM_OPCODE_INDEX] == ATEM_CONNECTION_SUCCESS) {
@@ -128,7 +128,7 @@ int8_t parseAtemData(struct atem_t *atem) {
 	// Writes ACK buffer to server
 	atem->writeBuf = ackBuf;
 	atem->writeLen = ATEM_LEN_ACK;
-	return 0;
+	return ATEM_CONNECTION_OK;
 }
 
 // Gets next command name and sets buffer to its payload and length to length of its payload
