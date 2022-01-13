@@ -159,7 +159,7 @@ bool tallyHasUpdated(struct atem_t *atem) {
 	if (atem->dest > ((atem->cmdBuf[0] << 8) | atem->cmdBuf[1])) return 0;
 
 	// Stores old states for PGM and PVW tally
-	const bool oldTally = atem->pgmTally | atem->pvwTally << 1;
+	const uint8_t oldTally = atem->pgmTally | atem->pvwTally << 1;
 
 	// Updates states for PGM and PVW tally
 	atem->pgmTally = atem->cmdBuf[1 + atem->dest] & ATEM_TALLY_PGM;
