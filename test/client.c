@@ -283,11 +283,8 @@ int main(int argc, char** argv) {
 		exit(EXIT_FAILURE);
 	}
 
-	// Tally state
-	uint8_t tally = 0;
-
 	// Initializes ATEM struct to start handshake
-	struct atem_t atem;
+	struct atem_t atem = { camid };
 	resetAtemState(&atem);
 
 	// Processes received packets until an error occurs
@@ -514,22 +511,19 @@ int main(int argc, char** argv) {
 						exit(EXIT_FAILURE);
 					}
 
+					// Ensures camera index is within range
+					if (atem.dest > ((atem.cmdBuf[0] << 8) | atem.cmdBuf[1])) {
+						printTime(stderr);
+						fprintf(stderr, "Camera id out of range for switcher\n");
+						printBuffer(stderr, atem.readBuf, atem.readLen);
+						exit(EXIT_FAILURE);
+					}
+
 					// Prints tally state for selected camera id if flag is set
-					switch (parseAtemTally(&atem, camid, &tally)) {
-						case -1: {
-							printTime(stderr);
-							fprintf(stderr, "Camera id out of range for switcher\n");
-							printBuffer(stderr, atem.readBuf, atem.readLen);
-							exit(EXIT_FAILURE);
-						}
-						case 0: break;
-						default: {
-							if (flagPrintTally) {
-								printTime(stdout);
-								printf("Camera %d (tally) - %s\n", camid, tallyTable[tally]);
-							}
-							break;
-						}
+					if (tallyHasUpdated(&atem) && flagPrintTally) {
+						printTime(stdout);
+						const uint8_t tally = atem.pgmTally | atem.pvwTally << 1;
+						printf("Camera %d (tally) - %s\n", atem.dest, tallyTable[tally]);
 					}
 
 					// Prints tally buffer before translation if flag is set

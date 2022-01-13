@@ -15,16 +15,15 @@
 #define ATEM_CONNECTION_REJECTED 0x03
 #define ATEM_CONNECTION_CLOSING 0x04
 
-// Tally flags
-#define ATEM_TALLY_PGM 0x01
-#define ATEM_TALLY_PVW 0x02
-
 // Default port for ATEM
 #define ATEM_PORT 9910
 
 // Contains incoming and outgoing ATEM socket data
 #define ATEM_MAX_PACKET_LEN 2048
 struct atem_t {
+	uint16_t dest;
+	bool pvwTally;
+	bool pgmTally;
 	uint8_t readBuf[ATEM_MAX_PACKET_LEN];
 	uint16_t readLen;
 	uint8_t *writeBuf;
@@ -43,7 +42,7 @@ void resetAtemState(struct atem_t *atem);
 void closeAtemConnection(struct atem_t *atem);
 int8_t parseAtemData(struct atem_t *atem);
 uint32_t nextAtemCommand(struct atem_t *atem);
-int8_t parseAtemTally(struct atem_t *atem, uint16_t index, uint8_t *tally);
+bool tallyHasUpdated(struct atem_t *atem);
 void translateAtemTally(struct atem_t *atem);
 void translateAtemCameraControl(struct atem_t *atem);
 #ifdef __cplusplus

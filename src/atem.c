@@ -21,6 +21,10 @@
 #define ATEM_LEN_SYN 20
 #define ATEM_LEN_ACK 12
 
+// Tally flags
+#define ATEM_TALLY_PGM 0x01
+#define ATEM_TALLY_PVW 0x02
+
 // Atem and camera control protocol lengths and offsets
 #define CC_HEADER_LEN 4
 #define CC_CMD_HEADER_LEN 4
@@ -143,13 +147,20 @@ uint32_t nextAtemCommand(struct atem_t *atem) {
 }
 
 // Gets update status for camera index and updates its tally state
-int8_t parseAtemTally(struct atem_t *atem, uint16_t index, uint8_t *tally) {
+// This function has to be called before translateAtemTally
+bool tallyHasUpdated(struct atem_t *atem) {
 	// Ensures index is within range of tally data length
-	if (index > ((atem->cmdBuf[0] << 8) | atem->cmdBuf[1])) return -1;
+	if (atem->dest > ((atem->cmdBuf[0] << 8) | atem->cmdBuf[1])) return 0;
 
-	// Returns update state and sets new tally state
-	return *tally ^ (*tally = (atem->cmdBuf[1 + index] & ATEM_TALLY_PGM) |
-		((atem->cmdBuf[1 + index] == ATEM_TALLY_PVW) << 1));
+	// Stores old states for PGM and PVW tally
+	const bool oldTally = atem->pgmTally | atem->pvwTally << 1;
+
+	// Updates states for PGM and PVW tally
+	atem->pgmTally = atem->cmdBuf[1 + atem->dest] & ATEM_TALLY_PGM;
+	atem->pvwTally = atem->cmdBuf[1 + atem->dest] == ATEM_TALLY_PVW;
+
+	// Returns boolean indicating if tally was updated or not
+ 	return oldTally != (atem->pgmTally | atem->pvwTally << 1);
 }
 
 // Translates tally data from ATEMs protocol to Blackmagic Embedded Tally Control Protocol
