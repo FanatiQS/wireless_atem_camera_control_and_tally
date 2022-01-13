@@ -311,12 +311,12 @@ int main(int argc, char** argv) {
 				if (packetDropStartSend > 0) packetDropStartSend--;
 
 				// Sends data
-				size_t sentLen = sendto(sock, atem.writeBuf, atem.writeLen, 0, (const struct sockaddr *) &servaddr, sizeof(servaddr));
+				ssize_t sentLen = sendto(sock, atem.writeBuf, atem.writeLen, 0, (const struct sockaddr *) &servaddr, sizeof(servaddr));
 
 				// Ensures all data was written
 				if (sentLen != atem.writeLen) {
 					printTime(stderr);
-					fprintf(stderr, "Got an error sending data\n");
+					fprintf(stderr, "Got an error sending data, %zd bytes sent and %d expected\n", sentLen, atem.writeLen);
 					exit(EXIT_FAILURE);
 				}
 
