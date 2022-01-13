@@ -497,12 +497,6 @@ int main(int argc, char** argv) {
 
 			switch (cmdName) {
 				case ATEM_CMDNAME_TALLY: {
-					//!! mockup for arduino
-					// if (parseTally(&atem, 4, &tally) > 0) {
-					// 	digitalWrite(pgmPin, tally == ATEM_TALLY_PGM);
-					// 	digitalWrite(pvwPin, tally == ATEM_TALLY_PVW);
-					// }
-
 					// Ensures tally data is structured as expected
 					if ((atem.cmdLen / 4) != ((atem.cmdBuf[0] << 8 | atem.cmdBuf[1]) + 13) / 4) {
 						printTime(stdout);
