@@ -40,8 +40,10 @@ A list of all confirmed camera models and protocol version can be found in the m
 	6. After the session has closed, the connection is going to time out and reconnect by printing the protocol version once again.
 
 * Test closing connection
-	1. Launch the test client with the flags: --packetDropChanceSend 90 --packetDropStartSend 5 --closeConnectionAt 10 --packetDropChanceSeed 1966 --printDroppedSend
-	2. A few packets should be dropped and then the connection should time out.
+	1. Launch the test client with the flags: --packetDropChanceSend 90 --packetDropStartSend 10
+	2. After just a few seconds, the connection should close.
+	3. Launch the test client again with the flags: --closeConnectionAt 10
+	4. Again, after a few seconds, the connection should close, but this time it should ge initiated by the client.
 
 * Test tally states
 	1. Open ATEM Software Control
