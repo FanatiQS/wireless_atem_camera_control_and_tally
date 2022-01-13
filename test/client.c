@@ -768,7 +768,7 @@ int main(int argc, char** argv) {
 
 					// Prints protocol version
 					printTime(stdout);
-					printf("Protocol version: %d.%d\n", atem.cmdBuf[0] << 8 | atem.cmdBuf[1], atem.cmdBuf[2] << 8 | atem.cmdBuf[3]);
+					printf("Protocol version: %d.%d\n", protocolVersionMajor(&atem), protocolVersionMinor(&atem));
 					break;
 				}
 				case ('W' << 24 | 'a' << 16 | 'r' << 8 | 'n'): {
