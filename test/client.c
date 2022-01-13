@@ -3,9 +3,9 @@
 #include <stdlib.h> // exit, EXIT_FAILURE, EXIT_SUCCESS, atoi, rand, srand
 #include <time.h> // time, time_t, localtime, asctime, clock
 
-#include <sys/socket.h> // recv, sendto, SOCK_DGRAM, AF_INET, socket, SOCK_STREAM, connect, sockaddr, send, setsockopt, SOL_SOCKET, SO_RCVTIMEO
+#include <sys/socket.h> // recv, sendto, SOCK_DGRAM, AF_INET, socket, SOCK_STREAM, connect, sockaddr, send
+#include <sys/select.h> // fd_set, FD_ZERO, FD_SET, select, timeval
 #include <arpa/inet.h> // inet_addr, htons, sockaddr_in
-#include <sys/time.h> // timeval
 #include <unistd.h> // usleep
 
 #include "../src/atem.h"
@@ -262,13 +262,12 @@ int main(int argc, char** argv) {
 		perror("Socket creation failed\n");
 		exit(EXIT_FAILURE);
 	}
-	struct timeval timeout;
-	timeout.tv_sec = 1;
-	timeout.tv_usec = 0;
-	if (setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout)) < 0) {
-		fprintf(stderr, "Setting timeout for socket failed\n");
-		exit(EXIT_FAILURE);
-	}
+
+	// Initializes values for select
+	struct timeval tv;
+	tv.tv_sec = 1;
+	tv.tv_usec = 0;
+	fd_set fds;
 
 	// Creates address struct
 	struct sockaddr_in servaddr;
@@ -344,13 +343,21 @@ int main(int argc, char** argv) {
 		// Prints new lines between each cycle if flag is set
 		if (flagPrintSeparate) printf("\n\n");
 
-		// Reads data from server
-		ssize_t recvLen = -1;
-		if (packetTimeoutAt != 0) recvLen = recv(sock, atem.readBuf, ATEM_MAX_PACKET_LEN, 0);
+		// Await data on socket or times out
+		FD_ZERO(&fds);
+		if (packetTimeoutAt != 0) FD_SET(sock, &fds);
 		if (packetTimeoutAt >= 0) packetTimeoutAt--;
+		int selectLen = select(sock + 1, &fds, NULL, NULL, &tv);
+
+		// Throws on select error
+		if (selectLen == -1) {
+			printTime(stderr);
+			perror("Select got an error\n");
+			exit(EXIT_FAILURE);
+		}
 
 		// Prints message on timeout and restarts connection if flag is set
-		if (recvLen == -1) {
+		if (selectLen == 0) {
 			printTime(stdout);
 			printf("Connection timed out\n");
 			if (!flagAutoReconnect) {
@@ -367,6 +374,11 @@ int main(int argc, char** argv) {
 			}
 			continue;
 		}
+
+
+
+		// Reads data from server
+		ssize_t recvLen = recv(sock, atem.readBuf, ATEM_MAX_PACKET_LEN, 0);
 
 		// Ensures data was actually read
 		if (recvLen <= 0) {
