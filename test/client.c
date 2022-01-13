@@ -578,7 +578,7 @@ int main(int argc, char** argv) {
 					// Only print camera control data when flag is set
 					if (flagPrintCameraControl) {
 						// Only prints for selected camera
-						if (atem.cmdBuf[0] != camid) break;
+						if (getAtemCameraControlDest(&atem) != atem.dest) break;
 
 						// Prints timestamp
 						printTime(stdout);

@@ -57,5 +57,8 @@ void translateAtemCameraControl(struct atem_t *atem);
 #define protocolVersionMajor(atem) ((atem)->cmdBuf[0] << 8 | (atem)->cmdBuf[1])
 #define protocolVersionMinor(atem) ((atem)->cmdBuf[2] << 8 | (atem)->cmdBuf[3])
 
+// Gets the camera destination number for a camera control command
+#define getAtemCameraControlDest(atem) ((atem)->cmdBuf[0])
+
 // Ends include guard
 #endif
