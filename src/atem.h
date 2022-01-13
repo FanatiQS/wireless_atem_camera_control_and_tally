@@ -20,6 +20,9 @@
 // Default port for ATEM
 #define ATEM_PORT 9910
 
+// Number of seconds before switcher kills the connection for no acknowledge sent
+#define ATEM_TIMEOUT 4
+
 // Contains incoming and outgoing ATEM socket data
 #define ATEM_MAX_PACKET_LEN 2048
 struct atem_t {
