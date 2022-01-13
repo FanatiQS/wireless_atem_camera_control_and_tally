@@ -53,5 +53,9 @@ void translateAtemCameraControl(struct atem_t *atem);
 // Gets boolean indicating if there are more commands to parse
 #define hasAtemCommand(atem) ((atem)->cmdIndex < (atem)->readLen)
 
+// Gets the major and minor version of protocol for version command
+#define protocolVersionMajor(atem) ((atem)->cmdBuf[0] << 8 | (atem)->cmdBuf[1])
+#define protocolVersionMinor(atem) ((atem)->cmdBuf[2] << 8 | (atem)->cmdBuf[3])
+
 // Ends include guard
 #endif
