@@ -103,3 +103,6 @@ If packet is only the length of the header, there is no command data.
 ## Command data
 * Length of command data is the same as the value of `command length`.
 * Content depends on the command name.
+
+# Timeout
+* The ATEM switcher seems to kill connections after not receiving acknowledgements for about 4 seconds.
