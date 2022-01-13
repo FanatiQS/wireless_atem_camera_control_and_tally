@@ -1,6 +1,7 @@
 #include "./atem.h"
 
 // Atem protocol flags
+#define ATEM_FLAG_MASK 0x07
 #define ATEM_FLAG_ACKREQUEST 0x08
 #define ATEM_FLAG_SYN 0x10
 #define ATEM_FLAG_RETRANSMIT 0x20
@@ -20,6 +21,9 @@
 #define ATEM_LEN_HEADER 12
 #define ATEM_LEN_SYN 20
 #define ATEM_LEN_ACK 12
+
+// Atem remote id range
+#define ATEM_REMOTE_LIMIT 0x8000
 
 // Tally flags
 #define ATEM_TALLY_PGM 0x01
@@ -65,7 +69,7 @@ void closeAtemConnection(struct atem_t *atem) {
 // Returns: 0 = normal, 1 = connecting client, 3 = rejected, 4 = closing, -1 = error
 int8_t parseAtemData(struct atem_t *atem) {
 	// Sets length of read buffer
-	atem->readLen = (atem->readBuf[0] & 0x07) << 8 | atem->readBuf[1];
+	atem->readLen = (atem->readBuf[0] & ATEM_FLAG_MASK) << 8 | atem->readBuf[1];
 
 	// Resends close buffer without processing read data
 	if (atem->writeBuf == closeBuf) {
@@ -83,7 +87,7 @@ int8_t parseAtemData(struct atem_t *atem) {
 			atem->readBuf[ATEM_REMOTEID_INDEX + 1];
 
 		// Acknowledge this packet and set it as the last received remote id if next in line
-		if (remoteId == (atem->lastRemoteId + 1) % 0x8000) {
+		if (remoteId == (atem->lastRemoteId + 1) % ATEM_REMOTE_LIMIT) {
 			ackBuf[ATEM_ACK_INDEX] = atem->readBuf[ATEM_REMOTEID_INDEX];
 			ackBuf[ATEM_ACK_INDEX + 1] = atem->readBuf[ATEM_REMOTEID_INDEX + 1];
 			atem->lastRemoteId = remoteId;
@@ -107,7 +111,7 @@ int8_t parseAtemData(struct atem_t *atem) {
 	else if (atem->readBuf[ATEM_OPCODE_INDEX] == ATEM_CONNECTION_SUCCESS) {
 		ackBuf[ATEM_ACK_INDEX] = 0x00;
 		ackBuf[ATEM_ACK_INDEX + 1] = 0x00;
-		atem->lastRemoteId = 0x00;
+		atem->lastRemoteId = 0;
 		atem->cmdIndex = ATEM_LEN_SYN;
 	}
 	// Restarts connection on reset, closing or closed opcodes by letting it timeout
