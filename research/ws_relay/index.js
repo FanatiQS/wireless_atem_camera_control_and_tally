@@ -1,8 +1,13 @@
 const net = require("net");
+const dgram = require("dgram");
 const ws = require("ws");
 const http = require("http");
 const fs = require("fs");
 const { spawn } = require("child_process");
+
+// Gets command line arguments
+const atemAddr = process.argv[2];
+const cameraDest = process.argv[3]
 
 // Creates a child process for the atem parser
 let child = null;
@@ -11,13 +16,13 @@ function restartClient() {
 	child = spawn(
 		"./client",
 		[
-			process.argv[2],
+			atemAddr,
 			"--autoReconnect",
 			"--printProtocolVersion",
 			"--printTally",
 			"--tcpRelay",
 			"--cameraId",
-			process.argv[3]
+			cameraDest
 		],
 		{
 			cwd: "../../test",
@@ -91,3 +96,24 @@ tcp.on("close", () => {
 
 // ATEM TCP server listens on port 9910, the same as ATEM UDP port
 tcp.listen(9910);
+
+
+
+// Creates a proxy server to bridge a wireless and wired network
+let lastProxyRemote = null;
+const proxy = dgram.createSocket('udp4');
+
+// Redirects data
+proxy.on("message", (message, rinfo) => {
+	lastProxyRemote = rinfo;
+	proxy2.send(message, 0, message.length, 9910, atemAddr);
+});
+
+// Listens for data on the same port as atem
+proxy.bind(9910);
+
+// Creates atem connection for proxy
+const proxy2 = dgram.createSocket('udp4');
+proxy2.on("message", (message) => {
+	proxy.send(message, 0, message.length, lastProxyRemote.port, lastProxyRemote.address);
+});
