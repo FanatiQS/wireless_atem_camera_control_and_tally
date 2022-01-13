@@ -441,7 +441,7 @@ int main(int argc, char** argv) {
 
 		// Processes the received packet
 		switch (parseAtemData(&atem)) {
-			// Packet has 0x02 SYN packet opcode
+			// Connectin is allowed to continue and might have data to read and/or write
 			case ATEM_CONNECTION_OK: break;
 			// Prints message for reject opcode
 			case ATEM_CONNECTION_REJECTED: {
@@ -462,7 +462,6 @@ int main(int argc, char** argv) {
 			}
 			// Prints message for closed opcode
 			case OPCODE_ATEM_CLOSED: {
-				// This will never happen as it will be stopped before by the writeBuf being closeBuf
 				printTime(stdout);
 				printf("Connection successfully closed, initiated by client\n");
 				exit(EXIT_SUCCESS);

@@ -77,7 +77,9 @@ int8_t parseAtemData(struct atem_t *atem) {
 		closeBuf[ATEM_SESSION_INDEX] = atem->readBuf[ATEM_SESSION_INDEX];
 		closeBuf[ATEM_SESSION_INDEX + 1] = atem->readBuf[ATEM_SESSION_INDEX + 1];
 		atem->cmdIndex = atem->readLen;
-		return ATEM_CONNECTION_OK;
+		return (atem->readBuf[0] & ATEM_FLAG_SYN &&
+			atem->readBuf[ATEM_OPCODE_INDEX] == ATEM_CONNECTION_CLOSED)
+			? ATEM_CONNECTION_CLOSED : ATEM_CONNECTION_OK;
 	}
 
 	// Sends ACK requested by this packet
