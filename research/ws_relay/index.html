@@ -5,6 +5,16 @@
 		<title>ATEM to URSA Bluetooth bridge</title>
 	</head>
 	<body>
+		<label>
+			<span>Address:</span>
+			<input type="text" id="addr">
+		</label>
+		<br>
+		<label>
+			<span>Port:</span>
+			<input type="number" id="port">
+		</label>
+		<br>
 		<button id="connect">Connect</button>
 		<span id="status">Not connected</span>
 		<script>
@@ -14,55 +24,62 @@
 				throw new Error(document.body.textContent);
 			}
 
-			// Connects to local tcp relay server
-			function connectWebSocket(callback) {
-				const ws = new WebSocket("ws://127.0.0.1:8080");
-				ws.binaryType = "arraybuffer";
-				ws.onmessage = (e) => callback(new Uint8Array(e.data));
-				return new Promise((resolve, reject) => {
-					ws.onopen = resolve;
-					ws.onerror = reject;
-				});
-			}
-
 			// UUIDs from blackmagics documentation
 			const blackmagicCameraServiceUuid = "291d567a-6d75-11e6-8b77-86f30ca893d3".toLowerCase();
 			const outgoingCameraControlCharacteristic = "5DD3465F-1AEE-4299-8493-D2ECA2F8E1BB".toLowerCase();
 
-			// Connects to BLE on camera
-			async function connectBluetooth() {
-				// Requests connection to camera
-				const device = await navigator.bluetooth.requestDevice({
-					filters: [ { services: [ blackmagicCameraServiceUuid ] } ]
-				});
-
-				// Handles disconnection of bluetooth device
-				device.addEventListener("gattserverdisconnected", () => {
-					document.querySelector("#status").innerText = "Disconnected";
-				});
-
-				// Connects to camera
-				const gatt = await device.gatt.connect();
-
-				// Gets service and outgoing camera control characteristic
-				const service = await gatt.getPrimaryService(blackmagicCameraServiceUuid);
-				const outgoingCharacteristic = await service.getCharacteristic(outgoingCameraControlCharacteristic);
-
-				// Returns callback function to write data over bluetooth
-				return (value) => {
-					outgoingCharacteristic.writeValueWithoutResponse(value);
-				};
-			}
-
 			// Binds connect button
 			document.querySelector("#connect").onclick = async function () {
-				const callback = await connectBluetooth();
-				await connectWebSocket((buf) => {
-					console.log(buf);
-					if (buf[4] == 0x01 && buf[5] == 0x01) return; // Ignores other gain parm since it sets gain 6db to low
-					callback(buf);
-				});
-				document.querySelector("#status").innerText = "Connected";
+				try {
+					// Requests BLE connection to camera
+					const device = await navigator.bluetooth.requestDevice({
+						filters: [ { services: [ blackmagicCameraServiceUuid ] } ]
+					});
+
+					// Handles disconnection of bluetooth device
+					device.addEventListener("gattserverdisconnected", () => {
+						document.querySelector("#status").innerText = "Disconnected";
+						ws.close();
+					});
+
+					// Connects to camera
+					const gatt = await device.gatt.connect();
+
+					// Gets service and outgoing camera control characteristic
+					const service = await gatt.getPrimaryService(blackmagicCameraServiceUuid);
+					const outgoingCharacteristic = await service.getCharacteristic(outgoingCameraControlCharacteristic);
+
+					// Gets relay server address and port
+					const addr = document.querySelector("#addr").value;
+					const port = document.querySelector("#port").value;
+
+					// Creates websocket connection to relay server
+					const ws = new WebSocket(`ws://${addr}:${port}`);
+					ws.binaryType = "arraybuffer";
+
+					// Handles websocket disconnect
+					ws.onclose = () => {
+						document.querySelector("#status").innerText = "Disconnected";
+						gatt.disconnect();
+					};
+
+					// Retransmits received data over BLE to camera
+					ws.onmessage = (e) => {
+						const buf = new Uint8Array(e.data);
+						console.log(buf);
+						if (buf[4] == 0x01 && buf[5] == 0x01) return; // Ignores other gain parm since it sets gain 6db to low
+						outgoingCharacteristic.writeValueWithoutResponse(buf);
+					};
+
+					// Sets connected state in HTML after websocket is connected
+					ws.onopen = () => {
+						document.querySelector("#status").innerText = "Connected";
+					};
+				}
+				catch (err) {
+					console.error(err);
+					document.querySelector("#status").innerText = "Disconnected";
+				}
 			};
 		</script>
 	</body>
