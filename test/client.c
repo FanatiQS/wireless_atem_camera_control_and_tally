@@ -259,7 +259,7 @@ int main(int argc, char** argv) {
 	// Creates the socket
 	int sock = socket(AF_INET, SOCK_DGRAM, 0);
 	if (sock == -1) {
-		fprintf(stderr, "Socket creation failed\n");
+		perror("Socket creation failed\n");
 		exit(EXIT_FAILURE);
 	}
 	struct timeval timeout;
@@ -313,7 +313,12 @@ int main(int argc, char** argv) {
 				// Ensures all data was written
 				if (sentLen != atem.writeLen) {
 					printTime(stderr);
-					fprintf(stderr, "Got an error sending data, %zd bytes sent and %d expected\n", sentLen, atem.writeLen);
+					if (sentLen == -1) {
+						perror("Got an error sending data\n");
+					}
+					else {
+						fprintf(stderr, "Got an error sending data, %zd bytes sent and %d expected\n", sentLen, atem.writeLen);
+					}
 					exit(EXIT_FAILURE);
 				}
 
@@ -366,7 +371,12 @@ int main(int argc, char** argv) {
 		// Ensures data was actually read
 		if (recvLen <= 0) {
 			printTime(stderr);
-			fprintf(stderr, "Received no data: %zu\n", recvLen);
+			if (recvLen == -1) {
+				perror("Error receiving data\n");
+			}
+			else {
+				fprintf(stderr, "Received no data: %zu\n", recvLen);
+			}
 			exit(EXIT_FAILURE);
 		}
 
