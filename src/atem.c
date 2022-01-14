@@ -8,10 +8,10 @@
 #define ATEM_FLAG_ACK 0x80
 
 // Atem protocol indexes
-#define ATEM_SESSION_INDEX 2
-#define ATEM_ACK_INDEX 4
-#define ATEM_REMOTEID_INDEX 10
-#define ATEM_OPCODE_INDEX 12
+#define ATEM_INDEX_SESSION 2
+#define ATEM_INDEX_ACK 4
+#define ATEM_INDEX_REMOTEID 10
+#define ATEM_INDEX_OPCODE 12
 
 // Atem protocol handshake states (more states in header file)
 #define ATEM_CONNECTION_SUCCESS 0x02
@@ -59,8 +59,8 @@ void resetAtemState(struct atem_t *atem) {
 // Sends a close packet to close the session
 void closeAtemConnection(struct atem_t *atem) {
 	closeBuf[0] = ATEM_FLAG_SYN;
-	closeBuf[ATEM_SESSION_INDEX] = atem->readBuf[ATEM_SESSION_INDEX];
-	closeBuf[ATEM_SESSION_INDEX + 1] = atem->readBuf[ATEM_SESSION_INDEX + 1];
+	closeBuf[ATEM_INDEX_SESSION] = atem->readBuf[ATEM_INDEX_SESSION];
+	closeBuf[ATEM_INDEX_SESSION + 1] = atem->readBuf[ATEM_INDEX_SESSION + 1];
 	atem->writeBuf = closeBuf;
 	atem->writeLen = ATEM_LEN_SYN;
 }
@@ -74,30 +74,30 @@ int8_t parseAtemData(struct atem_t *atem) {
 	// Resends close buffer without processing read data
 	if (atem->writeBuf == closeBuf) {
 		closeBuf[0] = ATEM_FLAG_SYN | ATEM_FLAG_RETRANSMIT;
-		closeBuf[ATEM_SESSION_INDEX] = atem->readBuf[ATEM_SESSION_INDEX];
-		closeBuf[ATEM_SESSION_INDEX + 1] = atem->readBuf[ATEM_SESSION_INDEX + 1];
+		closeBuf[ATEM_INDEX_SESSION] = atem->readBuf[ATEM_INDEX_SESSION];
+		closeBuf[ATEM_INDEX_SESSION + 1] = atem->readBuf[ATEM_INDEX_SESSION + 1];
 		atem->cmdIndex = atem->readLen;
 		return (atem->readBuf[0] & ATEM_FLAG_SYN &&
-			atem->readBuf[ATEM_OPCODE_INDEX] == ATEM_CONNECTION_CLOSED)
+			atem->readBuf[ATEM_INDEX_OPCODE] == ATEM_CONNECTION_CLOSED)
 			? ATEM_CONNECTION_CLOSED : ATEM_CONNECTION_OK;
 	}
 
 	// Sends ACK requested by this packet
 	if (atem->readBuf[0] & ATEM_FLAG_ACKREQUEST) {
 		// Gets remote id of packet
-		const uint16_t remoteId = atem->readBuf[ATEM_REMOTEID_INDEX] << 8 |
-			atem->readBuf[ATEM_REMOTEID_INDEX + 1];
+		const uint16_t remoteId = atem->readBuf[ATEM_INDEX_REMOTEID] << 8 |
+			atem->readBuf[ATEM_INDEX_REMOTEID + 1];
 
 		// Acknowledge this packet and set it as the last received remote id if next in line
 		if (remoteId == (atem->lastRemoteId + 1) % ATEM_REMOTE_LIMIT) {
-			ackBuf[ATEM_ACK_INDEX] = atem->readBuf[ATEM_REMOTEID_INDEX];
-			ackBuf[ATEM_ACK_INDEX + 1] = atem->readBuf[ATEM_REMOTEID_INDEX + 1];
+			ackBuf[ATEM_INDEX_ACK] = atem->readBuf[ATEM_INDEX_REMOTEID];
+			ackBuf[ATEM_INDEX_ACK + 1] = atem->readBuf[ATEM_INDEX_REMOTEID + 1];
 			atem->lastRemoteId = remoteId;
 		}
 		// Sets response acknowledge id to last acknowledged packet id if it is not the next in line
 		else {
-			ackBuf[ATEM_ACK_INDEX] = atem->lastRemoteId >> 8;
-			ackBuf[ATEM_ACK_INDEX + 1] = atem->lastRemoteId & 0xff;
+			ackBuf[ATEM_INDEX_ACK] = atem->lastRemoteId >> 8;
+			ackBuf[ATEM_INDEX_ACK + 1] = atem->lastRemoteId & 0xff;
 		}
 
 		// Set up for parsing ATEM commands in payload
@@ -110,9 +110,9 @@ int8_t parseAtemData(struct atem_t *atem) {
 		return ATEM_CONNECTION_ERROR;
 	}
 	// Sends SYNACK without processing payload to complete handshake
-	else if (atem->readBuf[ATEM_OPCODE_INDEX] == ATEM_CONNECTION_SUCCESS) {
-		ackBuf[ATEM_ACK_INDEX] = 0x00;
-		ackBuf[ATEM_ACK_INDEX + 1] = 0x00;
+	else if (atem->readBuf[ATEM_INDEX_OPCODE] == ATEM_CONNECTION_SUCCESS) {
+		ackBuf[ATEM_INDEX_ACK] = 0x00;
+		ackBuf[ATEM_INDEX_ACK + 1] = 0x00;
 		atem->lastRemoteId = 0;
 		atem->cmdIndex = ATEM_LEN_SYN;
 	}
@@ -120,12 +120,12 @@ int8_t parseAtemData(struct atem_t *atem) {
 	else {
 		atem->cmdIndex = ATEM_LEN_SYN;
 		atem->writeLen = 0;
-		return atem->readBuf[ATEM_OPCODE_INDEX];
+		return atem->readBuf[ATEM_INDEX_OPCODE];
 	}
 
 	// Copies over session id from incomming packet to ACK packet
-	ackBuf[ATEM_SESSION_INDEX] = atem->readBuf[ATEM_SESSION_INDEX];
-	ackBuf[ATEM_SESSION_INDEX + 1] = atem->readBuf[ATEM_SESSION_INDEX + 1];
+	ackBuf[ATEM_INDEX_SESSION] = atem->readBuf[ATEM_INDEX_SESSION];
+	ackBuf[ATEM_INDEX_SESSION + 1] = atem->readBuf[ATEM_INDEX_SESSION + 1];
 
 	// Writes ACK buffer to server
 	atem->writeBuf = ackBuf;
