@@ -1,5 +1,5 @@
 ## Trying to figure out the 8th and 9th byte in the ATEM header
-No one seem to know that the 8th and 9th byte are for in the ATEM protocol.
+No one seem to know what the 8th and 9th byte are for in the ATEM protocol.
 
 
 
