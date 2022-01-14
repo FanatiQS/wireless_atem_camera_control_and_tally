@@ -8,6 +8,7 @@
 #define ATEM_FLAG_ACK 0x80
 
 // Atem protocol indexes
+#define ATEM_INDEX_FLAG 0
 #define ATEM_INDEX_SESSION 2
 #define ATEM_INDEX_ACK 4
 #define ATEM_INDEX_REMOTEID 10
@@ -51,14 +52,14 @@ uint8_t closeBuf[ATEM_LEN_SYN] = { ATEM_FLAG_SYN, ATEM_LEN_SYN, 0x00, 0x00,
 
 // Resets write buffer to SYN packet for starting handshake
 void resetAtemState(struct atem_t *atem) {
-	synBuf[0] = ATEM_FLAG_SYN | ((atem->writeBuf == synBuf) ? ATEM_FLAG_RETRANSMIT : 0);
+	synBuf[ATEM_INDEX_FLAG] = ATEM_FLAG_SYN | ((atem->writeBuf == synBuf) ? ATEM_FLAG_RETRANSMIT : 0);
 	atem->writeBuf = synBuf;
 	atem->writeLen = ATEM_LEN_SYN;
 }
 
 // Sends a close packet to close the session
 void closeAtemConnection(struct atem_t *atem) {
-	closeBuf[0] = ATEM_FLAG_SYN;
+	closeBuf[ATEM_INDEX_FLAG] = ATEM_FLAG_SYN;
 	closeBuf[ATEM_INDEX_SESSION] = atem->readBuf[ATEM_INDEX_SESSION];
 	closeBuf[ATEM_INDEX_SESSION + 1] = atem->readBuf[ATEM_INDEX_SESSION + 1];
 	atem->writeBuf = closeBuf;
@@ -69,21 +70,21 @@ void closeAtemConnection(struct atem_t *atem) {
 // Returns: 0 = normal, 1 = connecting client, 3 = rejected, 4 = closing, -1 = error
 int8_t parseAtemData(struct atem_t *atem) {
 	// Sets length of read buffer
-	atem->readLen = (atem->readBuf[0] & ATEM_FLAG_MASK) << 8 | atem->readBuf[1];
+	atem->readLen = (atem->readBuf[ATEM_INDEX_FLAG] & ATEM_FLAG_MASK) << 8 | atem->readBuf[1];
 
 	// Resends close buffer without processing read data
 	if (atem->writeBuf == closeBuf) {
-		closeBuf[0] = ATEM_FLAG_SYN | ATEM_FLAG_RETRANSMIT;
+		closeBuf[ATEM_INDEX_FLAG] = ATEM_FLAG_SYN | ATEM_FLAG_RETRANSMIT;
 		closeBuf[ATEM_INDEX_SESSION] = atem->readBuf[ATEM_INDEX_SESSION];
 		closeBuf[ATEM_INDEX_SESSION + 1] = atem->readBuf[ATEM_INDEX_SESSION + 1];
 		atem->cmdIndex = atem->readLen;
-		return (atem->readBuf[0] & ATEM_FLAG_SYN &&
+		return (atem->readBuf[ATEM_INDEX_FLAG] & ATEM_FLAG_SYN &&
 			atem->readBuf[ATEM_INDEX_OPCODE] == ATEM_CONNECTION_CLOSED)
 			? ATEM_CONNECTION_CLOSED : ATEM_CONNECTION_OK;
 	}
 
 	// Sends ACK requested by this packet
-	if (atem->readBuf[0] & ATEM_FLAG_ACKREQUEST) {
+	if (atem->readBuf[ATEM_INDEX_FLAG] & ATEM_FLAG_ACKREQUEST) {
 		// Gets remote id of packet
 		const uint16_t remoteId = atem->readBuf[ATEM_INDEX_REMOTEID] << 8 |
 			atem->readBuf[ATEM_INDEX_REMOTEID + 1];
@@ -104,7 +105,7 @@ int8_t parseAtemData(struct atem_t *atem) {
 		atem->cmdIndex = ATEM_LEN_HEADER;
 	}
 	// Do not process payload or write response on non SYN or ACK request packets
-	else if (!(atem->readBuf[0] & ATEM_FLAG_SYN)) {
+	else if (!(atem->readBuf[ATEM_INDEX_FLAG] & ATEM_FLAG_SYN)) {
 		atem->cmdIndex = atem->readLen;
 		atem->writeLen = 0;
 		return ATEM_CONNECTION_ERROR;
