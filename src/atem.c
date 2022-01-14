@@ -157,7 +157,7 @@ uint32_t nextAtemCommand(struct atem_t *atem) {
 // This function has to be called before translateAtemTally
 bool tallyHasUpdated(struct atem_t *atem) {
 	// Ensures index is within range of tally data length
-	if (atem->dest > ((atem->cmdBuf[0] << 8) | atem->cmdBuf[1])) return 0;
+	if (atem->dest > ((atem->cmdBuf[0] << 8) | atem->cmdBuf[1])) return false;
 
 	// Stores old states for PGM and PVW tally
 	const uint8_t oldTally = atem->pgmTally | atem->pvwTally << 1;
