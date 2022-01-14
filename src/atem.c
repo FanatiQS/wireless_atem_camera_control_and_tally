@@ -23,7 +23,7 @@
 #define ATEM_LEN_ACK 12
 
 // Atem remote id range
-#define ATEM_REMOTE_LIMIT 0x8000
+#define ATEM_LIMIT_REMOTEID 0x8000
 
 // Tally flags
 #define ATEM_TALLY_PGM 0x01
@@ -89,7 +89,7 @@ int8_t parseAtemData(struct atem_t *atem) {
 			atem->readBuf[ATEM_INDEX_REMOTEID + 1];
 
 		// Acknowledge this packet and set it as the last received remote id if next in line
-		if (remoteId == (atem->lastRemoteId + 1) % ATEM_REMOTE_LIMIT) {
+		if (remoteId == (atem->lastRemoteId + 1) % ATEM_LIMIT_REMOTEID) {
 			ackBuf[ATEM_INDEX_ACK] = atem->readBuf[ATEM_INDEX_REMOTEID];
 			ackBuf[ATEM_INDEX_ACK + 1] = atem->readBuf[ATEM_INDEX_REMOTEID + 1];
 			atem->lastRemoteId = remoteId;
