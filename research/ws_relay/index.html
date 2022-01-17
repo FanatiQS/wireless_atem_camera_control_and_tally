@@ -17,6 +17,7 @@
 		<br>
 		<button id="connect">Connect</button>
 		<span id="status">Not connected</span>
+		<pre id="tty"></pre>
 		<script>
 			// Abort if web bluetooth api is not available
 			if (!navigator.bluetooth) {
@@ -78,6 +79,7 @@
 				}
 				catch (err) {
 					console.error(err);
+					document.querySelector("#tty").textContent += err.message;
 					document.querySelector("#status").innerText = "Disconnected";
 				}
 			};
