@@ -79,7 +79,7 @@
 				}
 				catch (err) {
 					console.error(err);
-					document.querySelector("#tty").textContent += err.message;
+					document.querySelector("#tty").textContent += `${err.message}\n`;
 					document.querySelector("#status").innerText = "Disconnected";
 				}
 			};
