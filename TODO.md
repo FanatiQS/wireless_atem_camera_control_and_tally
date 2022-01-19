@@ -23,6 +23,8 @@
 	* Some tests can not be automated since they require interacting with external hardware.
 
 ### src/atem.c
+* Add optional functions to allow getting tally for multiple destinations.
+	* `tallyHasUpdated` has previous tally states built in to the struct, that only allows the struct to check for a single destination. There are situations where it is required to keep track of multiple destinations.
 * Is there a reason to actually process all packets dumping ATEM state after handshake before sending first acknowledge or send acknowledges for each packet?
 	* All other atem libraries process the incoming packets that get sent right after the handshake together.
 	Basically they send 1 acknowledgement for all the packets at once instead of sending one for each packet.
