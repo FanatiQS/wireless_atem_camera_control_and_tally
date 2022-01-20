@@ -3,6 +3,7 @@
 ## Required
 
 ### src/atem.c
+* Add BLE bmd uuid and cc characteristic as macros
 * Test function for converting atem tally data to sdi tally data
 	* This function has not been tested since I have not had the opertunity to send it to a camera.
 * Figure out why ATEM reconnect times out after 10 retries sometimes
