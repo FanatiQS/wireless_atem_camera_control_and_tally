@@ -1,5 +1,5 @@
 ## Summary
-Wired or wireless tally and camera control for a Blackmagic cameras connected to an ATEM switcher over IP.
+Wired or wireless tally and camera control for Blackmagic cameras connected to an ATEM switcher over IP.
 
 ## Description
 Blackmagics URSA cameras are great cameras to use with their ATEM switchers.
