@@ -120,6 +120,11 @@
 	* ATEM ip address
 	* Camera ID
 * A good way to know if it should update serial data or run normally is to identify if the sdi shield is available. If not, read from serial. If it is, run normally. That way, just connect a usb cable to the microcontroller to update data and connect power to sdi shield to handle cc data.
+* The connector for the tally could be a 4-pin connector
+	* Maybe it could be 3d printed with just "stift" and "hylsor" in metal. They can be bought for cheap at "kjell.com".
+	* There should be at least 2 connectors for tally
+	* Using 4-pins would allow for pvw pin, pgm pin, gnd and 3.3v to be available. This allows for my monitor to hook into it with gnd and pgm pin but it can also be used to power leds with 3.3v and pgm pin.
+	* A 4-pin 3.5mm connector could work, but is not lockable.
 
 ### Configuration
 * Maybe build it like this:
