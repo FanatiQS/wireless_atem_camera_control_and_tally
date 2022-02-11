@@ -91,6 +91,7 @@
 	* There are some APIs for gimbals.
 * Add HDMI CEC capability to support BMPCC over HDMI to not require bluetooth.
 	* HDMI CEC seems to be slow enough to work on the ESP. Bit-banging might work.
+	* Raspberry pi has support for outputting CEC on micro HDMI using `cec-client`.
 * Add feature to read input voltage to SDI shield.
 	* This requires a voltage divider if 3.3v is always 3.3v. With 1kohm (R1) and 5.1kohm (R2), 20.13v would be reduced to exactly 3.3v.
 
