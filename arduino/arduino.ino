@@ -368,7 +368,7 @@ void loop() {
 		Serial.print(WiFi.status());
 		Serial.print("\n");
 #endif
-		timeout = millis() + ATEM_TIMEOUT * 1000;
+		timeout = millis() + ATEM_TIMEOUT;
 		resetAtemState(&atem);
 		digitalWrite(LED_BUILTIN, HIGH);
 	}
@@ -396,7 +396,7 @@ void loop() {
 
 	// Reads data from UDP
 	udp.read(atem.readBuf, ATEM_MAX_PACKET_LEN);
-	timeout = millis() + ATEM_TIMEOUT * 1000;
+	timeout = millis() + ATEM_TIMEOUT;
 
 	// Parses received data
 #ifdef DEBUG
