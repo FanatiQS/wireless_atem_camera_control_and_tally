@@ -275,6 +275,7 @@ int main(int argc, char** argv) {
 	servaddr.sin_family = AF_INET;
 	servaddr.sin_port = htons(ATEM_PORT);
 	servaddr.sin_addr.s_addr = inet_addr(addr);
+	connect(sock, (const struct sockaddr *) &servaddr, sizeof(servaddr));
 
 	// Ensures string address was successfully converted to an int
 	if (servaddr.sin_addr.s_addr == -1) {
@@ -307,7 +308,7 @@ int main(int argc, char** argv) {
 				if (packetDropStartSend > 0) packetDropStartSend--;
 
 				// Sends data
-				ssize_t sentLen = sendto(sock, atem.writeBuf, atem.writeLen, 0, (const struct sockaddr *) &servaddr, sizeof(servaddr));
+				ssize_t sentLen = send(sock, atem.writeBuf, atem.writeLen, 0);
 
 				// Ensures all data was written
 				if (sentLen != atem.writeLen) {
