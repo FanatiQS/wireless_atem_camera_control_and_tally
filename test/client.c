@@ -294,7 +294,11 @@ int main(int argc, char** argv) {
 
 		// Closes the connection after set number of packets recevied
 		if (closeConnectionAt > -1) {
-			if (closeConnectionAt == 0) closeAtemConnection(&atem);
+			if (closeConnectionAt == 0) {
+				printTime(stdout);
+				printf("Sending close request\n");
+				closeAtemConnection(&atem);
+			}
 			closeConnectionAt--;
 		}
 
