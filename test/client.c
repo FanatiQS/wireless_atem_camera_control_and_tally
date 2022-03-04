@@ -275,11 +275,16 @@ int main(int argc, char** argv) {
 	servaddr.sin_family = AF_INET;
 	servaddr.sin_port = htons(ATEM_PORT);
 	servaddr.sin_addr.s_addr = inet_addr(addr);
-	connect(sock, (const struct sockaddr *) &servaddr, sizeof(servaddr));
 
 	// Ensures string address was successfully converted to an int
 	if (servaddr.sin_addr.s_addr == -1) {
 		printf("Invalid host address: %s\n", addr);
+		exit(EXIT_FAILURE);
+	}
+
+	// Connects the socket to always send its data to the atem switcher
+	if (connect(sock, (const struct sockaddr *) &servaddr, sizeof(servaddr))) {
+		printf("Unable to connect to host\n");
 		exit(EXIT_FAILURE);
 	}
 
