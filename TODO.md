@@ -2,6 +2,10 @@
 
 ## Required
 
+### test/makefile
+* Is is possible to add a rule to clean command to only allow it to run when there is something to clean?
+* Can tests be automated enough to make tests run through makefile?
+
 ### src/atem.c
 * Add BLE bmd uuid and cc characteristic as macros
 * Test function for converting atem tally data to sdi tally data
