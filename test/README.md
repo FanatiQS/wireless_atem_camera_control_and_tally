@@ -16,12 +16,12 @@ A list of all confirmed camera models and protocol version can be found in the m
 	1. Open the ATEM Software Control
 	2. Launch the test client with the flags: --printLastRemoteId --packetDropStartSend 1 --packetDropChanceSend 30 --packetDropChanceRecv 30
 	3. Set ATEM Software Controls transition speed to 10 seconds
-	4. Do an auto transition between cam1 and cam2. If connection to the server is lost, it is okay to restart the test client as long as it does not happen over and over again.
+	4. Do an auto transition. If connection to the server is lost, it is okay to restart the test client as long as it does not happen over and over again.
 	5. Make sure no numbers are skipped or are out of order. Multiple of the same is okay.
 
 * Test bad network simulator 2
 	1. Launch the test client with the flags: --packetTimeoutAt 10 --autoReconnect --printRecv
-	2. After a few packets are sent, the connection is going to restart but still have the old connectin alive. After a few seconds of panicing, the test client should restart again and this time be stabile.
+	2. After a few packets are sent, the connection is going to restart but still have the old connection alive. After a few seconds of panicing, the test client should restart again and this time be stabile.
 
 * Test timing out restarts
 	1. Launch the test client with the flags: --packetTimeoutAt 0 --autoReconnect --printProtocolVersion
