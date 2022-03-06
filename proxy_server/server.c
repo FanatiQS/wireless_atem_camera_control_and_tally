@@ -7,7 +7,10 @@
 
 // Windows specific includes
 #ifdef _WIN32
-#include <winsock2.h> // AF_INET, SOCK_DGRA, socket, connect, bind, send, sendto, recv, recvfrom, socklen_t, sockaddr, in_addr_t, sockaddr_in, INADDR_ANY, inet_addr, htons, fd_set, FD_ZERO, FD_SET, FD_ISSET, select, timeval, gettimeofday, SOCKET, INVALID_SOCKET
+#include <winsock2.h> // AF_INET, SOCK_DGRAM, socket, connect, bind, send, sendto, recv, recvfrom, sockaddr, sockaddr_in, INADDR_ANY, inet_addr, htons, fd_set, FD_ZERO, FD_SET, FD_ISSET, select, timeval, SOCKET, INVALID_SOCKET
+typedef unsigned long in_addr_t;
+typedef int socklen_t;
+// @todo Missing function gettimeofday
 
 // Unix specific includes
 #else
