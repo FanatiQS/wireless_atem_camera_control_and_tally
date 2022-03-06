@@ -71,6 +71,7 @@ Undocumented.
 
 ## Remote packet id
 Used during [acknowledgements](#Acknowledgements).
+* Wraps around to 0x0000 when reached 0x7fff.
 
 
 
