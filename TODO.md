@@ -2,10 +2,6 @@
 
 ## Required
 
-### test/makefile
-* Is is possible to add a rule to clean command to only allow it to run when there is something to clean?
-* Can tests be automated enough to make tests run through makefile?
-
 ### src/atem.c
 * Add BLE bmd uuid and cc characteristic as macros
 * Test function for converting atem tally data to sdi tally data
@@ -18,12 +14,15 @@
 	* I have been testing with 8.6.3 so far
 * Add some info about hardware control panel working but not been fully tested.
 * Document camera id 0 is invalid and does not work (gives PGM tally always if switcher has odd number of sources and never PVW tally)
+* Document proxy server. Mention that it both allows for more connections to the switcher, reduces network bandwidth as it only relays tally and camera control and is safer to use on more open networks as there is no way to write data to ATEM.
 
 
 
 ## Not required
 
 ### test/
+* Is is possible to add a rule to clean command to only allow it to run when there is something to clean?
+* Can tests be automated enough to make tests run through makefile?
 * Try to automate some tests
 	* Some tests can not be automated since they require interacting with external hardware.
 
@@ -47,30 +46,20 @@
 * Maybe add feature for packet reordering? (probably not)
 	* Getting the packets in the wrong order is not tested, but it should not be an issue, hopefully.
 
-### test/server.c
-* The main feature of the server should be to redirect only the important data from the packets to other clients.
-	* So it should grab the camera control and tally data and put it in new valid atem packets to send.
-	* Should the server know what ids the cameras have and only send the data to devices listening that camera id? This is fairly easy for camera control as it already has a "send to all" id with 255. Tally does not and would probably require sending data with the same tally info for every camera since no matter what id the device has, it will grab the same tally info. This would obviously require some kind of configuration system where devices, or more accurately, their UDP sockets on the server are connected to a specific camera id.
-	* Does this feature require the server to buffer all camera control data for all cameras?
-* Add support for emulating a switcher
-	* Lets not just clients running my library connect, but also the control software and hardware.
-* GPIO tally on rpi for tally from other switchers
-* Extend heartbeat interval?
-* Another feature of the server thing is that it reduces the data sent over wifi
-	* This is probably the most important feature since it reduces stress on the network.
+### proxy_server/server.c
+* Should the proxy server know the dest of the clients and only relay camera control data for that dest?
+	* The reason for doing this would be to reduce network traffic.
+	* Could just set dest of camera control data to 255 to apply to all.
+	* To send tally, the TlIn data could probably be set to have the tally state for the specific dest on all indexes since that would ensure the client would read it no matter what its local id is.
+	* Would need some kind of session id to camera dest mapping system.
+* Buffer tally and camera control locally on server instead of reconnecting to ATEM.
+	* The only issue is that all the data is sent to all the clients when a new connection is established.
+* Add support for connecting "ATEM software control".
+* GPIO tally on rpi for tally from other switchers.
 
 
 
-## Research
-* Find out why all clients on my computer disconnects sometimes (has kinda stopped now)
-	* It was probably just my computer being slow to process the UDP packets with so much other network traffic going on.
-
-
-
-## Check other hardware
-* Put SDI to HDMI and HDMI to SDI converters between URSA and URSAs studio monitor. Does it still display its camera id?
-	* The idea for this was to get the camera id set on the camera into my code by grabbing it from the sdi out.
-	* This is not important and migh be a stupid way of handling it even if it works.
+## Hardware
 
 ### Camera test
 * Try updating luma mix
@@ -85,7 +74,7 @@
 
 
 
-## Future maybe plans
+## Future maybe-plans
 * Feature for device to change aux input on switcher to be able to switch return feed to another source on the camera.
 	* Was able to switch between 2 sdi feeds for return on monitor on LDK8000.
 * Extract PTZ from ATEM and output it on a d-sub connector.
@@ -103,10 +92,8 @@
 
 ## Arduino implementation features
 * Camera control and tally should transmit all data over SDI.
-* Filter out tally and output pgm and pvw state for a specific camera on digital pints.
 * Some kind of logging system. Maybe one that transmits logs over tcp to a log server?
 * Connectors for tally should be some kind of 3+ pin connector. Maybe RJ11 or 3.5mm TRS.
-* Have an LED to indicate connection to switcher status. Turn on light when receiving protocol version?
 * Find a good way to set camera id.
 	* Maybe reading data from SDI out to find camera id (studio viewfinder displays camera id)
 	* Maybe set with rotary switch like skaarhojs devices
@@ -119,8 +106,6 @@
 	* The signal strength should be able to be indicated on the AP. That direction is probably better anyway since the AP would have a stronger signal than the device.
 	* If there is an OLED on the client, it could display the signal strength there.
 	* Signal strength for wifi is called RSSI and is measured in dB.
-* Some way to connect another ESP to this client to allow wireless tally.
-	* Another way is to create some kind of hub software to extend number of clients connected to the switcher.
 * Needs to be able to configure these settings:
 	* SSID
 	* SSID passphrase
