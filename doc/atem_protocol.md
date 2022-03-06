@@ -30,19 +30,25 @@ The ATEM protocol header is always 12 bytes long.
 
 ### Flags
 ###### 0x80: ack reply
-Is set when the other party has acknowledged a packet that requested an ack.
-It is also sent with the heartbeat for some reason even if an ack is not requested.
-The packet that is acknowledged is the packet at `ack packet id`.
-If a packet id is acknowledged, it means that all packets up to that point has been received.
+Used during [acknowledgements](#Acknowledgements).
+* The [Ack packet id](#Ack packet id) must be set and indicates the id of the packet being acknowledged.
+* Is set in response to a packet where the "ack request" (0x08) flag was set.
+* It is also sent with the heartbeat for some reason even if an ack is not requested.
+* If a packet is acknowledged, it means that all packets up to that point has been received.
 
 ###### 0x40: retransmit request
+Undocumented.
+
 ###### 0x20: is retransmit
+Used during [acknowledgements](#Acknowledgements).
+
 ###### 0x10: SYN
 Used during [handshake](#Handshake).
+* Used for both opening and closing connections.
 
 ###### 0x08: ack request
-Requires an ack to be sent back that this packet has been received.
-If packets are not acknowledged, they will be retransmitted with a set number of retries until disconnecting the session.
+Used during [acknowledgements](#Acknowledgements).
+* The [Remote packet id](#Remote packet id) must be set and indicates the id of the packet, used to acknowledge the packet by the other end.
 
 ### Length
 The length part is 11 bytes long and represents the entire length of the packet including the header.
@@ -54,6 +60,17 @@ With 11 bytes, the packet length has a maximum length of 2048 bytes.
 * In the handshake, the new session id the server assigns seems to be defined in byte 14 and 15 of the SYNACK but without the MSB set.
 * ATEM can only keep a maximum of 5 connections open at a time. It uses the session id to know how many active connections it has. So having multiple sessions on a single socket does not allow for more connections unfortunately.
 * Server assigned session ids are incremented by 1 for every new client connected. Wraps around to 0x0000 when reached 0x7fff in handshake, or to 0x8000 from 0xffff in header.
+* The first session id assigned by the switcher is 0x0001 (or 0x8001).
+
+### Ack packet id
+Used during [acknowledgements](#Acknowledgements).
+* This id is only used if the "ack reply" (0x80) flag is set.
+
+### Local packet id
+Undocumented.
+
+### Remote packet id
+Used during [acknowledgements](#Acknowledgements).
 
 
 
@@ -73,6 +90,18 @@ With 11 bytes, the packet length has a maximum length of 2048 bytes.
 * 0x03: Connection failed to open
 * 0x04: Closing connection (has been documented as a restart opcode by others, but I belive it is a closing opcode similar to how it works in the websocket protocol)
 * 0x05: Connection closed
+
+
+
+# Acknowledgements
+* Acknowledgements can be required by both the server and the client.
+* When an acknowledgement is required, the "ack request" (0x08) flag is set.
+* If other side does not acknowledge a packet that requires an acknowledgement, it should be resent.
+* ATEM resends packets fairly quickly, so they might not even have arrived at the client before ATEM resends the packet.
+* Resending packets is essential since UDP does not guarantee the packet will not get lost on the way.
+* When a packet is resent, the flag "is retransmit" (0x20) is set. It seems to work even if this flag is not set though.
+* An acknowledge request has the "remote packet id" set. It is an incrementing number local to the session.
+* An acknowledgement is done in response to an acknowlege request and sets the "ack packet id" to the value of "remote packet id".
 
 
 
