@@ -52,6 +52,7 @@
 	* Could just set dest of camera control data to 255 to apply to all.
 	* To send tally, the TlIn data could probably be set to have the tally state for the specific dest on all indexes since that would ensure the client would read it no matter what its local id is.
 	* Would need some kind of session id to camera dest mapping system.
+	* A way to only handle the same dest for each device every time would be to give each device its own client assigned session id for use during handshake. That way, the server would know which device connects and what dest it should have.
 * Buffer tally and camera control locally on server instead of reconnecting to ATEM.
 	* The only issue is that all the data is sent to all the clients when a new connection is established.
 * Add support for connecting "ATEM software control".
