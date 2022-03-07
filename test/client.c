@@ -540,7 +540,7 @@ int main(int argc, char** argv) {
 					if (atem.dest > ((atem.cmdBuf[0] << 8) | atem.cmdBuf[1])) {
 						printTime(stderr);
 						fprintf(stderr, "Camera id out of range for switcher\n");
-						printBuffer(stderr, atem.readBuf, atem.readLen);
+						printBuffer(stderr, atem.cmdBuf, atem.cmdLen);
 						exit(EXIT_FAILURE);
 					}
 
