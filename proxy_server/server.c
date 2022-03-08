@@ -73,7 +73,7 @@ struct timeval atemLastContact;
 SOCKET createSocket() {
 	const SOCKET sock = socket(AF_INET, SOCK_DGRAM, 0);
 	if (sock == INVALID_SOCKET) {
-		perror("Failed to create socket\n");
+		perror("Failed to create socket");
 		exit(EXIT_FAILURE);
 	}
 	return sock;
@@ -104,7 +104,7 @@ void initServer(const char* addr) {
 		exit(EXIT_FAILURE);
 	}
 	if (connect(atemSock, (const struct sockaddr *)&atemSockAddr, sizeof(atemSockAddr))) {
-		perror("Failed to connect socket\n");
+		perror("Failed to connect socket");
 		exit(EXIT_FAILURE);
 	}
 
@@ -112,7 +112,7 @@ void initServer(const char* addr) {
  	proxySock = createSocket();
 	const struct sockaddr_in proxySockAddr = createAddr(INADDR_ANY);
 	if (bind(proxySock, (const struct sockaddr *)&proxySockAddr, sizeof(proxySockAddr))) {
-		perror("Failed to bind socket\n");
+		perror("Failed to bind socket");
 		exit(EXIT_FAILURE);
 	}
 
@@ -510,7 +510,7 @@ void loop() {
 	FD_SET(proxySock, &fds);
 	const int nfds = (proxySock > atemSock) ? proxySock : atemSock;
 	if (select(nfds + 1, &fds, NULL, NULL, &timeout) == -1) {
-		perror("Select got an error\n");
+		perror("Select got an error");
 		exit(EXIT_FAILURE);
 	}
 

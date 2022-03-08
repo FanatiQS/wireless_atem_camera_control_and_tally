@@ -242,7 +242,7 @@ int main(int argc, char** argv) {
 		printf("Relaying data to TCP server\n");
 		socktcp = socket(AF_INET, SOCK_STREAM, 0);
 		if (socktcp == -1) {
-			perror("TCP socket creation failed\n");
+			perror("TCP socket creation failed");
 			exit(EXIT_FAILURE);
 		}
 		struct sockaddr_in servaddrtcp;
@@ -251,7 +251,7 @@ int main(int argc, char** argv) {
 		servaddrtcp.sin_port = htons(ATEM_PORT);
 		servaddrtcp.sin_addr.s_addr = inet_addr("127.0.0.1");
 		if (connect(socktcp, (struct sockaddr*)&servaddrtcp, sizeof(servaddrtcp)) == 1) {
-			perror("tcp connection failed\n");
+			perror("tcp connection failed");
 			exit(EXIT_FAILURE);
 		}
 	}
@@ -259,7 +259,7 @@ int main(int argc, char** argv) {
 	// Creates the socket
 	int sock = socket(AF_INET, SOCK_DGRAM, 0);
 	if (sock == -1) {
-		perror("Socket creation failed\n");
+		perror("Socket creation failed");
 		exit(EXIT_FAILURE);
 	}
 
@@ -323,7 +323,7 @@ int main(int argc, char** argv) {
 				if (sentLen != atem.writeLen) {
 					printTime(stderr);
 					if (sentLen == -1) {
-						perror("Got an error sending data\n");
+						perror("Got an error sending data");
 					}
 					else {
 						fprintf(stderr, "Got an error sending data, %zd bytes sent and %d expected\n", sentLen, atem.writeLen);
@@ -362,7 +362,7 @@ int main(int argc, char** argv) {
 		// Throws on select error
 		if (selectLen == -1) {
 			printTime(stderr);
-			perror("Select got an error\n");
+			perror("Select got an error");
 			exit(EXIT_FAILURE);
 		}
 
@@ -394,7 +394,7 @@ int main(int argc, char** argv) {
 		if (recvLen <= 0) {
 			printTime(stderr);
 			if (recvLen == -1) {
-				perror("Error receiving data\n");
+				perror("Error receiving data");
 			}
 			else {
 				fprintf(stderr, "Received no data: %zu\n", recvLen);
