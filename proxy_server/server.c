@@ -145,6 +145,12 @@ packet_t* createPacket(uint16_t bufLen, uint16_t sessionId, struct sockaddr sock
 	// Creates a packet for keeping information about the response
 	packet_t* packet = (packet_t*)malloc(sizeof(packet_t) + bufLen - 1);
 
+	// Throw on malloc fail
+	if (packet == NULL) {
+		fprintf(stderr, "Out of memory\n");
+		exit(EXIT_FAILURE);
+	}
+
 	// Adds who to send the response to
 	packet->sockAddr = sockAddr;
 	packet->sockLen = sockLen;
@@ -240,6 +246,12 @@ session_t* sessionsTail;
 void addNewSession(struct sockaddr sockAddr, socklen_t sockLen) {
 	// Creates a new session
 	session_t* session = (session_t*)malloc(sizeof(session_t));
+
+	// Throw on malloc fail
+	if (session == NULL) {
+		fprintf(stderr, "Out of memory\n");
+		exit(EXIT_FAILURE);
+	}
 
 	// Adds the session to the linked list
 	if (sessionsHead == NULL) {
@@ -374,7 +386,9 @@ void processRelayData() {
 	char buf[ATEM_MAX_PACKET_LEN];
 	struct sockaddr sockAddr;
 	socklen_t sockLen = sizeof(sockAddr);
-	recvfrom(proxySock, buf, ATEM_MAX_PACKET_LEN, 0, &sockAddr, &sockLen);
+	if (recvfrom(proxySock, buf, ATEM_MAX_PACKET_LEN, 0, &sockAddr, &sockLen) == -1) {
+		return;
+	}
 
 	// Processes connection changes
 	if (buf[ATEM_INDEX_FLAGS] & ATEM_FLAG_SYN) {
@@ -496,7 +510,7 @@ void loop() {
 	FD_SET(proxySock, &fds);
 	const int nfds = (proxySock > atemSock) ? proxySock : atemSock;
 	if (select(nfds + 1, &fds, NULL, NULL, &timeout) == -1) {
-		perror("Select got an error");
+		perror("Select got an error\n");
 		exit(EXIT_FAILURE);
 	}
 
