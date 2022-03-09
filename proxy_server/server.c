@@ -518,7 +518,7 @@ void loop() {
 	if (FD_ISSET(atemSock, &fds)) {
 		processAtemData();
 	}
-	else if (getTimeDiff(atemLastContact) > ATEM_TIMEOUT) {
+	else if (getTimeDiff(atemLastContact) > ATEM_TIMEOUT * 1000) {
 		resetAtemState(&atem);
 		gettimeofday(&atemLastContact, NULL);
 		sendAtem();

@@ -265,7 +265,7 @@ int main(int argc, char** argv) {
 
 	// Initializes values for select
 	struct timeval tv;
-	tv.tv_sec = ATEM_TIMEOUT / 1000;
+	tv.tv_sec = ATEM_TIMEOUT;
 	tv.tv_usec = 0;
 	fd_set fds;
 
