@@ -2,8 +2,7 @@
 #include <stdint.h> // uint8_t uint16_t
 #include <stdbool.h> // true
 #include <string.h> // memset, memcpy
-#include <stdlib.h> // malloc, free, NULL
-#include <stdlib.h> // exit, EXIT_FAILURE
+#include <stdlib.h> // malloc, free, NULL, exit, EXIT_FAILURE
 
 // Windows specific includes
 #ifdef _WIN32
