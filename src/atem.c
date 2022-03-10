@@ -67,20 +67,23 @@ void closeAtemConnection(struct atem_t *atem) {
 }
 
 // Parses an ATEM UDP packet in the atem.readBuf
-// Returns: 0 = normal, 1 = connecting client, 3 = rejected, 4 = closing, -1 = error
+// Returns: 0 = normal, 3 = rejected, 4 = closing, 5 = closed, -1 = error
 int8_t parseAtemData(struct atem_t *atem) {
 	// Sets length of read buffer
 	atem->readLen = (atem->readBuf[ATEM_INDEX_FLAG] & ATEM_FLAG_MASK) << 8 | atem->readBuf[1];
 
 	// Resends close buffer without processing read data
 	if (atem->writeBuf == closeBuf) {
+		if (atem->readBuf[ATEM_INDEX_FLAG] & ATEM_FLAG_SYN &&
+			atem->readBuf[ATEM_INDEX_OPCODE] == ATEM_CONNECTION_CLOSED
+		) {
+			return ATEM_CONNECTION_CLOSED;
+		}
 		closeBuf[ATEM_INDEX_FLAG] = ATEM_FLAG_SYN | ATEM_FLAG_RETRANSMIT;
 		closeBuf[ATEM_INDEX_SESSION] = atem->readBuf[ATEM_INDEX_SESSION];
 		closeBuf[ATEM_INDEX_SESSION + 1] = atem->readBuf[ATEM_INDEX_SESSION + 1];
 		atem->cmdIndex = atem->readLen;
-		return (atem->readBuf[ATEM_INDEX_FLAG] & ATEM_FLAG_SYN &&
-			atem->readBuf[ATEM_INDEX_OPCODE] == ATEM_CONNECTION_CLOSED)
-			? ATEM_CONNECTION_CLOSED : ATEM_CONNECTION_OK;
+		return ATEM_CONNECTION_OK;
 	}
 
 	// Sends ACK requested by this packet
