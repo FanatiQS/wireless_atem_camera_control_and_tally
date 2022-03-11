@@ -18,7 +18,6 @@
 #define OPCODE_ATEM_CLOSED 0x05
 #define OPCODE_ATEM_INDEX 12
 #define SYN_LEN 20
-#define CAMERACONTROL_DESTINATION_INDEX 0
 #define CAMERACONTROL_COMMAND_INDEX 1
 #define CAMERACONTROL_PARAMETER_INDEX 2
 #define CAMERACONTROL_CMD_LEN 32
@@ -36,7 +35,7 @@ void printTime(FILE* dest) {
 
 // Prints uint8 buffer in hex
 const char hexTable[] = "0123456789abcdef";
-void printBuffer(FILE* dest, uint8_t *buf, uint16_t len) {
+void printBuffer(FILE* dest, const uint8_t *buf, const uint16_t len) {
 	for (uint16_t i = 0; i < len; i++) {
 		fprintf(dest, "%c%c ", hexTable[buf[i] >> 4], hexTable[buf[i] & 0x0f]);
 	}
@@ -45,10 +44,8 @@ void printBuffer(FILE* dest, uint8_t *buf, uint16_t len) {
 
 // Pad message to start printing buffer at same terminal X position
 void printPaddingForInt(size_t number) {
-	int i = snprintf(NULL, 0, "%zu", number);
-	while (i < PAD_LEN_MAX) {
+	for (int i = snprintf(NULL, 0, "%zu", number); i < PAD_LEN_MAX; i++) {
 		printf(" ");
-		i++;
 	}
 }
 
@@ -369,7 +366,7 @@ int main(int argc, char** argv) {
 		// Prints message on timeout and restarts connection if flag is set
 		if (selectLen == 0) {
 			printTime(stdout);
-			printf("Connection timed out\n");
+			printf("Connection timed out\n\t");
 			if (!flagAutoReconnect) {
 				printf("Exiting\n");
 				exit(EXIT_SUCCESS);
@@ -397,7 +394,7 @@ int main(int argc, char** argv) {
 				perror("Error receiving data");
 			}
 			else {
-				fprintf(stderr, "Received no data: %zu\n", recvLen);
+				fprintf(stderr, "Received no data\n");
 			}
 			exit(EXIT_FAILURE);
 		}
@@ -442,16 +439,16 @@ int main(int argc, char** argv) {
 		}
 
 		// Throws on ATEM resend request since nothing has been sent that can be resent
-		if (atem.readBuf[0] & FLAG_ATEM_REQUEST_RESEND) {
+		if (atem.readBuf[ATEM_INDEX_FLAG] & FLAG_ATEM_REQUEST_RESEND) {
 			printTime(stderr);
-			fprintf(stderr, "Received a resend request\n");
-			printBuffer(stderr, atem.readBuf, atem.readLen);
+			fprintf(stderr, "Received a resend request\n\t");
+			printBuffer(stderr, atem.readBuf, (atem.readBuf[0] & 0x07) << 8 | atem.readBuf[1]);
 			exit(EXIT_FAILURE);
 		}
 
 		// Processes the received packet
 		switch (parseAtemData(&atem)) {
-			// Connectin is allowed to continue and might have data to read and/or write
+			// Connection is allowed to continue and might have data to read and/or write
 			case ATEM_CONNECTION_OK: break;
 			// Prints message for reject opcode
 			case ATEM_CONNECTION_REJECTED: {
@@ -463,14 +460,15 @@ int main(int argc, char** argv) {
 			// Prints message if server is closing the connection
 			case ATEM_CONNECTION_CLOSING: {
 				printTime(stdout);
+				printf("Connection is closing\n\t");
 				if (!flagAutoReconnect) {
-					printf("Connection is closing, exiting\n");
+					printf("Exiting\n");
 					exit(EXIT_SUCCESS);
 				}
-				printf("Connection is closing, restarting\n");
+				printf("Reconnecting\n");
 				break;
 			}
-			// Prints message for closed opcode
+			// Prints message if client closed the connection
 			case OPCODE_ATEM_CLOSED: {
 				printTime(stdout);
 				printf("Connection successfully closed, initiated by client\n");
@@ -480,36 +478,36 @@ int main(int argc, char** argv) {
 			// Throws on unknown opcode
 			default: {
 				printTime(stderr);
-				fprintf(stderr, "Unexpected connection status %x\n", atem.readBuf[OPCODE_ATEM_INDEX]);
+				fprintf(stderr, "Unexpected connection status 0x%x\n\t", atem.readBuf[OPCODE_ATEM_INDEX]);
 				printBuffer(stderr, atem.readBuf, atem.readLen);
-				exit(EXIT_SUCCESS);
+				exit(EXIT_FAILURE);
 			}
 			// Prints and exits for non ACKREQUEST or SYNACK packet flags
 			case ATEM_CONNECTION_ERROR: {
 				printTime(stderr);
-				fprintf(stderr, "Received packet flags without 0x08 or 0x10\n");
+				fprintf(stderr, "Received packet flags without 0x08 or 0x10\n\t");
 				printBuffer(stderr, atem.readBuf, atem.readLen);
 				exit(EXIT_FAILURE);
 			}
 		}
 
-		// Prints values from the atem_t struct
+		// Prints lastRemoteId from the atem_t struct
 		if (flagPrintLastRemoteId) printf("Struct value [ lastRemoteId ] = %d\n", atem.lastRemoteId);
 
 		// Ensures packet length matches protocol defined length
 		if (recvLen != atem.readLen) {
 			printTime(stderr);
 			fprintf(stderr, "Packet length did not match length from ATEM protocol\n\t");
-			fprintf(stderr, "Packet length: %zu\n\tProtocol length: %d\n", recvLen, atem.readLen);
+			fprintf(stderr, "Packet length: %zu\n\tProtocol length: %d\n\tBuffer: ", recvLen, atem.readLen);
 			printBuffer(stderr, atem.readBuf, atem.readLen);
 			exit(EXIT_FAILURE);
 		}
 
 		// Ensures SYNACK packets are 20 bytes long
-		if (atem.readBuf[0] & FLAG_ATEM_SYN && atem.readLen != SYN_LEN) {
+		if (atem.readBuf[ATEM_INDEX_FLAG] & FLAG_ATEM_SYN && atem.readLen != SYN_LEN) {
 			printTime(stderr);
-			fprintf(stderr, "SYNACK packet was %d bytes: ", atem.readLen);
-			printPaddedInt(atem.readLen);
+			fprintf(stderr, "SYNACK packet was %d bytes\n\t", atem.readLen);
+			printPaddingForInt(atem.readLen);
 			printBuffer(stderr, atem.readBuf, atem.readLen);
 			exit(EXIT_FAILURE);
 		}
@@ -534,16 +532,26 @@ int main(int argc, char** argv) {
 				case ATEM_CMDNAME_TALLY: {
 					// Ensures tally data is structured as expected
 					if ((cmdLen / 4) != ((atem.cmdBuf[0] << 8 | atem.cmdBuf[1]) + 13) / 4) {
-						printTime(stdout);
-						printf("Tally command did not match expected length:\n\tcmdLen: %d\n\tcmdBuf: ", cmdLen);
-						printBuffer(stdout, atem.cmdBuf, cmdLen);
+						printTime(stderr);
+						fprintf(stderr, "Tally command did not match expected length:\n\tcmdLen: %d\n\tcmdBuf: ", cmdLen);
+						printBuffer(stderr, atem.cmdBuf, cmdLen);
+						exit(EXIT_FAILURE);
+					}
+
+					// Gets number of tally sources
+					const int tallyLen = ((atem.cmdBuf[0] << 8) | atem.cmdBuf[1]);
+
+					if (tallyLen != 6) {
+						printTime(stderr);
+						fprintf(stderr, "Number of tally sources did not match\n");
+						printBuffer(stderr, atem.cmdBuf, cmdLen);
 						exit(EXIT_FAILURE);
 					}
 
 					// Ensures camera index is within range
-					if (atem.dest > ((atem.cmdBuf[0] << 8) | atem.cmdBuf[1])) {
+					if (atem.dest > tallyLen) {
 						printTime(stderr);
-						fprintf(stderr, "Camera id out of range for switcher\n");
+						fprintf(stderr, "Camera id out of range for switcher\n\tdest: %d\n\tcmdBuf: ", atem.dest);
 						printBuffer(stderr, atem.cmdBuf, cmdLen);
 						exit(EXIT_FAILURE);
 					}
@@ -551,21 +559,27 @@ int main(int argc, char** argv) {
 					// Prints tally state for selected camera id if flag is set
 					if (tallyHasUpdated(&atem) && flagPrintTally) {
 						printTime(stdout);
-						const uint8_t tally = atem.pgmTally | atem.pvwTally << 1;
-						printf("Camera %d (tally) - %s\n", atem.dest, tallyTable[tally]);
+						const char* label = tallyTable[atem.pgmTally | atem.pvwTally << 1];
+						printf("Camera %d (tally) - %s\n", atem.dest, label);
 					}
 
 					// Prints tally buffer before translation if flag is set
 					if (flagPrintTallySource) {
+						printTime(stdout);
 						printf("Tally Source Buffer - ");
 						printBuffer(stdout, atem.cmdBuf, cmdLen);
 					}
 
 					// Translates ATEMs tally protocol to Blackmagics Embedded Tally Protocol
 					translateAtemTally(&atem);
+					const uint8_t* translatedTallyBuf = atem.cmdBuf;
+					const uint16_t translatedTallyLen = atem.cmdLen;
+
+					// Prints translated tally if flag is set
 					if (flagPrintTallyTranslated) {
+						printTime(stdout);
 						printf("Translated Tally Buffer - ");
-						printBuffer(stdout, atem.cmdBuf, atem.cmdLen);
+						printBuffer(stdout, translatedTallyBuf, translatedTallyLen);
 					}
 
 					break;
@@ -579,10 +593,11 @@ int main(int argc, char** argv) {
 						exit(EXIT_FAILURE);
 					}
 
-					// Ensures all data type received can be converted correctly
+					// Ensures all data types received can be converted correctly
 					if (atem.cmdBuf[3] > 0x03 && atem.cmdBuf[3] != 0x80) {
 						printTime(stderr);
-						fprintf(stderr, "Unknown or unimplemented data type: %x\n", atem.cmdBuf[3]);
+						fprintf(stderr, "Unknown or unimplemented data type: 0x%x\n\t", atem.cmdBuf[3]);
+						printBuffer(stderr, atem.cmdBuf, cmdLen);
 						exit(EXIT_FAILURE);
 					}
 
@@ -598,7 +613,7 @@ int main(int argc, char** argv) {
 						exit(EXIT_FAILURE);
 					}
 
-					// Only print camera control data when flag is set
+					// Only prints camera control data when flag is set
 					if (flagPrintCameraControl) {
 						// Only prints for selected camera
 						if (getAtemCameraControlDest(&atem) != atem.dest) break;
@@ -607,7 +622,7 @@ int main(int argc, char** argv) {
 						printTime(stdout);
 
 						// Destination
-						printf("Camera %d (camera control) - ", atem.cmdBuf[CAMERACONTROL_DESTINATION_INDEX]);
+						printf("Camera %d (camera control) - ", getAtemCameraControlDest(&atem));
 
 						// Prints category and paramteter
 						switch (atem.cmdBuf[CAMERACONTROL_COMMAND_INDEX]) {
@@ -756,15 +771,21 @@ int main(int argc, char** argv) {
 
 					// Prints camera control buffer before translation if flag is set
 					if (flagPrintCameraControlSource) {
+						printTime(stdout);
 						printf("Camera Control Source Buffer - ");
 						printBuffer(stdout, atem.cmdBuf, cmdLen);
 					}
 
-					// Translates ATEMs camera control protocol to the Blackmagic SDI protocol and prints it
+					// Translates ATEMs camera control protocol to the Blackmagic SDI protocol
 					translateAtemCameraControl(&atem);
+					const uint8_t* translatedCameraControlBuf = atem.cmdBuf;
+					const uint16_t translatedCameraControlLen = atem.cmdLen;
+
+					// Prints translated camera control if flag is set
 					if (flagPrintCameraControlTranslated) {
+						printTime(stdout);
 						printf("Translated Camera Control Buffer - ");
-						printBuffer(stdout, atem.cmdBuf, atem.cmdLen);
+						printBuffer(stdout, translatedCameraControlBuf, translatedCameraControlLen);
 					}
 
 					//!! tcp relays camera control data to websocket clients
@@ -787,11 +808,11 @@ int main(int argc, char** argv) {
 					}
 
 					// Only print protocol version when flag is set
-					if (!flagPrintProtocolVersion) break;
+					if (flagPrintProtocolVersion) {
+						printTime(stdout);
+						printf("Protocol version: %d.%d\n", protocolVersionMajor(&atem), protocolVersionMinor(&atem));
+					}
 
-					// Prints protocol version
-					printTime(stdout);
-					printf("Protocol version: %d.%d\n", protocolVersionMajor(&atem), protocolVersionMinor(&atem));
 					break;
 				}
 				case ('W' << 24 | 'a' << 16 | 'r' << 8 | 'n'): {
@@ -806,8 +827,8 @@ int main(int argc, char** argv) {
 		// Ensures that parsing of commands was done exactly to the end
 		if (atem.cmdIndex != atem.readLen) {
 			printTime(stderr);
-			fprintf(stderr, "Structs cmdIndex and readLen were not equal after command data was processed: %d %d\n", atem.cmdIndex, atem.readLen);
-			printBuffer(stdout, atem.readBuf, atem.readLen);
+			fprintf(stderr, "Structs cmdIndex and readLen were not equal after command data was processed: %d %d\n\t", atem.cmdIndex, atem.readLen);
+			printBuffer(stderr, atem.readBuf, atem.readLen);
 			exit(EXIT_FAILURE);
 		}
 	}
