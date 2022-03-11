@@ -44,7 +44,7 @@ void printBuffer(FILE* dest, uint8_t *buf, uint16_t len) {
 }
 
 // Pad message to start printing buffer at same terminal X position
-void printPaddedInt(size_t number) {
+void printPaddingForInt(size_t number) {
 	int i = snprintf(NULL, 0, "%zu", number);
 	while (i < PAD_LEN_MAX) {
 		printf(" ");
@@ -335,7 +335,7 @@ int main(int argc, char** argv) {
 				if (flagPrintSend) {
 					printTime(stdout);
 					printf("Sent %hu bytes: ", atem.writeLen);
-					printPaddedInt(atem.writeLen);
+					printPaddingForInt(atem.writeLen);
 					printBuffer(stdout, atem.writeBuf, atem.writeLen);
 				}
 			}
@@ -343,7 +343,7 @@ int main(int argc, char** argv) {
 			else if (flagPrintDroppedSend) {
 				printTime(stdout);
 				printf("Dropped a %hu byte send: ", atem.writeLen);
-				printPaddedInt(atem.writeLen);
+				printPaddingForInt(atem.writeLen);
 				printBuffer(stdout, atem.writeBuf, atem.writeLen);
 			}
 		}
@@ -408,7 +408,7 @@ int main(int argc, char** argv) {
 			if (flagPrintDroppedRecv) {
 				printTime(stdout);
 				printf("Dropped a %zu byte recv: ", recvLen);
-				printPaddedInt(recvLen);
+				printPaddingForInt(recvLen);
 				printBuffer(stdout, atem.readBuf, clampBufferLen(recvLen));
 			}
 
@@ -424,7 +424,7 @@ int main(int argc, char** argv) {
 		if (flagPrintRecv) {
 			printTime(stdout);
 			printf("Recv %zu bytes: ", recvLen);
-			printPaddedInt(recvLen);
+			printPaddingForInt(recvLen);
 			printBuffer(stdout, atem.readBuf, clampBufferLen(recvLen));
 		}
 
@@ -516,23 +516,27 @@ int main(int argc, char** argv) {
 
 		// Processes command data in the ATEM packet
 		while (hasAtemCommand(&atem)) {
+			// Gets command name and length
+			const int oldCmdIndex = atem.cmdIndex;
 			const uint32_t cmdName = nextAtemCommand(&atem);
+			int cmdLen = atem.cmdIndex - oldCmdIndex;
 
 			// Prints command data if flag is set
 			if (flagPrintCommands) {
 				printTime(stdout);
-				printf("%c%c%c%c - %d: ", atem.cmdBuf[-4], atem.cmdBuf[-3], atem.cmdBuf[-2], atem.cmdBuf[-1], atem.cmdLen);
-				printPaddedInt(atem.cmdLen);
-				printBuffer(stdout, atem.cmdBuf, clampBufferLen(atem.cmdLen));
+				printf("%c%c%c%c - %d: ", cmdName >> 24, cmdName >> 16,
+					cmdName >> 8, cmdName, cmdLen);
+				printPaddingForInt(cmdLen);
+				printBuffer(stdout, atem.cmdBuf, clampBufferLen(cmdLen));
 			}
 
 			switch (cmdName) {
 				case ATEM_CMDNAME_TALLY: {
 					// Ensures tally data is structured as expected
-					if ((atem.cmdLen / 4) != ((atem.cmdBuf[0] << 8 | atem.cmdBuf[1]) + 13) / 4) {
+					if ((cmdLen / 4) != ((atem.cmdBuf[0] << 8 | atem.cmdBuf[1]) + 13) / 4) {
 						printTime(stdout);
-						printf("Tally command did not match expected length:\n\tcmdLen: %d\n\tcmdBuf: ", atem.cmdLen);
-						printBuffer(stdout, atem.cmdBuf, atem.cmdLen);
+						printf("Tally command did not match expected length:\n\tcmdLen: %d\n\tcmdBuf: ", cmdLen);
+						printBuffer(stdout, atem.cmdBuf, cmdLen);
 						exit(EXIT_FAILURE);
 					}
 
@@ -540,7 +544,7 @@ int main(int argc, char** argv) {
 					if (atem.dest > ((atem.cmdBuf[0] << 8) | atem.cmdBuf[1])) {
 						printTime(stderr);
 						fprintf(stderr, "Camera id out of range for switcher\n");
-						printBuffer(stderr, atem.cmdBuf, atem.cmdLen);
+						printBuffer(stderr, atem.cmdBuf, cmdLen);
 						exit(EXIT_FAILURE);
 					}
 
@@ -554,7 +558,7 @@ int main(int argc, char** argv) {
 					// Prints tally buffer before translation if flag is set
 					if (flagPrintTallySource) {
 						printf("Tally Source Buffer - ");
-						printBuffer(stdout, atem.cmdBuf, atem.cmdLen);
+						printBuffer(stdout, atem.cmdBuf, cmdLen);
 					}
 
 					// Translates ATEMs tally protocol to Blackmagics Embedded Tally Protocol
@@ -568,10 +572,10 @@ int main(int argc, char** argv) {
 				}
 				case ATEM_CMDNAME_CAMERACONTROL: {
 					// Ensures camera control data is structured as expected
-					if (atem.cmdLen != CAMERACONTROL_CMD_LEN && atem.cmdLen != CAMERACONTROL_CMD_LEN2) {
+					if (cmdLen != CAMERACONTROL_CMD_LEN && cmdLen != CAMERACONTROL_CMD_LEN2) {
 						printTime(stderr);
 						fprintf(stderr, "Camera control data was not %d bytes long\n\t", CAMERACONTROL_CMD_LEN);
-						printBuffer(stderr, atem.cmdBuf, atem.cmdLen);
+						printBuffer(stderr, atem.cmdBuf, cmdLen);
 						exit(EXIT_FAILURE);
 					}
 
@@ -590,7 +594,7 @@ int main(int argc, char** argv) {
 					) {
 						printTime(stderr);
 						fprintf(stderr, "One of the bytes assumed to be zero was not zero\n\t");
-						printBuffer(stderr, atem.cmdBuf, atem.cmdLen);
+						printBuffer(stderr, atem.cmdBuf, cmdLen);
 						exit(EXIT_FAILURE);
 					}
 
@@ -632,7 +636,7 @@ int main(int argc, char** argv) {
 									}
 									default: {
 										printf("? [%d] ?\n\t", atem.cmdBuf[CAMERACONTROL_PARAMETER_INDEX]);
-										printBuffer(stdout, atem.cmdBuf, atem.cmdLen);
+										printBuffer(stdout, atem.cmdBuf, cmdLen);
 										break;
 									}
 								}
@@ -667,7 +671,7 @@ int main(int argc, char** argv) {
 									}
 									default: {
 										printf("? [%d] ?\n\t", atem.cmdBuf[CAMERACONTROL_PARAMETER_INDEX]);
-										printBuffer(stdout, atem.cmdBuf, atem.cmdLen);
+										printBuffer(stdout, atem.cmdBuf, cmdLen);
 										break;
 									}
 								}
@@ -682,7 +686,7 @@ int main(int argc, char** argv) {
 									}
 									default: {
 										printf("? [%d] ?\n\t", atem.cmdBuf[CAMERACONTROL_PARAMETER_INDEX]);
-										printBuffer(stdout, atem.cmdBuf, atem.cmdLen);
+										printBuffer(stdout, atem.cmdBuf, cmdLen);
 										break;
 									}
 								}
@@ -721,7 +725,7 @@ int main(int argc, char** argv) {
 									}
 									default: {
 										printf("? [%d] ?\n\t", atem.cmdBuf[CAMERACONTROL_PARAMETER_INDEX]);
-										printBuffer(stdout, atem.cmdBuf, atem.cmdLen);
+										printBuffer(stdout, atem.cmdBuf, cmdLen);
 										break;
 									}
 								}
@@ -736,7 +740,7 @@ int main(int argc, char** argv) {
 									}
 									default: {
 										printf("? [%d] ?\n\t", atem.cmdBuf[CAMERACONTROL_PARAMETER_INDEX]);
-										printBuffer(stdout, atem.cmdBuf, atem.cmdLen);
+										printBuffer(stdout, atem.cmdBuf, cmdLen);
 										break;
 									}
 								}
@@ -744,7 +748,7 @@ int main(int argc, char** argv) {
 							}
 							default: {
 								printf("? [%d] ? - ? [%d] ?\n\t", atem.cmdBuf[CAMERACONTROL_COMMAND_INDEX], atem.cmdBuf[CAMERACONTROL_PARAMETER_INDEX]);
-								printBuffer(stdout, atem.cmdBuf, atem.cmdLen);
+								printBuffer(stdout, atem.cmdBuf, cmdLen);
 								break;
 							}
 						}
@@ -753,7 +757,7 @@ int main(int argc, char** argv) {
 					// Prints camera control buffer before translation if flag is set
 					if (flagPrintCameraControlSource) {
 						printf("Camera Control Source Buffer - ");
-						printBuffer(stdout, atem.cmdBuf, atem.cmdLen);
+						printBuffer(stdout, atem.cmdBuf, cmdLen);
 					}
 
 					// Translates ATEMs camera control protocol to the Blackmagic SDI protocol and prints it
@@ -775,10 +779,10 @@ int main(int argc, char** argv) {
 					//!! there should be some kind of version validation available. Maybe a macro defined tested version?
 
 					// Ensures protocol version data is structured as expected
-					if (atem.cmdLen != PROTOCOLVERSION_CMD_LEN) {
+					if (cmdLen != PROTOCOLVERSION_CMD_LEN) {
 						printTime(stderr);
 						fprintf(stderr, "Protocol version data was not %d bytes long\n\t", PROTOCOLVERSION_CMD_LEN);
-						printBuffer(stderr, atem.cmdBuf, atem.cmdLen);
+						printBuffer(stderr, atem.cmdBuf, cmdLen);
 						exit(EXIT_FAILURE);
 					}
 
@@ -794,7 +798,7 @@ int main(int argc, char** argv) {
 					printTime(stderr);
 					fprintf(stderr, "Got a warning message from the switcher\n\t");
 					fprintf(stderr, "%s\n\t", atem.cmdBuf);
-					printBuffer(stderr, atem.cmdBuf, atem.cmdLen);
+					printBuffer(stderr, atem.cmdBuf, cmdLen);
 				}
 			}
 		}
