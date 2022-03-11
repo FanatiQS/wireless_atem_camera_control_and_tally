@@ -1,7 +1,9 @@
 #include "./atem.h"
 
+// Mask to use when filtering out flags
+#define ATEM_MASK_FLAG 0x07
+
 // Atem protocol flags
-#define ATEM_FLAG_MASK 0x07
 #define ATEM_FLAG_ACKREQUEST 0x08
 #define ATEM_FLAG_SYN 0x10
 #define ATEM_FLAG_RETRANSMIT 0x20
@@ -9,26 +11,38 @@
 
 // Atem protocol indexes
 #define ATEM_INDEX_FLAG 0
-#define ATEM_INDEX_SESSION 2
-#define ATEM_INDEX_ACK 4
-#define ATEM_INDEX_REMOTEID 10
+#define ATEM_INDEX_LEN 1
+#define ATEM_INDEX_SESSION_HIGH 2
+#define ATEM_INDEX_SESSION_LOW 3
+#define ATEM_INDEX_ACK_HIGH 4
+#define ATEM_INDEX_ACK_LOW 5
+#define ATEM_INDEX_REMOTEID_HIGH 10
+#define ATEM_INDEX_REMOTEID_LOW 11
 #define ATEM_INDEX_OPCODE 12
 
 // Atem protocol handshake states (more states in header file)
+#define ATEM_CONNECTION_OPENING 0x01
 #define ATEM_CONNECTION_SUCCESS 0x02
-#define ATEM_CONNECTION_CLOSED 0x05
 
 // Atem protocol lengths
 #define ATEM_LEN_HEADER 12
 #define ATEM_LEN_SYN 20
 #define ATEM_LEN_ACK 12
+#define ATEM_LEN_CMDHEADER 8
 
 // Atem remote id range
 #define ATEM_LIMIT_REMOTEID 0x8000
 
-// Tally flags
-#define ATEM_TALLY_PGM 0x01
-#define ATEM_TALLY_PVW 0x02
+// Tally flags indicating the status
+#define TALLY_FLAG_PGM 0x01
+#define TALLY_FLAG_PVW 0x02
+
+// Indexes of length for number of tally values
+#define TALLY_INDEX_LEN_HIGH 0
+#define TALLY_INDEX_LEN_LOW 1
+
+// Offset for when using tally index as command index
+#define TALLY_OFFSET 1
 
 // Atem and camera control protocol lengths and offsets
 #define CC_HEADER_LEN 4
@@ -36,21 +50,29 @@
 #define CC_HEADER_OFFSET -3
 #define CC_ATEM_DATA_OFFSET 16
 
-// Buffer to send to establish connection
-uint8_t synBuf[ATEM_LEN_SYN] = { ATEM_FLAG_SYN, ATEM_LEN_SYN, 0x74, 0x40,
-	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-	ATEM_CONNECTION_OPENING, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
+// Buffer to send to ATEM when establishing connection
+uint8_t synBuf[ATEM_LEN_SYN] = {
+	[ATEM_INDEX_FLAG] = ATEM_FLAG_SYN,
+	[ATEM_INDEX_LEN] = ATEM_LEN_SYN,
+	[ATEM_INDEX_SESSION_HIGH] = 0x74,
+	[ATEM_INDEX_SESSION_LOW] = 0x40,
+	[ATEM_INDEX_OPCODE] = ATEM_CONNECTION_OPENING
+};
 
-// Buffer to modify and send to acknowledge a packet was received
-uint8_t ackBuf[ATEM_LEN_ACK] = { ATEM_FLAG_ACK, ATEM_LEN_ACK, 0x00, 0x00,
-	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
+// Buffer to modify and send to ATEM when acknowledging a received packet
+uint8_t ackBuf[ATEM_LEN_ACK] = {
+	[ATEM_INDEX_FLAG] = ATEM_FLAG_ACK,
+	[ATEM_INDEX_LEN] = ATEM_LEN_ACK
+};
 
-// Buffer to modify and send to close connection
-uint8_t closeBuf[ATEM_LEN_SYN] = { ATEM_FLAG_SYN, ATEM_LEN_SYN, 0x00, 0x00,
-	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-	ATEM_CONNECTION_CLOSING, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
+// Buffer to modify and send to ATEM to close the connection
+uint8_t closeBuf[ATEM_LEN_SYN] = {
+	[ATEM_INDEX_FLAG] = ATEM_FLAG_SYN,
+	[ATEM_INDEX_LEN] = ATEM_LEN_SYN,
+	[ATEM_INDEX_OPCODE] = ATEM_CONNECTION_CLOSING
+};
 
-// Resets write buffer to SYN packet for starting handshake
+// Resets write buffer to be a SYN packet for starting handshake
 void resetAtemState(struct atem_t *atem) {
 	synBuf[ATEM_INDEX_FLAG] = ATEM_FLAG_SYN | ((atem->writeBuf == synBuf) ? ATEM_FLAG_RETRANSMIT : 0);
 	atem->writeBuf = synBuf;
@@ -60,19 +82,18 @@ void resetAtemState(struct atem_t *atem) {
 // Sends a close packet to close the session
 void closeAtemConnection(struct atem_t *atem) {
 	closeBuf[ATEM_INDEX_FLAG] = ATEM_FLAG_SYN;
-	closeBuf[ATEM_INDEX_SESSION] = atem->readBuf[ATEM_INDEX_SESSION];
-	closeBuf[ATEM_INDEX_SESSION + 1] = atem->readBuf[ATEM_INDEX_SESSION + 1];
+	closeBuf[ATEM_INDEX_SESSION_HIGH] = atem->readBuf[ATEM_INDEX_SESSION_HIGH];
+	closeBuf[ATEM_INDEX_SESSION_LOW] = atem->readBuf[ATEM_INDEX_SESSION_LOW];
 	atem->writeBuf = closeBuf;
 	atem->writeLen = ATEM_LEN_SYN;
 }
 
-// Parses an ATEM UDP packet in the atem.readBuf
-// Returns: 0 = normal, 3 = rejected, 4 = closing, 5 = closed, -1 = error
+// Parses a received ATEM UDP packet
 int8_t parseAtemData(struct atem_t *atem) {
 	// Sets length of read buffer
-	atem->readLen = (atem->readBuf[ATEM_INDEX_FLAG] & ATEM_FLAG_MASK) << 8 | atem->readBuf[1];
+	atem->readLen = (atem->readBuf[ATEM_INDEX_FLAG] & ATEM_MASK_FLAG) << 8 | atem->readBuf[1];
 
-	// Resends close buffer without processing read data
+	// Resends close buffer without processing read data or returns closed state
 	if (atem->writeBuf == closeBuf) {
 		if (atem->readBuf[ATEM_INDEX_FLAG] & ATEM_FLAG_SYN &&
 			atem->readBuf[ATEM_INDEX_OPCODE] == ATEM_CONNECTION_CLOSED
@@ -80,43 +101,43 @@ int8_t parseAtemData(struct atem_t *atem) {
 			return ATEM_CONNECTION_CLOSED;
 		}
 		closeBuf[ATEM_INDEX_FLAG] = ATEM_FLAG_SYN | ATEM_FLAG_RETRANSMIT;
-		closeBuf[ATEM_INDEX_SESSION] = atem->readBuf[ATEM_INDEX_SESSION];
-		closeBuf[ATEM_INDEX_SESSION + 1] = atem->readBuf[ATEM_INDEX_SESSION + 1];
+		closeBuf[ATEM_INDEX_SESSION_HIGH] = atem->readBuf[ATEM_INDEX_SESSION_HIGH];
+		closeBuf[ATEM_INDEX_SESSION_LOW] = atem->readBuf[ATEM_INDEX_SESSION_LOW];
 		atem->cmdIndex = atem->readLen;
 		return ATEM_CONNECTION_OK;
 	}
 
-	// Sends ACK requested by this packet
+	// Responds with an ACK as requested by this packet
 	if (atem->readBuf[ATEM_INDEX_FLAG] & ATEM_FLAG_ACKREQUEST) {
-		// Gets remote id of packet
-		const uint16_t remoteId = atem->readBuf[ATEM_INDEX_REMOTEID] << 8 |
-			atem->readBuf[ATEM_INDEX_REMOTEID + 1];
+		// Gets remote id of this packet
+		const uint16_t remoteId = atem->readBuf[ATEM_INDEX_REMOTEID_HIGH] << 8 |
+			atem->readBuf[ATEM_INDEX_REMOTEID_LOW];
 
-		// Acknowledge this packet and set it as the last received remote id if next in line
+		// Acknowledges this packet if it is next in line
 		if (remoteId == (atem->lastRemoteId + 1) % ATEM_LIMIT_REMOTEID) {
-			ackBuf[ATEM_INDEX_ACK] = atem->readBuf[ATEM_INDEX_REMOTEID];
-			ackBuf[ATEM_INDEX_ACK + 1] = atem->readBuf[ATEM_INDEX_REMOTEID + 1];
+			ackBuf[ATEM_INDEX_ACK_HIGH] = atem->readBuf[ATEM_INDEX_REMOTEID_HIGH];
+			ackBuf[ATEM_INDEX_ACK_LOW] = atem->readBuf[ATEM_INDEX_REMOTEID_LOW];
 			atem->lastRemoteId = remoteId;
 		}
 		// Sets response acknowledge id to last acknowledged packet id if it is not the next in line
 		else {
-			ackBuf[ATEM_INDEX_ACK] = atem->lastRemoteId >> 8;
-			ackBuf[ATEM_INDEX_ACK + 1] = atem->lastRemoteId & 0xff;
+			ackBuf[ATEM_INDEX_ACK_HIGH] = atem->lastRemoteId >> 8;
+			ackBuf[ATEM_INDEX_ACK_LOW] = atem->lastRemoteId & 0xff;
 		}
 
 		// Set up for parsing ATEM commands in payload
 		atem->cmdIndex = ATEM_LEN_HEADER;
 	}
-	// Do not process payload or write response on non SYN or ACK request packets
+	// Does not process payload or write response on non SYN or ACK request packets
 	else if (!(atem->readBuf[ATEM_INDEX_FLAG] & ATEM_FLAG_SYN)) {
 		atem->cmdIndex = atem->readLen;
 		atem->writeLen = 0;
 		return ATEM_CONNECTION_ERROR;
 	}
-	// Sends SYNACK without processing payload to complete handshake
+	// Responds to SYNACK without processing payload to complete handshake
 	else if (atem->readBuf[ATEM_INDEX_OPCODE] == ATEM_CONNECTION_SUCCESS) {
-		ackBuf[ATEM_INDEX_ACK] = 0x00;
-		ackBuf[ATEM_INDEX_ACK + 1] = 0x00;
+		ackBuf[ATEM_INDEX_ACK_HIGH] = 0x00;
+		ackBuf[ATEM_INDEX_ACK_LOW] = 0x00;
 		atem->lastRemoteId = 0;
 		atem->cmdIndex = ATEM_LEN_SYN;
 	}
@@ -127,29 +148,26 @@ int8_t parseAtemData(struct atem_t *atem) {
 		return atem->readBuf[ATEM_INDEX_OPCODE];
 	}
 
-	// Copies over session id from incomming packet to ACK packet
-	ackBuf[ATEM_INDEX_SESSION] = atem->readBuf[ATEM_INDEX_SESSION];
-	ackBuf[ATEM_INDEX_SESSION + 1] = atem->readBuf[ATEM_INDEX_SESSION + 1];
+	// Copies over session id from incomming packet to ACK response
+	ackBuf[ATEM_INDEX_SESSION_HIGH] = atem->readBuf[ATEM_INDEX_SESSION_HIGH];
+	ackBuf[ATEM_INDEX_SESSION_LOW] = atem->readBuf[ATEM_INDEX_SESSION_LOW];
 
-	// Writes ACK buffer to server
+	// Sets ACK buffer to be written
 	atem->writeBuf = ackBuf;
 	atem->writeLen = ATEM_LEN_ACK;
 	return ATEM_CONNECTION_OK;
 }
 
-// Gets next command name and sets buffer to its payload and length to length of its payload
+// Gets next command name and sets command buffer to a pointer to its data
 uint32_t nextAtemCommand(struct atem_t *atem) {
-	// Gets start index of command
+	// Gets start index of command in read buffer
 	const uint16_t index = atem->cmdIndex;
 
-	// Gets command length from command data
-	atem->cmdLen = (atem->readBuf[index] << 8) | atem->readBuf[index + 1];
-
-	// Sets pointer to command buffer to start of command data
-	atem->cmdBuf = atem->readBuf + index + 8;
-
 	// Increment start index of command with command length to get start index for next command
-	atem->cmdIndex += atem->cmdLen;
+	atem->cmdIndex += (atem->readBuf[index] << 8) | atem->readBuf[index + 1];
+
+	// Sets pointer to command to start of command data
+	atem->cmdBuf = atem->readBuf + index + ATEM_LEN_CMDHEADER;
 
 	// Converts command name to a 32 bit integer for easy comparison
 	return (atem->readBuf[index + 4] << 24) | (atem->readBuf[index + 5] << 16) |
@@ -159,15 +177,16 @@ uint32_t nextAtemCommand(struct atem_t *atem) {
 // Gets update status for camera index and updates its tally state
 // This function has to be called before translateAtemTally
 bool tallyHasUpdated(struct atem_t *atem) {
-	// Ensures index is within range of tally data length
-	if (atem->dest > ((atem->cmdBuf[0] << 8) | atem->cmdBuf[1])) return false;
+	// Ensures destination is within range of tally data length
+	if (atem->dest > ((atem->cmdBuf[TALLY_INDEX_LEN_HIGH] << 8) |
+		atem->cmdBuf[TALLY_INDEX_LEN_LOW])) return false;
 
 	// Stores old states for PGM and PVW tally
 	const uint8_t oldTally = atem->pgmTally | atem->pvwTally << 1;
 
 	// Updates states for PGM and PVW tally
-	atem->pgmTally = atem->cmdBuf[1 + atem->dest] & ATEM_TALLY_PGM;
-	atem->pvwTally = atem->cmdBuf[1 + atem->dest] == ATEM_TALLY_PVW;
+	atem->pgmTally = atem->cmdBuf[TALLY_OFFSET + atem->dest] & TALLY_FLAG_PGM;
+	atem->pvwTally = atem->cmdBuf[TALLY_OFFSET + atem->dest] == TALLY_FLAG_PVW;
 
 	// Returns boolean indicating if tally was updated or not
  	return oldTally != (atem->pgmTally | atem->pvwTally << 1);
@@ -176,7 +195,8 @@ bool tallyHasUpdated(struct atem_t *atem) {
 // Translates tally data from ATEMs protocol to Blackmagic Embedded Tally Control Protocol
 void translateAtemTally(struct atem_t *atem) {
 	// Gets the number of items in the tally index array
-	const uint16_t len = atem->cmdBuf[0] << 8 | atem->cmdBuf[1];
+	const uint16_t len = atem->cmdBuf[TALLY_INDEX_LEN_HIGH] << 8 |
+		atem->cmdBuf[TALLY_INDEX_LEN_LOW];
 
 	// Remaps indexes to Blackmagic Embedded Tally Control Protocol
 	for (uint16_t i = 2; i <= len; i += 2) {
@@ -191,7 +211,7 @@ void translateAtemTally(struct atem_t *atem) {
 
 // Translates camera control data from ATEMs protocol to Blackmagis SDI camera control protocol
 void translateAtemCameraControl(struct atem_t *atem) {
-	// Gets data length
+	// Gets length of available data
 	const uint8_t len = atem->cmdBuf[5] + atem->cmdBuf[7] * 2 + atem->cmdBuf[9] * 4;
 
 	// Header
