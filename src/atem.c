@@ -95,15 +95,16 @@ int8_t parseAtemData(struct atem_t *atem) {
 
 	// Resends close buffer without processing read data or returns closed state
 	if (atem->writeBuf == closeBuf) {
+		atem->cmdIndex = atem->readLen;
 		if (atem->readBuf[ATEM_INDEX_FLAG] & ATEM_FLAG_SYN &&
 			atem->readBuf[ATEM_INDEX_OPCODE] == ATEM_CONNECTION_CLOSED
 		) {
+			atem->writeLen = 0;
 			return ATEM_CONNECTION_CLOSED;
 		}
 		closeBuf[ATEM_INDEX_FLAG] = ATEM_FLAG_SYN | ATEM_FLAG_RETRANSMIT;
 		closeBuf[ATEM_INDEX_SESSION_HIGH] = atem->readBuf[ATEM_INDEX_SESSION_HIGH];
 		closeBuf[ATEM_INDEX_SESSION_LOW] = atem->readBuf[ATEM_INDEX_SESSION_LOW];
-		atem->cmdIndex = atem->readLen;
 		return ATEM_CONNECTION_OK;
 	}
 
