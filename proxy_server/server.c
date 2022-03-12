@@ -129,9 +129,9 @@ typedef struct packet_t {
 	struct sockaddr sockAddr;
 	socklen_t sockLen;
 	struct timeval timestamp;
-	uint8_t resends;
+	uint8_t resendsLeft;
 	uint16_t bufLen;
-	char buf[0];
+	uint8_t buf[0];
 } packet_t;
 
 // Queue of packets awaiting acknowledgement
@@ -141,9 +141,9 @@ packet_t* queueTail;
 // Creates an ATEM packet for proxy a proxy connection
 packet_t* createPacket(uint16_t bufLen, uint16_t sessionId, struct sockaddr sockAddr, socklen_t sockLen) {
 	// Creates a packet for keeping information about the response
-	packet_t* packet = (packet_t*)malloc(sizeof(packet_t) + bufLen - 1);
+	packet_t* packet = (packet_t*)malloc(sizeof(packet_t) + bufLen);
 
-	// Throw on malloc fail
+	// Throws on malloc fail
 	if (packet == NULL) {
 		fprintf(stderr, "Out of memory\n");
 		exit(EXIT_FAILURE);
@@ -153,8 +153,11 @@ packet_t* createPacket(uint16_t bufLen, uint16_t sessionId, struct sockaddr sock
 	packet->sockAddr = sockAddr;
 	packet->sockLen = sockLen;
 
-	// Sets number of resends this packet has done to 0
-	packet->resends = 0;
+	// Sets number of resends this packet has left to what could be send before ATEM_TIMEOUT
+	packet->resendsLeft = (ATEM_TIMEOUT * 1000 / ATEM_RESEND_TIME);
+
+	// Sets timestamp to 0 to indicate it has not been initiated
+	packet->timestamp.tv_sec = 0;
 
 	// Sets length and session id of response buffer
 	memset(packet->buf, 0, bufLen);
@@ -170,7 +173,7 @@ packet_t* createPacket(uint16_t bufLen, uint16_t sessionId, struct sockaddr sock
 // Sends a packet to a proxy connection and adds it to the queue
 void sendPacket(packet_t* packet) {
 	// Sets resend flag if this is not the first time the packet has been transmitted
-	if (packet->resends > 0) packet->buf[0] |= ATEM_FLAG_RETRANSMIT;
+	if (packet->timestamp.tv_sec != 0) packet->buf[0] |= ATEM_FLAG_RETRANSMIT;
 
 	// Sends buffer of packet
 	sendto(proxySock, packet->buf, packet->bufLen, 0, &packet->sockAddr, packet->sockLen);
@@ -207,7 +210,7 @@ void dequeuePacket(packet_t* packet) {
 }
 
 // Finds a packet in the queue matching the buffer
-packet_t* findPacketInQueue(char* buf) {
+packet_t* findPacketInQueue(uint8_t* buf) {
 	packet_t* packet = queueHead;
 	while (packet != NULL) {
 		if (
@@ -226,7 +229,7 @@ packet_t* findPacketInQueue(char* buf) {
 
 
 // Structure for proxy connections
-uint16_t nextSessionId = 0;
+uint16_t lastSessionId = 0;
 typedef struct session_t {
 	struct session_t* next;
 	struct session_t* previous;
@@ -263,7 +266,7 @@ void addNewSession(struct sockaddr sockAddr, socklen_t sockLen) {
 	sessionsTail = session;
 
 	// Sets session values
-	session->id = (++nextSessionId % 0x7fff) | 0x8000;
+	session->id = (++lastSessionId % 0x7fff) | 0x8000;
 	session->remote = 1;
 	session->sockAddr = sockAddr;
 	session->sockLen = sockLen;
@@ -306,11 +309,22 @@ void removeSession(uint16_t sessionId) {
 		session->next->previous = session->previous;
 	}
 
-	// Sends close response
-	packet_t* packet = createPacket(ATEM_LEN_SYN, sessionId, session->sockAddr, session->sockLen);
-	packet->buf[ATEM_INDEX_FLAGS] = ATEM_FLAG_SYN;
-	packet->buf[ATEM_INDEX_OPCODE] = ATEM_CONNECTION_CLOSING;
-	sendPacket(packet);
+	// Removes packets from queue connected to this session
+	packet_t* packet = queueHead;
+	while (packet != NULL) {
+		if (
+			packet->buf[ATEM_INDEX_SESSION] == (sessionId >> 8) &&
+			packet->buf[ATEM_INDEX_SESSION + 1] == (sessionId & 0xff)
+		) {
+			dequeuePacket(packet);
+			packet_t* oldPacket = packet;
+			packet = packet->next;
+			free(oldPacket);
+		}
+		else {
+			packet = packet->next;
+		}
+	}
 
 	// Frees the session memory
 	free(session);
@@ -329,10 +343,7 @@ void processAtemData() {
 
 	// Parses read buffer from ATEM
 	uint8_t* writeBuf = atem.readBuf + ATEM_LEN_HEADER;
-	if (parseAtemData(&atem) == ATEM_CONNECTION_CLOSED) {
-		resetAtemState(&atem);
-		sendAtem();
-	}
+	parseAtemData(&atem);
 	while (hasAtemCommand(&atem)) {
 		switch (nextAtemCommand(&atem)) {
 			default: continue;
@@ -381,10 +392,11 @@ void processAtemData() {
 // Processes incoming data from a proxy connection
 void processRelayData() {
 	// Reads incoming data
-	char buf[ATEM_MAX_PACKET_LEN];
+	uint8_t buf[ATEM_MAX_PACKET_LEN];
 	struct sockaddr sockAddr;
 	socklen_t sockLen = sizeof(sockAddr);
 	if (recvfrom(proxySock, buf, ATEM_MAX_PACKET_LEN, 0, &sockAddr, &sockLen) == -1) {
+		perror("Unable to read data from relay socket");
 		return;
 	}
 
@@ -404,18 +416,17 @@ void processRelayData() {
 		// Closes session on request
 		else if (buf[ATEM_INDEX_OPCODE] == ATEM_CONNECTION_CLOSING) {
 			// Removes session from list
-			removeSession(buf[ATEM_INDEX_SESSION] << 8 | buf[ATEM_INDEX_SESSION + 1]);
+			removeSession(sessionId);
 
-			// Removes packets connected to session from queue
-			packet_t* packet = queueHead;
-			while (packet != NULL) {
-				if (
-					packet->buf[ATEM_INDEX_SESSION] == buf[ATEM_INDEX_SESSION] &&
-					packet->buf[ATEM_INDEX_SESSION + 1] == buf[ATEM_INDEX_SESSION + 1]
-				) {
-					dequeuePacket(packet);
-				}
-				packet = packet->next;
+			// Sends close response
+			uint8_t res[ATEM_LEN_SYN] = { ATEM_FLAG_SYN };
+			res[ATEM_INDEX_FLAGS] = ATEM_FLAG_SYN;
+			res[ATEM_INDEX_LEN] = ATEM_LEN_SYN;
+			res[ATEM_INDEX_SESSION] = sessionId >> 8;
+			res[ATEM_INDEX_SESSION + 1] = sessionId & 0xff;
+			res[ATEM_INDEX_OPCODE] = ATEM_CONNECTION_CLOSED;
+			if (sendto(proxySock, res, ATEM_LEN_SYN, 0, &sockAddr, sockLen) == -1) {
+				perror("Unable to send data to relay socket");
 			}
 		}
 	}
@@ -451,22 +462,36 @@ uint16_t getTimeDiff(struct timeval timestamp) {
 
 // Resends packets that has not been acknowledged
 void processResends() {
-	packet_t *packet = queueHead;
-	while (packet != NULL && getTimeDiff(packet->timestamp) > ATEM_RESEND_TIME) {
-		// Resends packet up to a limit of 10 times
-		if (packet->resends < 10) {
-			dequeuePacket(packet);
-			packet->resends++;
+	while (queueHead != NULL && getTimeDiff(queueHead->timestamp) > ATEM_RESEND_TIME) {
+
+		// Resends packet if there are still resends available for the packet
+		if (queueHead->resendsLeft) {
+			queueHead->resendsLeft--;
+			packet_t* packet = queueHead;
+			dequeuePacket(queueHead);
 			sendPacket(packet);
 		}
-		// Removes the packet if it has retried to many times
-		else {
-			queueHead = packet->next;
-			removeSession(packet->buf[ATEM_INDEX_SESSION] << 8 | packet->buf[ATEM_INDEX_SESSION + 1]);
+		// Removes the session if the packet has retried to many times
+		else if (queueHead->buf[ATEM_INDEX_FLAGS] & ATEM_FLAG_SYN &&
+			queueHead->buf[ATEM_INDEX_OPCODE] == ATEM_CONNECTION_CLOSING
+		) {
+			queueHead = queueHead->next;
 		}
+		else {
+			// Creates close request
+			uint16_t sessionId = queueHead->buf[ATEM_INDEX_SESSION] << 8 |
+				queueHead->buf[ATEM_INDEX_SESSION + 1];
+			packet_t* packet = createPacket(ATEM_LEN_SYN, sessionId,
+					queueHead->sockAddr, queueHead->sockLen);
+			packet->buf[ATEM_INDEX_FLAGS] = ATEM_FLAG_SYN;
+			packet->buf[ATEM_INDEX_OPCODE] = ATEM_CONNECTION_CLOSING;
+			packet->resendsLeft = 1;
 
-		// Moves to next packet to process
-		packet = packet->next;
+			// Removes the session and sends the close request
+			queueHead = queueHead->next;
+			removeSession(sessionId);
+			sendPacket(packet);
+		}
 	}
 }
 
