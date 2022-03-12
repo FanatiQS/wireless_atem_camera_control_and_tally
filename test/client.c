@@ -295,13 +295,13 @@ int main(int argc, char** argv) {
 		if (customCountdown > -1) customCountdown--;
 
 		// Closes the connection after set number of packets recevied
-		if (closeConnectionAt > -1) {
+		if (closeConnectionAt > 0) {
+			closeConnectionAt--;
 			if (closeConnectionAt == 0) {
 				printTime(stdout);
 				printf("Sending close request\n");
 				closeAtemConnection(&atem);
 			}
-			closeConnectionAt--;
 		}
 
 
