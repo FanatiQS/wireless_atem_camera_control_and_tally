@@ -381,11 +381,12 @@ int main(int argc, char** argv) {
 			// Restarts connection if flag is set
 			if (flagAutoReconnect) {
 				if (hasClosed) {
-					printf("Restarting connection\n");
+					printf("Connection closed\n");
 					hasClosed = false;
 				}
 				else {
 					printf("Restarting connection due to timeout\n");
+					resetAtemState(&atem);
 				}
 				lastRemoteId = 0;
 			}
@@ -398,6 +399,7 @@ int main(int argc, char** argv) {
 			else if (packetTimeoutAt == 0) {
 				packetTimeoutAt = -1;
 				printf("Processing delayed packets after timeout and reconnects\n");
+				resetAtemState(&atem);
 				lastRemoteId = -1;
 			}
 			// Exits client after timeout
@@ -405,9 +407,6 @@ int main(int argc, char** argv) {
 				printf("Exiting due to timeout\n");
 				exit(EXIT_SUCCESS);
 			}
-
-			// Starts a new connection after timeout
-			resetAtemState(&atem);
 
 			// Resets packet dropping after timeout if flag is set
 			if (packetResetDropAtTimeout) {
@@ -507,7 +506,7 @@ int main(int argc, char** argv) {
 			case ATEM_CONNECTION_CLOSING: {
 				if (lastRemoteId == -1 || hasClosed) break;
 				printTime(stdout);
-				printf("Connection closed by server\n");
+				printf("Connection closing, initiated by server\n");
 				hasClosed = true;
 				break;
 			}
