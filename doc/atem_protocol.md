@@ -89,7 +89,9 @@ Used during [acknowledgements](#Acknowledgements).
 * 0x01: Opening connection
 * 0x02: Connection opened successfully
 * 0x03: Connection failed to open
-* 0x04: Closing connection (has been documented as a restart opcode by others, but I belive it is a closing opcode similar to how it works in the websocket protocol)
+	Only sent once.
+* 0x04: Closing connection (has been documented as a restart opcode by others, but I belive it is a closing opcode similar to how it works in the websocket protocol).
+	This packet is resent only once if not responded to with 0x05 (closed)
 * 0x05: Connection closed
 
 
