@@ -55,7 +55,7 @@ typedef int SOCKET;
 
 //!!
 #define ATEM_PING_INTERVAL 2000
-#define ATEM_RESEND_TIME 500
+#define ATEM_RESEND_TIME 100
 
 
 
