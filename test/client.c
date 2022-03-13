@@ -88,6 +88,7 @@ int main(int argc, char** argv) {
 --printCameraControl: Prints camera control data received for cameraId\n\t\
 --printCameraControlSource: Prints the camera control buffer before it gets translated\n\t\
 --printCameraControlTranslated: Prints the translated camera control data when received for any camera\n\t\
+--tallySources: Sets the number of tally sources that model of ATEM is expected to have\n\t\
 --customCountdown <number>: Sets the number of packets to wait until running some custom code\n\t\
 --help: Prints usage text\n\t\
 --tcpRelay = Relays data to TCP server on localhost\n");
@@ -123,6 +124,7 @@ int main(int argc, char** argv) {
 	bool flagPrintCameraControlSource = false;
 	bool flagPrintCameraControlTranslated = false;
 	bool flagRelay = false;
+	int32_t tallySources = -1;
 	int customCountdown = -1;
 
 	// Parses command line arguments
@@ -203,6 +205,9 @@ int main(int argc, char** argv) {
 		}
 		else if (!strcmp(argv[i], "--printCameraControlTranslated")) {
 			flagPrintCameraControlTranslated = true;
+		}
+		else if (!strcmp(argv[i], "--tallySources")) {
+			tallySources = atoi(argv[++i]);
 		}
 		else if (!strcmp(argv[i], "--tcpRelay")) {
 			flagRelay = true;
@@ -599,9 +604,14 @@ int main(int argc, char** argv) {
 					// Gets number of tally sources
 					const int tallyLen = ((atem.cmdBuf[0] << 8) | atem.cmdBuf[1]);
 
-					if (tallyLen != 6) {
+					// Sets number of tally sources if not previously defined
+					if (tallySources == -1) {
+						tallySources = tallyLen;
+					}
+					// Ensures number of tally sources matches what was previously defined
+					else if (tallyLen != tallySources) {
 						printTime(stderr);
-						fprintf(stderr, "Number of tally sources did not match\n");
+						fprintf(stderr, "Number of tally sources did not match\n\ttallySource: %d\n\tBuffer: ", tallySources);
 						printBuffer(stderr, atem.cmdBuf, cmdLen);
 						exit(EXIT_FAILURE);
 					}
