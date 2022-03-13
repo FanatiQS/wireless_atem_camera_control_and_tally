@@ -21,7 +21,7 @@
 #define ATEM_PORT 9910
 
 // Number of seconds before switcher kills the connection for no acknowledge sent
-#define ATEM_TIMEOUT 4
+#define ATEM_TIMEOUT 5
 
 // Contains incoming and outgoing ATEM socket data
 #define ATEM_MAX_PACKET_LEN 2048
