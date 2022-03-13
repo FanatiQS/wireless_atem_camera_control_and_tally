@@ -19,8 +19,8 @@ This tests that the client can connect to the switcher correctly and keep the co
 
 1. Launch the test client with the flags: --printProtocolVersion
 2. The protocol version used by the switcher should be printed.
-2. Wait for something like 10 seconds to ensure the connection is not dropped.
-3. Exit the test client manually.
+3. Wait for something like 10 seconds to ensure the connection is not dropped.
+4. Exit the test client manually.
 
 
 
