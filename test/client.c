@@ -130,7 +130,7 @@ int main(int argc, char** argv) {
 		if (!strcmp(argv[i], "--help")) {
 			char* charptrptr[] = { argv[0] };
 			main(1, charptrptr);
-			exit(EXIT_SUCCESS);
+			exit(EXIT_FAILURE);
 		}
 		else if (!strcmp(argv[i], "--cameraId")) {
 			camid = atoi(argv[++i]);
@@ -288,8 +288,10 @@ int main(int argc, char** argv) {
 	// Initializes ATEM struct to start handshake
 	struct atem_t atem = { camid };
 	resetAtemState(&atem);
+	int32_t lastRemoteId = 0;
 
 	// Processes received packets until an error occurs
+	bool hasClosed = false;
 	while (true) {
 		// Decrement customCountdown until it reaches 0
 		if (customCountdown > -1) customCountdown--;
@@ -352,8 +354,8 @@ int main(int argc, char** argv) {
 
 		// Await data on socket or times out
 		FD_ZERO(&fds);
+		if (packetTimeoutAt > 0) packetTimeoutAt--;
 		if (packetTimeoutAt != 0) FD_SET(sock, &fds);
-		if (packetTimeoutAt >= 0) packetTimeoutAt--;
 		int selectLen = select(sock + 1, &fds, NULL, NULL, &tv);
 
 		// Throws on select error
@@ -363,16 +365,40 @@ int main(int argc, char** argv) {
 			exit(EXIT_FAILURE);
 		}
 
-		// Prints message on timeout and restarts connection if flag is set
+		// Processes timeouts and restarts connection if flag is set
 		if (selectLen == 0) {
 			printTime(stdout);
-			printf("Connection timed out\n\t");
-			if (!flagAutoReconnect) {
-				printf("Exiting\n");
+
+			// Restarts connection if flag is set
+			if (flagAutoReconnect) {
+				if (hasClosed) {
+					printf("Restarting connection\n");
+					hasClosed = false;
+				}
+				else {
+					printf("Restarting connection due to timeout\n");
+				}
+				lastRemoteId = 0;
+			}
+			// Exits client after not receiving any more data after close
+			else if (hasClosed) {
+				printf("Client exited\n");
 				exit(EXIT_SUCCESS);
 			}
+			// Processes delayed data after forced timeout
+			else if (packetTimeoutAt == 0) {
+				packetTimeoutAt = -1;
+				printf("Processing delayed packets after timeout and reconnects\n");
+				lastRemoteId = -1;
+			}
+			// Exits client after timeout
+			else {
+				printf("Exiting due to timeout\n");
+				exit(EXIT_SUCCESS);
+			}
+
+			// Starts a new connection after timeout
 			resetAtemState(&atem);
-			printf("Restarting connection\n");
 
 			// Resets packet dropping after timeout if flag is set
 			if (packetResetDropAtTimeout) {
@@ -425,6 +451,17 @@ int main(int argc, char** argv) {
 			printBuffer(stdout, atem.readBuf, clampBufferLen(recvLen));
 		}
 
+		// Ensures no more data is received after a connection has been closed
+		if (
+			hasClosed && !(atem.readBuf[ATEM_INDEX_FLAG] == 0x30 &&
+			atem.readBuf[OPCODE_ATEM_INDEX] == ATEM_CONNECTION_CLOSING)
+		) {
+			printTime(stderr);
+			fprintf(stderr, "Got data after it was expected no more data was to arrive\n\t");
+			printBuffer(stderr, atem.readBuf, atem.readLen);
+			exit(EXIT_FAILURE);
+		}
+
 
 
 		// Makes sure ack id and local id is never set
@@ -450,29 +487,35 @@ int main(int argc, char** argv) {
 		switch (parseAtemData(&atem)) {
 			// Connection is allowed to continue and might have data to read and/or write
 			case ATEM_CONNECTION_OK: break;
-			// Prints message for reject opcode
+			// Handles connection rejected
 			case ATEM_CONNECTION_REJECTED: {
 				printTime(stdout);
 				printf("Connection rejected\n");
-				if (!flagAutoReconnect) exit(EXIT_SUCCESS);
+				hasClosed = true;
 				break;
 			}
-			// Prints message if server is closing the connection
+			// Handles server is closing the connection
 			case ATEM_CONNECTION_CLOSING: {
+				if (lastRemoteId == -1 || hasClosed) break;
 				printTime(stdout);
-				printf("Connection is closing\n\t");
-				if (!flagAutoReconnect) {
-					printf("Exiting\n");
-					exit(EXIT_SUCCESS);
-				}
-				printf("Reconnecting\n");
+				printf("Connection closed by server\n");
+				hasClosed = true;
 				break;
 			}
-			// Prints message if client closed the connection
+			// Handles client closed the connection
 			case OPCODE_ATEM_CLOSED: {
+				// Got closed response without ever sending a request
+				if (closeConnectionAt != 0) {
+					printTime(stderr);
+					fprintf(stderr, "Connection closed unexpectedly with opcode 0x05\n\t");
+					printBuffer(stderr, atem.readBuf, atem.readLen);
+					exit(EXIT_FAILURE);
+				}
+
+				// Only continues reading to ensure no more data is transmitted
 				printTime(stdout);
 				printf("Connection successfully closed, initiated by client\n");
-				exit(EXIT_SUCCESS);
+				hasClosed = true;
 				break;
 			}
 			// Throws on unknown opcode
@@ -493,6 +536,21 @@ int main(int argc, char** argv) {
 
 		// Prints lastRemoteId from the atem_t struct
 		if (flagPrintLastRemoteId) printf("Struct value [ lastRemoteId ] = %d\n", atem.lastRemoteId);
+
+		// Ignores checking remote id for delayed packets processed before connection is restarted
+		if (lastRemoteId == -1) {
+			if (atem.lastRemoteId == 0) lastRemoteId = 0;
+		}
+		// Validates remote ids to be a resend or next in line
+		else {
+			if (atem.lastRemoteId != lastRemoteId && atem.lastRemoteId != lastRemoteId + 1) {
+				printTime(stderr);
+				fprintf(stderr, "Invalid remote id: %d %d\n\t", atem.lastRemoteId, lastRemoteId);
+				printBuffer(stderr, atem.readBuf, atem.readLen);
+				exit(EXIT_FAILURE);
+			}
+			lastRemoteId = atem.lastRemoteId;
+		}
 
 		// Ensures packet length matches protocol defined length
 		if (recvLen != atem.readLen) {
