@@ -137,7 +137,6 @@ int main(int argc, char** argv) {
 		if (!strcmp(argv[i], "--help")) {
 			char* charptrptr[] = { argv[0] };
 			main(1, charptrptr);
-			exit(EXIT_FAILURE);
 		}
 		else if (!strcmp(argv[i], "--cameraId")) {
 			camid = atoi(argv[++i]);
