@@ -1,5 +1,5 @@
-#include <stdio.h> // printf, perror, fprintf, snprintf, stderr, stdout, FILE, sprintf
-#include <string.h> // bzero, strcmp
+#include <stdio.h> // printf, perror, fprintf, snprintf, stderr, stdout, FILE
+#include <string.h> // memset, strcmp
 #include <stdlib.h> // exit, EXIT_FAILURE, EXIT_SUCCESS, atoi, rand, srand
 #include <time.h> // time, time_t, localtime, asctime, clock
 
@@ -277,7 +277,7 @@ int main(int argc, char** argv) {
 
 	// Creates address struct
 	struct sockaddr_in servaddr;
-	bzero(&servaddr, sizeof(servaddr));
+	memset(&servaddr, 0, sizeof(servaddr));
 	servaddr.sin_family = AF_INET;
 	servaddr.sin_port = htons(ATEM_PORT);
 	servaddr.sin_addr.s_addr = inet_addr(addr);
