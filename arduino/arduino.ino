@@ -347,40 +347,34 @@ void setup() {
 	while (WiFi.status() == 6) yield();
 }
 
+// Stores status of connection to ATEM
+#define ATEM_STATUS_OK 0
+#define ATEM_STATUS_UNINITIALIZED 0x01
+#define ATEM_STATUS_DROPPED 0x02
+int8_t atemStatus = ATEM_STATUS_UNINITIALIZED;
+
 void loop() {
 	// Processes configurations over HTTP
 	dnsServer.processNextRequest();
 	//!! MDNS.update();
 	confServer.handleClient();
 
-#ifdef DEBUG
-		Serial.print("Connection timed out\n");
-		Serial.print("WiFi status: ");
-		Serial.print(WiFi.status());
-		Serial.print("\n");
-#endif
 	// Checks if there is available UDP packet to parse
 	if (udp.parsePacket()) {
 		// Parses received UDP packet
 		udp.read(atem.readBuf, ATEM_MAX_PACKET_LEN);
 		if (parseAtemData(&atem)) {
+			atemStatus = parseAtemData(&atem);
 			return;
 		}
 
-#ifdef DEBUG
-	const int parseRes = parseAtemData(&atem);
-	if (parseRes) {
-		Serial.print("Parse fail: ");
-		Serial.print(parseRes);
-		Serial.print("\n");
-	}
-#endif
 		// Processes commands from ATEM
 		while (hasAtemCommand(&atem)) switch (nextAtemCommand(&atem)) {
 			// Turns on builtin LED and disables access point when connected to ATEM
 			case ATEM_CMDNAME_VERSION: {
 				WiFi.mode(WIFI_STA);
 				digitalWrite(LED_BUILTIN, LOW);
+				atemStatus = ATEM_STATUS_OK;
 				break;
 			}
 			// Outputs tally status on GPIO pins and SDI
@@ -406,17 +400,6 @@ void loop() {
 				//!! sdiTallyControl.write(atem.cmdBuf, atem.cmdLen);
 				break;
 			}
-#ifdef DEBUG
-				Serial.print("Protocol version: ");
-				Serial.print(protocolVersionMajor(&atem));
-				Serial.print(".");
-				Serial.print(protocolVersionMinor(&atem));
-				Serial.print("\n");
-
-				Serial.print("Session id: ");
-				Serial.print(atem.readBuf[3], HEX);
-				Serial.print("\n");
-#endif
 			// Sends camera control data over SDI
 			case ATEM_CMDNAME_CAMERACONTROL: {
 				translateAtemCameraControl(&atem);
@@ -430,6 +413,7 @@ void loop() {
 		if (millis() < timeout) return;
 		resetAtemState(&atem);
 		digitalWrite(LED_BUILTIN, HIGH);
+		atemStatus = ATEM_STATUS_DROPPED;
 	}
 
 	// Sends buffered UDP packet to ATEM and resets timeout
