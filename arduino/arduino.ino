@@ -353,39 +353,20 @@ void loop() {
 	//!! MDNS.update();
 	confServer.handleClient();
 
-	// Restarts connection to switcher on timeout
-	if (timeout < millis()) {
 #ifdef DEBUG
 		Serial.print("Connection timed out\n");
 		Serial.print("WiFi status: ");
 		Serial.print(WiFi.status());
 		Serial.print("\n");
 #endif
-		timeout = millis() + ATEM_TIMEOUT * 1000;
-		resetAtemState(&atem);
-		digitalWrite(LED_BUILTIN, HIGH);
-	}
-
-	// Sends buffered data to switcher
-	if (atem.writeLen) {
-		if (!udp.beginPacket(atemAddr, ATEM_PORT)) {
+	// Checks if there is available UDP packet to parse
+	if (udp.parsePacket()) {
+		// Parses received UDP packet
+		udp.read(atem.readBuf, ATEM_MAX_PACKET_LEN);
+		if (parseAtemData(&atem)) {
 			return;
 		}
-		udp.write(atem.writeBuf, atem.writeLen);
-		if (!udp.endPacket()) {
-			return;
-		}
-		atem.writeLen = 0;
-	}
 
-	// No data to read
-	if (!udp.parsePacket()) return;
-
-	// Reads data from UDP
-	udp.read(atem.readBuf, ATEM_MAX_PACKET_LEN);
-	timeout = millis() + ATEM_TIMEOUT * 1000;
-
-	// Parses received data
 #ifdef DEBUG
 	const int parseRes = parseAtemData(&atem);
 	if (parseRes) {
@@ -393,15 +374,13 @@ void loop() {
 		Serial.print(parseRes);
 		Serial.print("\n");
 	}
-#else
-	parseAtemData(&atem);
 #endif
-	while (hasAtemCommand(&atem)) {
-		switch (nextAtemCommand(&atem)) {
-			// Sends camera control data over SDI
-			case ATEM_CMDNAME_CAMERACONTROL: {
-				//!! translateAtemCameraControl(&atem);
-				//!! sdiCameraControl.write(atem.cmdBuf);
+		// Processes commands from ATEM
+		while (hasAtemCommand(&atem)) switch (nextAtemCommand(&atem)) {
+			// Turns on builtin LED and disables access point when connected to ATEM
+			case ATEM_CMDNAME_VERSION: {
+				WiFi.mode(WIFI_STA);
+				digitalWrite(LED_BUILTIN, LOW);
 				break;
 			}
 			// Outputs tally status on GPIO pins and SDI
@@ -423,14 +402,10 @@ void loop() {
 					digitalWrite(D1, (atem.pgmTally) ? LOW : HIGH);
 					digitalWrite(D2, (atem.pvwTally) ? LOW : HIGH);
 				}
-				//!! translateAtemTally(&atem);
+				translateAtemTally(&atem);
 				//!! sdiTallyControl.write(atem.cmdBuf, atem.cmdLen);
 				break;
 			}
-			// Turns on builtin LED and disables access point when connected to atem switcher
-			case ATEM_CMDNAME_VERSION: {
-				WiFi.mode(WIFI_STA);
-				digitalWrite(LED_BUILTIN, LOW);
 #ifdef DEBUG
 				Serial.print("Protocol version: ");
 				Serial.print(protocolVersionMajor(&atem));
@@ -442,8 +417,24 @@ void loop() {
 				Serial.print(atem.readBuf[3], HEX);
 				Serial.print("\n");
 #endif
+			// Sends camera control data over SDI
+			case ATEM_CMDNAME_CAMERACONTROL: {
+				translateAtemCameraControl(&atem);
+				//!! sdiCameraControl.write(atem.cmdBuf);
 				break;
 			}
 		}
 	}
+	// Restarts connection to ATEM if it has lost connection
+	else {
+		if (millis() < timeout) return;
+		resetAtemState(&atem);
+		digitalWrite(LED_BUILTIN, HIGH);
+	}
+
+	// Sends buffered UDP packet to ATEM and resets timeout
+	timeout = millis() + ATEM_TIMEOUT * 1000;
+	if (!udp.beginPacket(atemAddr, ATEM_PORT)) return;
+	udp.write(atem.writeBuf, atem.writeLen);
+	udp.endPacket();
 }
