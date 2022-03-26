@@ -339,19 +339,12 @@ void setup() {
 	confServer.begin();
 
 	// Connects to last connected WiFi
-#ifdef DEBUG
-	Serial.print("\n\nConnecting to WiFi\n");
-#endif
 	WiFi.mode(WIFI_AP_STA);
 	WiFi.config(localAddr, gateway, subnetMask);
 	WiFi.begin();
 	WiFi.persistent(true);
 	udp.begin(1234);
 	while (WiFi.status() == 6) yield();
-#ifdef DEBUG
-	Serial.print("Connected to WiFi\n");
-	Serial.print("Setup complete\n");
-#endif
 }
 
 void loop() {
@@ -376,16 +369,10 @@ void loop() {
 	// Sends buffered data to switcher
 	if (atem.writeLen) {
 		if (!udp.beginPacket(atemAddr, ATEM_PORT)) {
-#ifdef DEBUG
-			Serial.print("Unable to create UDP packet\n");
-#endif
 			return;
 		}
 		udp.write(atem.writeBuf, atem.writeLen);
 		if (!udp.endPacket()) {
-#ifdef DEBUG
-			Serial.print("Failed to send data\n");
-#endif
 			return;
 		}
 		atem.writeLen = 0;
