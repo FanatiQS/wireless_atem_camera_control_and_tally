@@ -419,13 +419,6 @@ void loop() {
 			}
 			// Outputs tally status on GPIO pins and SDI
 			case ATEM_CMDNAME_TALLY: {
-#ifdef DEBUG
-				Serial.print("Raw tally data: ");
-				Serial.print(atem.cmdBuf[1 + atem.dest]);
-				Serial.print(", index: ");
-				Serial.print(atem.dest);
-				Serial.print("\n");
-#endif
 				if (tallyHasUpdated(&atem)) {
 #ifdef DEBUG
 					Serial.print("Tally state: ");
