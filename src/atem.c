@@ -99,7 +99,7 @@ int8_t parseAtemData(struct atem_t *atem) {
 		if (atem->readBuf[ATEM_INDEX_FLAG] & ATEM_FLAG_SYN &&
 			atem->readBuf[ATEM_INDEX_OPCODE] == ATEM_CONNECTION_CLOSED
 		) {
-			atem->writeLen = 0;
+			resetAtemState(atem);
 			return ATEM_CONNECTION_CLOSED;
 		}
 		closeBuf[ATEM_INDEX_FLAG] = ATEM_FLAG_SYN | ATEM_FLAG_RETRANSMIT;
