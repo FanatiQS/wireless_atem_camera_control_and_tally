@@ -342,6 +342,10 @@ void processAtemData() {
 	uint8_t* writeBuf = atem.readBuf + ATEM_LEN_HEADER;
 	parseAtemData(&atem);
 	while (hasAtemCommand(&atem)) {
+		// Gets index of command
+		uint16_t startIndex = atem.cmdIndex;
+
+		// Filters out interesting commands
 		switch (nextAtemCommand(&atem)) {
 			default: continue;
 			case ATEM_CMDNAME_VERSION: {
@@ -360,18 +364,19 @@ void processAtemData() {
 		}
 
 		// Filters out interesting command for proxy sockets
-		memcpy(writeBuf, atem.cmdBuf - 8, atem.cmdLen + 8);
-		writeBuf += atem.cmdLen;
+		uint16_t cmdLen = atem.cmdIndex - startIndex;
+		memcpy(writeBuf, atem.cmdBuf - 8, cmdLen);
+		writeBuf += cmdLen;
 	}
-
-	// Gets length of packet after filtering out unisteresting commands
-	uint16_t writeLen = writeBuf - atem.readBuf;
 
 	// Sends response to atem switcher
 	sendAtem();
 
 	// Updates time stamp for most recent atem packet
 	gettimeofday(&atemLastContact, NULL);
+
+	// Gets length of packet after filtering out unisteresting commands
+	uint16_t writeLen = writeBuf - atem.readBuf;
 
 	// Retransmits the filtered data to proxy connections
 	if (writeLen > ATEM_LEN_HEADER) {
