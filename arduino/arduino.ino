@@ -294,11 +294,11 @@ void setup() {
 	Serial.begin(9600);
 #endif
 	EEPROM.begin(17);
-	pinMode(D1, OUTPUT);
-	pinMode(D2, OUTPUT);
+	pinMode(D5, OUTPUT);
+	pinMode(D6, OUTPUT);
 	pinMode(LED_BUILTIN, OUTPUT);
-	digitalWrite(D1, HIGH);
-	digitalWrite(D2, HIGH);
+	digitalWrite(D5, HIGH);
+	digitalWrite(D6, HIGH);
 	digitalWrite(LED_BUILTIN, HIGH);
 
 	// Initializes tally over SDI
@@ -393,8 +393,8 @@ void loop() {
 					}
 					Serial.print("\n");
 #endif
-					digitalWrite(D1, (atem.pgmTally) ? LOW : HIGH);
-					digitalWrite(D2, (atem.pvwTally) ? LOW : HIGH);
+					digitalWrite(D5, (atem.pgmTally) ? LOW : HIGH);
+					digitalWrite(D6, (atem.pvwTally) ? LOW : HIGH);
 				}
 				translateAtemTally(&atem);
 				//!! sdiTallyControl.write(atem.cmdBuf, atem.cmdLen);
