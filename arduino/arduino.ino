@@ -339,6 +339,7 @@ void setup() {
 	// Connects to last connected WiFi
 	WiFi.mode(WIFI_AP_STA);
 	WiFi.persistent(true);
+	WiFi.setAutoReconnect(true);
 	if (conf.useStaticIP) {
 		WiFi.config(conf.localAddr, conf.gateway, conf.netmask);
 	}
