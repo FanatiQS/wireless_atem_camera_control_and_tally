@@ -19,11 +19,21 @@
 #include "atem.h"
 #define DEBUG
 
+
+
+// Struct for percistent data used at boot
+struct __attribute__((__packed__)) config_t {
+	uint8_t dest;
+	uint32_t atemAddr;
+	uint32_t localAddr;
+	uint32_t gateway;
+	uint32_t netmask;
+	bool useStaticIP;
+};
+
+// ATEM communication data that percists between loop cycles
 WiFiUDP udp;
 IPAddress atemAddr;
-IPAddress localAddr;
-IPAddress gateway;
-IPAddress subnetMask;
 struct atem_t atem;
 unsigned long timeout = 0;
 ESP8266WebServer confServer(80);
@@ -293,7 +303,8 @@ void setup() {
 #ifdef DEBUG
 	Serial.begin(9600);
 #endif
-	EEPROM.begin(17);
+
+	// Initializes status LED pins
 	pinMode(D5, OUTPUT);
 	pinMode(D6, OUTPUT);
 	pinMode(LED_BUILTIN, OUTPUT);
@@ -308,25 +319,12 @@ void setup() {
 	// Initializes camera control over SDI
 	//!! sdiCameraControl.begin();
 	//!! sdiCameraControl.setOverride(true);
-
-	// Gets configuration from percistent memory
-	atem.dest = EEPROM.read(0);
-	atemAddr[0] = EEPROM.read(1);
-	atemAddr[1] = EEPROM.read(2);
-	atemAddr[2] = EEPROM.read(3);
-	atemAddr[3] = EEPROM.read(4);
-	localAddr[0] = EEPROM.read(5);
-	localAddr[1] = EEPROM.read(6);
-	localAddr[2] = EEPROM.read(7);
-	localAddr[3] = EEPROM.read(8);
-	gateway[0] = EEPROM.read(9);
-	gateway[1] = EEPROM.read(10);
-	gateway[2] = EEPROM.read(11);
-	gateway[3] = EEPROM.read(12);
-	subnetMask[0] = EEPROM.read(13);
-	subnetMask[1] = EEPROM.read(14);
-	subnetMask[2] = EEPROM.read(15);
-	subnetMask[3] = EEPROM.read(16);
+	// Gets configuration from persistent memory and updates global conf
+	struct config_t conf;
+	EEPROM.begin(sizeof(conf));
+	EEPROM.get(0, conf);
+	atem.dest = conf.dest;
+	atemAddr = conf.atemAddr;
 
 	// Adds mDNS querying support
 	//!! MDNS.begin("esp8266");
@@ -340,11 +338,13 @@ void setup() {
 
 	// Connects to last connected WiFi
 	WiFi.mode(WIFI_AP_STA);
-	WiFi.config(localAddr, gateway, subnetMask);
-	WiFi.begin();
 	WiFi.persistent(true);
+	if (conf.useStaticIP) {
+		WiFi.config(conf.localAddr, conf.gateway, conf.netmask);
+	}
+	WiFi.begin();
 	udp.begin(1234);
-	while (WiFi.status() == 6) yield();
+	while (wifi_station_get_connect_status() == STATION_CONNECTING) yield();
 }
 
 // Stores status of connection to ATEM
