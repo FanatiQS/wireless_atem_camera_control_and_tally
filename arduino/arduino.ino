@@ -20,6 +20,13 @@
 #include "html_template_engine.h"
 
 #define DEBUG
+#define DEBUG_TALLY
+
+// Disables tally and camera control data debugging if debugging itself is not enabled
+#ifndef DEBUG
+#undef DEBUG_TALLY
+#undef DEBUG_CC
+#endif
 
 
 
@@ -222,6 +229,13 @@ void loop() {
 		while (hasAtemCommand(&atem)) switch (nextAtemCommand(&atem)) {
 			// Turns on builtin LED and disables access point when connected to ATEM
 			case ATEM_CMDNAME_VERSION: {
+#ifdef DEBUG
+				Serial.print("Connected to ATEM\n");
+				Serial.print("Got protocol version: ");
+				Serial.print(protocolVersionMajor(&atem));
+				Serial.print(".");
+				Serial.println(protocolVersionMinor(&atem));
+#endif
 				WiFi.mode(WIFI_STA);
 				digitalWrite(LED_BUILTIN, LOW);
 				atemStatus = ATEM_STATUS_OK;
@@ -230,7 +244,7 @@ void loop() {
 			// Outputs tally status on GPIO pins and SDI
 			case ATEM_CMDNAME_TALLY: {
 				if (tallyHasUpdated(&atem)) {
-#ifdef DEBUG
+#ifdef DEBUG_TALLY
 					Serial.print("Tally state: ");
 					if (atem.pgmTally) {
 						Serial.print("PGM");
@@ -252,6 +266,9 @@ void loop() {
 			}
 			// Sends camera control data over SDI
 			case ATEM_CMDNAME_CAMERACONTROL: {
+#ifdef DEBUG_CC
+				Serial.print("Got camera control data\n");
+#endif
 				translateAtemCameraControl(&atem);
 				//!! sdiCameraControl.write(atem.cmdBuf);
 				break;
@@ -264,6 +281,11 @@ void loop() {
 		resetAtemState(&atem);
 		digitalWrite(LED_BUILTIN, HIGH);
 		atemStatus = ATEM_STATUS_DROPPED;
+#ifdef DEBUG
+		if (timeout != 0) {
+			Serial.print("No connection to ATEM\n");
+		}
+#endif
 	}
 
 	// Sends buffered UDP packet to ATEM and resets timeout
