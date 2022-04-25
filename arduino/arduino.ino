@@ -22,7 +22,7 @@
 
 
 // Struct for percistent data used at boot
-struct __attribute__((__packed__)) config_t {
+struct __attribute__((__packed__)) configData_t {
 	uint8_t dest;
 	uint32_t atemAddr;
 	uint32_t localAddr;
@@ -312,6 +312,13 @@ void setup() {
 	digitalWrite(D6, HIGH);
 	digitalWrite(LED_BUILTIN, HIGH);
 
+	// Gets configuration from persistent memory and updates global conf
+	struct configData_t confData;
+	EEPROM.begin(sizeof(confData));
+	EEPROM.get(0, confData);
+	atem.dest = confData.dest;
+	atemAddr = confData.atemAddr;
+
 	// Initializes tally over SDI
 	//!! sdiTallyControl.begin();
 	//!! sdiTallyControl.setOverride(true);
@@ -319,12 +326,6 @@ void setup() {
 	// Initializes camera control over SDI
 	//!! sdiCameraControl.begin();
 	//!! sdiCameraControl.setOverride(true);
-	// Gets configuration from persistent memory and updates global conf
-	struct config_t conf;
-	EEPROM.begin(sizeof(conf));
-	EEPROM.get(0, conf);
-	atem.dest = conf.dest;
-	atemAddr = conf.atemAddr;
 
 	// Adds mDNS querying support
 	//!! MDNS.begin("esp8266");
@@ -340,8 +341,8 @@ void setup() {
 	WiFi.mode(WIFI_AP_STA);
 	WiFi.persistent(true);
 	WiFi.setAutoReconnect(true);
-	if (conf.useStaticIP) {
-		WiFi.config(conf.localAddr, conf.gateway, conf.netmask);
+	if (confData.useStaticIP) {
+		WiFi.config(confData.localAddr, confData.gateway, confData.netmask);
 	}
 	WiFi.begin();
 	udp.begin(1234);
