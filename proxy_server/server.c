@@ -78,7 +78,9 @@ void sendPacket(packet_t* packet) {
 	if (packet->timestamp.tv_sec != 0) packet->buf[0] |= ATEM_FLAG_RETRANSMIT;
 
 	// Sends buffer of packet
-	sendto(proxySock, packet->buf, packet->bufLen, 0, &packet->sockAddr, packet->sockLen);
+	if (sendto(proxySock, packet->buf, packet->bufLen, 0, &packet->sockAddr, packet->sockLen) == -1) {
+		perror("Unable to send data to relay socket");
+	}
 
 	// Adds the packet to end of linked list for packets in transit
 	if (queueHead == NULL) {
@@ -92,7 +94,7 @@ void sendPacket(packet_t* packet) {
 	queueTail = packet;
 
 	// Updates timestamp of when it was sent
-	gettimeofday(&packet->timestamp, NULL);
+	getTime(&packet->timestamp);
 }
 
 // Creates and sends an ATEM syn packet with the specified opcode
@@ -362,7 +364,7 @@ void maintainProxyConnections(const bool socketHasData) {
 		}
 
 		// Updates timestamp for last ping cycle to current time
-		gettimeofday(&lastProxyPing, NULL);
+		getTime(&lastProxyPing);
 	}
 }
 

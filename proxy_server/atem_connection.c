@@ -19,7 +19,9 @@ struct timeval atemLastContact;
 
 // Sends the buffered ATEM data to the ATEM switcher
 void sendAtem() {
-	send(atemSock, atem.writeBuf, atem.writeLen, 0);
+	if (send(atemSock, atem.writeBuf, atem.writeLen, 0) == -1) {
+		perror("Failed to send data to ATEM");
+	}
 }
 
 // Connects to an ATEM switcher
@@ -42,7 +44,7 @@ void setupAtemSocket(const char* addr) {
 	}
 
 	// Initializes ATEM connection to switcher
-	gettimeofday(&atemLastContact, NULL);
+	getTime(&atemLastContact);
 	resetAtemState(&atem);
 	sendAtem();
 }
@@ -53,8 +55,7 @@ void maintainAtemConnection(const bool socketHasData) {
 	if (socketHasData) {
 		// Reads data from the ATEM switcher
 		if (recv(atemSock, atem.readBuf, ATEM_MAX_PACKET_LEN, 0) == -1) {
-			closeAtemConnection(&atem);
-			sendAtem();
+			perror("Unable to read data from ATEM");
 			return;
 		}
 
@@ -65,7 +66,7 @@ void maintainAtemConnection(const bool socketHasData) {
 		sendAtem();
 
 		// Updates time stamp for most recent atem packet
-		gettimeofday(&atemLastContact, NULL);
+		getTime(&atemLastContact);
 
 		// Loops through all commands to filter out only the once we need
 		uint8_t* allCommands = atem.readBuf + ATEM_LEN_HEADER;
@@ -109,7 +110,7 @@ void maintainAtemConnection(const bool socketHasData) {
 	// Tries to reconnect if not getting response from ATEM
 	else if (getTimeDiff(atemLastContact) > ATEM_TIMEOUT * 1000) {
 		resetAtemState(&atem);
-		gettimeofday(&atemLastContact, NULL);
+		getTime(&atemLastContact);
 		sendAtem();
 	}
 }

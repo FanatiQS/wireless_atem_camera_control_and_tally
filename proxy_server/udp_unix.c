@@ -30,11 +30,19 @@ struct sockaddr_in createAddr(const in_addr_t addr) {
 uint16_t getTimeDiff(struct timeval timestamp) {
 	// Gets current time
 	struct timeval currentTime;
-	gettimeofday(&currentTime, NULL);
+	getTime(&currentTime);
 
 	// Gets millisecond precision difference in time between now and timestamp
 	uint16_t diff = 0;
 	diff += (currentTime.tv_sec - timestamp.tv_sec) * 1000;
 	diff += (currentTime.tv_usec - timestamp.tv_usec) / 1000;
 	return diff;
+}
+
+// Gets current time
+void getTime(struct timeval* timestamp) {
+	if (gettimeofday(timestamp, NULL) == -1) {
+		perror("Unable to get time of day");
+		exit(EXIT_FAILURE);
+	}
 }
