@@ -119,15 +119,18 @@ int8_t parseAtemData(struct atem_t *atem) {
 			ackBuf[ATEM_INDEX_ACK_HIGH] = atem->readBuf[ATEM_INDEX_REMOTEID_HIGH];
 			ackBuf[ATEM_INDEX_ACK_LOW] = atem->readBuf[ATEM_INDEX_REMOTEID_LOW];
 			atem->lastRemoteId = remoteId;
+
+			// Sets up for parsing ATEM commands in payload
+			atem->cmdIndex = ATEM_LEN_HEADER;
 		}
 		// Sets response acknowledge id to last acknowledged packet id if it is not the next in line
 		else {
 			ackBuf[ATEM_INDEX_ACK_HIGH] = atem->lastRemoteId >> 8;
 			ackBuf[ATEM_INDEX_ACK_LOW] = atem->lastRemoteId & 0xff;
-		}
 
-		// Set up for parsing ATEM commands in payload
-		atem->cmdIndex = ATEM_LEN_HEADER;
+			// Sets up to not parse ATEM commands for already processed packet id
+			atem->cmdIndex = atem->readLen;
+		}
 	}
 	// Does not process payload or write response on non SYN or ACK request packets
 	else if (!(atem->readBuf[ATEM_INDEX_FLAG] & ATEM_FLAG_SYN)) {

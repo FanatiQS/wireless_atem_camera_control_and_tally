@@ -46,6 +46,15 @@ This tests that the connection is kept even during times with lots of traffic wi
 
 
 
+### Packet resends
+This tests that resent packets are not processed if already received and processed once before.
+
+1. Launch the test client with the flags: --printProtocolVersion --packetDropStartSend 2 --packetDropChanceSend 100
+2. The protocol version should be printed once.
+3. The test client is going to close itself automatically.
+
+
+
 ### Packets out of order
 This tests that the connection is kept even if packets arrive out of order.
 
