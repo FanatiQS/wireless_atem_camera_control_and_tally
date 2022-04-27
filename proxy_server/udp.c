@@ -1,9 +1,6 @@
 #include <stdio.h> // perror
 #include <stdlib.h> // exit, EXIT_FAILURE
 
-#include <sys/socket.h> // socket, AF_INET, SOCK_DGRAM
-#include <arpa/inet.h> // htons
-
 #include "./udp.h"
 #include "../src/atem.h"
 
