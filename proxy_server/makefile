@@ -1,5 +1,7 @@
-server: server.c ../src/atem.c ../src/atem.h
-	gcc server.c ../src/atem.c -o server
+FILES := server.c udp_unix.c atem_connection.c ../src/atem.c
+
+server: $(FILES) ../src/atem.h atem_connection.h udp_unix.h udp.h
+	gcc $(FILES) -o server
 
 clean:
 	rm server
