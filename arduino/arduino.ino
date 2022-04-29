@@ -45,11 +45,15 @@ WiFiUDP udp;
 IPAddress atemAddr;
 struct atem_t atem;
 unsigned long timeout = 0;
+//!! BMD_SDITallyControl_I2C sdiTallyControl(0x6E);
+//!! BMD_SDICameraControl_I2C sdiCameraControl(0x6E);
+
+
+
+// Configuration HTTP server and redirection DNS
 ESP8266WebServer confServer(80);
 DNSServer dnsServer;
 
-//!! BMD_SDITallyControl_I2C sdiTallyControl(0x6E);
-//!! BMD_SDICameraControl_I2C sdiCameraControl(0x6E);
 
 // HTML configuration page template for use with html templating engine
 #define HTML_CONFIG($, conf)\
@@ -70,7 +74,7 @@ DNSServer dnsServer;
 	HTML_INPUT_NUMBER($, "Camera number", atem.dest, 254, 1, "dest")\
 	HTML_INPUT_IP($, "ATEM IP", (uint32_t)atemAddr, "atemAddr")\
 	HTML_SPACER($)\
-	HTML_INPUT_CHECKBOX($, "Use Static IP", conf.useStaticIP, "useStaticIP"\
+	HTML_INPUT_CHECKBOX($, "Use Static IP", conf.useStaticIP, "useStaticIP")\
 	HTML_INPUT_IP($, "Local IP", (uint32_t)WiFi.localIP(), "static-localAddr")\
 	HTML_INPUT_IP($, "Gateway", (uint32_t)WiFi.gatewayIP(), "static-gateway")\
 	HTML_INPUT_IP($, "Subnet mask", (uint32_t)WiFi.subnetMask(), "static-netmask")\
