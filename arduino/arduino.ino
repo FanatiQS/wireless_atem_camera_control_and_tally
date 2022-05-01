@@ -196,9 +196,10 @@ void handleHTTP() {
 	// Processes GET requests
 	else {
 		EEPROM.get(0, confData);
-		char html[HTML_GET_LEN(HTML_CONFIG)];
+		char* html = (char*)malloc(HTML_GET_LEN(HTML_CONFIG));
 		sprintf(html, HTML_BUILD(HTML_CONFIG, confData));
 		confServer.send(200, "text/html", html);
+		free(html);
 	}
 }
 
