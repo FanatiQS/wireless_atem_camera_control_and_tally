@@ -54,6 +54,45 @@ unsigned long timeout = 0;
 ESP8266WebServer confServer(80);
 DNSServer dnsServer;
 
+// Gets the analog voltage level calculated from voltage divider
+#define RESOLUTION_MAX 1024
+#define VMAX 3300
+#define R1 300
+#define R2 47
+#define TRANSLATE_VOLTAGE(vout) (float)(VMAX * (R1 + R2) / R2 * vout / RESOLUTION_MAX) / 1000
+
+// Stores status of connection to ATEM
+#define STATUS_UNCONNECTED 0
+#define STATUS_CONNECTED 1
+#define STATUS_DROPPED 2
+#define STATUS_REJECTED 3
+#define STATUS_DISCONNECTED 4
+uint8_t atemStatus = STATUS_UNCONNECTED;
+
+// Gets string representing status of ATEM connection
+#define STATUS_TITLE_UNCONNECTED "Unconnected"
+#define STATUS_TITLE_CONNECTED "Connected"
+#define STATUS_TITLE_DROPPED "Lost connection"
+#define STATUS_TITLE_REJECTED "Rejected"
+#define STATUS_TITLE_DISCONNECTED "Disconnected"
+#define STATUS_LONGEST(str1, str2) ((STRLEN(str1) > STRLEN(str2)) ? str1 : str2)
+#define STATUS_LONGEST1 STATUS_LONGEST(STATUS_TITLE_UNCONNECTED, STATUS_TITLE_CONNECTED)
+#define STATUS_LONGEST2 STATUS_LONGEST(STATUS_TITLE_DROPPED, STATUS_TITLE_REJECTED)
+#define STATUS_LONGEST3 (STATUS_TITLE_DISCONNECTED)
+#define STATUS_LONGEST4 STATUS_LONGEST(STATUS_LONGEST1, STATUS_LONGEST2)
+#define STATUS_LONGEST5 (STATUS_LONGEST3)
+#define STATUS_LONGEST6 STATUS_LONGEST(STATUS_LONGEST4, STATUS_LONGEST5)
+#define STATUS_LEN STRLEN(STATUS_LONGEST6)
+char* getAtemStatus() {
+	switch (atemStatus) {
+		case STATUS_UNCONNECTED: return "Unconnected";
+		case STATUS_CONNECTED: return "Connected";
+		case STATUS_DROPPED: return "Lost connection";
+		case STATUS_REJECTED: return "Rejected";
+		case STATUS_DISCONNECTED: return "Disconnected";
+		default: return "Unknown";
+	}
+}
 
 // HTML configuration page template for use with html templating engine
 #define HTML_CONFIG($, conf)\
@@ -68,6 +107,13 @@ DNSServer dnsServer;
 		"</style>"\
 		"</head><body><form method=post><table>"\
 	)\
+	HTML_CURRENT_TIME($, "Request time")\
+	HTML_TIME($, "Time since boot", time(NULL))\
+	HTML_SPACER($)\
+	HTML_RSSI($, "WiFi signal strength", WiFi.RSSI(), WiFi.isConnected())\
+	HTML_INFO($, "Voltage level", TRANSLATE_VOLTAGE(analogRead(A0)), 4, "%.1f", " v")\
+	HTML_INFO($, "ATEM connection status", getAtemStatus(), STATUS_LEN, "%s", "")\
+	HTML_SPACER($)\
 	HTML_INPUT_TEXT($, "Network name (SSID)", WiFi.SSID().c_str(), 32, "ssid")\
 	HTML_INPUT_TEXT($, "Network password (PSK)", WiFi.psk().c_str(), 63, "psk")\
 	HTML_SPACER($)\
@@ -208,12 +254,6 @@ void setup() {
 	while (wifi_station_get_connect_status() == STATION_CONNECTING) yield();
 }
 
-// Stores status of connection to ATEM
-#define ATEM_STATUS_OK 0
-#define ATEM_STATUS_UNINITIALIZED 0x01
-#define ATEM_STATUS_DROPPED 0x02
-int8_t atemStatus = ATEM_STATUS_UNINITIALIZED;
-
 void loop() {
 	// Processes configurations over HTTP
 	dnsServer.processNextRequest();
@@ -224,9 +264,17 @@ void loop() {
 	if (udp.parsePacket()) {
 		// Parses received UDP packet
 		udp.read(atem.readBuf, ATEM_MAX_PACKET_LEN);
-		if (parseAtemData(&atem)) {
-			atemStatus = parseAtemData(&atem);
-			return;
+		switch (parseAtemData(&atem)) {
+			case ATEM_CONNECTION_OK: break;
+			case ATEM_CONNECTION_REJECTED: {
+				atemStatus = STATUS_REJECTED;
+				return;
+			}
+			case ATEM_CONNECTION_CLOSING: {
+				atemStatus = STATUS_DISCONNECTED;
+				return;
+			}
+			default: return;
 		}
 
 		// Processes commands from ATEM
@@ -242,7 +290,7 @@ void loop() {
 #endif
 				WiFi.mode(WIFI_STA);
 				digitalWrite(LED_BUILTIN, LOW);
-				atemStatus = ATEM_STATUS_OK;
+				atemStatus = STATUS_CONNECTED;
 				break;
 			}
 			// Outputs tally status on GPIO pins and SDI
@@ -284,7 +332,7 @@ void loop() {
 		if (millis() < timeout) return;
 		resetAtemState(&atem);
 		digitalWrite(LED_BUILTIN, HIGH);
-		atemStatus = ATEM_STATUS_DROPPED;
+		if (atemStatus == STATUS_CONNECTED) atemStatus = STATUS_DROPPED;
 #ifdef DEBUG
 		if (timeout != 0) {
 			Serial.print("No connection to ATEM\n");

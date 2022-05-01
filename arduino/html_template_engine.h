@@ -78,3 +78,27 @@
 	HTML($, "<input type=checkbox name=" name)\
 	TEMPLATE($, "%s", (value) ? _CHECKBOX_ATTRIBUTE : "", STRLEN(_CHECKBOX_ATTRIBUTE))\
 	HTML($, ">")
+
+// Creates an HTML info row containing the current time
+#define HTML_CURRENT_TIME($, label)\
+	HTML_ROW($, label)\
+	HTML($, "<script>document.scripts[0].parentElement.innerHTML="\
+	"new Date().toLocaleTimeString()</script>")
+
+// Creates an HTML row containing time since device boot
+#define HTML_TIME($, label, value)\
+	HTML_ROW($, label)\
+	TEMPLATE($, "%u", (uint16_t)(value / (60*60)), STRLEN(INT_TO_STR2(UINT16_MAX)))\
+	HTML($, "h ")\
+	TEMPLATE($, "%.2u", (uint8_t)(value / 60 % 60), 2)\
+	HTML($, "m ")\
+	TEMPLATE($, "%.2u", (uint8_t)(value % 60), 2)\
+	HTML($, "s")
+
+// Creates an HTML info row containing wifi signal strength
+#define HTML_RSSI_STR "Not connected<td hidden>"
+#define HTML_RSSI($, label, rssi, isConnected)\
+	HTML_ROW($, label)\
+	TEMPLATE($, "%s", (!isConnected) ? HTML_RSSI_STR : "", STRLEN(HTML_RSSI_STR))\
+	TEMPLATE($, "%d", rssi, STRLEN(INT_TO_STR2(UINT8_MAX)))\
+	HTML($, " dBm")
