@@ -6,5 +6,17 @@
 #define DEBUG_TALLY
 // #define DEBUG_CC
 
+/**
+ * Enables or disables battery level monitoring in HTTP configuration form
+ * Define USE_BATTREAD as a macro to enable battery level monitoring in HTTP.
+ *
+ * Sets pin to use for analog read of voltage level.
+ *
+ * The voltage level has to be brought down to a range the microcontroller can handle.
+ * This is done using a voltage divider.
+ */
+// #define USE_BATTREAD
+#define PIN_BATTREAD A0
+
 // End include guard
 #endif

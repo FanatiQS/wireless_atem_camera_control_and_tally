@@ -62,6 +62,11 @@ DNSServer dnsServer;
 #define R1 300
 #define R2 47
 #define TRANSLATE_VOLTAGE(vout) (float)(VMAX * (R1 + R2) / R2 * vout / RESOLUTION_MAX) / 1000
+#ifdef USE_BATTREAD
+#define HTML_VOLTAGE($, label, value) HTML_INFO($, label, TRANSLATE_VOLTAGE(value), 4, "%.1f", " v")
+#else
+#define HTML_VOLTAGE($, label, value)
+#endif
 
 // Stores status of connection to ATEM
 #define STATUS_UNCONNECTED 0
@@ -113,8 +118,8 @@ char* getAtemStatus() {
 	HTML_TIME($, "Time since boot", time(NULL))\
 	HTML_SPACER($)\
 	HTML_RSSI($, "WiFi signal strength", WiFi.RSSI(), WiFi.isConnected())\
-	HTML_INFO($, "Voltage level", TRANSLATE_VOLTAGE(analogRead(A0)), 4, "%.1f", " v")\
 	HTML_INFO($, "ATEM connection status", getAtemStatus(), STATUS_LEN, "%s", "")\
+	HTML_VOLTAGE($, "Voltage level", analogRead(PIN_BATTREAD))\
 	HTML_SPACER($)\
 	HTML_INPUT_TEXT($, "Network name (SSID)", WiFi.SSID().c_str(), 32, "ssid")\
 	HTML_INPUT_TEXT($, "Network password (PSK)", WiFi.psk().c_str(), 63, "psk")\
