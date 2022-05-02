@@ -18,9 +18,7 @@
 
 #include "atem.h"
 #include "html_template_engine.h"
-
-#define DEBUG
-#define DEBUG_TALLY
+#include "user_config.h"
 
 // Throws if tally or camera control debugging is enabled without debugging itself being enabled
 #ifndef DEBUG
