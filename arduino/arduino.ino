@@ -56,6 +56,17 @@ unsigned long timeout = 0;
 ESP8266WebServer confServer(80);
 DNSServer dnsServer;
 
+// Names for all HTTP POST keys
+#define KEY_SSID "ssid"
+#define KEY_PSK "psk"
+#define KEY_DEST "dest"
+#define KEY_ATEMADDR "atemAddr"
+#define KEY_USESTATICIP "useStaticIP"
+#define KEY_LOCALIP "localIP"
+#define KEY_GATEWAY "gateway"
+#define KEY_NETMASK "netmask"
+#define KEY_NAME "name"
+
 // Gets the analog voltage level calculated from voltage divider
 #define RESOLUTION_MAX 1024
 #define VMAX 3300
@@ -121,16 +132,16 @@ char* getAtemStatus() {
 	HTML_INFO($, "ATEM connection status", getAtemStatus(), STATUS_LEN, "%s", "")\
 	HTML_VOLTAGE($, "Voltage level", analogRead(PIN_BATTREAD))\
 	HTML_SPACER($)\
-	HTML_INPUT_TEXT($, "Network name (SSID)", WiFi.SSID().c_str(), WL_SSID_MAX_LENGTH, "ssid")\
-	HTML_INPUT_TEXT($, "Network password (PSK)", WiFi.psk().c_str(), WL_WPA_KEY_MAX_LENGTH, "psk")\
+	HTML_INPUT_TEXT($, "Network name (SSID)", WiFi.SSID().c_str(), WL_SSID_MAX_LENGTH, KEY_SSID)\
+	HTML_INPUT_TEXT($, "Network password (PSK)", WiFi.psk().c_str(), WL_WPA_KEY_MAX_LENGTH, KEY_PSK)\
 	HTML_SPACER($)\
-	HTML_INPUT_NUMBER($, "Camera number", atem.dest, 254, 1, "dest")\
-	HTML_INPUT_IP($, "ATEM IP", (uint32_t)atemAddr, "atemAddr")\
+	HTML_INPUT_NUMBER($, "Camera number", atem.dest, 254, 1, KEY_DEST)\
+	HTML_INPUT_IP($, "ATEM IP", (uint32_t)atemAddr, KEY_ATEMADDR)\
 	HTML_SPACER($)\
-	HTML_INPUT_CHECKBOX($, "Use Static IP", conf.useStaticIP, "useStaticIP")\
-	HTML_INPUT_IP($, "Local IP", (uint32_t)WiFi.localIP(), "localAddr")\
-	HTML_INPUT_IP($, "Gateway", (uint32_t)WiFi.gatewayIP(), "gateway")\
-	HTML_INPUT_IP($, "Subnet mask", (uint32_t)WiFi.subnetMask(), "netmask")\
+	HTML_INPUT_CHECKBOX($, "Use Static IP", conf.useStaticIP, KEY_USESTATICIP)\
+	HTML_INPUT_IP($, "Local IP", (uint32_t)WiFi.localIP(), KEY_USESTATICIP)\
+	HTML_INPUT_IP($, "Gateway", (uint32_t)WiFi.gatewayIP(), KEY_GATEWAY)\
+	HTML_INPUT_IP($, "Subnet mask", (uint32_t)WiFi.subnetMask(), KEY_NETMASK)\
 	HTML($, "</table><button style=\"margin:1em 2em\">Submit</button></form></body></html>")
 
 // Gets ip address from 4 HTML post fields as a single 32 bit int
@@ -156,7 +167,7 @@ void handleHTTP() {
 		confServer.client().flush();
 
 		// Sets WiFi ssid and psk
-		WiFi.begin(confServer.arg("ssid"), confServer.arg("psk"));
+		WiFi.begin(confServer.arg(KEY_SSID), confServer.arg(KEY_PSK));
 #ifdef DEBUG
 		Serial.print("SSID: ");
 		Serial.println(WiFi.SSID());
@@ -165,8 +176,8 @@ void handleHTTP() {
 #endif
 
 		// Sets camera destination and IP address of ATEM
-		confData.dest = confServer.arg("dest").toInt();
-		confData.atemAddr = IP_FROM_HTTP(confServer, "atemAddr");
+		confData.dest = confServer.arg(KEY_DEST).toInt();
+		confData.atemAddr = IP_FROM_HTTP(confServer, KEY_ATEMADDR);
 #ifdef DEBUG
 		Serial.print("Camera ID: ");
 		Serial.println(confData.dest);
@@ -175,10 +186,10 @@ void handleHTTP() {
 #endif
 
 		// Sets static IP data
-		confData.useStaticIP = confServer.arg("useStaticIP").equals("on");
-		confData.localAddr = IP_FROM_HTTP(confServer, "localAddr");
-		confData.gateway = IP_FROM_HTTP(confServer, "gateway");
-		confData.netmask = IP_FROM_HTTP(confServer, "netmask");
+		confData.useStaticIP = confServer.arg(KEY_USESTATICIP).equals("on");
+		confData.localAddr = IP_FROM_HTTP(confServer, KEY_LOCALIP);
+		confData.gateway = IP_FROM_HTTP(confServer, KEY_GATEWAY);
+		confData.netmask = IP_FROM_HTTP(confServer, KEY_NETMASK);
 #ifdef DEBUG
 		Serial.print("Using static IP: ");
 		Serial.println((confData.useStaticIP) ? "YES" : "NO");
