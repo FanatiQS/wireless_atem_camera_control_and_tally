@@ -22,10 +22,14 @@
 #define DEBUG
 #define DEBUG_TALLY
 
-// Disables tally and camera control data debugging if debugging itself is not enabled
+// Throws if tally or camera control debugging is enabled without debugging itself being enabled
 #ifndef DEBUG
-#undef DEBUG_TALLY
-#undef DEBUG_CC
+#ifdef DEBUG_TALLY
+#error To debug tally, enable debugging by defining DEBUG along with DEBUG_TALLY
+#endif
+#ifdef DEBUG_CC
+#error To debug camera control, enable debugging by defining DEBUG along with DEBUG_CC
+#endif
 #endif
 
 
