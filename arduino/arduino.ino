@@ -144,9 +144,9 @@ void handleHTTP() {
 			"<!DOCTYPEhtml><meta content=\"width=device-width\"name=viewport>"\
 			"<title>Configure Device</title>"\
 			"<div>Updated, device is rebooting..."\
-			"<div>Reload page when device has restarted, if it is unable to "\
-				"connect to wifi, it will create its own "\
-				"wireless network for configuration."
+			"<div>Reload page when device has restarted"
+			"<div>If device is unable to connect to wifi, it will "\
+				"create its own wireless network for configuration."
 		);
 		confServer.client().flush();
 
