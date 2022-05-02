@@ -123,9 +123,9 @@ char* getAtemStatus() {
 	HTML_INPUT_IP($, "ATEM IP", (uint32_t)atemAddr, "atemAddr")\
 	HTML_SPACER($)\
 	HTML_INPUT_CHECKBOX($, "Use Static IP", conf.useStaticIP, "useStaticIP")\
-	HTML_INPUT_IP($, "Local IP", (uint32_t)WiFi.localIP(), "static-localAddr")\
-	HTML_INPUT_IP($, "Gateway", (uint32_t)WiFi.gatewayIP(), "static-gateway")\
-	HTML_INPUT_IP($, "Subnet mask", (uint32_t)WiFi.subnetMask(), "static-netmask")\
+	HTML_INPUT_IP($, "Local IP", (uint32_t)WiFi.localIP(), "localAddr")\
+	HTML_INPUT_IP($, "Gateway", (uint32_t)WiFi.gatewayIP(), "gateway")\
+	HTML_INPUT_IP($, "Subnet mask", (uint32_t)WiFi.subnetMask(), "netmask")\
 	HTML($, "</table><button style=\"margin:1em 2em\">Submit</button></form></body></html>")
 
 // Gets ip address from 4 HTML post fields as a single 32 bit int
@@ -171,9 +171,9 @@ void handleHTTP() {
 
 		// Sets static IP data
 		confData.useStaticIP = confServer.arg("useStaticIP").equals("on");
-		confData.localAddr = IP_FROM_HTTP(confServer, "static-localAddr");
-		confData.gateway = IP_FROM_HTTP(confServer, "static-gateway");
-		confData.netmask = IP_FROM_HTTP(confServer, "static-netmask");
+		confData.localAddr = IP_FROM_HTTP(confServer, "localAddr");
+		confData.gateway = IP_FROM_HTTP(confServer, "gateway");
+		confData.netmask = IP_FROM_HTTP(confServer, "netmask");
 #ifdef DEBUG
 		Serial.print("Using static IP: ");
 		Serial.println((confData.useStaticIP) ? "YES" : "NO");
