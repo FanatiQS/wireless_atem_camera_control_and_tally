@@ -36,10 +36,10 @@
 struct __attribute__((__packed__)) configData_t {
 	uint8_t dest;
 	uint32_t atemAddr;
+	bool useStaticIP;
 	uint32_t localAddr;
 	uint32_t gateway;
 	uint32_t netmask;
-	bool useStaticIP;
 };
 
 // ATEM communication data that percists between loop cycles
@@ -139,9 +139,6 @@ void handleHTTP() {
 
 	// Processes POST request
 	if (confServer.method() == HTTP_POST) {
-		// Turn off led to indicate connection is not available anymore
-		digitalWrite(LED_BUILTIN, HIGH);
-
 		// Sends response to post before switching network
  		confServer.send(200, "text/html", \
 			"<!DOCTYPEhtml><meta content=\"width=device-width\"name=viewport>"\
