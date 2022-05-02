@@ -121,8 +121,8 @@ char* getAtemStatus() {
 	HTML_INFO($, "ATEM connection status", getAtemStatus(), STATUS_LEN, "%s", "")\
 	HTML_VOLTAGE($, "Voltage level", analogRead(PIN_BATTREAD))\
 	HTML_SPACER($)\
-	HTML_INPUT_TEXT($, "Network name (SSID)", WiFi.SSID().c_str(), 32, "ssid")\
-	HTML_INPUT_TEXT($, "Network password (PSK)", WiFi.psk().c_str(), 63, "psk")\
+	HTML_INPUT_TEXT($, "Network name (SSID)", WiFi.SSID().c_str(), WL_SSID_MAX_LENGTH, "ssid")\
+	HTML_INPUT_TEXT($, "Network password (PSK)", WiFi.psk().c_str(), WL_WPA_KEY_MAX_LENGTH, "psk")\
 	HTML_SPACER($)\
 	HTML_INPUT_NUMBER($, "Camera number", atem.dest, 254, 1, "dest")\
 	HTML_INPUT_IP($, "ATEM IP", (uint32_t)atemAddr, "atemAddr")\
