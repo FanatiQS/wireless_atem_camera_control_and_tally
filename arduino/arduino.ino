@@ -32,6 +32,9 @@
 
 
 
+// Max length for name used in soft AP ssid and mdns lookup
+#define NAME_MAX_LEN (16)
+
 // Struct for percistent data used at boot
 struct __attribute__((__packed__)) configData_t {
 	uint8_t dest;
@@ -40,6 +43,7 @@ struct __attribute__((__packed__)) configData_t {
 	uint32_t localAddr;
 	uint32_t gateway;
 	uint32_t netmask;
+	char name[NAME_MAX_LEN];
 };
 
 // ATEM communication data that percists between loop cycles
@@ -132,6 +136,8 @@ char* getAtemStatus() {
 	HTML_INFO($, "ATEM connection status", getAtemStatus(), STATUS_LEN, "%s", "")\
 	HTML_VOLTAGE($, "Voltage level", analogRead(PIN_BATTREAD))\
 	HTML_SPACER($)\
+	HTML_INPUT_TEXT($, "Config access point name", conf.name, NAME_MAX_LEN, KEY_NAME)\
+	HTML_SPACER($)\
 	HTML_INPUT_TEXT($, "Network name (SSID)", WiFi.SSID().c_str(), WL_SSID_MAX_LENGTH, KEY_SSID)\
 	HTML_INPUT_TEXT($, "Network password (PSK)", WiFi.psk().c_str(), WL_WPA_KEY_MAX_LENGTH, KEY_PSK)\
 	HTML_SPACER($)\
@@ -201,6 +207,13 @@ void handleHTTP() {
 		Serial.println(IPAddress(confData.netmask));
 #endif
 
+		// Sets soft access point name
+		strncpy(confData.name, confServer.arg(KEY_NAME).c_str(), NAME_MAX_LEN);
+#ifdef DEBUG
+		Serial.print("Name: ");
+		Serial.println(confData.name);
+#endif
+
 		// Writes and commits configuration data to percist for next boot
 		EEPROM.put(0, confData);
 		EEPROM.commit();
@@ -223,6 +236,8 @@ void handleHTTP() {
 void setup() {
 #ifdef DEBUG
 	Serial.begin(9600);
+	Serial.print("Starting...\nMac address: ");
+	Serial.println(WiFi.macAddress());
 #endif
 
 	// Initializes status LED pins
@@ -253,7 +268,7 @@ void setup() {
 	//!! MDNS.addService("http", "tcp", 80);
 
 	// Sets up configuration HTTP server
-	WiFi.softAP("Configure_ESP8266", NULL, 1, 0, 1);
+	WiFi.softAP(confData.name, WiFi.macAddress(), 1, 0, 1);
 	dnsServer.start(53, "*", WiFi.softAPIP());
 	confServer.onNotFound(handleHTTP);
 	confServer.begin();
