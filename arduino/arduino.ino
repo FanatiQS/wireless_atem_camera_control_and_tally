@@ -145,7 +145,7 @@ char* getAtemStatus() {
 	HTML_INPUT_IP($, "ATEM IP", (uint32_t)atemAddr, KEY_ATEMADDR)\
 	HTML_SPACER($)\
 	HTML_INPUT_CHECKBOX($, "Use Static IP", conf.useStaticIP, KEY_USESTATICIP)\
-	HTML_INPUT_IP($, "Local IP", (uint32_t)WiFi.localIP(), KEY_USESTATICIP)\
+	HTML_INPUT_IP($, "Local IP", (uint32_t)WiFi.localIP(), KEY_LOCALIP)\
 	HTML_INPUT_IP($, "Gateway", (uint32_t)WiFi.gatewayIP(), KEY_GATEWAY)\
 	HTML_INPUT_IP($, "Subnet mask", (uint32_t)WiFi.subnetMask(), KEY_NETMASK)\
 	HTML($, "</table><button style=\"margin:1em 2em\">Submit</button></form></body></html>")
