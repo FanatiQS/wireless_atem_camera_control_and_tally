@@ -136,7 +136,7 @@ char* getAtemStatus() {
 	HTML_INFO($, "ATEM connection status", getAtemStatus(), STATUS_LEN, "%s", "")\
 	HTML_VOLTAGE($, "Voltage level", analogRead(PIN_BATTREAD))\
 	HTML_SPACER($)\
-	HTML_INPUT_TEXT($, "Config access point name", conf.name, NAME_MAX_LEN, KEY_NAME)\
+	HTML_INPUT_TEXT($, "Name", conf.name, NAME_MAX_LEN, KEY_NAME)\
 	HTML_SPACER($)\
 	HTML_INPUT_TEXT($, "Network name (SSID)", WiFi.SSID().c_str(), WL_SSID_MAX_LENGTH, KEY_SSID)\
 	HTML_INPUT_TEXT($, "Network password (PSK)", WiFi.psk().c_str(), WL_WPA_KEY_MAX_LENGTH, KEY_PSK)\
