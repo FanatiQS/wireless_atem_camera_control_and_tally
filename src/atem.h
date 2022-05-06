@@ -5,6 +5,10 @@
 #ifndef ATEM_H
 #define ATEM_H
 
+// The Blackmagic bluetooth UUIDs
+#define ATEM_BLE_UUID_SERVICE "291D567A-6D75-11E6-8B77-86F30CA893D3"
+#define ATEM_BLE_UUID_CHARACTERISTIC "5DD3465F-1AEE-4299-8493-D2ECA2F8E1BB"
+
 // Commands in 32 bit integer format for easier comparison
 #define ATEM_CMDNAME_CAMERACONTROL ('C' << 24) | ('C' << 16) | ('d' << 8) | 'P'
 #define ATEM_CMDNAME_TALLY ('T' << 24) | ('l' << 16) | ('I' << 8) | 'n'
