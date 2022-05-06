@@ -279,10 +279,6 @@ void setup() {
 	//!! sdiCameraControl.setOverride(true);
 #endif
 
-	// Adds mDNS querying support
-	//!! MDNS.begin("esp8266");
-	//!! MDNS.addService("http", "tcp", 80);
-
 	// Sets up configuration HTTP server
 	WiFi.softAP(confData.name, WiFi.macAddress(), 1, 0, 1);
 	dnsServer.start(53, "*", WiFi.softAPIP());
@@ -299,12 +295,16 @@ void setup() {
 	WiFi.begin();
 	udp.begin((RANDOM_REG32 & 0xefff) + 1);
 	while (wifi_station_get_connect_status() == STATION_CONNECTING) yield();
+
+	// Adds mDNS querying support
+	MDNS.begin(confData.name);
+	MDNS.addService("http", "tcp", 80);
 }
 
 void loop() {
 	// Processes configurations over HTTP
 	dnsServer.processNextRequest();
-	//!! MDNS.update();
+	MDNS.update();
 	confServer.handleClient();
 
 	// Checks if there is available UDP packet to parse
