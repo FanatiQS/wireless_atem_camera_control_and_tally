@@ -241,12 +241,18 @@ void setup() {
 #endif
 
 	// Initializes status LED pins
-	pinMode(D5, OUTPUT);
-	pinMode(D6, OUTPUT);
-	pinMode(LED_BUILTIN, OUTPUT);
-	digitalWrite(D5, HIGH);
-	digitalWrite(D6, HIGH);
-	digitalWrite(LED_BUILTIN, HIGH);
+#ifdef PIN_PGM
+	pinMode(PIN_PGM, OUTPUT);
+	digitalWrite(PIN_PGM, HIGH);
+#endif
+#ifdef PIN_PVW
+	pinMode(PIN_PVW, OUTPUT);
+	digitalWrite(PIN_PVW, HIGH);
+#endif
+#ifdef PIN_CONN
+	pinMode(PIN_CONN, OUTPUT);
+	digitalWrite(PIN_CONN, HIGH);
+#endif
 
 	// Gets configuration from persistent memory and updates global conf
 	struct configData_t confData;
@@ -319,8 +325,10 @@ void loop() {
 				Serial.print(".");
 				Serial.println(protocolVersionMinor(&atem));
 #endif
+#ifdef PIN_CONN
+				digitalWrite(PIN_CONN, LOW);
+#endif
 				WiFi.mode(WIFI_STA);
-				digitalWrite(LED_BUILTIN, LOW);
 				atemStatus = STATUS_CONNECTED;
 				break;
 			}
@@ -340,8 +348,12 @@ void loop() {
 					}
 					Serial.print("\n");
 #endif
-					digitalWrite(D5, (atem.pgmTally) ? LOW : HIGH);
-					digitalWrite(D6, (atem.pvwTally) ? LOW : HIGH);
+#ifdef PIN_PGM
+					digitalWrite(PIN_PGM, (atem.pgmTally) ? LOW : HIGH);
+#endif
+#ifdef PIN_PVW
+					digitalWrite(PIN_PVW, (atem.pvwTally) ? LOW : HIGH);
+#endif
 				}
 				translateAtemTally(&atem);
 				//!! sdiTallyControl.write(atem.cmdBuf, atem.cmdLen);
@@ -362,8 +374,10 @@ void loop() {
 	else {
 		if (millis() < timeout) return;
 		resetAtemState(&atem);
-		digitalWrite(LED_BUILTIN, HIGH);
 		if (atemStatus == STATUS_CONNECTED) atemStatus = STATUS_DROPPED;
+#ifdef PIN_CONN
+		digitalWrite(PIN_CONN, HIGH);
+#endif
 #ifdef DEBUG
 		if (timeout != 0) {
 			Serial.print("No connection to ATEM\n");

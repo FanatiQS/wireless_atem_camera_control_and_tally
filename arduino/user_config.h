@@ -6,6 +6,10 @@
 #define DEBUG_TALLY
 // #define DEBUG_CC
 
+#define PIN_PGM D5
+#define PIN_PVW D6
+#define PIN_CONN LED_BUILTIN
+
 /**
  * Enables or disables battery level monitoring in HTTP configuration form
  * Define USE_BATTREAD as a macro to enable battery level monitoring in HTTP.
