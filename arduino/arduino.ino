@@ -118,7 +118,7 @@ char* getAtemStatus() {
 
 // HTML configuration page template for use with html templating engine
 #define HTML_CONFIG($, conf)\
-	HTML($, "<!DOCTYPEhtml><html><head>"\
+	HTML($, "<!DOCTYPEhtml>"\
 		"<meta content=\"width=device-width\"name=viewport>"\
 		"<title>Configure Device</title>"\
 		"<style>"\
@@ -127,7 +127,7 @@ char* getAtemStatus() {
 			"td{padding:0 1em}"\
 			"tr:empty{height:1em}"\
 		"</style>"\
-		"</head><body><form method=post><table>"\
+		"<form method=post><table>"\
 	)\
 	HTML_CURRENT_TIME($, "Request time")\
 	HTML_TIME($, "Time since boot", time(NULL))\
@@ -148,7 +148,7 @@ char* getAtemStatus() {
 	HTML_INPUT_IP($, "Local IP", (uint32_t)WiFi.localIP(), KEY_LOCALIP)\
 	HTML_INPUT_IP($, "Gateway", (uint32_t)WiFi.gatewayIP(), KEY_GATEWAY)\
 	HTML_INPUT_IP($, "Subnet mask", (uint32_t)WiFi.subnetMask(), KEY_NETMASK)\
-	HTML($, "</table><button style=\"margin:1em 2em\">Submit</button></form></body></html>")
+	HTML($, "</table><button style=\"margin:1em 2em\">Submit</button></form>")
 
 // Gets ip address from 4 HTML post fields as a single 32 bit int
 #define IP_FROM_HTTP(server, name) ((server.arg(name "1").toInt()) |\
