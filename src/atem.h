@@ -29,7 +29,6 @@
 
 // Contains incoming and outgoing ATEM socket data
 #define ATEM_MAX_PACKET_LEN 2048
-struct atem_t {
 typedef struct atem_t {
 	uint16_t dest;
 	bool pvwTally;
