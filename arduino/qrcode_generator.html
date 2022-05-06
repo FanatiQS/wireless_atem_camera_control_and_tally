@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<meta content="width=device-width" name="viewport">
+<title>Create configuration sticker</title>
+<script src="https://cdn.rawgit.com/davidshimjs/qrcodejs/gh-pages/qrcode.min.js"></script>
+
+<style>
+	#container {
+		display: inline-block;
+		border: 2px solid black;
+		border-radius: 1em;
+		padding: 1em;
+		text-align: center;
+		font-family: sans-serif;
+	}
+	.credentialsField label {
+		position: relative;
+		top: -0.5em;
+		padding: 0 1em;
+		background: white;
+		font-family: sans-serif;
+		font-size: 1.1em;
+	}
+	.credentialsField {
+		border: 1px solid darkgray;
+		padding: 1em;
+		margin: 1em;
+		text-align: center;
+		padding-top: 0;
+	}
+	.credentialsField input {
+		border: 0;
+		font-size: 0.8em;
+		text-align: center;
+		outline: none;
+		width: 100%;
+	}
+	#qrcode img {
+		width: 100%;
+	}
+</style>
+
+<div id="container">
+	<div style="padding-bottom:1em">Join configuration access point</div>
+	<div class="credentialsField">
+		<div><label for="ssidInput">SSID:</label></div>
+		<input id="ssidInput">
+	</div>
+	<div class="credentialsField">
+		<div><label for="pskInput">PSK:</label></div>
+		<input id="pskInput">
+	</div>
+	<div id="qrcode"></div>
+</div>
+
+<script>
+	const ssidInput = document.getElementById("ssidInput");
+	const pskInput = document.getElementById("pskInput");
+	const qrcode = new QRCode("qrcode");
+
+	function makeCode() {
+		const ssid = ssidInput.value.replace(/;/g, "\;");
+		const psk = pskInput.value.toUpperCase();
+
+		qrcode.clear();
+		qrcode.makeCode("WIFI:T:WPA;S:" + ssid + ";P:" + psk + ";;");
+	};
+
+	ssidInput.oninput = makeCode;
+	pskInput.oninput = makeCode;
+
+	makeCode();
+</script>
