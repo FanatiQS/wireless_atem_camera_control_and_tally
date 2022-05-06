@@ -10,6 +10,9 @@
 #define PIN_PVW D6
 #define PIN_CONN LED_BUILTIN
 
+// #define PIN_SCL D2
+// #define PIN_SDA D1
+
 /**
  * Enables or disables battery level monitoring in HTTP configuration form
  * Define USE_BATTREAD as a macro to enable battery level monitoring in HTTP.

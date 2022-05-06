@@ -14,11 +14,18 @@
 #include <EEPROM.h>
 #include <DNSServer.h>
 
-//!! #include <BMDSDIControl.h>
-
 #include "atem.h"
 #include "html_template_engine.h"
 #include "user_config.h"
+
+// Both SCL and SDA has to be defined for SDI shield and libraries are required
+#if defined(PIN_SCL) && defined(PIN_SDA)
+#define USE_SDI
+#include <Wire.h>
+#include <BMDSDIControl.h>
+#elif defined(PIN_SCL) || defined(PIN_SDA)
+#error Both PIN_SCL and PIN_SDA has to be defined if SDI shield is to be used or none of them defined if SDI shield is not to be used
+#endif
 
 // Throws if tally or camera control debugging is enabled without debugging itself being enabled
 #ifndef DEBUG
@@ -51,8 +58,10 @@ WiFiUDP udp;
 IPAddress atemAddr;
 struct atem_t atem;
 unsigned long timeout = 0;
-//!! BMD_SDITallyControl_I2C sdiTallyControl(0x6E);
-//!! BMD_SDICameraControl_I2C sdiCameraControl(0x6E);
+#ifdef USE_SDI
+BMD_SDITallyControl_I2C sdiTallyControl(0x6E);
+BMD_SDICameraControl_I2C sdiCameraControl(0x6E);
+#endif
 
 
 
@@ -261,13 +270,14 @@ void setup() {
 	atem.dest = confData.dest;
 	atemAddr = confData.atemAddr;
 
-	// Initializes tally over SDI
+	// Initializes camera control and tally over SDI
+#ifdef USE_SDI
+	Wire.begin(PIN_SDA, PIN_SCL);
 	//!! sdiTallyControl.begin();
 	//!! sdiTallyControl.setOverride(true);
-
-	// Initializes camera control over SDI
 	//!! sdiCameraControl.begin();
 	//!! sdiCameraControl.setOverride(true);
+#endif
 
 	// Adds mDNS querying support
 	//!! MDNS.begin("esp8266");
@@ -355,19 +365,25 @@ void loop() {
 					digitalWrite(PIN_PVW, (atem.pvwTally) ? LOW : HIGH);
 #endif
 				}
+#ifdef USE_SDI
 				translateAtemTally(&atem);
 				//!! sdiTallyControl.write(atem.cmdBuf, atem.cmdLen);
+#endif
 				break;
 			}
 			// Sends camera control data over SDI
+#if defined(DEBUG_CC) || defined(USE_SDI)
 			case ATEM_CMDNAME_CAMERACONTROL: {
 #ifdef DEBUG_CC
 				Serial.print("Got camera control data\n");
 #endif
+#ifdef USE_SDI
 				translateAtemCameraControl(&atem);
 				//!! sdiCameraControl.write(atem.cmdBuf);
+#endif
 				break;
 			}
+#endif
 		}
 	}
 	// Restarts connection to ATEM if it has lost connection
