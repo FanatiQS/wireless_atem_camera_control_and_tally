@@ -19,8 +19,7 @@
  * The voltage level has to be brought down to a range the microcontroller can handle.
  * This is done using a voltage divider.
  */
-// #define USE_BATTREAD
-#define PIN_BATTREAD A0
+// #define PIN_BATTREAD A0
 
 // End include guard
 #endif

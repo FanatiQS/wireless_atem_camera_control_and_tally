@@ -77,7 +77,7 @@ DNSServer dnsServer;
 #define R1 300
 #define R2 47
 #define TRANSLATE_VOLTAGE(vout) (float)(VMAX * (R1 + R2) / R2 * vout / RESOLUTION_MAX) / 1000
-#ifdef USE_BATTREAD
+#ifdef PIN_BATTREAD
 #define HTML_VOLTAGE($, label, value) HTML_INFO($, label, TRANSLATE_VOLTAGE(value), 4, "%.1f", " v")
 #else
 #define HTML_VOLTAGE($, label, value)
