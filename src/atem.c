@@ -179,7 +179,6 @@ uint32_t nextAtemCommand(struct atem_t *atem) {
 }
 
 // Gets update status for camera index and updates its tally state
-// This function has to be called before translateAtemTally
 bool tallyHasUpdated(struct atem_t *atem) {
 	// Ensures destination is within range of tally data length
 	if (atem->dest > ((atem->cmdBuf[TALLY_INDEX_LEN_HIGH] << 8) |

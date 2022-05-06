@@ -51,6 +51,7 @@ void resetAtemState(struct atem_t *atem);
 void closeAtemConnection(struct atem_t *atem);
 int8_t parseAtemData(struct atem_t *atem);
 uint32_t nextAtemCommand(struct atem_t *atem);
+ //!! This function has to be called before translateAtemTally
 bool tallyHasUpdated(struct atem_t *atem);
 void translateAtemTally(struct atem_t *atem);
 void translateAtemCameraControl(struct atem_t *atem);
