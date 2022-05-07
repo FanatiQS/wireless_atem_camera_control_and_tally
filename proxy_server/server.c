@@ -97,15 +97,6 @@ void sendPacket(packet_t* packet) {
 	getTime(&packet->timestamp);
 }
 
-// Creates and sends an ATEM syn packet with the specified opcode
-void sendConnectPacket(uint8_t opcode, uint16_t sessionId, struct sockaddr sockAddr, socklen_t sockLen) {
-	packet_t* packet = createPacket(ATEM_LEN_SYN, sessionId, sockAddr, sockLen);
-	packet->buf[ATEM_INDEX_FLAGS] = ATEM_FLAG_SYN;
-	packet->buf[ATEM_INDEX_OPCODE] = opcode;
-	if (opcode == ATEM_CONNECTION_CLOSING) packet->resendsLeft = 1;
-	sendPacket(packet);
-}
-
 // Removes the packet from the queue
 void dequeuePacket(packet_t* packet) {
 	if (queueHead == packet) {
@@ -147,6 +138,18 @@ uint16_t lastSessionId = 0;
 // List of all proxy connections
 session_t* sessionsHead;
 session_t* sessionsTail;
+
+// Creates and sends an ATEM syn packet with the specified opcode
+void sendConnectPacket(uint8_t opcode, uint16_t sessionId, struct sockaddr sockAddr, socklen_t sockLen) {
+	uint16_t newSessionId = (++lastSessionId % 0x7fff) % 0x7fff;
+	packet_t* packet = createPacket(ATEM_LEN_SYN, sessionId, sockAddr, sockLen);
+	packet->buf[ATEM_INDEX_FLAGS] = ATEM_FLAG_SYN;
+	packet->buf[ATEM_INDEX_OPCODE] = opcode;
+	packet->buf[ATEM_INDEX_NEW_SESSION_HIGH] = newSessionId >> 8;
+	packet->buf[ATEM_INDEX_NEW_SESSION_LOW] = newSessionId;
+	if (opcode == ATEM_CONNECTION_CLOSING) packet->resendsLeft = 1;
+	sendPacket(packet);
+}
 
 // Creates an ATEM data packet for a session
 packet_t* createDataPacket(uint16_t len, session_t* session) {
@@ -191,7 +194,7 @@ void dumpAtemData(struct session_t* session) {
 }
 
 // Creates a new session and dumps all ATEM data on new connection
-void addNewSession(struct sockaddr sockAddr, socklen_t sockLen) {
+void addNewSession(packet_t* packet, struct sockaddr sockAddr, socklen_t sockLen) {
 	// Creates a new session
 	session_t* session = (session_t*)malloc(sizeof(session_t));
 
@@ -213,7 +216,8 @@ void addNewSession(struct sockaddr sockAddr, socklen_t sockLen) {
 	sessionsTail = session;
 
 	// Sets session values
-	session->id = (++lastSessionId % 0x7fff) | 0x8000;
+	session->id = packet->buf[ATEM_INDEX_NEW_SESSION_HIGH] << 8 |
+		packet->buf[ATEM_INDEX_NEW_SESSION_LOW] | 0x8000;
 	session->remote = 0;
 	session->sockAddr = sockAddr;
 	session->sockLen = sockLen;
@@ -315,12 +319,14 @@ void maintainProxyConnections(const bool socketHasData) {
 			packet_t* packet = findPacketInQueue(buf);
 			if (packet == NULL) return;
 			dequeuePacket(packet);
-			free(packet);
 
 			// Completes handshake if it is an ack to a synack
 			if (!(buf[ATEM_INDEX_SESSION_HIGH] & 0x80)) {
-				addNewSession(sockAddr, sockLen);
+				addNewSession(packet, sockAddr, sockLen);
 			}
+
+			// Frees memory for acknowledged packet
+			free(packet);
 		}
 		// Responds to ack request
 		else if (buf[ATEM_INDEX_FLAGS] & ATEM_FLAG_ACKREQUEST) {
