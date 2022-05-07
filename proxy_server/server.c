@@ -224,6 +224,9 @@ void addNewSession(packet_t* packet, struct sockaddr sockAddr, socklen_t sockLen
 
 	// Dumps all ATEM data on new client
 	dumpAtemData(session);
+
+	// Prints log when a new session is created
+	printf("Session created %u\n", session->id & ~0x8000);
 }
 
 // Removes a proxy connection from the list
@@ -265,6 +268,9 @@ void removeSession(uint16_t sessionId) {
 
 	// Frees the session memory
 	free(session);
+
+	// Prints log when sessions disconnect
+	printf("Session closed %u\n", sessionId & ~0x8000);
 }
 
 

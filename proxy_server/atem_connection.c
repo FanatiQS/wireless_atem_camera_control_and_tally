@@ -119,4 +119,5 @@ void maintainAtemConnection(const bool socketHasData) {
 void restartAtemConnection() {
 	closeAtemConnection(&atem);
 	sendAtem();
+	printf("Restarted ATEM connection\n");
 }
