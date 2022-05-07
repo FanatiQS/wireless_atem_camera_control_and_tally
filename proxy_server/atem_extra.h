@@ -5,6 +5,7 @@
 // Lengths of components in ATEM packets
 #define ATEM_LEN_SYN 20
 #define ATEM_LEN_HEADER 12
+#define ATEM_LEN_CMDHEADER 8
 
 // Indexes for ATEM packet information
 #define ATEM_INDEX_FLAGS 0

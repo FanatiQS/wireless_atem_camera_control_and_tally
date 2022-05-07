@@ -62,26 +62,24 @@ void maintainAtemConnection(const bool socketHasData) {
 		// Parses read buffer from ATEM
 		parseAtemData(&atem);
 
-		// Sends response to atem switcher
-		sendAtem();
+		// Sends response to atem switcher if needed
+		if (atem.writeLen) sendAtem();
 
 		// Updates time stamp for most recent atem packet
 		getTime(&atemLastContact);
 
-		// Loops through all commands to filter out only the once we need
-		uint8_t* allCommands = atem.readBuf + ATEM_LEN_HEADER;
-		uint8_t* currentCommand = allCommands;
+		// Loops through all commands to filter out the once we need
+		uint8_t* commands = atem.readBuf + ATEM_LEN_HEADER;
+		uint16_t commandsLen = 0;
+		uint16_t lastCommandIndex = ATEM_LEN_HEADER;
 		while (hasAtemCommand(&atem)) {
-			// Gets index of command
-			uint16_t startIndex = atem.cmdIndex;
-
-			// Filters out interesting commands
+			// Only continue with the commands we care about
 			switch (nextAtemCommand(&atem)) {
-				default: continue;
+				default: break;
 				case ATEM_CMDNAME_VERSION: {
 					printf("connected atem\n");
 					// @todo buffer data to send to future proxy connections
-					continue;
+					break;
 				}
 				case ATEM_CMDNAME_CAMERACONTROL: {
 					// @todo buffer data to send to future proxy connections
@@ -91,20 +89,19 @@ void maintainAtemConnection(const bool socketHasData) {
 					// @todo buffer data to send to future proxy connections
 					break;
 				}
+				//!! currently all commands seem to be needed for software control to connect
 			}
 
-			// Filters out interesting command for proxy sockets
-			uint16_t cmdLen = atem.cmdIndex - startIndex;
-			memcpy(currentCommand, atem.cmdBuf - 8, cmdLen);
-			currentCommand += cmdLen;
+			// Includes command in list for broadcast to proxy clients
+			uint16_t cmdLen = atem.cmdIndex - lastCommandIndex;
+			lastCommandIndex = atem.cmdIndex;
+			memcpy(commands + commandsLen, atem.cmdBuf - ATEM_LEN_CMDHEADER, cmdLen + ATEM_LEN_CMDHEADER);
+			commandsLen += cmdLen;
 		}
 
-		// Gets length of packet after filtering out unisteresting commands
-		uint16_t writeLen = currentCommand - allCommands;
-
-		// Retransmits the filtered data to proxy connections
-		if (writeLen > ATEM_LEN_HEADER) {
-			broadcastAtemCommands(allCommands, writeLen);
+		// Broadcasts commands to all proxy clients
+		if (commandsLen) {
+			broadcastAtemCommands(commands, commandsLen);
 		}
 	}
 	// Tries to reconnect if not getting response from ATEM
