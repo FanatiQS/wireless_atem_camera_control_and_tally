@@ -174,7 +174,6 @@ void broadcastAtemCommands(const uint8_t* commands, const uint16_t len) {
 		sendPacket(packet);
 		session = session->next;
 	}
-
 }
 
 // Dumps all ATEM data on a newly connected client
@@ -282,11 +281,11 @@ void maintainProxyConnections(const bool socketHasData) {
 			return;
 		}
 
+		// Gets session id for received packet
+		const uint16_t sessionId = buf[ATEM_INDEX_SESSION_HIGH] << 8 | buf[ATEM_INDEX_SESSION_LOW];
+
 		// Processes connection changes
 		if (buf[ATEM_INDEX_FLAGS] & ATEM_FLAG_SYN) {
-			// Gets session id for received packet
-			const uint16_t sessionId = buf[ATEM_INDEX_SESSION_HIGH] << 8 | buf[ATEM_INDEX_SESSION_LOW];
-
 			// Sends synack as response to syn packets
 			if (buf[ATEM_INDEX_OPCODE] == ATEM_CONNECTION_OPEN) {
 				if (findPacketInQueue(buf) != NULL) return;
@@ -322,6 +321,18 @@ void maintainProxyConnections(const bool socketHasData) {
 			if (!(buf[ATEM_INDEX_SESSION_HIGH] & 0x80)) {
 				addNewSession(sockAddr, sockLen);
 			}
+		}
+		// Responds to ack request
+		else if (buf[ATEM_INDEX_FLAGS] & ATEM_FLAG_ACKREQUEST) {
+			uint8_t res[ATEM_LEN_HEADER] = {
+				[ATEM_INDEX_FLAGS] = ATEM_FLAG_ACK,
+				[ATEM_INDEX_LEN] = ATEM_LEN_HEADER,
+				[ATEM_INDEX_SESSION_HIGH] = buf[ATEM_INDEX_SESSION_HIGH],
+				[ATEM_INDEX_SESSION_LOW] = buf[ATEM_INDEX_SESSION_LOW],
+				[ATEM_INDEX_ACKID_HIGH] = buf[ATEM_INDEX_REMOTEID_HIGH],
+				[ATEM_INDEX_ACKID_LOW] = buf[ATEM_INDEX_REMOTEID_LOW]
+			};
+			sendto(proxySock, res, ATEM_LEN_HEADER, 0, &sockAddr, sockLen);
 		}
 	}
 
