@@ -27,8 +27,10 @@
 // Number of seconds before switcher kills the connection for no acknowledge sent
 #define ATEM_TIMEOUT 5
 
-// Contains incoming and outgoing ATEM socket data
+// Size of read buffer in an atem_t struct
 #define ATEM_MAX_PACKET_LEN 2048
+
+// Contains incoming and outgoing ATEM socket data
 typedef struct atem_t {
 	uint16_t dest;
 	bool pvwTally;
@@ -43,18 +45,27 @@ typedef struct atem_t {
 	uint16_t lastRemoteId;
 } atem_t;
 
-// Function prototypes
+// Makes functions available in C++
 #ifdef __cplusplus
 extern "C" {
 #endif
+
 void resetAtemState(struct atem_t *atem);
+
 void closeAtemConnection(struct atem_t *atem);
+
 int8_t parseAtemData(struct atem_t *atem);
+
 uint32_t nextAtemCommand(struct atem_t *atem);
+
  //!! This function has to be called before translateAtemTally
 bool tallyHasUpdated(struct atem_t *atem);
+
 void translateAtemTally(struct atem_t *atem);
+
 void translateAtemCameraControl(struct atem_t *atem);
+
+// Ends extern C block
 #ifdef __cplusplus
 }
 #endif
@@ -62,7 +73,7 @@ void translateAtemCameraControl(struct atem_t *atem);
 // Gets boolean indicating if there are more commands to parse
 #define hasAtemCommand(atem) ((atem)->cmdIndex < (atem)->readLen)
 
-// Gets the major and minor version of protocol for version command
+// Gets the major and minor version of the protocol for a version command
 #define protocolVersionMajor(atem) ((atem)->cmdBuf[0] << 8 | (atem)->cmdBuf[1])
 #define protocolVersionMinor(atem) ((atem)->cmdBuf[2] << 8 | (atem)->cmdBuf[3])
 
