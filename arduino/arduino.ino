@@ -42,6 +42,31 @@
 
 
 
+// Version of this library
+#define VERSION "0.5.0"
+
+// Gets the Arduino ESP8266 core version
+#define _GET_ESP_VERSION_A(v) #v
+#define _GET_ESP_VERSION_B(v) _GET_ESP_VERSION_A(v)
+#define ESP_VERSION _GET_ESP_VERSION_B(ARDUINO_ESP8266_GIT_DESC)
+
+// Prints a type of version from the BMDSDIControl library
+#ifdef USE_SDI
+#ifdef DEBUG
+void printBMDVersion(char* label, BMD_Version version) {
+	Serial.print(label);
+	Serial.print(": ");
+	Serial.print(version.Major);
+	Serial.print('.');
+	Serial.println(version.Minor);
+}
+#else
+#define printBMDVersion(lable, version)
+#endif
+#endif
+
+
+
 // Max length for name used in soft AP ssid and mdns lookup
 #define NAME_MAX_LEN (16)
 
@@ -250,6 +275,8 @@ void setup() {
 	Serial.begin(9600);
 	Serial.print("Starting...\nMac address: ");
 	Serial.println(WiFi.macAddress());
+	Serial.print("Own firmware version: " VERSION "\n" "Arduino ESP8266 version: ");
+	Serial.println(ESP_VERSION);
 #endif
 
 	// Initializes status LED pins
@@ -280,6 +307,11 @@ void setup() {
 	//!! sdiTallyControl.setOverride(true);
 	//!! sdiCameraControl.begin();
 	//!! sdiCameraControl.setOverride(true);
+	printBMDVersion("SDI shield library version", sdiCameraControl.getLibraryVersion());
+	printBMDVersion("SDI shield firmware version", sdiCameraControl.getFirmwareVersion());
+	printBMDVersion("SDI shield protocol version", sdiCameraControl.getProtocolVersion());
+#elif defined(DEBUG)
+	Serial.print("SDI shield disabled\n");
 #endif
 
 	// Sets up configuration HTTP server with soft AP
