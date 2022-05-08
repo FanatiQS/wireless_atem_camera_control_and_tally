@@ -119,11 +119,11 @@ uint8_t atemStatus = STATUS_UNCONNECTED;
 #define STATUS_LEN STRLEN(STATUS_LONGEST6)
 char* getAtemStatus() {
 	switch (atemStatus) {
-		case STATUS_UNCONNECTED: return "Unconnected";
-		case STATUS_CONNECTED: return "Connected";
-		case STATUS_DROPPED: return "Lost connection";
-		case STATUS_REJECTED: return "Rejected";
-		case STATUS_DISCONNECTED: return "Disconnected";
+		case STATUS_UNCONNECTED: return STATUS_TITLE_UNCONNECTED;
+		case STATUS_CONNECTED: return STATUS_TITLE_CONNECTED;
+		case STATUS_DROPPED: return STATUS_TITLE_DROPPED;
+		case STATUS_REJECTED: return STATUS_TITLE_REJECTED;
+		case STATUS_DISCONNECTED: return STATUS_TITLE_DISCONNECTEDZ;
 		default: return "Unknown";
 	}
 }
