@@ -181,8 +181,9 @@ uint32_t nextAtemCommand(struct atem_t *atem) {
 // Gets update status for camera index and updates its tally state
 bool tallyHasUpdated(struct atem_t *atem) {
 	// Ensures destination is within range of tally data length
-	if (atem->dest > ((atem->cmdBuf[TALLY_INDEX_LEN_HIGH] << 8) |
-		atem->cmdBuf[TALLY_INDEX_LEN_LOW])) return false;
+	if (atem->cmdBuf[TALLY_INDEX_LEN_HIGH] != 0 || atem->cmdBuf[TALLY_INDEX_LEN_LOW] != atem->dest) {
+		return false;
+	}
 
 	// Stores old states for PGM and PVW tally
 	const uint8_t oldTally = atem->pgmTally | atem->pvwTally << 1;
