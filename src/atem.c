@@ -1,7 +1,7 @@
 #include "./atem.h"
 
 // Mask to use when filtering out flags
-#define ATEM_MASK_FLAG 0x07
+#define ATEM_MASK_LEN_HIGH 0x07
 
 // Atem protocol flags
 #define ATEM_FLAG_ACKREQUEST 0x08
@@ -11,7 +11,8 @@
 
 // Atem protocol indexes
 #define ATEM_INDEX_FLAG 0
-#define ATEM_INDEX_LEN 1
+#define ATEM_INDEX_LEN_HIGH 0
+#define ATEM_INDEX_LEN_LOW 1
 #define ATEM_INDEX_SESSION_HIGH 2
 #define ATEM_INDEX_SESSION_LOW 3
 #define ATEM_INDEX_ACK_HIGH 4
@@ -53,7 +54,7 @@
 // Buffer to send to ATEM when establishing connection
 uint8_t synBuf[ATEM_LEN_SYN] = {
 	[ATEM_INDEX_FLAG] = ATEM_FLAG_SYN,
-	[ATEM_INDEX_LEN] = ATEM_LEN_SYN,
+	[ATEM_INDEX_LEN_LOW] = ATEM_LEN_SYN,
 	[ATEM_INDEX_SESSION_HIGH] = 0x74,
 	[ATEM_INDEX_SESSION_LOW] = 0x40,
 	[ATEM_INDEX_OPCODE] = ATEM_CONNECTION_OPENING
@@ -62,13 +63,13 @@ uint8_t synBuf[ATEM_LEN_SYN] = {
 // Buffer to modify and send to ATEM when acknowledging a received packet
 uint8_t ackBuf[ATEM_LEN_ACK] = {
 	[ATEM_INDEX_FLAG] = ATEM_FLAG_ACK,
-	[ATEM_INDEX_LEN] = ATEM_LEN_ACK
+	[ATEM_INDEX_LEN_LOW] = ATEM_LEN_ACK
 };
 
 // Buffer to modify and send to ATEM to close the connection
 uint8_t closeBuf[ATEM_LEN_SYN] = {
 	[ATEM_INDEX_FLAG] = ATEM_FLAG_SYN,
-	[ATEM_INDEX_LEN] = ATEM_LEN_SYN,
+	[ATEM_INDEX_LEN_LOW] = ATEM_LEN_SYN,
 	[ATEM_INDEX_OPCODE] = ATEM_CONNECTION_CLOSING
 };
 
@@ -91,7 +92,8 @@ void closeAtemConnection(struct atem_t *atem) {
 // Parses a received ATEM UDP packet
 int8_t parseAtemData(struct atem_t *atem) {
 	// Sets length of read buffer
-	atem->readLen = (atem->readBuf[ATEM_INDEX_FLAG] & ATEM_MASK_FLAG) << 8 | atem->readBuf[1];
+	atem->readLen = (atem->readBuf[ATEM_INDEX_LEN_HIGH] & ATEM_MASK_LEN_HIGH) << 8 |
+		atem->readBuf[ATEM_INDEX_LEN_LOW];
 
 	// Resends close buffer without processing read data or returns closed state
 	if (atem->writeBuf == closeBuf) {
