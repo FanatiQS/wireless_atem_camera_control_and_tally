@@ -27,7 +27,8 @@
 
 /**
  * To use a "Blackamgic 3G SDI shield for arduino" for tally and camera control over SDI,
- * define the SCL and SDA pins to use for I2C communication.
+ * define the SCL and SDA pins to use for I2C communication and install the BMDSDIControl library
+ * available for download from their website.
  *
  * If this is enabled without a shield attached, the microcontroller is never going to be able to
  * initialize and is most likely crash.
