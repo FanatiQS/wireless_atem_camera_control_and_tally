@@ -210,7 +210,7 @@ void handleHTTP() {
 		confData.netmask = IP_FROM_HTTP(confServer, KEY_NETMASK);
 #ifdef DEBUG
 		Serial.print("Using static IP: ");
-		Serial.println((confData.useStaticIP) ? "YES" : "NO");
+		Serial.println((confData.useStaticIP) ? "TRUE" : "FALSE");
 		Serial.print("Local address: ");
 		Serial.println(IPAddress(confData.localAddr));
 		Serial.print("Gateway: ");
@@ -219,7 +219,7 @@ void handleHTTP() {
 		Serial.println(IPAddress(confData.netmask));
 #endif
 
-		// Sets soft access point name
+		// Sets device name used for soft ap and mdns
 		strncpy(confData.name, confServer.arg(KEY_NAME).c_str(), NAME_MAX_LEN);
 #ifdef DEBUG
 		Serial.print("Name: ");
@@ -282,7 +282,7 @@ void setup() {
 	//!! sdiCameraControl.setOverride(true);
 #endif
 
-	// Sets up configuration HTTP server
+	// Sets up configuration HTTP server with soft AP
 	WiFi.softAP(confData.name, WiFi.macAddress(), 1, 0, 1);
 	dnsServer.start(53, "*", WiFi.softAPIP());
 	confServer.onNotFound(handleHTTP);
@@ -329,7 +329,7 @@ void loop() {
 
 		// Processes commands from ATEM
 		while (hasAtemCommand(&atem)) switch (nextAtemCommand(&atem)) {
-			// Turns on builtin LED and disables access point when connected to ATEM
+			// Turns on connection status LED and disables access point when connected to ATEM
 			case ATEM_CMDNAME_VERSION: {
 #ifdef DEBUG
 				Serial.print("Connected to ATEM\n");
