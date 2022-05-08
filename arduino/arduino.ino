@@ -18,13 +18,16 @@
 #include "html_template_engine.h"
 #include "user_config.h"
 
-// Both SCL and SDA has to be defined for SDI shield and libraries are required
+// Both SCL and SDA has to be defined for SDI shield to be enabled
 #if defined(PIN_SCL) && defined(PIN_SDA)
 #define USE_SDI
-#include <Wire.h>
-#include <BMDSDIControl.h>
 #elif defined(PIN_SCL) || defined(PIN_SDA)
 #error Both PIN_SCL and PIN_SDA has to be defined if SDI shield is to be used or none of them defined if SDI shield is not to be used
+#endif
+
+#ifdef USE_SDI
+#include <Wire.h>
+#include <BMDSDIControl.h>
 #endif
 
 // Throws if tally or camera control debugging is enabled without debugging itself being enabled
