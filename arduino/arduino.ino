@@ -277,10 +277,25 @@ void handleHTTP() {
 void setup() {
 #ifdef DEBUG
 	Serial.begin(9600);
-	Serial.print("Starting...\nMac address: ");
+	Serial.println("Starting...");
+	Serial.print("Mac address: ");
 	Serial.println(WiFi.macAddress());
-	Serial.print("Own firmware version: " VERSION "\n" "Arduino ESP8266 version: ");
+	Serial.print("Own firmware version: ");
+	Serial.println(VERSION);
+	Serial.print("Arduino ESP8266 version: ");
 	Serial.println(ESP_VERSION);
+	Serial.print("Tally debug: ");
+#ifdef DEBUG_TALLY
+	Serial.println("enabled");
+#else
+	Serial.println("disabled");
+#endif
+	Serial.print("Camera control debug: ");
+#ifdef DEBUG_CC
+	Serial.println("enabled");
+#else
+	Serial.println("disabled");
+#endif
 #endif
 
 	// Initializes status LED pins
@@ -315,7 +330,7 @@ void setup() {
 	printBMDVersion("SDI shield firmware version", sdiCameraControl.getFirmwareVersion());
 	printBMDVersion("SDI shield protocol version", sdiCameraControl.getProtocolVersion());
 #elif defined(DEBUG)
-	Serial.print("SDI shield disabled\n");
+	Serial.print("SDI shield: disabled\n");
 #endif
 
 	// Sets up configuration HTTP server with soft AP

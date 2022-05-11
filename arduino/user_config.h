@@ -12,11 +12,11 @@
  * Enables or disables debugging.
  * DEBUG is general debugging.
  * DEBUG_TALLY prints tally state when updated.
- * DEBUG_CC prints message when receiving camera control data
+ * DEBUG_CC prints camera control data when updated (for the selected camera only).
  */
 #define DEBUG
 #define DEBUG_TALLY
-// #define DEBUG_CC
+#define DEBUG_CC
 
 /**
  * The pins to use for PGM tally, PVW tally and/or ATEM connection indicator LEDs.
