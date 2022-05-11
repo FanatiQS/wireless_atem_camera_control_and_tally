@@ -169,6 +169,7 @@ char* getAtemStatus() {
 	HTML_CURRENT_TIME($, "Request time")\
 	HTML_TIME($, "Time since boot", time(NULL))\
 	HTML_SPACER($)\
+	HTML_ROW($, "Firmware Version") HTML($, VERSION)\
 	HTML_RSSI($, "WiFi signal strength", WiFi.RSSI(), WiFi.isConnected())\
 	HTML_INFO($, "ATEM connection status", getAtemStatus(), STATUS_LEN, "%s", "")\
 	HTML_VOLTAGE($, "Voltage level", analogRead(PIN_BATTREAD))\
