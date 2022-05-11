@@ -50,6 +50,9 @@
 #define _GET_ESP_VERSION_B(v) _GET_ESP_VERSION_A(v)
 #define ESP_VERSION _GET_ESP_VERSION_B(ARDUINO_ESP8266_GIT_DESC)
 
+// Index of dest in SDI protocol
+#define SDI_DEST_INDEX 0
+
 // Prints a type of version from the BMDSDIControl library
 #ifdef USE_SDI
 #ifdef DEBUG
@@ -410,11 +413,16 @@ void loop() {
 			// Sends camera control data over SDI
 #if defined(DEBUG_CC) || defined(USE_SDI)
 			case ATEM_CMDNAME_CAMERACONTROL: {
+				translateAtemCameraControl(&atem);
 #ifdef DEBUG_CC
-				Serial.print("Got camera control data\n");
+				if (atem.cmdBuf[SDI_DEST_INDEX] != atem.dest) break;
+				Serial.print("Got camera control data: ");
+				for (uint8_t i = 0; i < atem.cmdLen; i++) {
+					Serial.printf("%02x ", atem.cmdBuf[i]);
+				}
+				Serial.print("\n");
 #endif
 #ifdef USE_SDI
-				translateAtemCameraControl(&atem);
 				//!! sdiCameraControl.write(atem.cmdBuf);
 #endif
 				break;
