@@ -42,7 +42,7 @@
 
 
 
-// Version of this library
+// Firmware version of this library
 #define VERSION "0.5.0"
 
 // Gets the Arduino ESP8266 core version
@@ -50,21 +50,41 @@
 #define _GET_ESP_VERSION_B(v) _GET_ESP_VERSION_A(v)
 #define ESP_VERSION _GET_ESP_VERSION_B(ARDUINO_ESP8266_GIT_DESC)
 
+// Expected ESP version for this firmware version
+#define EXPECTED_ESP_VERSION "2.7.0"
+
 // Index of dest in SDI protocol
 #define SDI_DEST_INDEX 0
+
+// Expected SDI versions for this firmware version
+#define EXPECTED_SDI_LIBRARY_VERSION 1,0
+#define EXPECTED_SDI_FIRMWARE_VERSION 0,13
+#define EXPECTED_SDI_PROTOCOL_VERSION 1,0
 
 // Prints a type of version from the BMDSDIControl library
 #ifdef USE_SDI
 #ifdef DEBUG
-void printBMDVersion(char* label, BMD_Version version) {
+void printBMDVersion(char* label, BMD_Version version, uint8_t expectedMajor, uint8_t expectedMinor) {
+	// Prints currently used version from the SDI shield
+	Serial.print("SDI shield ");
 	Serial.print(label);
-	Serial.print(": ");
+	Serial.print(" version: ");
 	Serial.print(version.Major);
 	Serial.print('.');
 	Serial.println(version.Minor);
+
+	// Prints warning if current version does not match expected version
+	if (expectedMajor != version.Major || expectedMinor != version.Minor) {
+		Serial.print("WARNING: Expected SDI shield ");
+		Serial.print(label);
+		Serial.print(" version: ");
+		Serial.print(expectedMajor);
+		Serial.print(".");
+		Serial.println(expectedMinor);
+	}
 }
 #else
-#define printBMDVersion(lable, version)
+#define printBMDVersion(lable, version, expectedMajor, expectedMinor)
 #endif
 #endif
 
@@ -278,13 +298,23 @@ void handleHTTP() {
 void setup() {
 #ifdef DEBUG
 	Serial.begin(9600);
+
+	// Prints mac address that is used as psk by soft AP
 	Serial.println("Starting...");
 	Serial.print("Mac address: ");
 	Serial.println(WiFi.macAddress());
+
+	// Prints this libraries firmware and boards firmware
 	Serial.print("Own firmware version: ");
 	Serial.println(VERSION);
 	Serial.print("Arduino ESP8266 version: ");
 	Serial.println(ESP_VERSION);
+	if (strcmp(ESP_VERSION, EXPECTED_ESP_VERSION)) {
+		Serial.print("WARNING: Expected version for this firmware: ");
+		Serial.println(EXPECTED_ESP_VERSION);
+	}
+
+	// Prints what debugging flags are enabled when compiled
 	Serial.print("Tally debug: ");
 #ifdef DEBUG_TALLY
 	Serial.println("enabled");
@@ -320,16 +350,18 @@ void setup() {
 	atem.dest = confData.dest;
 	atemAddr = confData.atemAddr;
 
-	// Initializes camera control and tally over SDI
 #ifdef USE_SDI
+	// Initializes camera control and tally over SDI
 	Wire.begin(PIN_SDA, PIN_SCL);
 	//!! sdiTallyControl.begin();
 	//!! sdiTallyControl.setOverride(true);
 	//!! sdiCameraControl.begin();
 	//!! sdiCameraControl.setOverride(true);
-	printBMDVersion("SDI shield library version", sdiCameraControl.getLibraryVersion());
-	printBMDVersion("SDI shield firmware version", sdiCameraControl.getFirmwareVersion());
-	printBMDVersion("SDI shield protocol version", sdiCameraControl.getProtocolVersion());
+
+	// Prints versions used by SDI shield and its library if debugging is enabled
+	printBMDVersion("library", sdiCameraControl.getLibraryVersion(), EXPECTED_SDI_LIBRARY_VERSION);
+	printBMDVersion("firmware", sdiCameraControl.getFirmwareVersion(), EXPECTED_SDI_FIRMWARE_VERSION);
+	printBMDVersion("protocol", sdiCameraControl.getProtocolVersion(), EXPECTED_SDI_PROTOCOL_VERSION);
 #elif defined(DEBUG)
 	Serial.print("SDI shield: disabled\n");
 #endif
