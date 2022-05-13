@@ -74,14 +74,14 @@ uint8_t closeBuf[ATEM_LEN_SYN] = {
 };
 
 // Resets write buffer to be a SYN packet for starting handshake
-void resetAtemState(struct atem_t *atem) {
+void atem_connection_reset(struct atem_t *atem) {
 	synBuf[ATEM_INDEX_FLAG] = ATEM_FLAG_SYN | ((atem->writeBuf == synBuf) ? ATEM_FLAG_RETRANSMIT : 0);
 	atem->writeBuf = synBuf;
 	atem->writeLen = ATEM_LEN_SYN;
 }
 
 // Sends a close packet to close the session
-void closeAtemConnection(struct atem_t *atem) {
+void atem_connection_close(struct atem_t *atem) {
 	closeBuf[ATEM_INDEX_FLAG] = ATEM_FLAG_SYN;
 	closeBuf[ATEM_INDEX_SESSION_HIGH] = atem->readBuf[ATEM_INDEX_SESSION_HIGH];
 	closeBuf[ATEM_INDEX_SESSION_LOW] = atem->readBuf[ATEM_INDEX_SESSION_LOW];
@@ -90,7 +90,7 @@ void closeAtemConnection(struct atem_t *atem) {
 }
 
 // Parses a received ATEM UDP packet
-int8_t parseAtemData(struct atem_t *atem) {
+int8_t atem_parse(struct atem_t *atem) {
 	// Sets length of read buffer
 	atem->readLen = (atem->readBuf[ATEM_INDEX_LEN_HIGH] & ATEM_MASK_LEN_HIGH) << 8 |
 		atem->readBuf[ATEM_INDEX_LEN_LOW];
@@ -101,7 +101,7 @@ int8_t parseAtemData(struct atem_t *atem) {
 		if (atem->readBuf[ATEM_INDEX_FLAG] & ATEM_FLAG_SYN &&
 			atem->readBuf[ATEM_INDEX_OPCODE] == ATEM_CONNECTION_CLOSED
 		) {
-			resetAtemState(atem);
+			atem_connection_reset(atem);
 			return ATEM_CONNECTION_CLOSED;
 		}
 		closeBuf[ATEM_INDEX_FLAG] = ATEM_FLAG_SYN | ATEM_FLAG_RETRANSMIT;
@@ -165,7 +165,7 @@ int8_t parseAtemData(struct atem_t *atem) {
 }
 
 // Gets next command name and sets command buffer to a pointer to its data
-uint32_t nextAtemCommand(struct atem_t *atem) {
+uint32_t atem_cmd_next(struct atem_t *atem) {
 	// Gets start index of command in read buffer
 	const uint16_t index = atem->cmdIndex;
 
@@ -181,7 +181,7 @@ uint32_t nextAtemCommand(struct atem_t *atem) {
 }
 
 // Gets update status for camera index and updates its tally state
-bool tallyHasUpdated(struct atem_t *atem) {
+bool atem_tally_updated(struct atem_t *atem) {
 	// Ensures destination is within range of tally data length
 	if (atem->cmdBuf[TALLY_INDEX_LEN_HIGH] != 0 || atem->cmdBuf[TALLY_INDEX_LEN_LOW] < atem->dest) {
 		return false;
@@ -199,7 +199,7 @@ bool tallyHasUpdated(struct atem_t *atem) {
 }
 
 // Translates tally data from ATEMs protocol to Blackmagic Embedded Tally Control Protocol
-void translateAtemTally(struct atem_t *atem) {
+void atem_tally_translate(struct atem_t *atem) {
 	// Gets the number of items in the tally index array
 	const uint16_t len = atem->cmdBuf[TALLY_INDEX_LEN_HIGH] << 8 |
 		atem->cmdBuf[TALLY_INDEX_LEN_LOW];
@@ -216,7 +216,7 @@ void translateAtemTally(struct atem_t *atem) {
 }
 
 // Translates camera control data from ATEMs protocol to Blackmagis SDI camera control protocol
-void translateAtemCameraControl(struct atem_t *atem) {
+void atem_cc_translate(struct atem_t *atem) {
 	// Gets length of available data
 	const uint8_t len = atem->cmdBuf[5] + atem->cmdBuf[7] * 2 + atem->cmdBuf[9] * 4;
 

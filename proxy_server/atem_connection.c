@@ -45,7 +45,7 @@ void setupAtemSocket(const char* addr) {
 
 	// Initializes ATEM connection to switcher
 	getTime(&atemLastContact);
-	resetAtemState(&atem);
+	atem_connection_reset(&atem);
 	sendAtem();
 }
 
@@ -60,7 +60,7 @@ void maintainAtemConnection(const bool socketHasData) {
 		}
 
 		// Parses read buffer from ATEM
-		parseAtemData(&atem);
+		atem_parse(&atem);
 
 		// Sends response to atem switcher if needed
 		if (atem.writeLen) sendAtem();
@@ -72,9 +72,9 @@ void maintainAtemConnection(const bool socketHasData) {
 		uint8_t* commands = atem.readBuf + ATEM_LEN_HEADER;
 		uint16_t commandsLen = 0;
 		uint16_t lastCommandIndex = ATEM_LEN_HEADER;
-		while (hasAtemCommand(&atem)) {
+		while (atem_cmd_available(&atem)) {
 			// Only continue with the commands we care about
-			switch (nextAtemCommand(&atem)) {
+			switch (atem_cmd_next(&atem)) {
 				default: break;
 				case ATEM_CMDNAME_VERSION: {
 					printf("connected atem\n");
@@ -106,7 +106,7 @@ void maintainAtemConnection(const bool socketHasData) {
 	}
 	// Tries to reconnect if not getting response from ATEM
 	else if (getTimeDiff(atemLastContact) > ATEM_TIMEOUT * 1000) {
-		resetAtemState(&atem);
+		atem_connection_reset(&atem);
 		getTime(&atemLastContact);
 		sendAtem();
 	}
@@ -114,7 +114,7 @@ void maintainAtemConnection(const bool socketHasData) {
 
 //!! only for testing
 void restartAtemConnection() {
-	closeAtemConnection(&atem);
+	atem_connection_close(&atem);
 	sendAtem();
 	printf("Restarted ATEM connection\n");
 }

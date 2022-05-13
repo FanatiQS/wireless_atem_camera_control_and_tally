@@ -14,7 +14,7 @@
 #define ATEM_CMDNAME_TALLY ('T' << 24) | ('l' << 16) | ('I' << 8) | 'n'
 #define ATEM_CMDNAME_VERSION ('_' << 24) | ('v' << 16) | ('e' << 8) | 'r'
 
-// ATEM opcodes available as return value from parseAtemData
+// ATEM opcodes available as return value from atem_parse
 #define ATEM_CONNECTION_OK 0
 #define ATEM_CONNECTION_ERROR -1
 #define ATEM_CONNECTION_REJECTED 0x03
@@ -50,20 +50,20 @@ typedef struct atem_t {
 extern "C" {
 #endif
 
-void resetAtemState(struct atem_t *atem);
+void atem_connection_reset(struct atem_t *atem);
 
-void closeAtemConnection(struct atem_t *atem);
+void atem_connection_close(struct atem_t *atem);
 
-int8_t parseAtemData(struct atem_t *atem);
+int8_t atem_parse(struct atem_t *atem);
 
-uint32_t nextAtemCommand(struct atem_t *atem);
+uint32_t atem_cmd_next(struct atem_t *atem);
 
- //!! This function has to be called before translateAtemTally
-bool tallyHasUpdated(struct atem_t *atem);
+//!! This function has to be called before atem_tally_translate
+bool atem_tally_updated(struct atem_t *atem);
 
-void translateAtemTally(struct atem_t *atem);
+void atem_tally_translate(struct atem_t *atem);
 
-void translateAtemCameraControl(struct atem_t *atem);
+void atem_cc_translate(struct atem_t *atem);
 
 // Ends extern C block
 #ifdef __cplusplus
@@ -71,14 +71,14 @@ void translateAtemCameraControl(struct atem_t *atem);
 #endif
 
 // Gets boolean indicating if there are more commands to parse
-#define hasAtemCommand(atem) ((atem)->cmdIndex < (atem)->readLen)
+#define atem_cmd_available(atem) ((atem)->cmdIndex < (atem)->readLen)
 
 // Gets the major and minor version of the protocol for a version command
-#define protocolVersionMajor(atem) ((atem)->cmdBuf[0] << 8 | (atem)->cmdBuf[1])
-#define protocolVersionMinor(atem) ((atem)->cmdBuf[2] << 8 | (atem)->cmdBuf[3])
+#define atem_protocol_major(atem) ((atem)->cmdBuf[0] << 8 | (atem)->cmdBuf[1])
+#define atem_protocol_minor(atem) ((atem)->cmdBuf[2] << 8 | (atem)->cmdBuf[3])
 
 // Gets the camera destination number for a camera control command
-#define getAtemCameraControlDest(atem) ((atem)->cmdBuf[0])
+#define atem_cc_dest(atem) ((atem)->cmdBuf[0])
 
 // Ends include guard
 #endif

@@ -296,7 +296,7 @@ int main(int argc, char** argv) {
 
 	// Initializes ATEM struct to start handshake
 	struct atem_t atem = { camid };
-	resetAtemState(&atem);
+	atem_connection_reset(&atem);
 	int32_t lastRemoteId = 0;
 
 	// Processes received packets until an error occurs
@@ -311,7 +311,7 @@ int main(int argc, char** argv) {
 			if (closeConnectionAt == 0) {
 				printTime(stdout);
 				printf("Sending close request\n");
-				closeAtemConnection(&atem);
+				atem_connection_close(&atem);
 			}
 		}
 
@@ -386,7 +386,7 @@ int main(int argc, char** argv) {
 				}
 				else {
 					printf("Restarting connection due to timeout\n");
-					resetAtemState(&atem);
+					atem_connection_reset(&atem);
 				}
 				lastRemoteId = 0;
 			}
@@ -399,7 +399,7 @@ int main(int argc, char** argv) {
 			else if (packetTimeoutAt == 0) {
 				packetTimeoutAt = -1;
 				printf("Processing delayed packets after timeout and reconnects\n");
-				resetAtemState(&atem);
+				atem_connection_reset(&atem);
 				lastRemoteId = -1;
 			}
 			// Exits client after timeout
@@ -492,7 +492,7 @@ int main(int argc, char** argv) {
 		}
 
 		// Processes the received packet
-		switch (parseAtemData(&atem)) {
+		switch (atem_parse(&atem)) {
 			// Connection is allowed to continue and might have data to read and/or write
 			case ATEM_CONNECTION_OK: break;
 			// Handles connection rejected
@@ -579,10 +579,10 @@ int main(int argc, char** argv) {
 		}
 
 		// Processes command data in the ATEM packet
-		while (hasAtemCommand(&atem)) {
+		while (atem_cmd_available(&atem)) {
 			// Gets command name and length
 			const int oldCmdIndex = atem.cmdIndex;
-			const uint32_t cmdName = nextAtemCommand(&atem);
+			const uint32_t cmdName = atem_cmd_next(&atem);
 			int cmdLen = atem.cmdIndex - oldCmdIndex;
 
 			// Prints command data if flag is set
@@ -628,7 +628,7 @@ int main(int argc, char** argv) {
 					}
 
 					// Prints tally state for selected camera id if flag is set
-					if (tallyHasUpdated(&atem) && flagPrintTally) {
+					if (atem_tally_updated(&atem) && flagPrintTally) {
 						printTime(stdout);
 						const char* label = tallyTable[atem.pgmTally | atem.pvwTally << 1];
 						printf("Camera %d (tally) - %s\n", atem.dest, label);
@@ -642,7 +642,7 @@ int main(int argc, char** argv) {
 					}
 
 					// Translates ATEMs tally protocol to Blackmagics Embedded Tally Protocol
-					translateAtemTally(&atem);
+					atem_tally_translate(&atem);
 					const uint8_t* translatedTallyBuf = atem.cmdBuf;
 					const uint16_t translatedTallyLen = atem.cmdLen;
 
@@ -687,13 +687,13 @@ int main(int argc, char** argv) {
 					// Only prints camera control data when flag is set
 					if (flagPrintCameraControl) {
 						// Only prints for selected camera
-						if (getAtemCameraControlDest(&atem) != atem.dest) break;
+						if (atem_cc_dest(&atem) != atem.dest) break;
 
 						// Prints timestamp
 						printTime(stdout);
 
 						// Destination
-						printf("Camera %d (camera control) - ", getAtemCameraControlDest(&atem));
+						printf("Camera %d (camera control) - ", atem_cc_dest(&atem));
 
 						// Prints category and paramteter
 						switch (atem.cmdBuf[CAMERACONTROL_COMMAND_INDEX]) {
@@ -848,7 +848,7 @@ int main(int argc, char** argv) {
 					}
 
 					// Translates ATEMs camera control protocol to the Blackmagic SDI protocol
-					translateAtemCameraControl(&atem);
+					atem_cc_translate(&atem);
 					const uint8_t* translatedCameraControlBuf = atem.cmdBuf;
 					const uint16_t translatedCameraControlLen = atem.cmdLen;
 
@@ -881,7 +881,7 @@ int main(int argc, char** argv) {
 					// Only print protocol version when flag is set
 					if (flagPrintProtocolVersion) {
 						printTime(stdout);
-						printf("Protocol version: %d.%d\n", protocolVersionMajor(&atem), protocolVersionMinor(&atem));
+						printf("Protocol version: %d.%d\n", atem_protocol_major(&atem), atem_protocol_minor(&atem));
 					}
 
 					break;

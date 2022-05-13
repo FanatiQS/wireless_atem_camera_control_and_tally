@@ -398,7 +398,7 @@ void loop() {
 	if (udp.parsePacket()) {
 		// Parses received UDP packet
 		udp.read(atem.readBuf, ATEM_MAX_PACKET_LEN);
-		switch (parseAtemData(&atem)) {
+		switch (atem_parse(&atem)) {
 			case ATEM_CONNECTION_OK: break;
 			case ATEM_CONNECTION_REJECTED: {
 				atemStatus = STATUS_REJECTED;
@@ -412,15 +412,15 @@ void loop() {
 		}
 
 		// Processes commands from ATEM
-		while (hasAtemCommand(&atem)) switch (nextAtemCommand(&atem)) {
+		while (atem_cmd_available(&atem)) switch (atem_cmd_next(&atem)) {
 			// Turns on connection status LED and disables access point when connected to ATEM
 			case ATEM_CMDNAME_VERSION: {
 #ifdef DEBUG
 				Serial.print("Connected to ATEM\n");
 				Serial.print("Got protocol version: ");
-				Serial.print(protocolVersionMajor(&atem));
+				Serial.print(atem_protocol_major(&atem));
 				Serial.print(".");
-				Serial.println(protocolVersionMinor(&atem));
+				Serial.println(atem_protocol_minor(&atem));
 #endif
 #ifdef PIN_CONN
 				digitalWrite(PIN_CONN, LOW);
@@ -431,7 +431,7 @@ void loop() {
 			}
 			// Outputs tally status on GPIO pins and SDI
 			case ATEM_CMDNAME_TALLY: {
-				if (tallyHasUpdated(&atem)) {
+				if (atem_tally_updated(&atem)) {
 #ifdef DEBUG_TALLY
 					Serial.print("Tally state: ");
 					if (atem.pgmTally) {
@@ -453,7 +453,7 @@ void loop() {
 #endif
 				}
 #ifdef USE_SDI
-				translateAtemTally(&atem);
+				atem_tally_translate(&atem);
 				//!! sdiTallyControl.write(atem.cmdBuf, atem.cmdLen);
 #endif
 				break;
@@ -461,7 +461,7 @@ void loop() {
 			// Sends camera control data over SDI
 #if defined(DEBUG_CC) || defined(USE_SDI)
 			case ATEM_CMDNAME_CAMERACONTROL: {
-				translateAtemCameraControl(&atem);
+				atem_cc_translate(&atem);
 #ifdef DEBUG_CC
 				if (atem.cmdBuf[SDI_DEST_INDEX] != atem.dest) break;
 				Serial.print("Got camera control data: ");
@@ -481,7 +481,7 @@ void loop() {
 	// Restarts connection to ATEM if it has lost connection
 	else {
 		if (millis() < timeout) return;
-		resetAtemState(&atem);
+		atem_connection_reset(&atem);
 		if (atemStatus == STATUS_CONNECTED) atemStatus = STATUS_DROPPED;
 #ifdef PIN_CONN
 		digitalWrite(PIN_CONN, HIGH);
