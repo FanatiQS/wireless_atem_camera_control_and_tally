@@ -463,12 +463,13 @@ void loop() {
 			case ATEM_CMDNAME_CAMERACONTROL: {
 				atem_cc_translate(&atem);
 #ifdef DEBUG_CC
-				if (atem.cmdBuf[SDI_DEST_INDEX] != atem.dest) break;
-				Serial.print("Got camera control data: ");
-				for (uint8_t i = 0; i < atem.cmdLen; i++) {
-					Serial.printf("%02x ", atem.cmdBuf[i]);
+				if (atem_cc_dest(&atem) == atem.dest) {
+					Serial.print("Got camera control data: ");
+					for (uint8_t i = 0; i < atem.cmdLen; i++) {
+						Serial.printf("%02x ", atem.cmdBuf[i]);
+					}
+					Serial.print("\n");
 				}
-				Serial.print("\n");
 #endif
 #ifdef USE_SDI
 				//!! sdiCameraControl.write(atem.cmdBuf);
