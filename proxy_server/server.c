@@ -141,7 +141,7 @@ session_t* sessionsTail;
 
 // Creates and sends an ATEM syn packet with the specified opcode
 void sendConnectPacket(uint8_t opcode, uint16_t sessionId, struct sockaddr sockAddr, socklen_t sockLen) {
-	uint16_t newSessionId = (++lastSessionId % 0x7fff) % 0x7fff;
+	uint16_t newSessionId = ++lastSessionId % 0x7fff;
 	packet_t* packet = createPacket(ATEM_LEN_SYN, sessionId, sockAddr, sockLen);
 	packet->buf[ATEM_INDEX_FLAGS] = ATEM_FLAG_SYN;
 	packet->buf[ATEM_INDEX_OPCODE] = opcode;
