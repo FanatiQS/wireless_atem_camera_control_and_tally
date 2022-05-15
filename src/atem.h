@@ -10,9 +10,10 @@
 #define ATEM_BLE_UUID_CHARACTERISTIC "5DD3465F-1AEE-4299-8493-D2ECA2F8E1BB"
 
 // Commands in 32 bit integer format for easier comparison
-#define ATEM_CMDNAME_CAMERACONTROL ('C' << 24) | ('C' << 16) | ('d' << 8) | 'P'
-#define ATEM_CMDNAME_TALLY ('T' << 24) | ('l' << 16) | ('I' << 8) | 'n'
-#define ATEM_CMDNAME_VERSION ('_' << 24) | ('v' << 16) | ('e' << 8) | 'r'
+#define ATEM_CMDNAME(a, b, c, d) ((a << 24) | (b << 16) | (c << 8) | (d))
+#define ATEM_CMDNAME_CAMERACONTROL ATEM_CMDNAME('C', 'C', 'd', 'P')
+#define ATEM_CMDNAME_TALLY ATEM_CMDNAME('T', 'l', 'I', 'n')
+#define ATEM_CMDNAME_VERSION ATEM_CMDNAME('_', 'v', 'e', 'r')
 
 // ATEM opcodes available as return value from atem_parse
 #define ATEM_CONNECTION_OK 0
