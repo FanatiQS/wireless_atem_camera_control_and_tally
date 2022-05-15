@@ -34,6 +34,9 @@
 // Atem remote id range
 #define ATEM_LIMIT_REMOTEID 0x8000
 
+// Byte offset from start of command block to command name
+#define ATEM_CMDNAME_OFFSET 4
+
 // Tally flags indicating the status
 #define TALLY_FLAG_PGM 0x01
 #define TALLY_FLAG_PVW 0x02
@@ -176,8 +179,10 @@ uint32_t atem_cmd_next(struct atem_t *atem) {
 	atem->cmdBuf = atem->readBuf + index + ATEM_LEN_CMDHEADER;
 
 	// Converts command name to a 32 bit integer for easy comparison
-	return (atem->readBuf[index + 4] << 24) | (atem->readBuf[index + 5] << 16) |
-		(atem->readBuf[index + 6] << 8) | atem->readBuf[index + 7];
+	return (atem->readBuf[index + ATEM_CMDNAME_OFFSET + 0] << 24) |
+		(atem->readBuf[index + ATEM_CMDNAME_OFFSET + 1] << 16) |
+		(atem->readBuf[index + ATEM_CMDNAME_OFFSET + 2] << 8) |
+		atem->readBuf[index + ATEM_CMDNAME_OFFSET + 3];
 }
 
 // Gets update status for camera index and updates its tally state
