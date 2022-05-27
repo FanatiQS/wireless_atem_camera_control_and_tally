@@ -1,10 +1,6 @@
 ## Summary
 Wireless tally and camera control for Blackmagic cameras connected directly to an ATEM switcher over WiFi.
 
-## Current state
-Currently, camera control has not been fully implemented.
-Tally works, both with LEDs and bridged GPIO.
-
 ## Description
 Blackmagics URSA cameras are great to use with their ATEM switchers.
 Just connecting two BNC cables between the camera and switcher to not only get video to and from the camera, but to also getting tally and camera control over the SDI return signal is a fantastic feature for multicamera productions.
