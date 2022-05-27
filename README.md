@@ -78,3 +78,6 @@ Using that test client will help in finding out if something affecting this proj
 
 #### Concurrent connections
 In my experience testing with an ATEM Television Studio, no more than 5 connections can be handled at the same time. This includes ATEM Software Control instances and hardware panels too.
+
+## Thanks
+A big thanks to Scenteknik AVL for sponsoring this project with components for a prototype.
