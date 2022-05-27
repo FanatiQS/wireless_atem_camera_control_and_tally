@@ -353,10 +353,10 @@ void setup() {
 #ifdef USE_SDI
 	// Initializes camera control and tally over SDI
 	Wire.begin(PIN_SDA, PIN_SCL);
-	//!! sdiTallyControl.begin();
-	//!! sdiTallyControl.setOverride(true);
-	//!! sdiCameraControl.begin();
-	//!! sdiCameraControl.setOverride(true);
+	sdiCameraControl.begin();
+	sdiCameraControl.setOverride(true);
+	sdiTallyControl.begin();
+	sdiTallyControl.setOverride(true);
 
 	// Prints versions used by SDI shield and its library if debugging is enabled
 	printBMDVersion("library", sdiCameraControl.getLibraryVersion(), EXPECTED_SDI_LIBRARY_VERSION);
@@ -431,48 +431,45 @@ void loop() {
 			}
 			// Outputs tally status on GPIO pins and SDI
 			case ATEM_CMDNAME_TALLY: {
-				if (atem_tally_updated(&atem)) {
+				if (!atem_tally_updated(&atem)) break;
 #ifdef DEBUG_TALLY
-					Serial.print("Tally state: ");
-					if (atem.pgmTally) {
-						Serial.print("PGM");
-					}
-					else if (atem.pvwTally) {
-						Serial.print("PVW");
-					}
-					else {
-						Serial.print("NONE");
-					}
-					Serial.print("\n");
+				Serial.print("Tally state: ");
+				if (atem.pgmTally) {
+					Serial.print("PGM");
+				}
+				else if (atem.pvwTally) {
+					Serial.print("PVW");
+				}
+				else {
+					Serial.print("NONE");
+				}
+				Serial.print("\n");
 #endif
 #ifdef PIN_PGM
-					digitalWrite(PIN_PGM, (atem.pgmTally) ? LOW : HIGH);
+				digitalWrite(PIN_PGM, (atem.pgmTally) ? LOW : HIGH);
 #endif
 #ifdef PIN_PVW
-					digitalWrite(PIN_PVW, (atem.pvwTally) ? LOW : HIGH);
+				digitalWrite(PIN_PVW, (atem.pvwTally) ? LOW : HIGH);
 #endif
-				}
 #ifdef USE_SDI
-				atem_tally_translate(&atem);
-				//!! sdiTallyControl.write(atem.cmdBuf, atem.cmdLen);
+				sdiTallyControl.setCameraTally(atem.dest, atem.pgmTally, atem.pvwTally);
 #endif
 				break;
 			}
 			// Sends camera control data over SDI
 #if defined(DEBUG_CC) || defined(USE_SDI)
 			case ATEM_CMDNAME_CAMERACONTROL: {
+				if (atem_cc_dest(&atem) != atem.dest) break;
 				atem_cc_translate(&atem);
 #ifdef DEBUG_CC
-				if (atem_cc_dest(&atem) == atem.dest) {
-					Serial.print("Got camera control data: ");
-					for (uint8_t i = 0; i < atem.cmdLen; i++) {
-						Serial.printf("%02x ", atem.cmdBuf[i]);
-					}
-					Serial.print("\n");
+				Serial.print("Got camera control data: ");
+				for (uint8_t i = 0; i < atem.cmdLen; i++) {
+					Serial.printf("%02x ", atem.cmdBuf[i]);
 				}
+				Serial.print("\n");
 #endif
 #ifdef USE_SDI
-				//!! sdiCameraControl.write(atem.cmdBuf);
+				sdiCameraControl.write(atem.cmdBuf, atem.cmdLen);
 #endif
 				break;
 			}
