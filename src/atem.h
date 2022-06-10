@@ -51,10 +51,56 @@ typedef struct atem_t {
 extern "C" {
 #endif
 
+/**
+ * @brief Restarts the connection when disconnected or not yet connected.
+ *
+ * @details Sets the atem.writeBuf to request a new session on the switcher
+ * using a SYN packet that has to be manually sent to the switcher.
+ * Calling atem_parse on the response from the switcher will return either
+ * ATEM_CONNECTION_OK or ATEM_CONNECTION_REJECTED.
+ * If connection times out before receiving a response, the connection can be
+ * restarted normally.
+ *
+ * @attention If the atem connection context already has an active connection,
+ * resetting and sending a SYN packet would open a new session without first
+ * closing the existing one and causing major issues for both connections.
+ * Close any existing connection before resetting, or reset as a response
+ * to the prior connection being dropped.
+ *
+ * @param[in,out] atem The atem connection context to reset the connection for.
+ */
 void atem_connection_reset(struct atem_t *atem);
 
+/**
+ * @brief Requests the connection to close.
+ *
+ * @details Sets the atem.writeBuf to a closing request that manually has to
+ * be sent to the switcher.
+ * Content of any future packets will be ignored by atem_parse.
+ * Write buffer remains as a close request until receiving an
+ * ATEM_CONNECTION_CLOSED opcode and should continue to be sent for every packet
+ * in case the first request packet was dropped.
+ * When receiving ATEM_CONNECTION_CLOSED opcode, the write buffer can be sent
+ * to automatically restart the connection or ignored to completely close it.
+ *
+ * @param[in,out] atem The atem connection context to close the connection for.
+ */
 void atem_connection_close(struct atem_t *atem);
 
+/**
+ * @brief Parses the data available in atem.readBuf.
+ *
+ * Set content of atem.readBuf manually by receiving UDP data to it with a max
+ * length of ATEM_MAX_PACKET_LEN.
+ * This function MUST be called before processing commands with
+ * atem_cmd_next.
+ *
+ * @param[in,out] atem The atem connection context containing the data to parse.
+ * @returns The connection state of the context to the switcher after
+ * processing the packet (one of the ATEM_CONNECTION_* macros).
+ *
+ * @note It is not required to use the return value from this function.
+ */
 int8_t atem_parse(struct atem_t *atem);
 
 uint32_t atem_cmd_next(struct atem_t *atem);
@@ -71,7 +117,16 @@ void atem_cc_translate(struct atem_t *atem);
 }
 #endif
 
-// Gets boolean indicating if there are more commands to parse
+/**
+ * @brief Checks if there are any commands available to process.
+ *
+ * @details Use this function in a while loop to process all commands in an
+ * ATEM packet after parsing it with atem_parse.
+ * Get ATEM commands with atem_cmd_next if there are commands available.
+ *
+ * @param[in,out] atem The atem connection context containing the parsed data.
+ * @returns Boolean indicating if there are commands available to process.
+ */
 #define atem_cmd_available(atem) ((atem)->cmdIndex < (atem)->readLen)
 
 // Gets the major and minor version of the protocol for a version command
