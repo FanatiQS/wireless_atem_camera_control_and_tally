@@ -36,6 +36,8 @@ void setupProxyServer() {
 	}
 }
 
+
+
 // Queue of packets awaiting acknowledgement
 packet_t* queueHead;
 packet_t* queueTail;
@@ -271,9 +273,126 @@ void removeSession(uint16_t sessionId) {
 
 	// Frees the session memory
 	free(session);
+}
 
-	// Prints log when sessions disconnect
-	printf("Session closed %u\n", sessionId & ~0x8000);
+
+
+// Processes ATEM packet from client to proxy server
+void processServerData() {
+	// Reads incoming data
+	uint8_t buf[ATEM_MAX_PACKET_LEN];
+	struct sockaddr sockAddr;
+	socklen_t sockLen = sizeof(sockAddr);
+	if (recvfrom(proxySock, buf, ATEM_MAX_PACKET_LEN, 0, &sockAddr, &sockLen) == -1) {
+		perror("Unable to read data from relay socket");
+		return;
+	}
+
+	// Gets session id for received packet
+	const uint16_t sessionId = buf[ATEM_INDEX_SESSION_HIGH] << 8 | buf[ATEM_INDEX_SESSION_LOW];
+
+	// Processes connection changes
+	if (buf[ATEM_INDEX_FLAGS] & ATEM_FLAG_SYN) {
+		// Sends synack as response to syn packets
+		if (buf[ATEM_INDEX_OPCODE] == ATEM_CONNECTION_OPEN) {
+			if (findPacketInQueue(buf) != NULL) return;
+			sendConnectPacket(ATEM_CONNECTION_SUCCESS, sessionId, sockAddr, sockLen);
+		}
+		// Closes session on request
+		else if (buf[ATEM_INDEX_OPCODE] == ATEM_CONNECTION_CLOSING) {
+			// Removes session from list
+			removeSession(sessionId);
+
+			// Prints log why session was disconnected
+			printf("Session closed by client %.4u\n", sessionId & ~0x8000);
+
+			// Sends close response that is not to be responded to
+			uint8_t res[ATEM_LEN_SYN] = {
+				[ATEM_INDEX_FLAGS] = ATEM_FLAG_SYN,
+				[ATEM_INDEX_LEN] = ATEM_LEN_SYN,
+				[ATEM_INDEX_SESSION_HIGH] = buf[ATEM_INDEX_SESSION_HIGH],
+				[ATEM_INDEX_SESSION_LOW] = buf[ATEM_INDEX_SESSION_LOW],
+				[ATEM_INDEX_OPCODE] = ATEM_CONNECTION_CLOSED,
+			};
+			if (sendto(proxySock, res, ATEM_LEN_SYN, 0, &sockAddr, sockLen) == -1) {
+				perror("Unable to send close packet to relay socket");
+			}
+		}
+	}
+	// Processes acks
+	else if (buf[ATEM_INDEX_FLAGS] & ATEM_FLAG_ACK) {
+		// Removes acknowledged packet from packet queue
+		packet_t* packet = findPacketInQueue(buf);
+		if (packet == NULL) return;
+		dequeuePacket(packet);
+
+		// Completes handshake if it is an ack to a synack
+		if (!(buf[ATEM_INDEX_SESSION_HIGH] & 0x80)) {
+			addNewSession(packet, sockAddr, sockLen);
+		}
+
+		// Frees memory for acknowledged packet
+		free(packet);
+	}
+	// Responds to ack request
+	else if (buf[ATEM_INDEX_FLAGS] & ATEM_FLAG_ACKREQUEST) {
+		// Ignores packets to old server instances
+		if (sessionId > lastSessionId) return;
+
+		// Sends acknowledgement to packet requiring acknowledgement
+		uint8_t res[ATEM_LEN_HEADER] = {
+			[ATEM_INDEX_FLAGS] = ATEM_FLAG_ACK,
+			[ATEM_INDEX_LEN] = ATEM_LEN_HEADER,
+			[ATEM_INDEX_SESSION_HIGH] = buf[ATEM_INDEX_SESSION_HIGH],
+			[ATEM_INDEX_SESSION_LOW] = buf[ATEM_INDEX_SESSION_LOW],
+			[ATEM_INDEX_ACKID_HIGH] = buf[ATEM_INDEX_REMOTEID_HIGH],
+			[ATEM_INDEX_ACKID_LOW] = buf[ATEM_INDEX_REMOTEID_LOW]
+		};
+		if (sendto(proxySock, res, ATEM_LEN_HEADER, 0, &sockAddr, sockLen)) {
+			perror("Unable to send acknowledgement to relay socket");
+		}
+	}
+}
+
+// Resends packets that has not been acknowledged
+void resendServerPacket() {
+	// Resends packet if there are still resends available for the packet
+	if (queueHead->resendsLeft) {
+		queueHead->resendsLeft--;
+		packet_t* packet = queueHead;
+		dequeuePacket(packet);
+		sendPacket(packet);
+	}
+	// Removes close packets that are not responded to, they do not have a session anymore
+	else if (
+		queueHead->buf[ATEM_INDEX_FLAGS] & ATEM_FLAG_SYN &&
+		queueHead->buf[ATEM_INDEX_OPCODE] == ATEM_CONNECTION_CLOSING
+	) {
+		queueHead = queueHead->next;
+	}
+	// Removes the session if the packet has retried to many times
+	else {
+		// Creates and sends close request
+		uint16_t sessionId = queueHead->buf[ATEM_INDEX_SESSION_HIGH] << 8 |
+			queueHead->buf[ATEM_INDEX_SESSION_LOW];
+		sendConnectPacket(ATEM_CONNECTION_CLOSING, sessionId, queueHead->sockAddr, queueHead->sockLen);
+
+		// Removes the session from the proxy server
+		queueHead = queueHead->next;
+		removeSession(sessionId);
+
+		// Prints log why session was disconnected
+		printf("Session closed by server %.4u\n", sessionId & ~0x8000);
+	}
+}
+
+// Sends ping to all connected clients
+void pingServerClients() {
+	session_t* session = sessionsHead;
+	while (session != NULL) {
+		sendPacket(createDataPacket(0, session));
+		session = session->next;
+	}
 }
 
 
@@ -285,109 +404,17 @@ struct timeval lastProxyPing;
 void maintainProxyConnections(const bool socketHasData) {
 	// Processes proxy data if available
 	if (socketHasData) {
-		// Reads incoming data
-		uint8_t buf[ATEM_MAX_PACKET_LEN];
-		struct sockaddr sockAddr;
-		socklen_t sockLen = sizeof(sockAddr);
-		if (recvfrom(proxySock, buf, ATEM_MAX_PACKET_LEN, 0, &sockAddr, &sockLen) == -1) {
-			perror("Unable to read data from relay socket");
-			return;
-		}
-
-		// Gets session id for received packet
-		const uint16_t sessionId = buf[ATEM_INDEX_SESSION_HIGH] << 8 | buf[ATEM_INDEX_SESSION_LOW];
-
-		// Processes connection changes
-		if (buf[ATEM_INDEX_FLAGS] & ATEM_FLAG_SYN) {
-			// Sends synack as response to syn packets
-			if (buf[ATEM_INDEX_OPCODE] == ATEM_CONNECTION_OPEN) {
-				if (findPacketInQueue(buf) != NULL) return;
-				sendConnectPacket(ATEM_CONNECTION_SUCCESS, sessionId, sockAddr, sockLen);
-			}
-			// Closes session on request
-			else if (buf[ATEM_INDEX_OPCODE] == ATEM_CONNECTION_CLOSING) {
-				// Removes session from list
-				removeSession(sessionId);
-
-				// Sends close response that is not to be responded to
-				uint8_t res[ATEM_LEN_SYN] = {
-					[ATEM_INDEX_FLAGS] = ATEM_FLAG_SYN,
-					[ATEM_INDEX_LEN] = ATEM_LEN_SYN,
-					[ATEM_INDEX_SESSION_HIGH] = buf[ATEM_INDEX_SESSION_HIGH],
-					[ATEM_INDEX_SESSION_LOW] = buf[ATEM_INDEX_SESSION_LOW],
-					[ATEM_INDEX_OPCODE] = ATEM_CONNECTION_CLOSED,
-				};
-				if (sendto(proxySock, res, ATEM_LEN_SYN, 0, &sockAddr, sockLen) == -1) {
-					perror("Unable to send close packet to relay socket");
-				}
-			}
-		}
-		// Processes acks
-		else if (buf[ATEM_INDEX_FLAGS] & ATEM_FLAG_ACK) {
-			// Removes acknowledged packet from packet queue
-			packet_t* packet = findPacketInQueue(buf);
-			if (packet == NULL) return;
-			dequeuePacket(packet);
-
-			// Completes handshake if it is an ack to a synack
-			if (!(buf[ATEM_INDEX_SESSION_HIGH] & 0x80)) {
-				addNewSession(packet, sockAddr, sockLen);
-			}
-
-			// Frees memory for acknowledged packet
-			free(packet);
-		}
-		// Responds to ack request
-		else if (buf[ATEM_INDEX_FLAGS] & ATEM_FLAG_ACKREQUEST) {
-			uint8_t res[ATEM_LEN_HEADER] = {
-				[ATEM_INDEX_FLAGS] = ATEM_FLAG_ACK,
-				[ATEM_INDEX_LEN] = ATEM_LEN_HEADER,
-				[ATEM_INDEX_SESSION_HIGH] = buf[ATEM_INDEX_SESSION_HIGH],
-				[ATEM_INDEX_SESSION_LOW] = buf[ATEM_INDEX_SESSION_LOW],
-				[ATEM_INDEX_ACKID_HIGH] = buf[ATEM_INDEX_REMOTEID_HIGH],
-				[ATEM_INDEX_ACKID_LOW] = buf[ATEM_INDEX_REMOTEID_LOW]
-			};
-			sendto(proxySock, res, ATEM_LEN_HEADER, 0, &sockAddr, sockLen);
-		}
+		processServerData();
 	}
 
 	// Resends packets that needs to be resent
 	while (queueHead != NULL && getTimeDiff(queueHead->timestamp) > ATEM_RESEND_TIME) {
-		// Resends packet if there are still resends available for the packet
-		if (queueHead->resendsLeft) {
-			queueHead->resendsLeft--;
-			packet_t* packet = queueHead;
-			dequeuePacket(packet);
-			sendPacket(packet);
-		}
-		// Removes close packets that are not responded to, they do not have a session anymore
-		else if (
-			queueHead->buf[ATEM_INDEX_FLAGS] & ATEM_FLAG_SYN &&
-			queueHead->buf[ATEM_INDEX_OPCODE] == ATEM_CONNECTION_CLOSING
-		) {
-			queueHead = queueHead->next;
-		}
-		// Removes the session if the packet has retried to many times
-		else {
-			// Creates and sends close request
-			uint16_t sessionId = queueHead->buf[ATEM_INDEX_SESSION_HIGH] << 8 |
-				queueHead->buf[ATEM_INDEX_SESSION_LOW];
-			sendConnectPacket(ATEM_CONNECTION_CLOSING, sessionId, queueHead->sockAddr, queueHead->sockLen);
-
-			// Removes the session from the proxy server
-			queueHead = queueHead->next;
-			removeSession(sessionId);
-		}
+		resendServerPacket();
 	}
 
 	// Pings proxy sockets on an interval
 	if (getTimeDiff(lastProxyPing) > ATEM_PING_INTERVAL) {
-		// Sends pring to all connected clients
-		session_t* session = sessionsHead;
-		while (session != NULL) {
-			sendPacket(createDataPacket(0, session));
-			session = session->next;
-		}
+		pingServerClients();
 
 		// Updates timestamp for last ping cycle to current time
 		getTime(&lastProxyPing);
