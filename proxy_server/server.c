@@ -62,8 +62,8 @@ packet_t* createPacket(uint16_t bufLen, uint16_t sessionId, struct sockaddr sock
 	packet->timestamp.tv_sec = 0;
 
 	// Sets length and session id of response buffer (length in buffer only up to 255)
-	memset(packet->buf, 0, bufLen);
 	packet->bufLen = bufLen;
+	memset(packet->buf, 0, bufLen);
 	packet->buf[ATEM_INDEX_LEN] = bufLen;
 	packet->buf[ATEM_INDEX_SESSION_HIGH] = sessionId >> 8;
 	packet->buf[ATEM_INDEX_SESSION_LOW] = sessionId & 0xff;
@@ -75,7 +75,9 @@ packet_t* createPacket(uint16_t bufLen, uint16_t sessionId, struct sockaddr sock
 // Sends a packet to a proxy connection and adds it to the queue
 void sendPacket(packet_t* packet) {
 	// Sets resend flag if this is not the first time the packet has been transmitted
-	if (packet->timestamp.tv_sec != 0) packet->buf[0] |= ATEM_FLAG_RETRANSMIT;
+	if (packet->timestamp.tv_sec != 0) {
+		packet->buf[0] |= ATEM_FLAG_RETRANSMIT;
+	}
 
 	// Sends buffer of packet
 	if (sendto(proxySock, packet->buf, packet->bufLen, 0, &packet->sockAddr, packet->sockLen) == -1) {
@@ -105,6 +107,7 @@ void dequeuePacket(packet_t* packet) {
 	else {
 		packet->previous->next = packet->next;
 	}
+
 	if (queueTail == packet) {
 		queueTail = packet->previous;
 	}
@@ -226,7 +229,7 @@ void addNewSession(packet_t* packet, struct sockaddr sockAddr, socklen_t sockLen
 	dumpAtemData(session);
 
 	// Prints log when a new session is created
-	printf("Session created %u\n", session->id & ~0x8000);
+	printf("Session created %.4u\n", session->id & ~0x8000);
 }
 
 // Removes a proxy connection from the list
