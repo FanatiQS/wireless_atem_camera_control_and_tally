@@ -144,16 +144,25 @@ uint16_t lastSessionId = 0;
 session_t* sessionsHead;
 session_t* sessionsTail;
 
-// Creates and sends an ATEM syn packet with the specified opcode
-void sendConnectPacket(uint8_t opcode, uint16_t sessionId, struct sockaddr sockAddr, socklen_t sockLen) {
+// Creates and sends an ATEM successfull connection response packet
+void sendConnectPacket(uint16_t sessionId, struct sockaddr sockAddr, socklen_t sockLen) {
 	uint16_t newSessionId = ++lastSessionId % 0x7fff;
 	packet_t* packet = createPacket(ATEM_LEN_SYN, sessionId, sockAddr, sockLen);
 	packet->buf[ATEM_INDEX_FLAGS] = ATEM_FLAG_SYN;
-	packet->buf[ATEM_INDEX_OPCODE] = opcode;
+	packet->buf[ATEM_INDEX_OPCODE] = ATEM_CONNECTION_SUCCESS;
 	packet->buf[ATEM_INDEX_NEW_SESSION_HIGH] = newSessionId >> 8;
 	packet->buf[ATEM_INDEX_NEW_SESSION_LOW] = newSessionId;
-	if (opcode == ATEM_CONNECTION_CLOSING) packet->resendsLeft = 1;
 	sendPacket(packet);
+}
+
+// Creates and sends an ATEM close request packet
+void sendClosePacket(uint16_t sessionId, struct sockaddr sockAddr, socklen_t sockLen) {
+	packet_t* packet = createPacket(ATEM_LEN_SYN, sessionId, sockAddr, sockLen);
+	packet->buf[ATEM_INDEX_FLAGS] = ATEM_FLAG_SYN;
+	packet->buf[ATEM_INDEX_OPCODE] = ATEM_CONNECTION_CLOSING;
+	packet->resendsLeft = 1;
+	sendPacket(packet);
+
 }
 
 // Creates an ATEM data packet for a session
@@ -296,7 +305,7 @@ void processServerData() {
 		// Sends synack as response to syn packets
 		if (buf[ATEM_INDEX_OPCODE] == ATEM_CONNECTION_OPEN) {
 			if (findPacketInQueue(buf) != NULL) return;
-			sendConnectPacket(ATEM_CONNECTION_SUCCESS, sessionId, sockAddr, sockLen);
+			sendConnectPacket(sessionId, sockAddr, sockLen);
 		}
 		// Closes session on request
 		else if (buf[ATEM_INDEX_OPCODE] == ATEM_CONNECTION_CLOSING) {
@@ -375,7 +384,7 @@ void resendServerPacket() {
 		// Creates and sends close request
 		uint16_t sessionId = queueHead->buf[ATEM_INDEX_SESSION_HIGH] << 8 |
 			queueHead->buf[ATEM_INDEX_SESSION_LOW];
-		sendConnectPacket(ATEM_CONNECTION_CLOSING, sessionId, queueHead->sockAddr, queueHead->sockLen);
+		sendClosePacket(sessionId, queueHead->sockAddr, queueHead->sockLen);
 
 		// Removes the session from the proxy server
 		queueHead = queueHead->next;
