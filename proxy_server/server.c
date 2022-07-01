@@ -9,17 +9,7 @@
 #include "./atem_connection.h"
 #include "./server.h"
 #include "./atem_extra.h"
-
-
-
-//!! only for tmp testing of data transmission
-#define ATEM_LEN_VER 12
-#define ATEM_INDEX_CMDLEN (ATEM_LEN_HEADER + 1)
-#define ATEM_INDEX_VERMAJ (ATEM_LEN_HEADER + 9)
-#define ATEM_INDEX_VERMIN (ATEM_INDEX_VERMAJ + 2)
-
-//!! only for testing
-void restartAtemConnection();
+#include "./cache.h"
 
 
 
@@ -193,20 +183,6 @@ void broadcastAtemCommands(const uint8_t* commands, const uint16_t len) {
 	}
 }
 
-// Dumps all ATEM data on a newly connected client
-void dumpAtemData(struct session_t* session) {
-	// Sends version command
-	packet_t* packet = createDataPacket(ATEM_LEN_VER, session);
-	packet->buf[ATEM_INDEX_CMDLEN] = ATEM_LEN_VER;
-	memcpy(packet->buf + ATEM_LEN_HEADER + 4, "_ver", 4);
-	packet->buf[ATEM_INDEX_VERMAJ] = 2;
-	packet->buf[ATEM_INDEX_VERMIN] = 30;
-	sendPacket(packet);
-
-	// Resets ATEM connection to get all data from switcher
-	restartAtemConnection();
-}
-
 // Creates a new session and dumps all ATEM data on new connection
 void addNewSession(packet_t* packet, struct sockaddr sockAddr, socklen_t sockLen) {
 	// Creates a new session
@@ -321,7 +297,7 @@ void processServerData() {
 				[ATEM_INDEX_LEN] = ATEM_LEN_SYN,
 				[ATEM_INDEX_SESSION_HIGH] = buf[ATEM_INDEX_SESSION_HIGH],
 				[ATEM_INDEX_SESSION_LOW] = buf[ATEM_INDEX_SESSION_LOW],
-				[ATEM_INDEX_OPCODE] = ATEM_CONNECTION_CLOSED,
+				[ATEM_INDEX_OPCODE] = ATEM_CONNECTION_CLOSED
 			};
 			if (sendto(proxySock, res, ATEM_LEN_SYN, 0, &sockAddr, sockLen) == -1) {
 				perror("Unable to send close packet to relay socket");
