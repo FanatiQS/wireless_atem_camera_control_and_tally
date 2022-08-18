@@ -13,8 +13,8 @@ struct packet_t {
 	struct packet_t* resendNext;
 	struct packet_t* resendPrev;
 	struct session_t* session;
-	uint8_t remainingResends;
 	struct timeval resendTimer;
+	uint8_t remainingResends;
 	bool lastInChunk;
 	uint16_t len;
 	uint8_t buf[0];
