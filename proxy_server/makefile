@@ -1,7 +1,10 @@
-FILES := server.c udp.c atem_connection.c ../src/atem.c cache.c
+FILES := server.c udp.c timer.c cache.c relay.c ../src/atem.c
 
-server: $(FILES) ../src/atem.h atem_connection.h udp_unix.h udp.h
-	gcc $(FILES) -o server
+release:
+	gcc $(FILES) main.c -o server -O3
+
+dev:
+	gcc $(FILES) main.c -o server -Wall -g -DDEBUG
 
 clean:
 	rm server
