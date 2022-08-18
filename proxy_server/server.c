@@ -164,16 +164,7 @@ static void dequeueSession(struct session_t* session) {
 
 // Sends an ATEM buffer to an address using existing UDP connection
 static void sendBuffer(uint8_t* buf, uint16_t len, struct sockaddr* sockAddr, socklen_t sockLen) {
-#ifdef DEBUG
-	DEBUG_PRINT("sending data");
-	for (uint16_t i = 0; i < len; i++) {
-		if ((i % DEBUG_PRINT_LINE_LIMIT) == 0) {
-			printf("\n\t");
-		}
-		printf("%.2x ", buf[i]);
-	}
-	printf("\n");
-#endif
+	DEBUG_PRINT_BUFFER(buf, len, "sending data");
 
 	if (sendto(sockProxy, buf, len, 0, sockAddr, sockLen) == -1) {
 		perror("Failed to send proxy data");
@@ -200,7 +191,7 @@ static struct packet_t* createPacket(struct session_t* session, uint16_t len, ui
 	// Allocates memory for the packet
 	struct packet_t* packet = (struct packet_t*)malloc(sizeof(struct packet_t) + len);
 	if (packet == NULL) {
-		fprintf(stderr, "Failed to create packet of buffer size %d\n", len);
+		fprintf(stderr, "Failed to create packet with buffer size %d\n", len);
 		abort();
 	}
 
@@ -609,20 +600,12 @@ void processProxyData() {
 		return;
 	}
 
-#ifdef DEBUG
-	DEBUG_PRINT(
+	// Prints received buffer when debug printing is enabled
+	DEBUG_PRINT_BUFFER(buf, recvLen,
 		"received data from %s:%d",
 		inet_ntoa(((struct sockaddr_in*)&sockAddr)->sin_addr),
 		((struct sockaddr_in*)&sockAddr)->sin_port
 	);
-	for (uint16_t i = 0; i < recvLen; i++) {
-		if ((i % DEBUG_PRINT_LINE_LIMIT) == 0) {
-			printf("\n\t");
-		}
-		printf("%.2x ", buf[i]);
-	}
-	printf("\n");
-#endif
 
 	// Processes opening handshake
 	if (!(buf[ATEM_INDEX_SESSION_HIGH] & 0x80)) {

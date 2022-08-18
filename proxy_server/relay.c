@@ -25,16 +25,7 @@ static void sendAtem() {
 		perror("Failed to send data to ATEM");
 	}
 
-#ifdef DEBUG
-	DEBUG_PRINT("sent data to relay server");
-	for (uint16_t i = 0; i < atem.writeLen; i++) {
-		if ((i % DEBUG_PRINT_LINE_LIMIT) == 0) {
-			printf("\n\t");
-		}
-		printf("%.2x ", atem.writeBuf[i]);
-	}
-	printf("\n");
-#endif
+	DEBUG_PRINT_BUFFER(atem.writeBuf, atem.writeLen, "sent data to relay server");
 }
 
 // Connects to an ATEM switcher
@@ -72,16 +63,7 @@ void processRelayData() {
 	}
 
 	// Prints received buffer when debug printing is enabled
-#ifdef DEBUG
-	DEBUG_PRINT("received data from relay server");
-	for (uint16_t i = 0; i < recvLen; i++) {
-		if ((i % DEBUG_PRINT_LINE_LIMIT) == 0) {
-			printf("\n\t");
-		}
-		printf("%.2x ", atem.readBuf[i]);
-	}
-	printf("\n");
-#endif
+	DEBUG_PRINT_BUFFER(atem.readBuf, recvLen, "received data from relay server");
 
 	// Parses ATEM packet and let connection time out if not connected
 	switch (atem_parse(&atem)) {
