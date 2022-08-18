@@ -2,7 +2,9 @@
 #ifndef CACHE_H
 #define CACHE_H
 
-void dumpAtemData(struct session_t session);
+#include <stdint.h> // uint8_t, uint16_t
 
-// End include guard
+void dumpAtemData(struct session_t* session);
+
+// Ends include guard
 #endif

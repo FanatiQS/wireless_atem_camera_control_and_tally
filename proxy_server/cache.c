@@ -1,10 +1,10 @@
 #include "./server.h"
+#include "./relay.h"
 
 
 
-void restartAtemConnection();
-
-void dumpAtemData(struct session_t session) {
-	restartAtemConnection();
+// this is currently just a hacky solution that restarts the relay connection instead of caching anything
+void dumpAtemData(struct session_t* session) {
+	reconnectRelaySocket();
 }
 

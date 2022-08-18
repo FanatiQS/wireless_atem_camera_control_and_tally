@@ -2,33 +2,58 @@
 #ifndef SERVER_H
 #define SERVER_H
 
+#include <stdbool.h> // bool
 #include <stdint.h> // uint8_t, uint16_t
 
 #include "./udp.h"
 
 // Structure for packets awaiting acknowledgement
-typedef struct packet_t {
-	struct packet_t* next;
-	struct packet_t* previous;
-	struct sockaddr sockAddr;
-	socklen_t sockLen;
-	struct timeval timestamp;
-	uint8_t resendsLeft;
-	uint16_t bufLen;
+struct packet_t {
+	struct packet_t* localNext;
+	struct packet_t* resendNext;
+	struct packet_t* resendPrev;
+	struct session_t* session;
+	uint8_t remainingResends;
+	struct timeval resendTimer;
+	bool lastInChunk;
+	uint16_t len;
 	uint8_t buf[0];
-} packet_t;
+};
 
 // Structure for proxy connections
-typedef struct session_t {
-	struct session_t* next;
-	struct session_t* previous;
-	uint16_t id;
-	uint16_t remote;
+struct session_t {
+	struct sessionChunk_t* chunk;
+	struct sessionChunk_t* handshakeChunk;
+	struct session_t* broadcastNext;
+	struct session_t* broadcastPrev;
+	struct packet_t* localPacketHead;
+	struct packet_t* localPacketTail;
+	uint8_t handshakeId;
+	uint8_t id;
+	bool closed;
+	uint16_t remoteId;
 	struct sockaddr sockAddr;
 	socklen_t sockLen;
-} session_t;
+};
 
-void broadcastAtemCommands(const uint8_t* commands, const uint16_t len);
+// Structure used in session lookup table to reduce memory footprint
+#define SESSIONCHUNKS 256
+#define SESSIONCHUNKSIZE 256
+struct sessionChunk_t {
+	uint8_t id;
+	uint8_t fillLevel;
+	struct session_t* sessions[SESSIONCHUNKSIZE];
+};
+
+extern int sockProxy;
+void setupProxy();
+void processProxyData();
+
+void sendAtemCommands(struct session_t* session, uint8_t* commands, uint16_t len);
+void broadcastAtemCommands(uint8_t* commands, uint16_t len);
+
+void resendProxyPackets();
+void pingProxySessions();
 
 // End include guard
 #endif
