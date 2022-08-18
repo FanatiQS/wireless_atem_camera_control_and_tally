@@ -579,6 +579,7 @@ static void acknowledgeLocalPacket(struct session_t* session, uint8_t remoteHigh
 
 // Responds to acknowledge request
 static void acknowledgeRemotePacket(struct session_t* session, uint8_t localHigh, uint8_t localLow) {
+	printf("HANDLING REMOTE PACKETS IS CURRENTLY UNSUPPORTED\n");
 }
 
 
@@ -611,15 +612,27 @@ void processProxyData() {
 	if (!(buf[ATEM_INDEX_SESSION_HIGH] & 0x80)) {
 		if (HAS_FLAGS(buf, ATEM_FLAG_SYN)) {
 			if (recvLen != ATEM_LEN_SYN) {
+				fprintf(stderr,
+					"Received SYN packet for unconnected session was %zd bytes long\n",
+					recvLen
+				);
 				return;
 			}
 			if (!IS_OPCODE(buf, ATEM_CONNECTION_OPENING)) {
+				fprintf(stderr,
+					"Received SYN packet for unconnected session had an invalid opcode %02x\n",
+					buf[ATEM_INDEX_FLAGS]
+				);
 				return;
 			}
 			startHandshake(buf[ATEM_INDEX_SESSION_HIGH], buf[ATEM_INDEX_SESSION_LOW], &sockAddr, sockLen);
 		}
 		else if (HAS_FLAGS(buf, ATEM_FLAG_ACK)) {
 			if (recvLen != ATEM_LEN_HEADER) {
+				fprintf(stderr,
+					"Received ACK packet for unconnected session was %zd bytes long\n",
+					recvLen
+				);
 				return;
 			}
 			completeHandshake(buf[ATEM_INDEX_SESSION_HIGH], buf[ATEM_INDEX_SESSION_LOW]);
@@ -629,6 +642,7 @@ void processProxyData() {
 
 	// Aborts processing packets without protocol header
 	if (recvLen < ATEM_LEN_HEADER) {
+		fprintf(stderr, "Packet was %zd bytes long and could not to contain a header\n", recvLen);
 		return;
 	}
 
@@ -653,6 +667,10 @@ void processProxyData() {
 			closeClosingSession(session);
 		}
 		else {
+			fprintf(stderr,
+				"Received SYN packet for connected session had an invalid opcode %02x\n",
+				buf[ATEM_INDEX_FLAGS]
+			);
 		}
 		return;
 	}
