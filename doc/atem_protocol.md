@@ -16,11 +16,11 @@ Here I have listed the resources that have been the most helpful to me.
 * [Documentation on node-atem](https://github.com/miyukki/node-atem/blob/master/specification.md)
 * [Blackmagics camera control protocol documentation](https://documents.blackmagicdesign.com/DeveloperManuals/BlackmagicCameraControl.pdf)
 
-# Testing
+## Testing
 This documentation can be confirmed to be accurate with the test suite.
 If Blackmagic would change something about the protocol in future firmware versions, the tests are designed to detect that and help keeping the documentation up-to-date.
 
-# Data structure
+## Data structure
 This is what the ATEM protocol structure looks like.
 The protocol uses a 12 byte header with an optional variable length payload.
 
@@ -38,32 +38,32 @@ The protocol uses a 12 byte header with an optional variable length payload.
 + ------------------------------------------------------------- +
 ```
 
-## Flags
+### Flags
 
-### Ack request flag 0x08
+#### Ack request flag 0x08
 Undocumented
 
-### SYN flag 0x10
+#### SYN flag 0x10
 The SYN flag is set for SYN packets, used in the [opening handshake](#opening-handshake) and [closing handshake](#closing-handshake).
 It can only be combined with the [retransmit flag](#retransmit-flag-0x20).
 A SYN packet has an 8 byte payload (20 bytes including the header) where the first byte of the payload is the [opcode](#opcode).
 
-### Retransmit flag 0x20
+#### Retransmit flag 0x20
 If a packet requires an acknowledgement but the sender does not get one in a timely manner, the packet should/will be resent, this time with the retransmit flag set.
 
-### Retransmit request flag 0x40
+#### Retransmit request flag 0x40
 Undocumented
 
-### Ack flag 0x80
+#### Ack flag 0x80
 Undocumented
 
-## Length
+### Length
 Indicates the length of the packet and is defined with 11 bits, giving it a maximum packet length of 2047 bytes.
 That includes the 12 byte header, so the minimum packet length is 12 bytes when no payload is available.
 
-## Session id
 Since the ATEM protocol uses [UDP](https://en.wikipedia.org/wiki/User_Datagram_Protocol) and not [TCP](https://en.wikipedia.org/wiki/Transmission_Control_Protocol), it is a connectionless protocol.
 The session id is the identifier to let both parties know who they are talking to.
+### Session id
 
 There are two types of session ids.
 A client assigned session id and a server assigned session id.
@@ -77,53 +77,53 @@ The server assigned session id is an incrementing id on the server that continuo
 The session id counter does not have any persistence, so if the switcher is rebooted, the the counter resets.
 For some reason the counter does not assign session id 0 as its first id, instead, the first id assigned is 1.
 
-## Ack id
+### Ack id
 Undocumented
 
-## Local packet id
+### Local packet id
 Undocumented
 
-## Unknown id
+### Unknown id
 This unknown id is not an incrementing id in the same way the local and packet ids are.
 The high byte seems to always be clear and it seems no one knows what these two bytes are used for, even though they are used.
 Keeping them both set to 0 also seems to work, even though that is not what the ATEM software control does.
 
-## Remote packet id
+### Remote packet id
 Undocumented
 
-## Payload
 The payload is the remaining length of the packet and a packet is allowed to have a payload length of 0 indicating there is no payload available in the packet.
+### Payload
 The data the payload contains depends on the [flags](#flags) that are set.
 
-## Opcode
+### Opcode
 Opcodes are available in SYN packets that are defined by the [SYN flag](#syn-flag-0x10) being set.
 It is located at the first byte of the SYN packets payload.
 
-### Opening opcode 0x01
 Sent by the client to initiate a new [opening handshake](#opening-handshake).
 It uses a [client assigned session id](#session-id) that is a randomly generated value between 0 and 0x7fff.
 This means that the [MSB](https://en.wikipedia.org/wiki/Bit_numbering) is always clear in a client assigned session id.
+#### Opening opcode 0x01
 
-### Successful opcode 0x02
 One of two possible opcodes received from the server during the [opening handshake](#opening-handshake), indicating that the client was successfully connected to the ATEM server.
 The third and fourth byte of the payload indicates the server assigned session id that should be used for everything other than the [opening handshake](#opening-handshake).
 The server assigned session id has the [MSB](https://en.wikipedia.org/wiki/Bit_numbering) clear, but when using the session id for future communication with the switcher, it should be set.
+#### Successful opcode 0x02
 
-### Rejected opcode 0x03
 One of two possible opcodes received from the server during the [opening handshake](#opening-handshake), indicating that the clients request to connect failed.
+#### Rejected opcode 0x03
 The reason for a reject is most likely due to the switchers very limited number of concurrent connections.
 Depending on the switcher model, it can handle either 5 or 8 connections at the same time before starting to reject new requests.
 
-### Closing opcode 0x04
 When either the client or the server wants to close the connection, they initiate the [closing handshake](#closing-handshake) and start it by sending a [SYN packet](#syn-flag-0x10) with this opcode set.
 This informs the other party that the connection should be closed and has to be responded to with a [closed opcode](#closed-opcode-0x05).
 
+#### Closing opcode 0x04
 Normally, the closing opcode is only [resent](#resend-flag-0x20) a single time if it is not responded to in a timely manner.
 
-### Closed opcode 0x05
 A response to a [closing opcode](#closing-opcode-0x04) informing the other side that the closing request was received and the connection has been closed.
+#### Closed opcode 0x05
 
-# Opening handshake
+## Opening handshake
 
 When connecting to an ATEM switcher, it all starts with an opening handshake.
 The ATEM protocol handshake is a 3-way handshake, just like a [TCP handshake](https://developer.mozilla.org/en-US/docs/Glossary/TCP_handshake), consisting of a SYN packet, a SYNACK packet and an ACK packet.
@@ -152,7 +152,7 @@ These states will be spread over multiple packets as the ATEM protocol only uses
 Whenever an internal state changes, the client will receive the new state as long as the connection is [kept alive](#heartbeat).
 Read more about receiving commands from the switcher [here](!!).
 
-## Examples
+### Examples
 
 In this example, the client randomly generated the client assigned session id 0x7440 and the server assigned session id is 0x0001.
 ```
@@ -171,7 +171,7 @@ In this example, the client randomly generated the client assigned session id 0x
 
 ```
 
-# Closing handshake
+## Closing handshake
 
 Most of the time, the closing handshake is not used as power is simply unplugged from the client.
 This leaves no time to close the connection properly and instead relies on the server dropping the connection when packets are not responded to.
