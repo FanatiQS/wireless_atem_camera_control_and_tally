@@ -2,7 +2,7 @@
 #ifndef DEBUG_H
 #define DEBUG_H
 
-#include <stdio.h>
+#include <stdio.h> // printf
 
 #define DEBUG_PRINT_LINE_LIMIT 12
 
