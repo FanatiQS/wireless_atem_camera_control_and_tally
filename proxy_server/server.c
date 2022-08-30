@@ -197,8 +197,7 @@ static struct packet_t* createPacket(struct session_t* session, uint16_t len, ui
 
 	// Initializes the packet content to the bare minimum
 	packet->session = session;
-	packet->remainingResends = 10;//(ATEM_TIMEOUT * 1000 / ATEM_RESEND_TIME);
-	// remainingResends should be a macro
+	packet->remainingResends = ATEM_RESEND_OPENINGHANDSHAKE;
 	packet->len = len;
 	memset(packet->buf, 0, len);
 	packet->buf[ATEM_INDEX_LEN_LOW] = len;
@@ -309,7 +308,7 @@ static void sendClosingPacket(struct session_t* session) {
 	session->closed = true;
 
 	// Initializes packet
-	packet->remainingResends = 1; // should be macros defining number of resends for types of packets
+	packet->remainingResends = ATEM_RESEND_CLOSINGHANDSHAKE;
 	packet->lastInChunk = true;
 
 	// Sets packet to only packet in sessions local queue
