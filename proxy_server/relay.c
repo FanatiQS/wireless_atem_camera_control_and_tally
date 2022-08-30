@@ -88,7 +88,7 @@ void processRelayData() {
 void reconnectRelaySocket() {
 	DEBUG_PRINT("reconnecting to relay server\n");
 
-	atem_connection_close(&atem);
+	atem_connection_reset(&atem);
 	sendAtem();
 	dropTimerRestart();
 }
