@@ -65,7 +65,7 @@ void processRelayData() {
 	// Prints received buffer when debug printing is enabled
 	DEBUG_PRINT_BUFFER(atem.readBuf, recvLen, "received data from relay server");
 
-	// Parses ATEM packet and let connection time out if not connected
+	// Parses ATEM packet and lets connection time out if not connected
 	switch (atem_parse(&atem)) {
 		case ATEM_CONNECTION_OK:
 		case ATEM_CONNECTION_CLOSED: break;
@@ -74,13 +74,13 @@ void processRelayData() {
 
 	// Sends response to parsed packet
 	sendAtem();
+
+	// Restarts timer for detecting ATEM connection drop
 	dropTimerRestart();
 
-	// caching and filtering not implemented
-
-	// Relays the ATEM payload to proxy connections
+	// Hands over commands to cache
 	if (atem_cmd_available(&atem)) {
-		broadcastAtemCommands(atem.readBuf + ATEM_LEN_HEADER, atem.readLen - ATEM_LEN_HEADER);
+		cacheRelayCommands(atem.readBuf + ATEM_LEN_HEADER, atem.readLen - ATEM_LEN_HEADER);
 	}
 }
 
@@ -92,4 +92,3 @@ void reconnectRelaySocket() {
 	sendAtem();
 	dropTimerRestart();
 }
-
