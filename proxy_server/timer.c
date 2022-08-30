@@ -80,7 +80,6 @@ void pingTimerEnable() {
 
 	if (nextTimer == NULL || timercmp(nextPingTimer, nextTimer, <)) {
 		nextTimer = nextPingTimer;
-		DEBUG_PRINT("updated next timer\n");
 	}
 }
 
@@ -90,7 +89,6 @@ void pingTimerDisable() {
 
 	if (nextTimer == nextPingTimer) {
 		setNextTimerToNearest(nextResendTimer, nextDropTimer);
-		DEBUG_PRINT("updated next timer\n");
 	}
 	nextPingTimer = NULL;
 }
@@ -99,24 +97,25 @@ void pingTimerDisable() {
 
 // Updates the resend timer pointer when a packet was enqueued to an empty resend queue
 void resendTimerAdd(struct timeval* resendTimer) {
-	DEBUG_PRINT("updated next resend timer\n");
+	DEBUG_PRINT("updated next resend timer after add\n");
 
 	nextResendTimer = resendTimer;
 	if (nextTimer == NULL || timercmp(nextResendTimer, nextTimer, <)) {
 		nextTimer = nextResendTimer;
-		DEBUG_PRINT("updated next timer\n");
 	}
 }
 
 // Updates the resend timer pointer when next packet in resend queue was removed
-void resendTimerRemove() {
-	DEBUG_PRINT("updated next resend timer\n");
+void resendTimerRemove(struct timeval* resendTimer) {
+	DEBUG_PRINT("updated next resend timer after removal\n");
 
 	if (nextTimer == nextResendTimer) {
-		setNextTimerToNearest(nextPingTimer, nextDropTimer);
-		DEBUG_PRINT("updated next timer\n");
+		setNextTimerToNearest(nextPingTimer, resendTimer);
+		if (nextTimer == NULL || (nextDropTimer != NULL && timercmp(nextDropTimer, nextTimer, <))) {
+			nextTimer = nextDropTimer;
+		}
 	}
-	nextResendTimer = NULL;
+	nextResendTimer = resendTimer;
 }
 
 
@@ -126,8 +125,18 @@ void dropTimerRestart() {
 	DEBUG_PRINT("reset relay drop timer\n");
 
 	setTimeout(nextDropTimer, ATEM_TIMEOUT * 1000);
-	if (nextTimer == NULL) {
-		nextTimer = nextDropTimer;
+	if (nextTimer == nextDropTimer) {
+		if (nextResendTimer == NULL) {
+			if (nextPingTimer != NULL) {
+				nextTimer = nextPingTimer;
+			}
+		}
+		else if (nextPingTimer == NULL) {
+			nextTimer = nextResendTimer;
+		}
+		else if (timercmp(nextPingTimer, nextResendTimer, <)) {
+			nextTimer = nextPingTimer;
+		}
 	}
 }
 
@@ -136,7 +145,10 @@ void dropTimerEnable() {
 	DEBUG_PRINT("enabled relay drop timer\n");
 
 	nextDropTimer = &dropTimer;
-	dropTimerRestart();
+	setTimeout(nextDropTimer, ATEM_TIMEOUT * 1000);
+	if (nextTimer == NULL) {
+		nextTimer = nextDropTimer;
+	}
 }
 
 
@@ -164,7 +176,7 @@ void timerEvent() {
 struct timeval* timeToNextTimerEvent() {
 	static struct timeval tv;
 
-	while (nextTimer) {
+	while (nextTimer != NULL) {
 		// Gets current time
 		struct timeval current;
 		gettimeofday(&current, NULL);

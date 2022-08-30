@@ -13,7 +13,7 @@ void pingTimerEnable();
 void pingTimerDisable();
 
 void resendTimerAdd(struct timeval* resendTimer);
-void resendTimerRemove();
+void resendTimerRemove(struct timeval* resendTimer);
 
 void dropTimerEnable();
 void dropTimerRestart();
