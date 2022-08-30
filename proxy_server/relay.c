@@ -92,3 +92,11 @@ void reconnectRelaySocket() {
 	sendAtem();
 	dropTimerRestart();
 }
+
+// only for temporary hack
+void restartRelayConnection() {
+	DEBUG_PRINT("restarting connection to relay server\n");
+	atem_connection_close(&atem);
+	sendAtem();
+	dropTimerRestart();
+}

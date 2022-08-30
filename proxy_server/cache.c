@@ -6,8 +6,9 @@
 
 
 // this is currently just a hacky solution that restarts the relay connection instead of caching anything
+void restartRelayConnection();
 void dumpAtemData(struct session_t* session) {
-	reconnectRelaySocket();
+	restartRelayConnection();
 }
 
 // Broadcasts relay commands to proxy connections
