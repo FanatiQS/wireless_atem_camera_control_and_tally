@@ -248,7 +248,7 @@ static void enqueuePacket(struct packet_t* packet) {
 static void dequeuePacket(struct packet_t* packet) {
 	if (packet->resendPrev == NULL) {
 		resendQueueHead = packet->resendNext;
-		resendTimerRemove(&resendQueueHead->resendTimer);
+		resendTimerRemove((resendQueueHead) ? &resendQueueHead->resendTimer : NULL);
 	}
 	else {
 		packet->resendPrev->resendNext = packet->resendNext;
