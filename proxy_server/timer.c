@@ -1,6 +1,6 @@
 #include <stdint.h> // uint16_t
 #include <stdlib.h> // abort
-#include <stdio.h> // perror
+#include <stdio.h> // perror, fflush, stdout
 
 #include "./timer.h"
 #include "./server.h"
@@ -196,6 +196,10 @@ struct timeval* timeToNextTimerEvent() {
 			"next timer event in %.4f seconds\n",
 			(float)tv.tv_sec + (float)tv.tv_usec / 1000000
 		);
+
+#ifdef DEBUG
+		fflush(stdout);
+#endif
 
 		// Returns duration to next timer even only if it should not already have expired
 		if (current.tv_sec < nextTimer->tv_sec || (tv.tv_sec == 0 && tv.tv_usec > 0)) {
