@@ -31,9 +31,15 @@ static struct timeval dropTimer;
 
 
 
+// Checks if timerA is smaller than timerB
+#define TIMER_IS_SMALLER(timerA, timerB)\
+	((timerA->tv_sec == timerB->tv_sec) ?\
+	(timerA->tv_usec < timerB->tv_usec) :\
+	(timerA->tv_sec < timerB->tv_sec))
+
 // Sets the next timer pointer to the closest in time argument timer
 static void setNextTimerToNearest(struct timeval* timerA, struct timeval* timerB) {
-	if (timerA == NULL || (timerB != NULL && timercmp(timerB, timerA, <))) {
+	if (timerA == NULL || (timerB != NULL && TIMER_IS_SMALLER(timerB, timerA))) {
 		nextTimer = timerB;
 	}
 	else {
@@ -57,14 +63,14 @@ void setTimeout(struct timeval* timer, uint16_t msDelay) {
 
 
 
-// Restarts the ping timer when, assimes it just expired
+// Restarts the ping timer, expects it is nextTimer and it just expired
 void pingTimerRestart() {
 	setTimeout(&pingTimer, ATEM_PING_INTERVAL);
 
 	if (nextResendTimer != NULL) {
 		nextTimer = nextResendTimer;
 	}
-	if (nextDropTimer != NULL && timercmp(nextDropTimer, nextTimer, <)) {
+	if (nextDropTimer != NULL && TIMER_IS_SMALLER(nextDropTimer, nextTimer)) {
 		nextTimer = nextDropTimer;
 	}
 
@@ -78,7 +84,7 @@ void pingTimerEnable() {
 	nextPingTimer = &pingTimer;
 	setTimeout(nextPingTimer, ATEM_PING_INTERVAL);
 
-	if (nextTimer == NULL || timercmp(nextPingTimer, nextTimer, <)) {
+	if (nextTimer == NULL || TIMER_IS_SMALLER(nextPingTimer, nextTimer)) {
 		nextTimer = nextPingTimer;
 	}
 }
@@ -100,7 +106,7 @@ void resendTimerAdd(struct timeval* resendTimer) {
 	DEBUG_PRINT("updated next resend timer after add\n");
 
 	nextResendTimer = resendTimer;
-	if (nextTimer == NULL || timercmp(nextResendTimer, nextTimer, <)) {
+	if (nextTimer == NULL || TIMER_IS_SMALLER(nextResendTimer, nextTimer)) {
 		nextTimer = nextResendTimer;
 	}
 }
@@ -111,7 +117,7 @@ void resendTimerRemove(struct timeval* resendTimer) {
 
 	if (nextTimer == nextResendTimer) {
 		setNextTimerToNearest(nextPingTimer, resendTimer);
-		if (nextTimer == NULL || (nextDropTimer != NULL && timercmp(nextDropTimer, nextTimer, <))) {
+		if (nextTimer == NULL || (nextDropTimer != NULL && TIMER_IS_SMALLER(nextDropTimer, nextTimer))) {
 			nextTimer = nextDropTimer;
 		}
 	}
@@ -120,23 +126,24 @@ void resendTimerRemove(struct timeval* resendTimer) {
 
 
 
-// Restarts relay sockets timeout timer
+// Restarts relay sockets timeout timer, assumes nextTimer is dropTimer
 void dropTimerRestart() {
 	DEBUG_PRINT("reset relay drop timer\n");
 
 	setTimeout(nextDropTimer, ATEM_TIMEOUT * 1000);
-	if (nextTimer == nextDropTimer) {
-		if (nextResendTimer == NULL) {
-			if (nextPingTimer != NULL) {
-				nextTimer = nextPingTimer;
-			}
-		}
-		else if (nextPingTimer == NULL) {
-			nextTimer = nextResendTimer;
-		}
-		else if (timercmp(nextPingTimer, nextResendTimer, <)) {
+
+	if (nextTimer != nextDropTimer) return;
+
+	if (nextResendTimer == NULL) {
+		if (nextPingTimer != NULL) {
 			nextTimer = nextPingTimer;
 		}
+	}
+	else if (nextPingTimer == NULL) {
+		nextTimer = nextResendTimer;
+	}
+	else if (TIMER_IS_SMALLER(nextPingTimer, nextResendTimer)) {
+		nextTimer = nextPingTimer;
 	}
 }
 
