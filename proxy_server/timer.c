@@ -21,7 +21,7 @@
 
 
 
-struct timeval* nextTimer;
+static struct timeval* nextTimer;
 
 static struct timeval* nextResendTimer;
 static struct timeval* nextPingTimer;

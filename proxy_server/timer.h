@@ -4,8 +4,6 @@
 
 #include "./timer_unix.h"
 
-extern struct timeval* nextTimer;
-
 void setTimeout(struct timeval* timer, uint16_t msDelay);
 
 void pingTimerRestart();
