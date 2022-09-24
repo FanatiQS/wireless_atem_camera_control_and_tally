@@ -15,8 +15,8 @@
 #if ATEM_PING_INTERVAL < ATEM_RESEND_TIME
 #error Ping interval has to be larger than resend timer
 #endif
-#if ATEM_PING_TIME > ATEM_TIMEOUT
-#error Ping interval has to be smaller than dropt timeout timer
+#if ATEM_PING_INTERVAL > (ATEM_TIMEOUT * 1000)
+#error Ping interval has to be smaller than drop timeout timer
 #endif
 
 
