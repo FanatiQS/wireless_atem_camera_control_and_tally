@@ -4,6 +4,7 @@
 
 #include <stdbool.h> // bool
 #include <stdint.h> // uint8_t, uint16_t
+#include <time.h> // timespec
 
 #include "./udp.h"
 
@@ -13,7 +14,7 @@ struct packet_t {
 	struct packet_t* resendNext;
 	struct packet_t* resendPrev;
 	struct session_t* session;
-	struct timeval resendTimer;
+	struct timespec resendTimer;
 	uint8_t remainingResends;
 	bool lastInChunk;
 	uint16_t len;

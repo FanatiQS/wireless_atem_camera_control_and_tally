@@ -1,6 +1,7 @@
 #include <stdint.h> // uint16_t
 #include <stdlib.h> // abort
 #include <stdio.h> // perror, fflush, stdout
+#include <time.h> // timespec
 
 #include "./timer.h"
 #include "./server.h"
@@ -8,6 +9,15 @@
 #include "./atem_extra.h"
 #include "./relay.h"
 #include "./debug.h"
+
+
+
+// Shim timespec_get for MacOS 10.14 and older
+#if defined(__APPLE__) && !defined(TIME_UTC)
+#define timespec_get(ts, base) clock_gettime(CLOCK_REALTIME, ts)
+#define TIME_UTC 0
+#warning Shimming timespec_get with clock_gettime
+#endif
 
 
 
@@ -21,24 +31,24 @@
 
 
 
-static struct timeval* nextTimer;
+static struct timespec* nextTimer;
 
-static struct timeval* nextResendTimer;
-static struct timeval* nextPingTimer;
-static struct timeval* nextDropTimer;
-static struct timeval pingTimer;
-static struct timeval dropTimer;
+static struct timespec* nextResendTimer;
+static struct timespec* nextPingTimer;
+static struct timespec* nextDropTimer;
+static struct timespec pingTimer;
+static struct timespec dropTimer;
 
 
 
 // Checks if timerA is smaller than timerB
 #define TIMER_IS_SMALLER(timerA, timerB)\
 	((timerA->tv_sec == timerB->tv_sec) ?\
-	(timerA->tv_usec < timerB->tv_usec) :\
+	(timerA->tv_nsec < timerB->tv_nsec) :\
 	(timerA->tv_sec < timerB->tv_sec))
 
 // Sets the next timer pointer to the closest in time argument timer
-static void setNextTimerToNearest(struct timeval* timerA, struct timeval* timerB) {
+static void setNextTimerToNearest(struct timespec* timerA, struct timespec* timerB) {
 	if (timerA == NULL || (timerB != NULL && TIMER_IS_SMALLER(timerB, timerA))) {
 		nextTimer = timerB;
 	}
@@ -50,15 +60,15 @@ static void setNextTimerToNearest(struct timeval* timerA, struct timeval* timerB
 
 
 // Sets the value of timer to be n milliseconds in the future
-void setTimeout(struct timeval* timer, uint16_t msDelay) {
-	if (gettimeofday(timer, NULL) == -1) {
-		perror("Unable to get time of day");
+void setTimeout(struct timespec* timer, uint16_t msDelay) {
+	if (timespec_get(timer, TIME_UTC) != TIME_UTC) {
+		perror("Unable to get time");
 		abort();
 	}
-	timer->tv_usec += msDelay * 1000;
-	uint16_t overflow = timer->tv_usec / 1000000;
-	timer->tv_usec -= overflow * 1000000;
-	timer->tv_sec += overflow;
+	timer->tv_nsec += (msDelay - msDelay / 1000 * 1000) * 1000000;
+	uint8_t overflow = timer->tv_nsec / 1000000000;
+	timer->tv_sec += overflow + msDelay / 1000;
+	timer->tv_nsec -= overflow * 1000000000;
 }
 
 
@@ -102,7 +112,7 @@ void pingTimerDisable() {
 
 
 // Updates the resend timer pointer when a packet was enqueued to an empty resend queue
-void resendTimerAdd(struct timeval* resendTimer) {
+void resendTimerAdd(struct timespec* resendTimer) {
 	DEBUG_PRINT("updated next resend timer after add\n");
 
 	nextResendTimer = resendTimer;
@@ -112,7 +122,7 @@ void resendTimerAdd(struct timeval* resendTimer) {
 }
 
 // Updates the resend timer pointer when next packet in resend queue was removed
-void resendTimerRemove(struct timeval* resendTimer) {
+void resendTimerRemove(struct timespec* resendTimer) {
 	DEBUG_PRINT("updated next resend timer after removal\n");
 
 	if (nextTimer == nextResendTimer) {
@@ -185,9 +195,16 @@ struct timeval* timeToNextTimerEvent() {
 
 	while (nextTimer != NULL) {
 		// Gets current time
-		struct timeval current;
-		gettimeofday(&current, NULL);
-		timersub(nextTimer, &current, &tv);
+		struct timespec current;
+		timespec_get(&current, TIME_UTC);
+
+		// Gets time difference between nextTimer and current time
+		tv.tv_sec = nextTimer->tv_sec - current.tv_sec;
+		tv.tv_usec = (nextTimer->tv_nsec - current.tv_nsec) / 1000;
+		if (tv.tv_usec < 0) {
+			tv.tv_sec--;
+			tv.tv_usec += 1000000;
+		}
 
 #ifdef DEBUG
 		printf("\n");

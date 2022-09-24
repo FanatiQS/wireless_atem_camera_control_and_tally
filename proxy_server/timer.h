@@ -2,16 +2,18 @@
 #ifndef TIMER_H
 #define TIMER_H
 
-#include "./timer_unix.h"
+#include <time.h> // timespec
 
-void setTimeout(struct timeval* timer, uint16_t msDelay);
+#include "./udp.h" // timeval
+
+void setTimeout(struct timespec* timer, uint16_t msDelay);
 
 void pingTimerRestart();
 void pingTimerEnable();
 void pingTimerDisable();
 
-void resendTimerAdd(struct timeval* resendTimer);
-void resendTimerRemove(struct timeval* resendTimer);
+void resendTimerAdd(struct timespec* resendTimer);
+void resendTimerRemove(struct timespec* resendTimer);
 
 void dropTimerEnable();
 void dropTimerRestart();
