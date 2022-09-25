@@ -17,6 +17,12 @@ int main(int argc, char** argv) {
 		exit(EXIT_FAILURE);
 	}
 
+	// Initializes windows networking
+#ifdef _WIN32
+	WSAData wsaData;
+	WSAStartup(MAKEWORD(2, 2), &wsaData);
+#endif
+
 	// Initializes proxy server and relay client
 	setupProxy();
 	setupRelay(argv[1]);
@@ -59,4 +65,3 @@ int main(int argc, char** argv) {
 		}
 	}
 }
-
