@@ -19,7 +19,7 @@ int main(int argc, char** argv) {
 
 	// Initializes windows networking
 #ifdef _WIN32
-	WSAData wsaData;
+	WSADATA wsaData;
 	WSAStartup(MAKEWORD(2, 2), &wsaData);
 #endif
 
