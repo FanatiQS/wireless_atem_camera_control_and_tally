@@ -6,7 +6,7 @@
 #include <stdint.h> // uint8_t, uint16_t
 #include <time.h> // timespec
 
-#include "./udp.h"
+#include "./udp.h" // sockaddr, socklen_t
 
 // Structure for packets awaiting acknowledgement
 struct packet_t {
