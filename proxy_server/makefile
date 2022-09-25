@@ -5,7 +5,7 @@ CC = cl #\
 !else
 CC = gcc
 #\
-endif
+!endif
 
 FILES = server.c udp.c timer.c cache.c relay.c ../src/atem.c
 
