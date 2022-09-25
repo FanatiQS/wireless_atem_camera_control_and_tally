@@ -15,8 +15,8 @@ typedef int socklen_t;
 
 #define perror(...)\
 	do {\
-		fprintf(stderr, __VA_ARGS__);
-		fprintf(stderr, ": %d\n", WSAGetLastError());
+		fprintf(stderr, __VA_ARGS__);\
+		fprintf(stderr, ": %d\n", WSAGetLastError());\
 	} while (0)
 
 #define abort()\
