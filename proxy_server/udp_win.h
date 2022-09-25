@@ -19,5 +19,11 @@ typedef int socklen_t;
 		fprintf(stderr, ": %d\n", WSAGetLastError());
 	} while (0)
 
+#define abort()\
+	do {\
+		WSACleanup();\
+		abort();\
+	} while (0)
+
 // Ends include guard
 #endif
