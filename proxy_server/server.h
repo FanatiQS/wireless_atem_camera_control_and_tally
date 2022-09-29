@@ -33,6 +33,7 @@ struct session_t {
 	uint8_t id;
 	bool closed;
 	uint16_t remoteId;
+	uint16_t nextAck;
 	struct sockaddr sockAddr;
 	socklen_t sockLen;
 };

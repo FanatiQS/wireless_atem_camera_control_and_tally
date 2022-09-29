@@ -465,6 +465,7 @@ static void startHandshake(uint8_t high, uint8_t low, struct sockaddr* sockAddr,
 	session->sockLen = sockLen;
 	session->closed = false;
 	session->remoteId = 0;
+	session->nextAck = 1;
 
 	// Sets server assigned session id
 	struct sessionChunk_t* serverChunk;
@@ -579,7 +580,20 @@ static void acknowledgeLocalPacket(struct session_t* session, uint8_t remoteHigh
 
 // Responds to acknowledge request
 static void acknowledgeRemotePacket(struct session_t* session, uint8_t localHigh, uint8_t localLow) {
-	printf("HANDLING REMOTE PACKETS IS CURRENTLY UNSUPPORTED\n");
+	DEBUG_PRINT("received remote id: %d\n", localHigh << 8 | localLow);
+	DEBUG_PRINT("expected ack id: %d\n", session->nextAck);
+	if ((localHigh << 8 | localLow) == (session->nextAck)) {
+		session->nextAck++;
+		uint8_t buf[ATEM_LEN_HEADER] = {
+			[ATEM_INDEX_FLAGS] = ATEM_FLAG_ACK,
+			[ATEM_INDEX_LEN_LOW] = ATEM_LEN_HEADER,
+			[ATEM_INDEX_SESSION_HIGH] = session->chunk->id,
+			[ATEM_INDEX_SESSION_LOW] = session->id,
+			[ATEM_INDEX_ACKID_HIGH] = localHigh,
+			[ATEM_INDEX_ACKID_LOW] = localLow,
+		};
+		sendBuffer(buf, ATEM_LEN_HEADER, &session->sockAddr, session->sockLen);
+	}
 }
 
 
@@ -736,4 +750,3 @@ void pingProxySessions() {
 	// Restarts ping timer
 	pingTimerRestart();
 }
-
