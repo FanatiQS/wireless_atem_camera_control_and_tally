@@ -92,6 +92,7 @@ static void releaseSessionChunk(struct sessionChunk_t* chunk) {
 	}
 	// Frees session chunk if not reusable
 	else {
+		DEBUG_PRINT("releasing chunk memory\n");
 		free(chunk);
 		DEBUG_PRINT("released chunk memory\n");
 	}
@@ -123,6 +124,7 @@ static void releaseSession(struct session_t* session) {
 
 	// Releases sessions memory
 	connectedSessions--;
+	DEBUG_PRINT("releasing session memory\n");
 	free(session);
 	DEBUG_PRINT("released session memory\n");
 }
@@ -285,6 +287,7 @@ static void releasePacket(struct packet_t* packet) {
 	);
 
 	dequeuePacket(packet);
+	DEBUG_PRINT("releasing packet memory\n");
 	free(packet);
 	DEBUG_PRINT("released packet memory\n");
 }
