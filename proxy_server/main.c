@@ -25,7 +25,8 @@ int main(int argc, char** argv) {
 
 	// Initializes proxy server and relay client
 	setupProxy();
-	setupRelay(argv[1]);
+	setupRelay();
+	relayEnable(argv[1]);
 
 	// Sets up for socket event handler
 	int nfds = sockProxy;

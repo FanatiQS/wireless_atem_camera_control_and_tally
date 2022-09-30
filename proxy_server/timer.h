@@ -16,6 +16,7 @@ void resendTimerAdd(struct timespec* resendTimer);
 void resendTimerRemove(struct timespec* resendTimer);
 
 void dropTimerEnable();
+void dropTimerDisable();
 void dropTimerRestart();
 
 struct timeval* timeToNextTimerEvent();

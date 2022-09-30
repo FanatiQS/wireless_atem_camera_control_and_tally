@@ -4,7 +4,9 @@
 
 extern int sockRelay;
 
-void setupRelay(const char* addr);
+void setupRelay();
+void relayEnable(const char* addr);
+void relayDisable();
 void processRelayData();
 void reconnectRelaySocket();
 

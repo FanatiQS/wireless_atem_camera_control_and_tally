@@ -158,7 +158,7 @@ void dropTimerRestart() {
 	}
 }
 
-// Enables drop timer when relay client was initialized
+// Enables drop timer for when relay client is enabled
 void dropTimerEnable() {
 	DEBUG_PRINT("enabled relay drop timer\n");
 
@@ -167,6 +167,16 @@ void dropTimerEnable() {
 	if (nextTimer == NULL) {
 		nextTimer = nextDropTimer;
 	}
+}
+
+// Disables drop timer for when relay client is disabled
+void dropTimerDisable() {
+	DEBUG_PRINT("disabled relay drop timer\n");
+
+	if (nextTimer == nextDropTimer) {
+		setNextTimerToNearest(nextResendTimer, nextPingTimer);
+	}
+	nextDropTimer = NULL;
 }
 
 

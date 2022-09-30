@@ -28,11 +28,13 @@ static void sendAtem() {
 	DEBUG_PRINT_BUFFER(atem.writeBuf, atem.writeLen, "sent data to relay server");
 }
 
-// Connects to an ATEM switcher
-void setupRelay(const char* addr) {
-	// Gets UDP socket for ATEM connection
+// Sets up socket for ATEM relay connection
+void setupRelay() {
 	sockRelay = createSocket();
+}
 
+// Connects to an ATEM switcher
+void relayEnable(const char* addr) {
 	// Parses string address into an address type
 	const in_addr_t atemAddr = inet_addr(addr);
 	if (atemAddr == -1) {
@@ -50,6 +52,13 @@ void setupRelay(const char* addr) {
 	// Initializes ATEM connection to switcher
 	dropTimerEnable();
 	atem_connection_reset(&atem);
+	sendAtem();
+}
+
+// Disconnects from an ATEM switcher
+void relayDisable() {
+	dropTimerDisable();
+	atem_connection_close(&atem);
 	sendAtem();
 }
 
