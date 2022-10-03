@@ -294,10 +294,10 @@ static void releasePacket(struct packet_t* packet) {
 
 // Removes and releases all packets from a session
 static void flushPackets(struct session_t* session) {
-	struct packet_t* p;
-	while ((p = session->localPacketHead) != NULL) {
-		session->localPacketHead = p->localNext;
-		releasePacket(p);
+	struct packet_t* packet;
+	while ((packet = session->localPacketHead) != NULL) {
+		session->localPacketHead = packet->localNext;
+		releasePacket(packet);
 	}
 }
 
@@ -557,7 +557,7 @@ static void closeOpenSession(struct session_t* session) {
 // Completes close handshake initiated by server
 static void closeClosingSession(struct session_t* session) {
 	if (session->closed == false) {
-		fprintf(stderr, "Ignoring close response to to non-sent request\n");
+		fprintf(stderr, "Ignoring close response to non-sent request\n");
 		return;
 	}
 	releasePacket(session->localPacketHead);
