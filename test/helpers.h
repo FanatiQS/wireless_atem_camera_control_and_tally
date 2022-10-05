@@ -38,11 +38,8 @@
 #define ATEM_CONNECTION_SUCCESS 0x02
 #define ATEM_CONNECTION_OPENING 0x01
 
-#define ATEM_HANDSHAKE_RESENDS 10
-
-
-
-#define TIMER_SPAN (0.8)
+#define ATEM_RESEND_OPENINGHANDSHAKE 10
+#define ATEM_RESEND_TIME 200
 
 
 
@@ -62,6 +59,7 @@ void setPrintFlags(int flags);
 void clearPrintFlags(int flags);
 void setMaxLenPrint(int maxLen);
 void printBuffer(uint8_t* buf, int len);
+void printFlush();
 
 extern int errorsEncountered;
 void runTest(struct test_t* test, bool continueOnAbort);
@@ -93,14 +91,26 @@ void setupSocket(char* addr);
 void atem_read(struct atem_t* atem);
 void atem_write(struct atem_t* atem);
 void expectNoData();
+void flushData();
 
 int handshakeWrite(struct atem_t* atem);
 void validateOpcode(struct atem_t* atem, int sessionId, bool isResend);
 void readAndValidateOpcode(struct atem_t* atem, int sessionId, bool isResend, int expectOpcode);
-int handshakeReadSuccess(struct atem_t* atem, int sessionId, bool isResend);
-int connectHandshake(struct atem_t* atem);
 
-void timerSet(struct timespec* ts);
+int handshakeReadSuccess(struct atem_t* atem, bool isResend);
+void handshakeReadClosing(struct atem_t* atem, int serverSessionId, bool isResend);
+void handshakeReadClosed(struct atem_t* atem, int serverSessionId, bool isResend);
+
+void handshakeSendClosing(struct atem_t* atem, int serverSessionId);
+void handshakeSendClosed(struct atem_t* atem, int serverSessionId);
+
+int handshakeOpen(struct atem_t* atem);
+int handshakeConnect(struct atem_t* atem);
+void handshakeClose(struct atem_t* atem, int serverSessionId);
+int timeoutHandshake(struct atem_t* atem);
+void flushStateDump(struct atem_t* atem);
+
+struct timespec timerSet();
 size_t timerGetDiff(struct timespec* ts);
 void timerHasDiff(struct timespec* ts, int expectedDiff);
 

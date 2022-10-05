@@ -1,3 +1,4 @@
+// Include guard
 #ifndef HANDSHAKE_SERVER_H
 #define HANDSHAKE_SERVER_H
 
@@ -18,4 +19,5 @@ void handshake_test7();
 	GET_TEST(handshake_test6),\
 	GET_TEST(handshake_test7)
 
+// Ends include guard
 #endif

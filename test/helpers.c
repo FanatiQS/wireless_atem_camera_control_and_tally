@@ -21,6 +21,8 @@
 
 
 
+#define TIMER_SPAN (0.9)
+
 #ifndef EXIT_WAIT
 #define EXIT_WAIT (8)
 #endif
@@ -30,35 +32,45 @@
 static int printFlags = 0;
 static int maxLenPrint = -1;
 
+// Enables some type of printing
 void setPrintFlags(int flags) {
 	printFlags |= flags;
 }
 
+// Disables some type of printing
 void clearPrintFlags(int flags) {
 	printFlags &= ~flags;
 }
 
+// Sets maximum length for when printing a buffer
 void setMaxLenPrint(int maxLen) {
 	maxLenPrint = maxLen;
 }
 
+// Prints a buffer lo longer than maximum print length
 void printBuffer(uint8_t* buf, int len) {
+	// Clamps length to print
 	bool clamped = len > maxLenPrint && maxLenPrint != -1;
 	if (clamped) {
 		len = maxLenPrint;
 	}
 
+	// Prints buffer in hex
 	for (int i = 0; i < len; i++) {
 		printf("%02x ", buf[i]);
 	}
+
+	// Indicates buffer was clamped
 	if (clamped) {
 		printf("...\n");
 	}
+	// Indicates buffer was not clamped
 	else {
 		printf("\n");
 	}
 }
 
+// Prints all packets until timing out
 void printFlush() {
 	fd_set fds;
 	FD_ZERO(&fds);
@@ -78,30 +90,45 @@ static bool exitOnAbort = true;
 static jmp_buf abortJmp;
 int errorsEncountered = 0;
 
+// Runs a test function
 void runTest(struct test_t* test, bool continueAfterAbort) {
+	// Enables failing tests to abort without exiting entire program
 	exitOnAbort = !continueAfterAbort;
+
+	// Prints message indicating what test we are going to run
 	printf("Running test: %s\n", test->name);
 
+	// Runs test function and ensures connection closed
 	if (!setjmp(abortJmp)) {
 		test->fn();
 		expectNoData();
 	}
+	// Flushes out all socket data from function
 	else {
 		flushData();
 	}
 
+	// Prints message indicating we are done processing the test
 	printf("Completed test: %s\n", test->name);
+
+	// Does not allow continuing after abort outside of this function
 	exitOnAbort = true;
 }
 
+// Aborts the currently running test
 void abortCurrentTest() {
+	// Indicates the test failed
+	printf("ERROR: Test failed\n");
+
+	// Exits entire program if not running through runTest function with continueAfterAbort set to true
 	if (exitOnAbort) {
 		exit(EXIT_FAILURE);
 	}
 
-		errorsEncountered++;
-		longjmp(abortJmp, true);
-	}
+	// Registers error and jumps back to runTest after test completes
+	errorsEncountered++;
+	longjmp(abortJmp, true);
+}
 
 
 
@@ -414,23 +441,96 @@ void readAndValidateOpcode(struct atem_t* atem, int sessionId, bool isResend, in
 	validateOpcode(atem, sessionId, isResend);
 }
 
-int handshakeReadSuccess(struct atem_t* atem, int sessionId, bool isResend) {
-	readAndValidateOpcode(atem, sessionId, isResend, ATEM_CONNECTION_SUCCESS);
-	return bufferGetHandshakeSessionId(atem->readBuf);
+
+
+int handshakeReadSuccess(struct atem_t* atem, bool isResend) {
+	int clientSessionId = bufferGetIdFromIndex(atem->writeBuf, ATEM_INDEX_SESSION_HIGH, ATEM_INDEX_SESSION_LOW);
+	readAndValidateOpcode(atem, clientSessionId, isResend, ATEM_CONNECTION_SUCCESS);
+	return bufferGetHandshakeSessionId(atem->readBuf) | 0x8000;
 }
 
-int connectHandshake(struct atem_t* atem) {
-	int clientSessionId = handshakeWrite(atem);
-	int serverSessionId = handshakeReadSuccess(atem, clientSessionId, false);
+void handshakeReadClosing(struct atem_t* atem, int serverSessionId, bool isResend) {
+	readAndValidateOpcode(atem, serverSessionId, isResend, ATEM_CONNECTION_CLOSING);
+	bufferHasHandshakeSessionId(atem->readBuf, 0x0000);
+}
+
+void handshakeReadClosed(struct atem_t* atem, int serverSessionId, bool isResend) {
+	readAndValidateOpcode(atem, serverSessionId, isResend, ATEM_CONNECTION_CLOSED);
+	bufferHasHandshakeSessionId(atem->readBuf, 0x0000);
+}
+
+
+
+void handshakeSendClosing(struct atem_t* atem, int serverSessionId) {
+	atem_connection_close(atem);
+	atem->writeBuf[ATEM_INDEX_SESSION_HIGH] = serverSessionId >> 8;
+	atem->writeBuf[ATEM_INDEX_SESSION_LOW] = serverSessionId & 0xff;
+	atem_write(atem);
+}
+
+void handshakeSendClosed(struct atem_t* atem, int serverSessionId) {
+	uint8_t buf[ATEM_LEN_SYN] = {
+		[ATEM_INDEX_FLAGS] = ATEM_FLAG_SYN,
+		[ATEM_INDEX_LEN_LOW] = ATEM_LEN_SYN,
+		[ATEM_INDEX_SESSION_HIGH] = serverSessionId >> 8,
+		[ATEM_INDEX_SESSION_LOW] = serverSessionId & 0xff,
+		[ATEM_INDEX_OPCODE] = ATEM_CONNECTION_CLOSED
+	};
+	atem->writeBuf = buf;
+	atem->writeLen = ATEM_LEN_SYN;
+	atem_write(atem);
+}
+
+
+
+int handshakeOpen(struct atem_t* atem) {
+	handshakeWrite(atem);
+	return handshakeReadSuccess(atem, false);
+}
+
+int handshakeConnect(struct atem_t* atem) {
+	handshakeWrite(atem);
+	int serverSessionId = handshakeReadSuccess(atem, false);
 	atem_parse(atem);
 	atem_write(atem);
 	return serverSessionId;
 }
 
+void handshakeClose(struct atem_t* atem, int serverSessionId) {
+	handshakeSendClosing(atem, serverSessionId);
+	handshakeReadClosed(atem, serverSessionId, false);
+}
+
+// Connects to ATEM, refuse to respond to SYNACK until ATEM requests closing
+int timeoutHandshake(struct atem_t* atem) {
+	int serverSessionId = handshakeOpen(atem);
+
+	for (int i = 0; i < ATEM_RESEND_OPENINGHANDSHAKE; i++) {
+		struct timespec ts = timerSet();
+		handshakeReadSuccess(atem, true);
+		bufferHasHandshakeSessionId(atem->readBuf, serverSessionId & 0x7fff);
+		timerHasDiff(&ts, ATEM_RESEND_TIME);
+	}
+
+	handshakeReadClosing(atem, serverSessionId, false);
+
+	return serverSessionId;
+}
+
+void flushStateDump(struct atem_t* atem) {
+ 	do {
+		atem_read(atem);
+		atem_parse(atem);
+		atem_write(atem);
+	} while (bufferGetLen(atem->readBuf) != ATEM_LEN_HEADER);
+}
 
 
-void timerSet(struct timespec* ts) {
-	timespec_get(ts, TIME_UTC);
+
+struct timespec timerSet() {
+	struct timespec ts;
+	timespec_get(&ts, TIME_UTC);
+	return ts;
 }
 
 size_t timerGetDiff(struct timespec* ts) {
