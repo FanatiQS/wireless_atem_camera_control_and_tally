@@ -39,7 +39,7 @@
 
 // ATEM timings
 #define ATEM_PING_INTERVAL 500
-#define ATEM_RESEND_TIME 100
+#define ATEM_RESEND_TIME 200
 
 // End include guard
 #endif
