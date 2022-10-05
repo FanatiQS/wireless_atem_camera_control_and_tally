@@ -1,5 +1,6 @@
-#include <stdlib.h> // exit, EXIT_FAILURE, EXIT_SUCCESS
+#include <stdlib.h> // exit, EXIT_FAILURE, EXIT_SUCCESS, size_t
 #include <setjmp.h> // setjmp, longjmp, jmp_buf
+#include <time.h> // timespec, timespec_get
 
 #include <sys/socket.h> // ssize, recv, send, socket, AF_INET, SOCK_DGRAM, connect
 #include <netinet/in.h> // sockaddr_in
@@ -7,6 +8,15 @@
 #include <sys/select.h> // select, fd_set, FD_ZERO, FD_SET, timeval
 
 #include "./helpers.h"
+
+
+
+// Shim timespec_get for MacOS 10.14 and older
+#if defined(__APPLE__) && !defined(TIME_UTC)
+#define timespec_get(ts, base) clock_gettime(CLOCK_REALTIME, ts)
+#define TIME_UTC 0
+#warning Shimming timespec_get with clock_gettime
+#endif
 
 
 
@@ -384,4 +394,28 @@ int connectHandshake(struct atem_t* atem) {
 	atem_parse(atem);
 	atem_write(atem);
 	return serverSessionId;
+}
+
+
+
+void timerSet(struct timespec* ts) {
+	timespec_get(ts, TIME_UTC);
+}
+
+size_t timerGetDiff(struct timespec* ts) {
+	struct timespec now;
+	timespec_get(&now, TIME_UTC);
+	return (now.tv_sec - ts->tv_sec) * 1000 + (now.tv_nsec / 1000000) - (ts->tv_nsec / 1000000);
+}
+
+void timerHasDiff(struct timespec* ts, int expectedDiff) {
+	size_t diff = timerGetDiff(ts);
+
+	if (
+		diff > (int)(expectedDiff * (2 - TIMER_SPAN)) ||
+		diff < (int)(expectedDiff * TIMER_SPAN)
+	) {
+		printf("Expected timer diff to be %dms but got %ldms\n", expectedDiff, diff);
+		abortCurrentTest();
+	}
 }

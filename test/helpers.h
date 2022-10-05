@@ -4,6 +4,8 @@
 #include <stdbool.h> // bool, true, false
 #include <stdint.h> // uint8_t
 #include <stdio.h> // printf, perror
+#include <stdlib.h> // size_t
+#include <time.h> // timespec
 
 #include "../src/atem.h"
 
@@ -37,6 +39,10 @@
 #define ATEM_CONNECTION_OPENING 0x01
 
 #define ATEM_HANDSHAKE_RESENDS 10
+
+
+
+#define TIMER_SPAN (0.8)
 
 
 
@@ -93,5 +99,9 @@ void validateOpcode(struct atem_t* atem, int sessionId, bool isResend);
 void readAndValidateOpcode(struct atem_t* atem, int sessionId, bool isResend, int expectOpcode);
 int handshakeReadSuccess(struct atem_t* atem, int sessionId, bool isResend);
 int connectHandshake(struct atem_t* atem);
+
+void timerSet(struct timespec* ts);
+size_t timerGetDiff(struct timespec* ts);
+void timerHasDiff(struct timespec* ts, int expectedDiff);
 
 #endif

@@ -12,11 +12,15 @@ static int timeoutHandshake(struct atem_t* atem) {
 	int clientSessionId = handshakeWrite(atem);
 	int serverSessionId = handshakeReadSuccess(atem, clientSessionId, false);
 
+	struct timespec ts;
+	timerSet(&ts);
 	int resendsBeforeClose = 0;
 	while (readAndGetOpcode(atem) == ATEM_CONNECTION_SUCCESS) {
 		validateOpcode(atem, clientSessionId, true);
 		bufferHasHandshakeSessionId(atem->readBuf, serverSessionId);
 		resendsBeforeClose++;
+		timerHasDiff(&ts, 200);
+		timerSet(&ts);
 	}
 	if (resendsBeforeClose != ATEM_HANDSHAKE_RESENDS) {
 		printf("Expected %d resends, but got %d\n", ATEM_HANDSHAKE_RESENDS, resendsBeforeClose);
