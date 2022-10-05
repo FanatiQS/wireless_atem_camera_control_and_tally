@@ -65,11 +65,11 @@ static bool exitOnAbort = true;
 static jmp_buf abortJmp;
 int errorsEncountered = 0;
 
-void runTest(struct test_t* test, bool exitOnAbortSelector) {
-	exitOnAbort = exitOnAbortSelector;
+void runTest(struct test_t* test, bool continueAfterAbort) {
+	exitOnAbort = !continueAfterAbort;
 	printf("Running test: %s\n", test->name);
 
-	if (!exitOnAbort || !setjmp(abortJmp)) {
+	if (!setjmp(abortJmp)) {
 		test->fn();
 		expectNoData();
 	}
@@ -83,13 +83,12 @@ void runTest(struct test_t* test, bool exitOnAbortSelector) {
 
 void abortCurrentTest() {
 	if (exitOnAbort) {
+		exit(EXIT_FAILURE);
+	}
+
 		errorsEncountered++;
 		longjmp(abortJmp, true);
 	}
-	else {
-		exit(EXIT_FAILURE);
-	}
-}
 
 
 
