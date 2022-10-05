@@ -127,7 +127,7 @@ void bufferHasFlags(uint8_t* buf, int requiredFlags, int optionalFlags) {
 
 
 int bufferGetLen(uint8_t* buf) {
-	return bufferGetIdFromIndex(buf, ATEM_INDEX_LEN_HIGH, ATEM_INDEX_LEN_LOW) & 0x7f;
+	return bufferGetIdFromIndex(buf, ATEM_INDEX_LEN_HIGH, ATEM_INDEX_LEN_LOW) & ATEM_MAX_PACKET_LEN;
 }
 
 void bufferHasLength(uint8_t* buf, int expectLen) {
@@ -191,7 +191,7 @@ int bufferGetRemoteId(uint8_t* buf) {
 }
 
 void bufferHasRemoteId(uint8_t* buf, int expectRemoteId) {
-	int remoteId = bufferGetLocalId(buf);
+	int remoteId = bufferGetRemoteId(buf);
 	if (remoteId == expectRemoteId) return;
 
 	printf("Expected remote id 0x%.4x, but got 0x%.4x\n", expectRemoteId, remoteId);
@@ -318,6 +318,11 @@ void atem_read(struct atem_t* atem) {
 		abortCurrentTest();
 	}
 
+	if (printFlags & PRINT_READ_FLAG) {
+		printf("Received packet: ");
+		printBuffer(atem->readBuf, recvLen);
+	}
+
 	if (recvLen < ATEM_LEN_HEADER) {
 		printf("UDP packet was too short to include an ATEM header\n");
 		abortCurrentTest();
@@ -330,11 +335,6 @@ void atem_read(struct atem_t* atem) {
 			packetLen, recvLen
 		);
 		abortCurrentTest();
-	}
-
-	if (printFlags & PRINT_READ_FLAG) {
-		printf("Received packet: ");
-		printBuffer(atem->readBuf, recvLen);
 	}
 }
 
