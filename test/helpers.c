@@ -101,7 +101,7 @@ int bufferGetIdFromIndex(uint8_t* buf, int high, int low) {
 void bufferByteIsZero(uint8_t* buf, int index) {
 	if (buf[index] == 0x00) return;
 
-	printf("Expected byte with index %d to have a value of 0 but it had 0x%.2x\n", index, buf[index]);
+	printf("Expected byte with index %d to have a value of 0 but it had 0x%02x\n", index, buf[index]);
 	abortCurrentTest();
 }
 
@@ -115,13 +115,13 @@ void bufferHasFlags(uint8_t* buf, int requiredFlags, int optionalFlags) {
 	int flags = bufferGetFlags(buf);
 
 	if (!(flags & requiredFlags)) {
-		printf("Missing required flag(s) 0x%.2x 0x%.2x\n", flags, requiredFlags);
+		printf("Missing required flag(s) 0x%02x 0x%02x\n", flags, requiredFlags);
 		abortCurrentTest();
 	}
 
 	int illegalFlags = ~(requiredFlags | optionalFlags);
 	if (flags & illegalFlags) {
-		printf("Unexpected illegal flag(s) set 0x%.2x 0x%.2x\n", flags, illegalFlags);
+		printf("Unexpected illegal flag(s) set 0x%02x 0x%02x\n", flags, illegalFlags);
 		abortCurrentTest();
 	}
 }
@@ -150,7 +150,7 @@ void bufferHasSessionId(uint8_t* buf, int expectSessionId) {
 	int sessionId = bufferGetSessionId(buf);
 	if (sessionId == expectSessionId) return;
 
-	printf("Expected session id 0x%.4x, but got 0x%.4x\n", expectSessionId, sessionId);
+	printf("Expected session id 0x%04x, but got 0x%04x\n", expectSessionId, sessionId);
 	abortCurrentTest();
 }
 
@@ -166,7 +166,7 @@ void bufferHasAckId(uint8_t* buf, int expectAckId) {
 	int ackId = bufferGetAckId(buf);
 	if (ackId == expectAckId) return;
 
-	printf("Expected acknowledge id 0x%.4x, but got 0x%.4x\n", expectAckId, ackId);
+	printf("Expected acknowledge id 0x%04x, but got 0x%04x\n", expectAckId, ackId);
 	abortCurrentTest();
 }
 
@@ -182,7 +182,7 @@ void bufferHasLocalId(uint8_t* buf, int expectLocalId) {
 	int localId = bufferGetLocalId(buf);
 	if (localId == expectLocalId) return;
 
-	printf("Expected local id 0x%.4x, but got 0x%.4x\n", expectLocalId, localId);
+	printf("Expected local id 0x%04x, but got 0x%04x\n", expectLocalId, localId);
 	abortCurrentTest();
 }
 
@@ -225,7 +225,7 @@ void bufferHasOpcode(uint8_t* buf, int expectOpcode) {
 	int opcode = bufferGetOpcode(buf);
 	if (opcode == expectOpcode) return;
 
-	printf("Expected opcode 0x%.2x, but got 0x%.2x\n", expectOpcode, opcode);
+	printf("Expected opcode 0x%02x, but got 0x%02x\n", expectOpcode, opcode);
 	abortCurrentTest();
 }
 
@@ -237,7 +237,7 @@ int bufferGetHandshakeSessionId(uint8_t* buf) {
 
 	if (id & 0x8000) {
 		fprintf(stderr,
-			"MSB of server assigned session id from handshake was unexpectedly set (0x%.4x)\n", id
+			"MSB of server assigned session id from handshake was unexpectedly set (0x%04x)\n", id
 		);
 		abortCurrentTest();
 	}
@@ -249,7 +249,7 @@ void bufferHasHandshakeSessionId(uint8_t* buf, int expectSessionId) {
 	int sessionId = bufferGetHandshakeSessionId(buf);
 	if (sessionId == expectSessionId) return;
 
-	printf("Expected handshake session id 0x%.4x, but got 0x%.4x\n", expectSessionId, sessionId);
+	printf("Expected handshake session id 0x%04x, but got 0x%04x\n", expectSessionId, sessionId);
 	abortCurrentTest();
 }
 
@@ -383,7 +383,7 @@ int handshakeWrite(struct atem_t* atem) {
 	int sessionId = bufferGetIdFromIndex(atem->writeBuf, ATEM_INDEX_SESSION_HIGH, ATEM_INDEX_SESSION_LOW);
 
 	if (sessionId & 0x8000) {
-		fprintf(stderr, "MSB if client assigned session id was unexpectedly set (0x%.4x)\n", sessionId);
+		fprintf(stderr, "MSB if client assigned session id was unexpectedly set (0x%04x)\n", sessionId);
 		abortCurrentTest();
 	}
 
