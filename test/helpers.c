@@ -326,6 +326,11 @@ void setupSocket(char* addr) {
 		.sin_addr = { .s_addr = inet_addr(addr) }
 	};
 
+	if (sockAddr.sin_addr.s_addr == -1) {
+		fprintf(stderr, "Invalid server address (%s)\n", addr);
+		exit(EXIT_FAILURE);
+	}
+
 	if (connect(sock, (const struct sockaddr*)&sockAddr, sizeof(sockAddr))) {
 		perror("Failed to connect socket to ATEM address");
 		exit(EXIT_FAILURE);
