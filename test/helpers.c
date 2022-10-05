@@ -1,3 +1,4 @@
+#include <stdio.h> // printf
 #include <stdlib.h> // exit, EXIT_FAILURE, EXIT_SUCCESS, size_t
 #include <setjmp.h> // setjmp, longjmp, jmp_buf
 #include <time.h> // timespec, timespec_get
@@ -48,7 +49,7 @@ void printBuffer(uint8_t* buf, int len) {
 	}
 
 	for (int i = 0; i < len; i++) {
-		printf("%.2x ", buf[i]);
+		printf("%02x ", buf[i]);
 	}
 	if (clamped) {
 		printf("...\n");
