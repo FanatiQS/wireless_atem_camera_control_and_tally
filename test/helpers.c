@@ -73,6 +73,9 @@ void runTest(struct test_t* test, bool exitOnAbortSelector) {
 		test->fn();
 		expectNoData();
 	}
+	else {
+		flushData();
+	}
 
 	printf("Completed test: %s\n", test->name);
 	exitOnAbort = true;
@@ -356,6 +359,21 @@ void expectNoData() {
 
 	printf("Received data when expecting not to\n");
 	abortCurrentTest();
+}
+
+void flushData() {
+	struct timeval tv1 = { .tv_sec = EXIT_WAIT };
+	select(0, NULL, NULL, NULL, &tv1);
+
+	fd_set fds;
+	FD_ZERO(&fds);
+	FD_SET(sock, &fds);
+	while (true) {
+		struct timeval tv2 = { .tv_sec = 1 };
+		if (select(sock + 1, &fds, NULL, NULL, &tv2) == 0) break;
+		uint8_t buf[ATEM_MAX_PACKET_LEN];
+		recv(sock, buf, ATEM_MAX_PACKET_LEN, 0);
+	}
 }
 
 
