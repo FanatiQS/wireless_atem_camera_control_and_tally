@@ -59,6 +59,19 @@ void printBuffer(uint8_t* buf, int len) {
 	}
 }
 
+void printFlush() {
+	fd_set fds;
+	FD_ZERO(&fds);
+	FD_SET(sock, &fds);
+	while (true) {
+		struct timeval tv = { .tv_sec = EXIT_WAIT };
+		if (select(sock + 1, &fds, NULL, NULL, &tv) == 0) break;
+		uint8_t buf[ATEM_MAX_PACKET_LEN];
+		ssize_t recvLen = recv(sock, buf, ATEM_MAX_PACKET_LEN, 0);
+		printBuffer(buf, recvLen);
+	}
+}
+
 
 
 static bool exitOnAbort = true;
