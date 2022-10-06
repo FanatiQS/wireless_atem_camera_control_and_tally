@@ -68,5 +68,9 @@
 	ssidInput.oninput = makeCode;
 	pskInput.oninput = makeCode;
 
+	const searchParams = new URL(window.location.href).searchParams;
+	ssidInput.value = searchParams.get("ssid");
+	pskInput.value = searchParams.get("psk");
+
 	makeCode();
 </script>
