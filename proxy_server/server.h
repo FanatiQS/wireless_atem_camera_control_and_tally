@@ -18,7 +18,7 @@ struct packet_t {
 	uint8_t remainingResends;
 	bool lastInChunk;
 	uint16_t len;
-	uint8_t buf[0];
+	uint8_t buf[];
 };
 
 // Structure for proxy connections
