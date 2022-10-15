@@ -363,9 +363,9 @@ static void resendPacket(struct packet_t* packet) {
 	}
 	// Removes and releases session after closing packet resends run out
 	else {
+		printf("Closing session 0x%02x%02x, dropped\n", session->chunk->id, session->id);
 		releasePacket(packet);
 		releaseSession(session);
-		printf("Closed session 0x%02x%02x, dropped\n", session->chunk->id, session->id);
 	}
 }
 
