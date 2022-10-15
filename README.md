@@ -2,18 +2,26 @@
 Wireless tally and camera control for Blackmagic cameras connected directly to an ATEM switcher over WiFi.
 
 ## Description
-Blackmagics URSA cameras are great to use with their ATEM switchers.
-Just connecting two BNC cables between the camera and switcher to not only get video to and from the camera, but to also getting tally and camera control over the SDI return signal is a fantastic feature for multicamera productions.
+Blackmagic supports camera control and tally signals back over SDI to many of their cameras.
+They utilize a program return feed back to the camera to send it both video and ancillary data.
+When you need a camera to be wireless, just adding a wireless video transmitter from the camera to the switcher looses the return feed including camera control and tally.
+This project aims to add camera control and tally to a wireless camera with as little complexity as possible.
 
-When you need a camera to be wireless, the simplest sollution is to just add a wireless video transmitter to the camera side and plug the receiver into the switcher.
-With that approach however, all camera control and tally is data is lost since there is no communication back from the switcher to the camera.
-Solving this is not as easy as just adding another wireless video transmitter to send return video back to the camera as most wireless video transmitters ignore the part of the SDI signal that carries the camera control and tally data.
+## FAQ
 
-This is where this project comes in to play.
-It connects directly to the ATEM switcher over IP, the same way the ATEM control software connects.
-By relaying the camera control and tally data to the camera, either over SDI using the Blackmagic 3G-SDI Shield for Arduino or over bluetooth low energy, the camera can get these features wirelessly using Wi-Fi.
+### Why not just add a cheap SDI receiver on the camera?
+This does not work a lot of the time as the chipset used in most wireless video systems is designed for HDMI and therefore strips out the ancillary data only adding the return video feed without camera control and tally.
+This also has the additional benefit of transmitting less wireless data since it skips the heavy return video signal entirely.
 
-This has the additional benefit of transmitting less data since it skips the heavy return video signal entirely.
+### How can this project work without a transmitter?
+This project only uses a receiver on the camera.
+The reason this works is that it connects to the ATEM switcher directly over WiFi, the same way the control software and hardware panels do.
+The camera control and tally commands are then translated and sent out over SDI to the camera.
+
+### Does it work for HDMI based cameras?
+It has not been tested yet, but should work with a `Micro Converter BiDirectional SDI/HDMI`.
+
+
 
 ## Support
 Camera models and protocol versions that have been tested to work.
