@@ -656,7 +656,7 @@ void processProxyData() {
 
 	// Aborts processing packets without protocol header
 	if (recvLen < ATEM_LEN_HEADER) {
-		fprintf(stderr, "Packet was %zd bytes long and could not to contain a header\n", recvLen);
+		fprintf(stderr, "Packet was %zd bytes long and could not contain a header\n", recvLen);
 		return;
 	}
 
