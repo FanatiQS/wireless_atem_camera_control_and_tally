@@ -34,14 +34,7 @@ void setupRelay() {
 }
 
 // Connects to an ATEM switcher
-void relayEnable(const char* addr) {
-	// Parses string address into an address type
-	const in_addr_t atemAddr = inet_addr(addr);
-	if (atemAddr == -1) {
-		fprintf(stderr, "Invalid relay server address\n");
-		abort();
-	}
-
+void relayEnable(const in_addr_t atemAddr) {
 	// Connects ATEM socket to automatically send data to correct address
 	const struct sockaddr_in sockAddr = createAddr(atemAddr);
 	if (connect(sockRelay, (const struct sockaddr *)&sockAddr, sizeof(sockAddr))) {

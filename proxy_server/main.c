@@ -17,6 +17,13 @@ int main(int argc, char** argv) {
 		exit(EXIT_FAILURE);
 	}
 
+	// Parses string address into an address type
+	const in_addr_t atemAddr = inet_addr(argv[1]);
+	if (atemAddr == -1) {
+		fprintf(stderr, "Argument was not an IP address\n");
+		exit(EXIT_FAILURE);
+	}
+
 	// Initializes windows networking
 #ifdef _WIN32
 	WSADATA wsaData;
@@ -26,7 +33,7 @@ int main(int argc, char** argv) {
 	// Initializes proxy server and relay client
 	setupProxy();
 	setupRelay();
-	relayEnable(argv[1]);
+	relayEnable(atemAddr);
 
 	// Sets up for socket event handler
 	int nfds = sockProxy;
