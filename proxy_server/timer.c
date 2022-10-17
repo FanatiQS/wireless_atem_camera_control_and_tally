@@ -185,14 +185,14 @@ void dropTimerDisable() {
 void timerEvent() {
 	DEBUG_PRINT("timer expired\n");
 
+	if (nextTimer == nextPingTimer) {
+		pingProxySessions();
+	}
 	if (nextTimer == nextResendTimer) {
 		resendProxyPackets();
 	}
 	else if (nextTimer == nextDropTimer) {
 		reconnectRelaySocket();
-	}
-	else if (nextTimer == nextPingTimer) {
-		pingProxySessions();
 	}
 	else {
 		fprintf(stderr, "Got undefined timer event\n");
