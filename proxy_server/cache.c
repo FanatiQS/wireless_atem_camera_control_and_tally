@@ -1,12 +1,13 @@
 #include <stdint.h> // uint8_t, uint16_t
 
+#include "./cache.h"
 #include "./server.h"
 #include "./relay.h"
 
 
 
 // this is currently just a hacky solution that restarts the relay connection instead of caching anything
-void restartRelayConnection();
+void restartRelayConnection(void);
 void dumpAtemData(struct session_t* session) {
 	restartRelayConnection();
 }

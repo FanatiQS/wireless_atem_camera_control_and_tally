@@ -48,14 +48,14 @@ struct sessionChunk_t {
 };
 
 extern int sockProxy;
-void setupProxy();
-void processProxyData();
+void setupProxy(void);
+void processProxyData(void);
 
 void sendAtemCommands(struct session_t* session, uint8_t* commands, uint16_t len);
 void broadcastAtemCommands(uint8_t* commands, uint16_t len);
 
-void resendProxyPackets();
-void pingProxySessions();
+void resendProxyPackets(void);
+void pingProxySessions(void);
 
 // End include guard
 #endif

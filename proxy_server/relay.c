@@ -3,6 +3,7 @@
 #include <stdlib.h> // abort
 #include <string.h> // memcpy
 
+#include "./relay.h"
 #include "./udp.h"
 #include "../src/atem.h"
 #include "./atem_extra.h"

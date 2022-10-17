@@ -8,19 +8,19 @@
 
 void setTimeout(struct timespec* timer, uint16_t msDelay);
 
-void pingTimerRestart();
-void pingTimerEnable();
-void pingTimerDisable();
+void pingTimerRestart(void);
+void pingTimerEnable(void);
+void pingTimerDisable(void);
 
 void resendTimerAdd(struct timespec* resendTimer);
 void resendTimerRemove(struct timespec* resendTimer);
 
-void dropTimerEnable();
-void dropTimerDisable();
-void dropTimerRestart();
+void dropTimerEnable(void);
+void dropTimerDisable(void);
+void dropTimerRestart(void);
 
-struct timeval* timeToNextTimerEvent();
-void timerEvent();
+struct timeval* timeToNextTimerEvent(void);
+void timerEvent(void);
 
 // Ends include guard
 #endif
