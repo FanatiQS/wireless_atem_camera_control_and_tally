@@ -218,11 +218,11 @@ struct timeval* timeToNextTimerEvent() {
 		}
 
 #ifdef DEBUG
-		printf("\n");
 		DEBUG_PRINT(
 			"next timer event in %.4f seconds\n",
 			(float)tv.tv_sec + (float)tv.tv_usec / 1000000
 		);
+		printf("\n");
 		fflush(stdout);
 #endif
 
