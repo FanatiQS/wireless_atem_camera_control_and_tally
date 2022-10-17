@@ -6,6 +6,8 @@
 
 #include "./udp.h" // timeval
 
+extern struct timespec* nextTimer;
+
 void setTimeout(struct timespec* timer, uint16_t msDelay);
 
 void pingTimerRestart(void);

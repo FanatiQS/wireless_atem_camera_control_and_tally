@@ -32,7 +32,7 @@
 
 
 
-static struct timespec* nextTimer;
+struct timespec* nextTimer;
 
 static struct timespec* nextResendTimer;
 static struct timespec* nextPingTimer;
