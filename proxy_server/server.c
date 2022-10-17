@@ -446,7 +446,7 @@ static void startHandshake(uint8_t high, uint8_t low, struct sockaddr* sockAddr,
 	}
 	// Resends handshake response if session already exists
 	else if (handshakeChunk->sessions[low]) {
-		DEBUG_PRINT("resends handshake SYNACK for session 0x%02x%02x\n", high, low);
+		DEBUG_PRINT("resending handshake SYNACK for session 0x%02x%02x\n", high, low);
 		resendPacket(handshakeChunk->sessions[low]->localPacketHead); // should it resend, ignore or send extra?
 		return;
 	}
@@ -527,7 +527,7 @@ static void completeHandshake(uint8_t high, uint8_t low) {
 	enqueueSession(session);
 	dumpAtemData(session);
 
-	DEBUG_PRINT("session handshake complete for 0x%02x%02x\n", high, low);
+	DEBUG_PRINT("session handshake completed for 0x%02x%02x\n", high, low);
 }
 
 // Initiates closing handshake by client
