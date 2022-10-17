@@ -232,7 +232,7 @@ struct timeval* timeToNextTimerEvent() {
 		}
 
 		// Catch up to events that should already have occured
-		DEBUG_PRINT("catch up timer event call\n");
+		DEBUG_PRINT("catching up timer event\n");
 		timerEvent();
 	}
 
