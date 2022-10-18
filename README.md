@@ -9,14 +9,16 @@ This project aims to add camera control and tally to a wireless camera with as l
 
 ## FAQ
 
-### Why not just add a cheap SDI receiver on the camera?
-This does not work a lot of the time as the chipset used in most wireless video systems is designed for HDMI and therefore strips out the ancillary data only adding the return video feed without camera control and tally.
-This also has the additional benefit of transmitting less wireless data since it skips the heavy return video signal entirely.
+### Why not just add a cheap HDMI or SDI receiver on the camera?
+This only adds the return video feed without camera control and tally.
+The reason is because SDI ancillary data is stripped out when converted to HDMI.
+Even a lot of SDI systems use a chipset designed for HDMI and therefore has the same limitation.
+Transmitting an entire return video feed is also very heavy, increasing the risk for interference over only transmitting the small amount of data camera control and tally takes up.
 
 ### How can this project work without a transmitter?
 This project only uses a receiver on the camera.
-The reason this works is that it connects to the ATEM switcher directly over WiFi, the same way the control software and hardware panels do.
-The camera control and tally commands are then translated and sent out over SDI to the camera.
+The reason this works is that it connects to the ATEM switcher directly over WiFi, the same way the control software does.
+The camera control and tally commands are then translated on device to be sent out over SDI to the camera.
 
 ### Does it work for HDMI based cameras?
 It has not been tested yet, but should work with a `Micro Converter BiDirectional SDI/HDMI`.
