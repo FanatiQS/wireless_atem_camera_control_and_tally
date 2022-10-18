@@ -19,7 +19,7 @@ int main(int argc, char** argv) {
 
 	// Parses string address into an address type
 	const in_addr_t atemAddr = inet_addr(argv[1]);
-	if (atemAddr == -1) {
+	if (atemAddr == (in_addr_t)(-1)) {
 		fprintf(stderr, "Argument was not an IP address\n");
 		exit(EXIT_FAILURE);
 	}

@@ -211,7 +211,7 @@ struct timeval* timeToNextTimerEvent() {
 
 		// Gets time difference between nextTimer and current time
 		tv.tv_sec = nextTimer->tv_sec - current.tv_sec;
-		tv.tv_usec = (nextTimer->tv_nsec - current.tv_nsec) / 1000;
+		tv.tv_usec = (int)((nextTimer->tv_nsec - current.tv_nsec) / 1000);
 		if (tv.tv_usec < 0) {
 			tv.tv_sec--;
 			tv.tv_usec += 1000000;
@@ -220,7 +220,7 @@ struct timeval* timeToNextTimerEvent() {
 #ifdef DEBUG
 		DEBUG_PRINT(
 			"next timer event in %.3f seconds\n",
-			(float)tv.tv_sec + (float)tv.tv_usec / 1000000
+			(double)tv.tv_sec + (double)tv.tv_usec / 1000000
 		);
 		printf("\n");
 		fflush(stdout);
