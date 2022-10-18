@@ -29,22 +29,22 @@ struct session_t {
 	struct session_t* broadcastPrev;
 	struct packet_t* localPacketHead;
 	struct packet_t* localPacketTail;
-	uint8_t handshakeId;
-	uint8_t id;
-	bool closed;
 	uint16_t remoteId;
 	uint16_t nextAck;
 	struct sockaddr sockAddr;
 	socklen_t sockLen;
+	uint8_t handshakeId;
+	uint8_t id;
+	bool closed;
 };
 
 // Structure used in session lookup table to reduce memory footprint
 #define SESSIONCHUNKS 256
 #define SESSIONCHUNKSIZE 256
 struct sessionChunk_t {
+	struct session_t* sessions[SESSIONCHUNKSIZE];
 	uint8_t id;
 	uint8_t fillLevel;
-	struct session_t* sessions[SESSIONCHUNKSIZE];
 };
 
 extern int sockProxy;
