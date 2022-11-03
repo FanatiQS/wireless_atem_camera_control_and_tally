@@ -18,52 +18,66 @@
 #include "html_template_engine.h"
 #include "user_config.h"
 
-// Both SCL and SDA has to be defined for SDI shield to be enabled
-#if defined(PIN_SCL) && defined(PIN_SDA)
-#define USE_SDI
-#elif defined(PIN_SCL) || defined(PIN_SDA)
+// Includes libraries required for communicating with the SDI shield if enabled
+#ifdef PIN_SCL
+#include <Wire.h>
+#include <BMDSDIControl.h>
+#define USE_SDI // Only for readability
+#endif // PIN_SCL
+
+
+
+// Firmware version
+#define FIRMWARE_VERSION_STRING "0.5.0"
+
+// Expected versions of libraries and SDKs
+#define EXPECTED_ESP_VERSION "2.7.0"
+
+// Expected SDI shield versions
+#define EXPECTED_SDI_LIBRARY_VERSION 1,0
+#define EXPECTED_SDI_FIRMWARE_VERSION 0,13
+#define EXPECTED_SDI_PROTOCOL_VERSION 1,0
+
+
+
+// Throws if only one of SCL and SDA is defined for SDI shield
+#if !(defined(PIN_SCL) && defined(PIN_SDA)) && (defined(PIN_SCL) || defined(PIN_SDA))
 #error Both PIN_SCL and PIN_SDA has to be defined if SDI shield is to be used or none of them defined if SDI shield is not to be used
 #endif
 
-#ifdef USE_SDI
-#include <Wire.h>
-#include <BMDSDIControl.h>
-#endif
-
 // Throws if tally or camera control debugging is enabled without debugging itself being enabled
-#ifndef DEBUG
-#ifdef DEBUG_TALLY
+#if !DEBUG
+#if DEBUG_TALLY
 #error To debug tally, enable debugging by defining DEBUG along with DEBUG_TALLY
-#endif
-#ifdef DEBUG_CC
+#endif // DEBUG_TALLY
+#if DEBUG_CC
 #error To debug camera control, enable debugging by defining DEBUG along with DEBUG_CC
-#endif
-#endif
+#endif // DEBUG_CC
+#endif // !DEBUG
 
 
 
-// Firmware version of this library
-#define VERSION "0.5.0"
+// Only prints debug data when enabled from user_config.h
+#if DEBUG
+#define DEBUG_PRINT(...) Serial.print(__VA_ARGS__)
+#define DEBUG_PRINTLN(...) Serial.println(__VA_ARGS__)
+#define DEBUG_PRINTF(...) Serial.printf(__VA_ARGS__)
+#else // DEBUG
+#define DEBUG_PRINT(arg) do {} while(0)
+#define DEBUG_PRINTLN(arg) do {} while(0)
+#define DEBUG_PRINTF(...) do {} while(0)
+#endif // DEBUG
+
 
 // Gets the Arduino ESP8266 core version
 #define _GET_ESP_VERSION_A(v) #v
 #define _GET_ESP_VERSION_B(v) _GET_ESP_VERSION_A(v)
 #define ESP_VERSION _GET_ESP_VERSION_B(ARDUINO_ESP8266_GIT_DESC)
 
-// Expected ESP version for this firmware version
-#define EXPECTED_ESP_VERSION "2.7.0"
 
-// Index of dest in SDI protocol
-#define SDI_DEST_INDEX 0
-
-// Expected SDI versions for this firmware version
-#define EXPECTED_SDI_LIBRARY_VERSION 1,0
-#define EXPECTED_SDI_FIRMWARE_VERSION 0,13
-#define EXPECTED_SDI_PROTOCOL_VERSION 1,0
 
 // Prints a type of version from the BMDSDIControl library
-#ifdef USE_SDI
-#ifdef DEBUG
+#if defined(USE_SDI) && DEBUG
 void printBMDVersion(char* label, BMD_Version version, uint8_t expectedMajor, uint8_t expectedMinor) {
 	// Prints currently used version from the SDI shield
 	Serial.print("SDI shield ");
@@ -83,10 +97,9 @@ void printBMDVersion(char* label, BMD_Version version, uint8_t expectedMajor, ui
 		Serial.println(expectedMinor);
 	}
 }
-#else
-#define printBMDVersion(lable, version, expectedMajor, expectedMinor)
-#endif
-#endif
+#else // USE_SDI && DEBUG
+#define printBMDVersion(lable, version, expectedMajor, expectedMinor) do {} while(0)
+#endif // USE_SDI && DEBUG
 
 
 
@@ -193,7 +206,7 @@ char* getAtemStatus() {
 	HTML_CURRENT_TIME($, "Request time")\
 	HTML_TIME($, "Time since boot", time(NULL))\
 	HTML_SPACER($)\
-	HTML_ROW($, "Firmware Version") HTML($, VERSION)\
+	HTML_ROW($, "Firmware Version") HTML($, FIRMWARE_VERSION_STRING)\
 	HTML_RSSI($, "WiFi signal strength", WiFi.RSSI(), WiFi.isConnected())\
 	HTML_INFO($, "ATEM connection status", getAtemStatus(), STATUS_LEN, "%s", "")\
 	HTML_VOLTAGE($, "Voltage level", analogRead(PIN_BATTREAD))\
@@ -224,12 +237,12 @@ void handleHTTP() {
 	// Processes POST request
 	if (confServer.method() == HTTP_POST) {
 		// Sends response to post before switching network
- 		confServer.send(200, "text/html", \
-			"<!DOCTYPEhtml><meta content=\"width=device-width\"name=viewport>"\
-			"<title>Configure Device</title>"\
-			"<div>Updated, device is rebooting..."\
+ 		confServer.send(200, "text/html",
+			"<!DOCTYPEhtml><meta content=\"width=device-width\"name=viewport>"
+			"<title>Configure Device</title>"
+			"<div>Updated, device is rebooting..."
 			"<div>Reload page when device has restarted"
-			"<div>If device is unable to connect to wifi, it will "\
+			"<div>If device is unable to connect to wifi, it will "
 				"create its own wireless network for configuration."
 		);
 		confServer.client().flush();
@@ -296,59 +309,58 @@ void handleHTTP() {
 
 
 void setup() {
-#ifdef DEBUG
 	Serial.begin(9600);
+#if DEBUG
 
 	// Prints mac address that is used as psk by soft AP
-	Serial.println("Starting...");
-	Serial.print("Mac address: ");
-	Serial.println(WiFi.macAddress());
+	DEBUG_PRINT("Booting...\n");
+	DEBUG_PRINT("Mac address: ");
+	DEBUG_PRINTLN(WiFi.macAddress());
 
-	// Prints this libraries firmware and boards firmware
-	Serial.print("Own firmware version: ");
-	Serial.println(VERSION);
-	Serial.print("Arduino ESP8266 version: ");
-	Serial.println(ESP_VERSION);
+	// Prints firmware version
+	DEBUG_PRINT("Firmware version: " FIRMWARE_VERSION_STRING "\n");
+
+	DEBUG_PRINT("Arduino ESP8266 version: " ESP_VERSION "\n");
 	if (strcmp(ESP_VERSION, EXPECTED_ESP_VERSION)) {
-		Serial.print("WARNING: Expected version for this firmware: ");
-		Serial.println(EXPECTED_ESP_VERSION);
+		DEBUG_PRINT("WARNING: Expected version for this firmware: " EXPECTED_ESP_VERSION "\n");
 	}
 
 	// Prints what debugging flags are enabled when compiled
-	Serial.print("Tally debug: ");
-#ifdef DEBUG_TALLY
-	Serial.println("enabled");
-#else
-	Serial.println("disabled");
-#endif
-	Serial.print("Camera control debug: ");
-#ifdef DEBUG_CC
-	Serial.println("enabled");
-#else
-	Serial.println("disabled");
-#endif
-#endif
+	DEBUG_PRINTLN(
+		"Tally debug: "
+#if DEBUG_TALLY
+		"enabled"
+#else // DEBUG_TALLY
+		"disabled"
+#endif // DEBUG_TALLY
+	);
+	DEBUG_PRINTLN(
+		"Camera control debug: "
+#if DEBUG_CC
+		"enabled"
+#else // DEBUG_CC
+		"disabled"
+#endif // DEBUG_CC
+	);
+#endif // DEBUG
+
+
 
 	// Initializes status LED pins
 #ifdef PIN_PGM
 	pinMode(PIN_PGM, OUTPUT);
 	digitalWrite(PIN_PGM, HIGH);
-#endif
+#endif // PIN_PGM
 #ifdef PIN_PVW
 	pinMode(PIN_PVW, OUTPUT);
 	digitalWrite(PIN_PVW, HIGH);
-#endif
+#endif // PIN_PVW
 #ifdef PIN_CONN
 	pinMode(PIN_CONN, OUTPUT);
 	digitalWrite(PIN_CONN, HIGH);
-#endif
+#endif // PIN_CONN
 
-	// Gets configuration from persistent memory and updates global conf
-	struct configData_t confData;
-	EEPROM.begin(sizeof(confData));
-	EEPROM.get(0, confData);
-	atem.dest = confData.dest;
-	atemAddr = confData.atemAddr;
+
 
 #ifdef USE_SDI
 	// Initializes camera control and tally over SDI
@@ -362,9 +374,18 @@ void setup() {
 	printBMDVersion("library", sdiCameraControl.getLibraryVersion(), EXPECTED_SDI_LIBRARY_VERSION);
 	printBMDVersion("firmware", sdiCameraControl.getFirmwareVersion(), EXPECTED_SDI_FIRMWARE_VERSION);
 	printBMDVersion("protocol", sdiCameraControl.getProtocolVersion(), EXPECTED_SDI_PROTOCOL_VERSION);
-#elif defined(DEBUG)
-	Serial.print("SDI shield: disabled\n");
-#endif
+#else // USE_SDI
+	DEBUG_PRINT("SDI shield: disabled\n");
+#endif // USE_SDI
+
+
+
+	// Gets configuration from persistent memory and updates global conf
+	struct configData_t confData;
+	EEPROM.begin(sizeof(confData));
+	EEPROM.get(0, confData);
+	atem.dest = confData.dest;
+	atemAddr = confData.atemAddr;
 
 	// Sets up configuration HTTP server with soft AP
 	WiFi.softAP(confData.name, WiFi.macAddress(), 1, 0, 1);
@@ -415,16 +436,14 @@ void loop() {
 		while (atem_cmd_available(&atem)) switch (atem_cmd_next(&atem)) {
 			// Turns on connection status LED and disables access point when connected to ATEM
 			case ATEM_CMDNAME_VERSION: {
-#ifdef DEBUG
-				Serial.print("Connected to ATEM\n");
-				Serial.print("Got protocol version: ");
-				Serial.print(atem_protocol_major(&atem));
-				Serial.print(".");
-				Serial.println(atem_protocol_minor(&atem));
-#endif
+				DEBUG_PRINT("Connected to ATEM\n");
+				DEBUG_PRINT("Got protocol version: ");
+				DEBUG_PRINT(atem_protocol_major(&atem));
+				DEBUG_PRINT(".");
+				DEBUG_PRINTLN(atem_protocol_minor(&atem));
 #ifdef PIN_CONN
 				digitalWrite(PIN_CONN, LOW);
-#endif
+#endif // PIN_CONN
 				WiFi.mode(WIFI_STA);
 				atemStatus = STATUS_CONNECTED;
 				break;
@@ -432,48 +451,47 @@ void loop() {
 			// Outputs tally status on GPIO pins and SDI
 			case ATEM_CMDNAME_TALLY: {
 				if (!atem_tally_updated(&atem)) break;
-#ifdef DEBUG_TALLY
-				Serial.print("Tally state: ");
+#if DEBUG_TALLY
+				DEBUG_PRINT("Tally state: ");
 				if (atem.pgmTally) {
-					Serial.print("PGM");
+					DEBUG_PRINTLN("PGM");
 				}
 				else if (atem.pvwTally) {
-					Serial.print("PVW");
+					DEBUG_PRINTLN("PVW");
 				}
 				else {
-					Serial.print("NONE");
+					DEBUG_PRINTLN("NONE");
 				}
-				Serial.print("\n");
-#endif
+#endif // DEBUG_TALLY
 #ifdef PIN_PGM
 				digitalWrite(PIN_PGM, (atem.pgmTally) ? LOW : HIGH);
-#endif
+#endif // PIN_PGM
 #ifdef PIN_PVW
 				digitalWrite(PIN_PVW, (atem.pvwTally) ? LOW : HIGH);
-#endif
+#endif // PIN_PVW
 #ifdef USE_SDI
 				sdiTallyControl.setCameraTally(atem.dest, atem.pgmTally, atem.pvwTally);
-#endif
+#endif // USE_SDI
 				break;
 			}
 			// Sends camera control data over SDI
-#if defined(DEBUG_CC) || defined(USE_SDI)
+#if defined(USE_SDI) || DEBUG_CC
 			case ATEM_CMDNAME_CAMERACONTROL: {
 				if (atem_cc_dest(&atem) != atem.dest) break;
 				atem_cc_translate(&atem);
 #ifdef DEBUG_CC
-				Serial.print("Got camera control data: ");
+				DEBUG_PRINT("Got camera control data: ");
 				for (uint8_t i = 0; i < atem.cmdLen; i++) {
-					Serial.printf("%02x ", atem.cmdBuf[i]);
+					DEBUG_PRINT(atem.cmdBuf[i], HEX);
 				}
-				Serial.print("\n");
-#endif
+				DEBUG_PRINT("\n");
+#endif // DEBUG_CC
 #ifdef USE_SDI
 				sdiCameraControl.write(atem.cmdBuf, atem.cmdLen);
-#endif
+#endif // USE_SDI
 				break;
 			}
-#endif
+#endif // USE_SDI || DEBUG_CC
 		}
 	}
 	// Restarts connection to ATEM if it has lost connection
@@ -483,12 +501,12 @@ void loop() {
 		if (atemStatus == STATUS_CONNECTED) atemStatus = STATUS_DROPPED;
 #ifdef PIN_CONN
 		digitalWrite(PIN_CONN, HIGH);
-#endif
-#ifdef DEBUG
+#endif // PIN_CONN
+#if DEBUG
 		if (timeout != 0) {
-			Serial.print("No connection to ATEM\n");
+			DEBUG_PRINT("No connection to ATEM\n");
 		}
-#endif
+#endif // DEBUG
 	}
 
 	// Sends buffered UDP packet to ATEM and resets timeout

@@ -14,16 +14,16 @@
  * DEBUG_TALLY prints tally state when updated.
  * DEBUG_CC prints camera control data when updated (for the selected camera only).
  */
-#define DEBUG
-#define DEBUG_TALLY
-#define DEBUG_CC
+#define DEBUG             1
+#define DEBUG_TALLY       DEBUG
+#define DEBUG_CC          DEBUG
 
 /**
  * The pins to use for PGM tally, PVW tally and/or ATEM connection indicator LEDs.
  */
-#define PIN_PGM D5
-#define PIN_PVW D6
-#define PIN_CONN LED_BUILTIN
+#define PIN_PGM           D5
+#define PIN_PVW           D6
+#define PIN_CONN          LED_BUILTIN
 
 /**
  * To use a "Blackamgic 3G SDI shield for arduino" for tally and camera control over SDI,
@@ -35,8 +35,8 @@
  *
  * 3.3v microcontroller requires a logic level converter to be able to communicate with the SDI shield.
  */
-// #define PIN_SCL D2
-// #define PIN_SDA D1
+// #define PIN_SCL        D2
+// #define PIN_SDA        D1
 
 /**
  * The analog pin use for battery level reading.
@@ -45,7 +45,7 @@
  * The voltage level has to be brought down to a range the microcontroller can handle.
  * This is done using a voltage divider.
  */
-// #define PIN_BATTREAD A0
+// #define PIN_BATTREAD   A0
 
 // End include guard
 #endif
