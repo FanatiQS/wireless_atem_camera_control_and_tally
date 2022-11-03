@@ -14,6 +14,8 @@
 #include <EEPROM.h>
 #include <DNSServer.h>
 
+#include <lwip/init.h>
+
 #include "atem.h"
 #include "html_template_engine.h"
 #include "user_config.h"
@@ -31,6 +33,7 @@
 #define FIRMWARE_VERSION_STRING "0.5.0"
 
 // Expected versions of libraries and SDKs
+#define EXPECTED_LWIP_VERSION "2.1.2"
 #define EXPECTED_ESP_VERSION "2.7.0"
 
 // Expected SDI shield versions
@@ -320,6 +323,11 @@ void setup() {
 	// Prints firmware version
 	DEBUG_PRINT("Firmware version: " FIRMWARE_VERSION_STRING "\n");
 
+	// Prints libraries and SDKs versions
+	DEBUG_PRINT("LWIP version: " LWIP_VERSION_STRING "\n");
+	if (strcmp(LWIP_VERSION_STRING, EXPECTED_LWIP_VERSION)) {
+		DEBUG_PRINT("WARNING: Expected version for this firmware: " EXPECTED_LWIP_VERSION "\n");
+	}
 	DEBUG_PRINT("Arduino ESP8266 version: " ESP_VERSION "\n");
 	if (strcmp(ESP_VERSION, EXPECTED_ESP_VERSION)) {
 		DEBUG_PRINT("WARNING: Expected version for this firmware: " EXPECTED_ESP_VERSION "\n");
@@ -350,14 +358,26 @@ void setup() {
 #ifdef PIN_PGM
 	pinMode(PIN_PGM, OUTPUT);
 	digitalWrite(PIN_PGM, HIGH);
+	DEBUG_PRINT("Tally PGM pin: ");
+	DEBUG_PRINTLN(PIN_PGM);
+#else // PIN_PGM
+	DEBUG_PRINT("Tally PGM: disabled\n");
 #endif // PIN_PGM
 #ifdef PIN_PVW
 	pinMode(PIN_PVW, OUTPUT);
 	digitalWrite(PIN_PVW, HIGH);
+	DEBUG_PRINT("Tally PVW pin: ");
+	DEBUG_PRINTLN(PIN_PVW);
+#else // PIN_PVW
+	DEBUG_PRINT("Tally PVW: disabled\n");
 #endif // PIN_PVW
 #ifdef PIN_CONN
 	pinMode(PIN_CONN, OUTPUT);
 	digitalWrite(PIN_CONN, HIGH);
+	DEBUG_PRINT("Tally CONN pin: ");
+	DEBUG_PRINTLN(PIN_CONN);
+#else // PIN_CONN
+	DEBUG_PRINT("Tally CONN: disabled\n");
 #endif // PIN_CONN
 
 
@@ -369,6 +389,12 @@ void setup() {
 	sdiCameraControl.setOverride(true);
 	sdiTallyControl.begin();
 	sdiTallyControl.setOverride(true);
+
+	// Prints SDI I2C pin assignments
+	DEBUG_PRINT("I2C SCL pin: ");
+	DEBUG_PRINTLN(PIN_SCL);
+	DEBUG_PRINT("I2C SDA pin: ");
+	DEBUG_PRINTLN(PIN_SDA);
 
 	// Prints versions used by SDI shield and its library if debugging is enabled
 	printBMDVersion("library", sdiCameraControl.getLibraryVersion(), EXPECTED_SDI_LIBRARY_VERSION);
@@ -387,11 +413,35 @@ void setup() {
 	atem.dest = confData.dest;
 	atemAddr = confData.atemAddr;
 
+	// Prints configuration data
+	DEBUG_PRINT("SSID: ");
+	DEBUG_PRINTLN(WiFi.SSID());
+	DEBUG_PRINT("PSK: ");
+	DEBUG_PRINTLN(WiFi.psk());
+	DEBUG_PRINT("Camera ID: ");
+	DEBUG_PRINTLN(confData.dest);
+	DEBUG_PRINT("ATEM address: ");
+	DEBUG_PRINTLN(IPAddress(confData.atemAddr));
+	DEBUG_PRINT("Using static IP: ");
+	DEBUG_PRINTLN((confData.useStaticIP) ? "TRUE" : "FALSE");
+	DEBUG_PRINT("Local address: ");
+	DEBUG_PRINTLN(IPAddress(confData.localAddr));
+	DEBUG_PRINT("Gateway: ");
+	DEBUG_PRINTLN(IPAddress(confData.gateway));
+	DEBUG_PRINT("Subnet mask: ");
+	DEBUG_PRINTLN(IPAddress(confData.netmask));
+	DEBUG_PRINT("Name: ");
+	DEBUG_PRINTLN(confData.name);
+
 	// Sets up configuration HTTP server with soft AP
 	WiFi.softAP(confData.name, WiFi.macAddress(), 1, 0, 1);
 	dnsServer.start(53, "*", WiFi.softAPIP());
 	confServer.onNotFound(handleHTTP);
 	confServer.begin();
+	DEBUG_PRINT("Access point SSID: ");
+	DEBUG_PRINTLN(WiFi.softAPSSID());
+	DEBUG_PRINT("Access point PSK: ");
+	DEBUG_PRINTLN(WiFi.softAPPSK());
 
 	// Connects to last connected WiFi
 	WiFi.mode(WIFI_AP_STA);
@@ -407,6 +457,9 @@ void setup() {
 	// Adds mDNS querying support
 	MDNS.begin(confData.name);
 	MDNS.addService("http", "tcp", 80);
+
+	// Prints that setup has completed
+	DEBUG_PRINT("Setup complete\n");
 }
 
 void loop() {
@@ -423,10 +476,12 @@ void loop() {
 			case ATEM_CONNECTION_OK: break;
 			case ATEM_CONNECTION_REJECTED: {
 				atemStatus = STATUS_REJECTED;
+				DEBUG_PRINT("Rejected by ATEM\n");
 				return;
 			}
 			case ATEM_CONNECTION_CLOSING: {
 				atemStatus = STATUS_DISCONNECTED;
+				DEBUG_PRINT("Disconnected from ATEM\n");
 				return;
 			}
 			default: return;
@@ -504,7 +559,63 @@ void loop() {
 #endif // PIN_CONN
 #if DEBUG
 		if (timeout != 0) {
-			DEBUG_PRINT("No connection to ATEM\n");
+			DEBUG_PRINT("ATEM status: ");
+			DEBUG_PRINTLN(getAtemStatus());
+			DEBUG_PRINT("WiFi status: ");
+			switch (WiFi.status()) {
+				case WL_NO_SHIELD: {
+					DEBUG_PRINT("No wifi shield\n");
+					break;
+				}
+				case WL_IDLE_STATUS: {
+					DEBUG_PRINT("Idle\n");
+					break;
+				}
+				case WL_NO_SSID_AVAIL: {
+					DEBUG_PRINT("No SSID available\n");
+					break;
+				}
+				case WL_SCAN_COMPLETED: {
+					DEBUG_PRINT("Scan completed\n");
+					break;
+				}
+				case WL_CONNECTED: {
+					DEBUG_PRINT("Connected\n");
+					break;
+				}
+				case WL_CONNECT_FAILED: {
+					DEBUG_PRINT("Connect failed\n");
+					break;
+				}
+				case WL_CONNECTION_LOST: {
+					DEBUG_PRINT("Connection lost\n");
+					break;
+				}
+#ifdef WL_WRONG_PASSWORD
+				case WL_WRONG_PASSWORD: {
+					DEBUG_PRINT("Wrong password\n");
+					break;
+				}
+#endif // WL_WRONG_PASSWORD
+				case WL_DISCONNECTED: {
+					DEBUG_PRINT("Disconnected\n");
+					break;
+				}
+				default: {
+					DEBUG_PRINTF("Unknown type (%d)\n", WiFi.status());
+					break;
+				}
+			}
+			DEBUG_PRINT("Station SSID: ");
+			DEBUG_PRINTLN(WiFi.SSID());
+			DEBUG_PRINT("Station PSK: ");
+			DEBUG_PRINTLN(WiFi.psk());
+			DEBUG_PRINT("Local address: ");
+			DEBUG_PRINTLN(WiFi.localIP());
+			DEBUG_PRINT("Gateway: ");
+			DEBUG_PRINTLN(WiFi.gatewayIP());
+			DEBUG_PRINT("Subnet mask: ");
+			DEBUG_PRINTLN(WiFi.subnetMask());
 		}
 #endif // DEBUG
 	}
