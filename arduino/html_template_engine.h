@@ -44,9 +44,9 @@
 // Creates an HTML text input row
 #define HTML_INPUT_TEXT($, label, value, len, name)\
 	HTML_ROW($, label)\
-	HTML($, "<input required style=width:100%% maxlength=" INT_TO_STR2(len) " name=" name " value=")\
+	HTML($, "<input required maxlength=" INT_TO_STR2(len) " name=" name " value=\"")\
 	TEMPLATE($, "%s", value, len)\
-	HTML($, ">")
+	HTML($, "\">")
 
 // Creates an HTML number input row
 #define HTML_INPUT_NUMBER($, label, value, max, min, name)\
@@ -90,9 +90,9 @@
 	HTML_ROW($, label)\
 	TEMPLATE($, "%u", (uint16_t)(value / (60*60)), STRLEN(INT_TO_STR2(UINT16_MAX)))\
 	HTML($, "h ")\
-	TEMPLATE($, "%.2u", (uint8_t)(value / 60 % 60), 2)\
+	TEMPLATE($, "%02u", (uint8_t)(value / 60 % 60), 2)\
 	HTML($, "m ")\
-	TEMPLATE($, "%.2u", (uint8_t)(value % 60), 2)\
+	TEMPLATE($, "%02u", (uint8_t)(value % 60), 2)\
 	HTML($, "s")
 
 // Creates an HTML info row containing wifi signal strength
