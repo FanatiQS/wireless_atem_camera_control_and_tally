@@ -586,18 +586,21 @@ static void acknowledgeLocalPacket(struct session_t* session, uint8_t remoteHigh
 static void acknowledgeRemotePacket(struct session_t* session, uint8_t localHigh, uint8_t localLow) {
 	DEBUG_PRINTF("received remote id: %d\n", localHigh << 8 | localLow);
 	DEBUG_PRINTF("expected ack id: %d\n", session->nextAck);
-	if ((localHigh << 8 | localLow) == (session->nextAck)) {
-		session->nextAck++;
-		uint8_t buf[ATEM_LEN_HEADER] = {
-			[ATEM_INDEX_FLAGS] = ATEM_FLAG_ACK,
-			[ATEM_INDEX_LEN_LOW] = ATEM_LEN_HEADER,
-			[ATEM_INDEX_SESSION_HIGH] = session->chunk->id,
-			[ATEM_INDEX_SESSION_LOW] = session->id,
-			[ATEM_INDEX_ACKID_HIGH] = localHigh,
-			[ATEM_INDEX_ACKID_LOW] = localLow,
-		};
-		sendBuffer(buf, ATEM_LEN_HEADER, &session->sockAddr, session->sockLen);
+
+	if ((localHigh << 8 | localLow) != (session->nextAck)) {
+		return;
 	}
+
+	session->nextAck++;
+	uint8_t buf[ATEM_LEN_HEADER] = {
+		[ATEM_INDEX_FLAGS] = ATEM_FLAG_ACK,
+		[ATEM_INDEX_LEN_LOW] = ATEM_LEN_HEADER,
+		[ATEM_INDEX_SESSION_HIGH] = session->chunk->id,
+		[ATEM_INDEX_SESSION_LOW] = session->id,
+		[ATEM_INDEX_ACKID_HIGH] = localHigh,
+		[ATEM_INDEX_ACKID_LOW] = localLow,
+	};
+	sendBuffer(buf, ATEM_LEN_HEADER, &session->sockAddr, session->sockLen);
 }
 
 
