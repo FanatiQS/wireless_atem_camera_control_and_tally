@@ -548,10 +548,10 @@ static void closeOpenSession(struct session_t* session) {
 	};
 	sendBuffer(buf, ATEM_LEN_SYN, &session->sockAddr, session->sockLen);
 
+	printf("Closed session 0x%02x%02x initiated by client\n", session->chunk->id, session->id);
+
 	// Release session memory
 	releaseSession(session);
-
-	printf("Closed session 0x%02x%02x initiated by client\n", session->chunk->id, session->id);
 }
 
 // Completes close handshake initiated by server
@@ -560,9 +560,9 @@ static void closeClosingSession(struct session_t* session) {
 		fprintf(stderr, "Ignoring close response to non-sent request\n");
 		return;
 	}
+	printf("Closed session 0x%02x%02x, initiated by server\n", session->chunk->id, session->id);
 	releasePacket(session->localPacketHead);
 	releaseSession(session);
-	printf("Closed session 0x%02x%02x, initiated by server\n", session->chunk->id, session->id);
 }
 
 // Acknowledges and releases sessions packets up to remote id
