@@ -89,7 +89,7 @@ void processRelayData() {
 
 // Reconnects to ATEM after connection has dropped
 void reconnectRelaySocket() {
-	DEBUG_PRINT("reconnecting to relay server\n");
+	DEBUG_PRINTF("reconnecting to relay server\n");
 
 	atem_connection_reset(&atem);
 	sendAtem();
@@ -98,7 +98,7 @@ void reconnectRelaySocket() {
 
 // only for temporary hack
 void restartRelayConnection() {
-	DEBUG_PRINT("restarting connection to relay server\n");
+	DEBUG_PRINTF("restarting connection to relay server\n");
 	atem_connection_close(&atem);
 	sendAtem();
 	dropTimerRestart();

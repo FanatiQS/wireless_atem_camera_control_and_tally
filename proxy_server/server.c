@@ -52,12 +52,12 @@ static struct sessionChunk_t* createSessionChunk(uint8_t high) {
 	if (sessionReuseChunk != NULL) {
 		chunk = sessionReuseChunk;
 		sessionReuseChunk = NULL;
-		DEBUG_PRINT("reusing session chunk for 0x%02x\n", high);
+		DEBUG_PRINTF("reusing session chunk for 0x%02x\n", high);
 	}
 	// Allocates memory for a chunk in the session table
 	else {
 		chunk = (struct sessionChunk_t*)malloc(sizeof(struct sessionChunk_t));
-		DEBUG_PRINT("allocated memory for session chunk 0x%02x\n", high);
+		DEBUG_PRINTF("allocated memory for session chunk 0x%02x\n", high);
 		if (chunk == NULL) {
 			fprintf(stderr, "Failed to create session chunk");
 			abort();
@@ -88,13 +88,13 @@ static void releaseSessionChunk(struct sessionChunk_t* chunk) {
 	// Stores empty session chunk for reuse
 	if (sessionReuseChunk == NULL) {
 		sessionReuseChunk = chunk;
-		DEBUG_PRINT("saving session chunk for reuse\n");
+		DEBUG_PRINTF("saving session chunk for reuse\n");
 	}
 	// Frees session chunk if not reusable
 	else {
-		DEBUG_PRINT("releasing chunk memory\n");
+		DEBUG_PRINTF("releasing chunk memory\n");
 		free(chunk);
-		DEBUG_PRINT("released chunk memory\n");
+		DEBUG_PRINTF("released chunk memory\n");
 	}
 }
 
@@ -124,9 +124,9 @@ static void releaseSession(struct session_t* session) {
 
 	// Releases sessions memory
 	connectedSessions--;
-	DEBUG_PRINT("releasing session memory\n");
+	DEBUG_PRINTF("releasing session memory\n");
 	free(session);
-	DEBUG_PRINT("released session memory\n");
+	DEBUG_PRINTF("released session memory\n");
 }
 
 // Adds session to broadcast list to receive data
@@ -141,7 +141,7 @@ static void enqueueSession(struct session_t* session) {
 	session->broadcastPrev = NULL;
 	sessionBroadcastList = session;
 
-	DEBUG_PRINT("added session 0x%02x%02x to broadcast list\n", session->chunk->id, session->id);
+	DEBUG_PRINTF("added session 0x%02x%02x to broadcast list\n", session->chunk->id, session->id);
 }
 
 // Removes session from broadcast list
@@ -159,7 +159,7 @@ static void dequeueSession(struct session_t* session) {
 		session->broadcastNext->broadcastPrev = session->broadcastPrev;
 	}
 
-	DEBUG_PRINT("removed session 0x%02x%02x from broadcast list\n", session->chunk->id, session->id);
+	DEBUG_PRINTF("removed session 0x%02x%02x from broadcast list\n", session->chunk->id, session->id);
 }
 
 
@@ -206,7 +206,7 @@ static struct packet_t* createPacket(struct session_t* session, uint16_t len, ui
 	packet->buf[ATEM_INDEX_SESSION_HIGH] = high;
 	packet->buf[ATEM_INDEX_SESSION_LOW] = low;
 
-	DEBUG_PRINT("allocated memory for packet\n");
+	DEBUG_PRINTF("allocated memory for packet\n");
 
 	return packet;
 }
@@ -281,15 +281,15 @@ static void sendPacket(struct packet_t* packet, bool isRetransmit) {
 
 // Removes packet from global resend queue and releases its memory
 static void releasePacket(struct packet_t* packet) {
-	DEBUG_PRINT("releasing packet 0x%02x%02x for session 0x%02x%02x\n",
+	DEBUG_PRINTF("releasing packet 0x%02x%02x for session 0x%02x%02x\n",
 		packet->buf[ATEM_INDEX_REMOTEID_HIGH], packet->buf[ATEM_INDEX_REMOTEID_LOW],
 		packet->buf[ATEM_INDEX_SESSION_HIGH], packet->buf[ATEM_INDEX_SESSION_LOW]
 	);
 
 	dequeuePacket(packet);
-	DEBUG_PRINT("releasing packet memory\n");
+	DEBUG_PRINTF("releasing packet memory\n");
 	free(packet);
-	DEBUG_PRINT("released packet memory\n");
+	DEBUG_PRINTF("released packet memory\n");
 }
 
 // Removes and releases all packets from a session
@@ -336,7 +336,7 @@ static void resendPacket(struct packet_t* packet) {
 		packet->remainingResends--;
 		dequeuePacket(packet);
 		sendPacket(packet, true);
-		DEBUG_PRINT("resending packet 0x%02x%02x for session 0x%02x%02x\n",
+		DEBUG_PRINTF("resending packet 0x%02x%02x for session 0x%02x%02x\n",
 			packet->buf[ATEM_INDEX_REMOTEID_HIGH], packet->buf[ATEM_INDEX_REMOTEID_LOW],
 			session->chunk->id, session->id
 		);
@@ -359,7 +359,7 @@ static void resendPacket(struct packet_t* packet) {
 			session->handshakeChunk = NULL;
 		}
 
-		DEBUG_PRINT("closing session 0x%02x%02x for not responding\n", session->chunk->id, session->id);
+		DEBUG_PRINTF("closing session 0x%02x%02x for not responding\n", session->chunk->id, session->id);
 	}
 	// Removes and releases session after closing packet resends run out
 	else {
@@ -373,7 +373,7 @@ static void resendPacket(struct packet_t* packet) {
 static void acknowledgeNextPacket(struct session_t* session) {
 	struct packet_t* packet = session->localPacketHead;
 	session->localPacketHead = packet->localNext;
-	DEBUG_PRINT("acknowledged packet 0x%02x%02x for session 0x%02x%02x\n",
+	DEBUG_PRINTF("acknowledged packet 0x%02x%02x for session 0x%02x%02x\n",
 		packet->buf[ATEM_INDEX_REMOTEID_HIGH], packet->buf[ATEM_INDEX_REMOTEID_LOW],
 		packet->buf[ATEM_INDEX_SESSION_HIGH], packet->buf[ATEM_INDEX_SESSION_LOW]
 	);
@@ -396,7 +396,7 @@ static void sendDataPacket(struct session_t* session, uint8_t* commands, uint16_
 	// Sends packet
 	sendPacket(packet, false);
 
-	DEBUG_PRINT("sending data packet\n");
+	DEBUG_PRINTF("sending data packet\n");
 }
 
 // Sends ATEM commands to a proxy session
@@ -446,7 +446,7 @@ static void startHandshake(uint8_t high, uint8_t low, struct sockaddr* sockAddr,
 	}
 	// Resends handshake response if session already exists
 	else if (handshakeChunk->sessions[low]) {
-		DEBUG_PRINT("resending handshake SYNACK for session 0x%02x%02x\n", high, low);
+		DEBUG_PRINTF("resending handshake SYNACK for session 0x%02x%02x\n", high, low);
 		resendPacket(handshakeChunk->sessions[low]->localPacketHead); // should it resend, ignore or send extra?
 		return;
 	}
@@ -527,7 +527,7 @@ static void completeHandshake(uint8_t high, uint8_t low) {
 	enqueueSession(session);
 	dumpAtemData(session);
 
-	DEBUG_PRINT("session handshake completed for 0x%02x%02x\n", high, low);
+	DEBUG_PRINTF("session handshake completed for 0x%02x%02x\n", high, low);
 }
 
 // Initiates closing handshake by client
@@ -580,8 +580,8 @@ static void acknowledgeLocalPacket(struct session_t* session, uint8_t remoteHigh
 
 // Responds to acknowledge request
 static void acknowledgeRemotePacket(struct session_t* session, uint8_t localHigh, uint8_t localLow) {
-	DEBUG_PRINT("received remote id: %d\n", localHigh << 8 | localLow);
-	DEBUG_PRINT("expected ack id: %d\n", session->nextAck);
+	DEBUG_PRINTF("received remote id: %d\n", localHigh << 8 | localLow);
+	DEBUG_PRINTF("expected ack id: %d\n", session->nextAck);
 	if ((localHigh << 8 | localLow) == (session->nextAck)) {
 		session->nextAck++;
 		uint8_t buf[ATEM_LEN_HEADER] = {
@@ -603,7 +603,7 @@ static void acknowledgeRemotePacket(struct session_t* session, uint8_t localHigh
 
 // Processes ATEM packets from client to proxy server
 void processProxyData() {
-	DEBUG_PRINT("started receiving data from proxy socket\n");
+	DEBUG_PRINTF("started receiving data from proxy socket\n");
 
 	// Reads UDP data proxy socket
 	uint8_t buf[ATEM_MAX_PACKET_LEN];
@@ -718,7 +718,7 @@ void resendProxyPackets() {
 
 // Sends ping packets to all connected sessions
 void pingProxySessions() {
-	DEBUG_PRINT("sending pings to connected sessions\n");
+	DEBUG_PRINTF("sending pings to connected sessions\n");
 
 	// Sends ping packets to every connected session
 	if (sessionBroadcastList == NULL) return;
@@ -741,7 +741,7 @@ void pingProxySessions() {
 		// Sends packet
 		sendPacket(packet, false);
 
-		DEBUG_PRINT("sent ping to session 0x%02x%02x\n", session->chunk->id, session->id);
+		DEBUG_PRINTF("sent ping to session 0x%02x%02x\n", session->chunk->id, session->id);
 	}
 
 	// Ends resend packet queue chunk

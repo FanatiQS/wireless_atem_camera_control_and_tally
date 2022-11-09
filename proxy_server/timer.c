@@ -76,7 +76,7 @@ void setTimeout(struct timespec* timer, uint16_t msDelay) {
 
 // Restarts the ping timer, expects it is nextTimer and it just expired
 void pingTimerRestart() {
-	DEBUG_PRINT("restarting ping timer\n");
+	DEBUG_PRINTF("restarting ping timer\n");
 
 	setTimeout(&pingTimer, ATEM_PING_INTERVAL);
 
@@ -90,7 +90,7 @@ void pingTimerRestart() {
 
 // Enables and initializes the ping timer
 void pingTimerEnable() {
-	DEBUG_PRINT("enabling ping timer\n");
+	DEBUG_PRINTF("enabling ping timer\n");
 
 	nextPingTimer = &pingTimer;
 	setTimeout(nextPingTimer, ATEM_PING_INTERVAL);
@@ -102,7 +102,7 @@ void pingTimerEnable() {
 
 // Removes the ping timer when not needed anymore
 void pingTimerDisable() {
-	DEBUG_PRINT("disabling ping timer\n");
+	DEBUG_PRINTF("disabling ping timer\n");
 
 	if (nextTimer == nextPingTimer) {
 		setNextTimerToNearest(nextResendTimer, nextDropTimer);
@@ -114,7 +114,7 @@ void pingTimerDisable() {
 
 // Updates the resend timer pointer when a packet was enqueued to an empty resend queue
 void resendTimerAdd(struct timespec* resendTimer) {
-	DEBUG_PRINT("updating next resend timer after addition\n");
+	DEBUG_PRINTF("updating next resend timer after addition\n");
 
 	nextResendTimer = resendTimer;
 	if (nextTimer == NULL || TIMER_IS_SMALLER(nextResendTimer, nextTimer)) {
@@ -124,7 +124,7 @@ void resendTimerAdd(struct timespec* resendTimer) {
 
 // Updates the resend timer pointer when next packet in resend queue was removed
 void resendTimerRemove(struct timespec* resendTimer) {
-	DEBUG_PRINT("updating next resend timer after removal\n");
+	DEBUG_PRINTF("updating next resend timer after removal\n");
 
 	if (nextTimer == nextResendTimer) {
 		setNextTimerToNearest(nextPingTimer, resendTimer);
@@ -139,7 +139,7 @@ void resendTimerRemove(struct timespec* resendTimer) {
 
 // Restarts relay sockets timeout timer, assumes nextTimer is dropTimer
 void dropTimerRestart() {
-	DEBUG_PRINT("restarting relay drop timer\n");
+	DEBUG_PRINTF("restarting relay drop timer\n");
 
 	setTimeout(nextDropTimer, ATEM_TIMEOUT * 1000);
 
@@ -160,7 +160,7 @@ void dropTimerRestart() {
 
 // Enables drop timer for when relay client is enabled
 void dropTimerEnable() {
-	DEBUG_PRINT("enabling relay drop timer\n");
+	DEBUG_PRINTF("enabling relay drop timer\n");
 
 	nextDropTimer = &dropTimer;
 	setTimeout(nextDropTimer, ATEM_TIMEOUT * 1000);
@@ -171,7 +171,7 @@ void dropTimerEnable() {
 
 // Disables drop timer for when relay client is disabled
 void dropTimerDisable() {
-	DEBUG_PRINT("disabling relay drop timer\n");
+	DEBUG_PRINTF("disabling relay drop timer\n");
 
 	if (nextTimer == nextDropTimer) {
 		setNextTimerToNearest(nextResendTimer, nextPingTimer);
@@ -183,7 +183,7 @@ void dropTimerDisable() {
 
 // Calls the next timer event based on the timer that should just have expired
 void timerEvent() {
-	DEBUG_PRINT("timer expired\n");
+	DEBUG_PRINTF("timer expired\n");
 
 	if (nextTimer == nextPingTimer) {
 		pingProxySessions();
@@ -218,7 +218,7 @@ struct timeval* timeToNextTimerEvent() {
 		}
 
 #ifdef DEBUG
-		DEBUG_PRINT(
+		DEBUG_PRINTF(
 			"next timer event in %.3f seconds\n",
 			(double)tv.tv_sec + (double)tv.tv_usec / 1000000
 		);
@@ -232,11 +232,11 @@ struct timeval* timeToNextTimerEvent() {
 		}
 
 		// Catch up to events that should already have occured
-		DEBUG_PRINT("catching up timer event\n");
+		DEBUG_PRINTF("catching up timer event\n");
 		timerEvent();
 	}
 
 	// Returns NULL if no events are scheduled
-	DEBUG_PRINT("no scheduled timer events\n");
+	DEBUG_PRINTF("no scheduled timer events\n");
 	return NULL;
 }
