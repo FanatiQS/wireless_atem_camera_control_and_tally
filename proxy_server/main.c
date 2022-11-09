@@ -14,20 +14,24 @@ int main(int argc, char** argv) {
 	// Prints usage text for no command line argument
 	if (argc < 2) {
 		printf("Usage: %s <atem-ip-address>\n", argv[0]);
-		exit(EXIT_FAILURE);
+		return EXIT_FAILURE;
 	}
 
 	// Parses string address into an address type
 	const in_addr_t atemAddr = inet_addr(argv[1]);
 	if (atemAddr == (in_addr_t)(-1)) {
 		fprintf(stderr, "Argument was not an IP address\n");
-		exit(EXIT_FAILURE);
+		return EXIT_FAILURE;
 	}
 
 	// Initializes windows networking
 #ifdef _WIN32
 	WSADATA wsaData;
-	WSAStartup(MAKEWORD(2, 2), &wsaData);
+	int wsaInitReturn = WSAStartup(MAKEWORD(2, 2), &wsaData);
+	if (wsaInitReturn) {
+		fprintf(stderr, "Failed to initialize WSA: %d\n", wsaInitReturn);
+		return EXIT_FAILURE;
+	}
 #endif
 
 	// Initializes proxy server and relay client
