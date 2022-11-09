@@ -1,4 +1,4 @@
-#include <stdio.h> // perror, fprintf, stderr
+#include <stdio.h> // printf, perror, fprintf, stderr
 #include <stdlib.h> // abort, exit, EXIT_FAILURE
 #include <stdbool.h> // true
 

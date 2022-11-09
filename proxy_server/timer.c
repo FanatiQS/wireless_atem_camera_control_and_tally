@@ -1,6 +1,6 @@
 #include <stdint.h> // uint16_t
 #include <stdlib.h> // abort
-#include <stdio.h> // perror, fflush, stdout
+#include <stdio.h> // printf, fprintf, stderr, perror, fflush, stdout
 #include <time.h> // timespec
 
 #include "./timer.h"

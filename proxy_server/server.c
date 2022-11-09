@@ -364,6 +364,8 @@ static void resendPacket(struct packet_t* packet) {
 	// Removes and releases session after closing packet resends run out
 	else {
 		printf("Closing session 0x%02x%02x, dropped\n", session->chunk->id, session->id);
+
+		// Releases packet and session memory
 		releasePacket(packet);
 		releaseSession(session);
 	}
@@ -550,7 +552,7 @@ static void closeOpenSession(struct session_t* session) {
 
 	printf("Closed session 0x%02x%02x initiated by client\n", session->chunk->id, session->id);
 
-	// Release session memory
+	// Releases session memory
 	releaseSession(session);
 }
 
@@ -561,6 +563,8 @@ static void closeClosingSession(struct session_t* session) {
 		return;
 	}
 	printf("Closed session 0x%02x%02x, initiated by server\n", session->chunk->id, session->id);
+
+	// Releases packet and session memory
 	releasePacket(session->localPacketHead);
 	releaseSession(session);
 }
