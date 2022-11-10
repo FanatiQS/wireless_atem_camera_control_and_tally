@@ -55,7 +55,7 @@
 #define CC_ATEM_DATA_OFFSET 16
 
 // Buffer to send to ATEM when establishing connection
-uint8_t synBuf[ATEM_LEN_SYN] = {
+static uint8_t synBuf[ATEM_LEN_SYN] = {
 	[ATEM_INDEX_FLAG] = ATEM_FLAG_SYN,
 	[ATEM_INDEX_LEN_LOW] = ATEM_LEN_SYN,
 	[ATEM_INDEX_SESSION_HIGH] = 0x74,
@@ -64,13 +64,13 @@ uint8_t synBuf[ATEM_LEN_SYN] = {
 };
 
 // Buffer to modify and send to ATEM when acknowledging a received packet
-uint8_t ackBuf[ATEM_LEN_ACK] = {
+static uint8_t ackBuf[ATEM_LEN_ACK] = {
 	[ATEM_INDEX_FLAG] = ATEM_FLAG_ACK,
 	[ATEM_INDEX_LEN_LOW] = ATEM_LEN_ACK
 };
 
 // Buffer to modify and send to ATEM to close the connection
-uint8_t closeBuf[ATEM_LEN_SYN] = {
+static uint8_t closeBuf[ATEM_LEN_SYN] = {
 	[ATEM_INDEX_FLAG] = ATEM_FLAG_SYN,
 	[ATEM_INDEX_LEN_LOW] = ATEM_LEN_SYN,
 	[ATEM_INDEX_OPCODE] = ATEM_CONNECTION_CLOSING
