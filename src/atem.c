@@ -1,7 +1,7 @@
 #include "./atem.h"
 
 // Mask to use when filtering out flags
-#define ATEM_MASK_LEN_HIGH 0x07
+#define ATEM_MASK_LEN_HIGH (ATEM_MAX_PACKET_LEN >> 8)
 
 // Atem protocol flags
 #define ATEM_FLAG_ACKREQUEST 0x08
