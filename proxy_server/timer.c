@@ -15,7 +15,7 @@
 
 // Shim timespec_get for MacOS 10.14 and older
 #if defined(__APPLE__) && !defined(TIME_UTC)
-#define timespec_get(ts, base) clock_gettime(CLOCK_MONOTONIC, ts)
+#define timespec_get(ts, base) clock_gettime(CLOCK_REALTIME, ts)
 #define TIME_UTC 0
 #warning Shimming timespec_get with clock_gettime
 #endif
