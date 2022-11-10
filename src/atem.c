@@ -32,7 +32,7 @@
 #define ATEM_LEN_CMDHEADER 8
 
 // Atem remote id range
-#define ATEM_LIMIT_REMOTEID 0x8000
+#define ATEM_LIMIT_REMOTEID 0x7fff
 
 // Byte offset from start of command block to command name
 #define ATEM_CMDNAME_OFFSET 4
@@ -120,7 +120,7 @@ int8_t atem_parse(struct atem_t *atem) {
 			atem->readBuf[ATEM_INDEX_REMOTEID_LOW];
 
 		// Acknowledges this packet if it is next in line
-		if (remoteId == (atem->lastRemoteId + 1) % ATEM_LIMIT_REMOTEID) {
+		if (remoteId == ((atem->lastRemoteId + 1) & ATEM_LIMIT_REMOTEID)) {
 			ackBuf[ATEM_INDEX_ACK_HIGH] = atem->readBuf[ATEM_INDEX_REMOTEID_HIGH];
 			ackBuf[ATEM_INDEX_ACK_LOW] = atem->readBuf[ATEM_INDEX_REMOTEID_LOW];
 			atem->lastRemoteId = remoteId;
