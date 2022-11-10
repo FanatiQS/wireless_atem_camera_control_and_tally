@@ -173,7 +173,8 @@ uint32_t atem_cmd_next(struct atem_t *atem) {
 	const uint16_t index = atem->cmdIndex;
 
 	// Increment start index of command with command length to get start index for next command
-	atem->cmdIndex += (atem->readBuf[index] << 8) | atem->readBuf[index + 1];
+	atem->cmdLen = (atem->readBuf[index] << 8) | atem->readBuf[index + 1];
+	atem->cmdIndex += atem->cmdLen;
 
 	// Sets pointer to command to start of command data
 	atem->cmdBuf = atem->readBuf + index + ATEM_LEN_CMDHEADER;
