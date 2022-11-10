@@ -33,17 +33,17 @@
 
 // Contains incoming and outgoing ATEM socket data
 typedef struct atem_t {
-	uint16_t dest;
-	bool pvwTally;
-	bool pgmTally;
-	uint8_t readBuf[ATEM_MAX_PACKET_LEN];
-	uint16_t readLen;
 	uint8_t *writeBuf;
-	uint16_t writeLen;
 	uint8_t *cmdBuf;
+	uint16_t dest;
+	uint16_t readLen;
+	uint16_t writeLen;
 	uint16_t cmdLen;
 	uint16_t cmdIndex;
 	uint16_t lastRemoteId;
+	uint8_t readBuf[ATEM_MAX_PACKET_LEN];
+	bool pvwTally;
+	bool pgmTally;
 } atem_t;
 
 // Makes functions available in C++
