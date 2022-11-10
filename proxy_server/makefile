@@ -3,8 +3,9 @@ BUILD_DIR = build
 
 FILES_SOURCE = server.c udp.c timer.c cache.c relay.c ../src/atem.c
 FILES_HEADER = server.h udp.h timer.h cache.h relay.h ../src/atem.h atem_extra.h debug.h udp_unix.h udp_win.h
+FILES_ALL = makefile $(BUILD_DIR) $(FILES_SOURCE) $(FILES_HEADER)
 FILES_EXEC = main.c $(FILES_SOURCE)
-FILES_ALL = makefile $(FILES_EXEC) $(FILES_HEADER)
+FILES_EXEC_ALL = main.c $(FILES_ALL)
 
 FLAGS_ERROR = -Weverything -Wno-pedantic -Wno-implicit-int-conversion -Wno-sign-conversion -Wno-missing-prototypes -Wno-unused-parameter -Wno-\#warnings -Wno-cast-align -Wno-padded
 
@@ -36,19 +37,19 @@ clean: clean_unix
 all: release debug
 
 # Compiles release executable for non-windows
-$(NAME_RELEASE): $(FILES_ALL)
+$(NAME_RELEASE): $(FILES_EXEC_ALL)
 	$(COMPILE_RELEASE) -o $@
 
 # Compiles release executable for windows
-$(NAME_RELEASE).exe: $(FILES_ALL)
+$(NAME_RELEASE).exe: $(FILES_EXEC_ALL)
 	$(COMPILE_RELEASE) /Fe:$@
 
 # Compiles debug executable for non-windows
-$(NAME_DEBUG): $(FILES_ALL)
+$(NAME_DEBUG): $(FILES_EXEC_ALL)
 	$(COMPILE_DEBUG) -o $@
 
 # Compiles debug executable for windows
-$(NAME_DEBUG).exe: $(FILES_ALL)
+$(NAME_DEBUG).exe: $(FILES_EXEC_ALL)
 	$(COMPILE_DEBUG) /Fe:$@
 
 # Cleans up non-windows build files
@@ -59,6 +60,10 @@ clean_unix:
 # Cleans up windows build files
 clean_win:
 	del $(NAME_RELEASE).exe $(NAME_DEBUG).exe *.obj ../src/atem.obj
+
+# Creates directory for output if it does not exist
+$(BUILD_DIR):
+	mkdir -p $(BUILD_DIR)
 
 
 
