@@ -29,7 +29,7 @@
 #define ATEM_TIMEOUT 5
 
 // Size of read buffer in an atem_t struct
-#define ATEM_MAX_PACKET_LEN 2048
+#define ATEM_MAX_PACKET_LEN 2047
 
 // Contains incoming and outgoing ATEM socket data
 typedef struct atem_t {
