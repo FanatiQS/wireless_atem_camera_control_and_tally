@@ -14,9 +14,11 @@ FLAGS_DEBUG = -DDEBUG -g -Wall -pedantic
 
 COMPILE_RELEASE = $(CC) $(FILES_EXEC) $(FLAGS_RELEASE) $(CFLAGS)
 COMPILE_DEBUG = $(CC) $(FILES_EXEC) $(FLAGS_DEBUG) $(CFLAGS)
+COMPILE_LIB_CF = $(CC) $(FLAGS_RELEASE) -fvisibility=hidden -c $(CFLAGS)
 
 NAME_RELEASE = $(BUILD_DIR)/proxy_release
 NAME_DEBUG = $(BUILD_DIR)/proxy_debug
+NAME_LIB_CF = $(BUILD_DIR)/atem_server_cf
 
 
 
@@ -30,6 +32,7 @@ clean: clean_win #\
 release: $(NAME_RELEASE)
 debug: $(NAME_DEBUG)
 clean: clean_unix
+all: lib_cf
 #\
 !endif
 
@@ -67,3 +70,18 @@ $(BUILD_DIR):
 
 
 
+# CoreFoundation build alias
+lib_cf: $(NAME_LIB_CF).a
+
+# CoreFoundation build rule
+$(NAME_LIB_CF).a: $(FILES_ALL) bindings/binding_cf.c bindings/binding_cf.h
+	$(COMPILE_LIB_CF) server.c -o $(BUILD_DIR)/server.o
+	$(COMPILE_LIB_CF) udp.c -o $(BUILD_DIR)/udp.o
+	$(COMPILE_LIB_CF) timer.c -o $(BUILD_DIR)/timer.o
+	$(COMPILE_LIB_CF) cache.c -o $(BUILD_DIR)/cache.o
+	$(COMPILE_LIB_CF) relay.c -o $(BUILD_DIR)/relay.o
+	$(COMPILE_LIB_CF) ../src/atem.c -o $(BUILD_DIR)/atem.o
+	$(COMPILE_LIB_CF) bindings/binding_cf.c -o $(BUILD_DIR)/binding_cf.o
+	ar -crs $@ $(BUILD_DIR)/*.o
+	cp bindings/binding_cf.h $*.h
+	$(RM) $(BUILD_DIR)/*.o

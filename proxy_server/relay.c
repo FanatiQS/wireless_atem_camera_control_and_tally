@@ -47,6 +47,8 @@ void relayEnable(const in_addr_t atemAddr) {
 	dropTimerEnable();
 	atem_connection_reset(&atem);
 	sendAtem();
+
+	DEBUG_PRINTF("enabled relay client\n");
 }
 
 // Disconnects from an ATEM switcher
@@ -54,6 +56,8 @@ void relayDisable() {
 	dropTimerDisable();
 	atem_connection_close(&atem);
 	sendAtem();
+
+	DEBUG_PRINTF("disabled relay client\n");
 }
 
 // Relays and caches ATEM commands
