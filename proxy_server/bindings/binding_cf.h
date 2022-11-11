@@ -20,6 +20,6 @@ void atem_relay_enable(const in_addr_t addr);
 /**
  * Disables the relay client and disconnects from the ATEM switcher
  */
-void atem_relay_disable();
+void atem_relay_disable(void);
 
 #endif // BINDING_CF_H
