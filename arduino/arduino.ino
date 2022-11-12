@@ -456,7 +456,6 @@ void setup() {
 	}
 	WiFi.begin();
 	udp.begin((RANDOM_REG32 & 0xefff) + 1);
-	while (wifi_station_get_connect_status() == STATION_CONNECTING) yield();
 
 	// Adds mDNS querying support
 	MDNS.begin(confData.name);
