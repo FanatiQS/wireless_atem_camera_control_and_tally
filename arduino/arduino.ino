@@ -250,51 +250,47 @@ void handleHTTP() {
 		);
 		confServer.client().flush();
 
+		DEBUG_PRINT("Received configuration over HTTP\n");
+
 		// Sets WiFi ssid and psk
 		WiFi.begin(confServer.arg(KEY_SSID), confServer.arg(KEY_PSK));
-#ifdef DEBUG
-		Serial.print("SSID: ");
-		Serial.println(WiFi.SSID());
-		Serial.print("PSK: ");
-		Serial.println(WiFi.psk());
-#endif
+		DEBUG_PRINT("SSID: ");
+		DEBUG_PRINTLN(WiFi.SSID());
+		DEBUG_PRINT("PSK: ");
+		DEBUG_PRINTLN(WiFi.psk());
 
 		// Sets camera destination and IP address of ATEM
 		confData.dest = confServer.arg(KEY_DEST).toInt();
 		confData.atemAddr = IP_FROM_HTTP(confServer, KEY_ATEMADDR);
-#ifdef DEBUG
-		Serial.print("Camera ID: ");
-		Serial.println(confData.dest);
-		Serial.print("ATEM address: ");
-		Serial.println(IPAddress(confData.atemAddr));
-#endif
+		DEBUG_PRINT("Camera ID: ");
+		DEBUG_PRINTLN(confData.dest);
+		DEBUG_PRINT("ATEM address: ");
+		DEBUG_PRINTLN(IPAddress(confData.atemAddr));
 
 		// Sets static IP data
 		confData.useStaticIP = confServer.arg(KEY_USESTATICIP).equals("on");
 		confData.localAddr = IP_FROM_HTTP(confServer, KEY_LOCALIP);
 		confData.gateway = IP_FROM_HTTP(confServer, KEY_GATEWAY);
 		confData.netmask = IP_FROM_HTTP(confServer, KEY_NETMASK);
-#ifdef DEBUG
-		Serial.print("Using static IP: ");
-		Serial.println((confData.useStaticIP) ? "TRUE" : "FALSE");
-		Serial.print("Local address: ");
-		Serial.println(IPAddress(confData.localAddr));
-		Serial.print("Gateway: ");
-		Serial.println(IPAddress(confData.gateway));
-		Serial.print("Subnet mask: ");
-		Serial.println(IPAddress(confData.netmask));
-#endif
+		DEBUG_PRINT("Using static IP: ");
+		DEBUG_PRINTLN((confData.useStaticIP) ? "TRUE" : "FALSE");
+		DEBUG_PRINT("Local address: ");
+		DEBUG_PRINTLN(IPAddress(confData.localAddr));
+		DEBUG_PRINT("Gateway: ");
+		DEBUG_PRINTLN(IPAddress(confData.gateway));
+		DEBUG_PRINT("Subnet mask: ");
+		DEBUG_PRINTLN(IPAddress(confData.netmask));
 
 		// Sets device name used for soft ap and mdns
 		strncpy(confData.name, confServer.arg(KEY_NAME).c_str(), NAME_MAX_LEN);
-#ifdef DEBUG
-		Serial.print("Name: ");
-		Serial.println(confData.name);
-#endif
+		DEBUG_PRINT("Name: ");
+		DEBUG_PRINTLN(confData.name);
 
 		// Writes and commits configuration data to percist for next boot
 		EEPROM.put(0, confData);
 		EEPROM.commit();
+
+		DEBUG_PRINT("Restarting...\n\n");
 
 		// Restarts device to apply new configurations
 		ESP.restart();
@@ -312,8 +308,8 @@ void handleHTTP() {
 
 
 void setup() {
-	Serial.begin(9600);
 #if DEBUG
+	Serial.begin(9600);
 
 	// Prints mac address that is used as psk by soft AP
 	DEBUG_PRINT("Booting...\n");
@@ -422,14 +418,20 @@ void setup() {
 	DEBUG_PRINTLN(confData.dest);
 	DEBUG_PRINT("ATEM address: ");
 	DEBUG_PRINTLN(IPAddress(confData.atemAddr));
-	DEBUG_PRINT("Using static IP: ");
-	DEBUG_PRINTLN((confData.useStaticIP) ? "TRUE" : "FALSE");
-	DEBUG_PRINT("Local address: ");
+#if DEBUG
+	if (confData.useStaticIP) {
+		DEBUG_PRINT("Using static IP:");
+		DEBUG_PRINT("\tLocal address: ");
 	DEBUG_PRINTLN(IPAddress(confData.localAddr));
-	DEBUG_PRINT("Gateway: ");
+		DEBUG_PRINT("\tGateway: ");
 	DEBUG_PRINTLN(IPAddress(confData.gateway));
-	DEBUG_PRINT("Subnet mask: ");
+		DEBUG_PRINT("\tSubnet mask: ");
 	DEBUG_PRINTLN(IPAddress(confData.netmask));
+	}
+	else {
+		DEBUG_PRINT("Using DHCP\n");
+	}
+#endif // DEBUG
 	DEBUG_PRINT("Name: ");
 	DEBUG_PRINTLN(confData.name);
 
@@ -459,7 +461,7 @@ void setup() {
 	MDNS.addService("http", "tcp", 80);
 
 	// Prints that setup has completed
-	DEBUG_PRINT("Setup complete\n");
+	DEBUG_PRINT("Boot complete\n\n");
 }
 
 void loop() {
@@ -616,6 +618,7 @@ void loop() {
 			DEBUG_PRINTLN(WiFi.gatewayIP());
 			DEBUG_PRINT("Subnet mask: ");
 			DEBUG_PRINTLN(WiFi.subnetMask());
+			DEBUG_PRINT("\n");
 		}
 #endif // DEBUG
 	}
