@@ -107,7 +107,7 @@ void printBMDVersion(char* label, BMD_Version version, uint8_t expectedMajor, ui
 
 
 // Max length for name used in soft AP ssid and mdns lookup
-#define NAME_MAX_LEN (16)
+#define NAME_MAX_LEN 16
 
 // Struct for percistent data used at boot
 struct __attribute__((__packed__)) configData_t {
@@ -203,6 +203,7 @@ char* getAtemStatus() {
 			"form{background:#f8f8f8;padding:1em;border-radius:1em}"\
 			"td{padding:0 1em}"\
 			"tr:empty{height:1em}"\
+			"input[maxlength]{width:100%%;margin:2px}"\
 		"</style>"\
 		"<form method=post><table>"\
 	)\
@@ -421,7 +422,7 @@ void setup() {
 	DEBUG_PRINTLN(IPAddress(confData.atemAddr));
 #if DEBUG
 	if (confData.useStaticIP) {
-		DEBUG_PRINT("Using static IP:");
+		DEBUG_PRINT("Using static IP:\n");
 		DEBUG_PRINT("\tLocal address: ");
 	DEBUG_PRINTLN(IPAddress(confData.localAddr));
 		DEBUG_PRINT("\tGateway: ");
