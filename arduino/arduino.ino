@@ -312,7 +312,7 @@ void handleHTTP() {
 
 void setup() {
 #if DEBUG
-	Serial.begin(9600);
+	Serial.begin(115200);
 
 	// Prints mac address that is used as psk by soft AP
 	DEBUG_PRINT("Booting...\n");
