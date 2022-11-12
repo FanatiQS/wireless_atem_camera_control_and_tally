@@ -84,21 +84,21 @@
 #if defined(USE_SDI) && DEBUG
 void printBMDVersion(char* label, BMD_Version version, uint8_t expectedMajor, uint8_t expectedMinor) {
 	// Prints currently used version from the SDI shield
-	Serial.print("SDI shield ");
-	Serial.print(label);
-	Serial.print(" version: ");
-	Serial.print(version.Major);
-	Serial.print('.');
-	Serial.println(version.Minor);
+	DEBUG_PRINT("SDI shield ");
+	DEBUG_PRINT(label);
+	DEBUG_PRINT(" version: ");
+	DEBUG_PRINT(version.Major);
+	DEBUG_PRINT('.');
+	DEBUG_PRINTLN(version.Minor);
 
 	// Prints warning if current version does not match expected version
 	if (expectedMajor != version.Major || expectedMinor != version.Minor) {
-		Serial.print("WARNING: Expected SDI shield ");
-		Serial.print(label);
-		Serial.print(" version: ");
-		Serial.print(expectedMajor);
-		Serial.print(".");
-		Serial.println(expectedMinor);
+		DEBUG_PRINT("WARNING: Expected SDI shield ");
+		DEBUG_PRINT(label);
+		DEBUG_PRINT(" version: ");
+		DEBUG_PRINT(expectedMajor);
+		DEBUG_PRINT(".");
+		DEBUG_PRINTLN(expectedMinor);
 	}
 }
 #else // USE_SDI && DEBUG
