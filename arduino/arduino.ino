@@ -117,7 +117,7 @@ struct __attribute__((__packed__)) configData_t {
 	uint32_t localAddr;
 	uint32_t gateway;
 	uint32_t netmask;
-	char name[NAME_MAX_LEN];
+	char name[NAME_MAX_LEN + 1];
 };
 
 // ATEM communication data that percists between loop cycles
@@ -283,6 +283,7 @@ void handleHTTP() {
 
 		// Sets device name used for soft ap and mdns
 		strncpy(confData.name, confServer.arg(KEY_NAME).c_str(), NAME_MAX_LEN);
+		confData.name[NAME_MAX_LEN] = '\0';
 		DEBUG_PRINT("Name: ");
 		DEBUG_PRINTLN(confData.name);
 
