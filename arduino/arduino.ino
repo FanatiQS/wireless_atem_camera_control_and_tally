@@ -13,6 +13,7 @@
 #include <ESP8266mDNS.h>
 #include <EEPROM.h>
 #include <DNSServer.h>
+#include <ArduinoOTA.h>
 
 #include <lwip/init.h>
 
@@ -457,6 +458,9 @@ void setup() {
 	WiFi.begin();
 	udp.begin((RANDOM_REG32 & 0xefff) + 1);
 
+	// Sets up OTA update server
+	ArduinoOTA.begin();
+
 	// Adds mDNS querying support
 	MDNS.begin(confData.name);
 	MDNS.addService("http", "tcp", 80);
@@ -470,6 +474,7 @@ void loop() {
 	dnsServer.processNextRequest();
 	MDNS.update();
 	confServer.handleClient();
+	ArduinoOTA.handle();
 
 	// Checks if there is available UDP packet to parse
 	if (udp.parsePacket()) {
