@@ -116,8 +116,8 @@ struct __attribute__((__packed__)) configData_t {
 	uint32_t atemAddr;
 	bool useStaticIP;
 	uint32_t localAddr;
-	uint32_t gateway;
 	uint32_t netmask;
+	uint32_t gateway;
 	char name[NAME_MAX_LEN + 1];
 };
 
@@ -144,8 +144,8 @@ DNSServer dnsServer;
 #define KEY_ATEMADDR "atemAddr"
 #define KEY_USESTATICIP "useStaticIP"
 #define KEY_LOCALIP "localIP"
-#define KEY_GATEWAY "gateway"
 #define KEY_NETMASK "netmask"
+#define KEY_GATEWAY "gateway"
 #define KEY_NAME "name"
 
 // Gets the analog voltage level calculated from voltage divider
@@ -226,8 +226,8 @@ char* getAtemStatus() {
 	HTML_SPACER($)\
 	HTML_INPUT_CHECKBOX($, "Use Static IP", conf.useStaticIP, KEY_USESTATICIP)\
 	HTML_INPUT_IP($, "Local IP", (uint32_t)WiFi.localIP(), KEY_LOCALIP)\
-	HTML_INPUT_IP($, "Gateway", (uint32_t)WiFi.gatewayIP(), KEY_GATEWAY)\
 	HTML_INPUT_IP($, "Subnet mask", (uint32_t)WiFi.subnetMask(), KEY_NETMASK)\
+	HTML_INPUT_IP($, "Gateway", (uint32_t)WiFi.gatewayIP(), KEY_GATEWAY)\
 	HTML($, "</table><button style=\"margin:1em 2em\">Submit</button></form>")
 
 // Gets ip address from 4 HTML post fields as a single 32 bit int
@@ -272,16 +272,16 @@ void handleHTTP() {
 		// Sets static IP data
 		confData.useStaticIP = confServer.arg(KEY_USESTATICIP).equals("on");
 		confData.localAddr = IP_FROM_HTTP(confServer, KEY_LOCALIP);
-		confData.gateway = IP_FROM_HTTP(confServer, KEY_GATEWAY);
 		confData.netmask = IP_FROM_HTTP(confServer, KEY_NETMASK);
+		confData.gateway = IP_FROM_HTTP(confServer, KEY_GATEWAY);
 		DEBUG_PRINT("Using static IP: ");
 		DEBUG_PRINTLN((confData.useStaticIP) ? "TRUE" : "FALSE");
 		DEBUG_PRINT("Local address: ");
 		DEBUG_PRINTLN(IPAddress(confData.localAddr));
-		DEBUG_PRINT("Gateway: ");
-		DEBUG_PRINTLN(IPAddress(confData.gateway));
 		DEBUG_PRINT("Subnet mask: ");
 		DEBUG_PRINTLN(IPAddress(confData.netmask));
+		DEBUG_PRINT("Gateway: ");
+		DEBUG_PRINTLN(IPAddress(confData.gateway));
 
 		// Sets device name used for soft ap and mdns
 		strncpy(confData.name, confServer.arg(KEY_NAME).c_str(), NAME_MAX_LEN);
@@ -426,10 +426,10 @@ void setup() {
 		DEBUG_PRINT("Using static IP:\n");
 		DEBUG_PRINT("\tLocal address: ");
 	DEBUG_PRINTLN(IPAddress(confData.localAddr));
-		DEBUG_PRINT("\tGateway: ");
-	DEBUG_PRINTLN(IPAddress(confData.gateway));
 		DEBUG_PRINT("\tSubnet mask: ");
 	DEBUG_PRINTLN(IPAddress(confData.netmask));
+		DEBUG_PRINT("\tGateway: ");
+		DEBUG_PRINTLN(IPAddress(confData.gateway));
 	}
 	else {
 		DEBUG_PRINT("Using DHCP\n");
@@ -620,10 +620,10 @@ void loop() {
 			DEBUG_PRINTLN(WiFi.psk());
 			DEBUG_PRINT("Local address: ");
 			DEBUG_PRINTLN(WiFi.localIP());
-			DEBUG_PRINT("Gateway: ");
-			DEBUG_PRINTLN(WiFi.gatewayIP());
 			DEBUG_PRINT("Subnet mask: ");
 			DEBUG_PRINTLN(WiFi.subnetMask());
+			DEBUG_PRINT("Gateway: ");
+			DEBUG_PRINTLN(WiFi.gatewayIP());
 			DEBUG_PRINT("\n");
 		}
 #endif // DEBUG
