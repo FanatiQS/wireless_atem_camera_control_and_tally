@@ -425,9 +425,9 @@ void setup() {
 	if (confData.useStaticIP) {
 		DEBUG_PRINT("Using static IP:\n");
 		DEBUG_PRINT("\tLocal address: ");
-	DEBUG_PRINTLN(IPAddress(confData.localAddr));
+		DEBUG_PRINTLN(IPAddress(confData.localAddr));
 		DEBUG_PRINT("\tSubnet mask: ");
-	DEBUG_PRINTLN(IPAddress(confData.netmask));
+		DEBUG_PRINTLN(IPAddress(confData.netmask));
 		DEBUG_PRINT("\tGateway: ");
 		DEBUG_PRINTLN(IPAddress(confData.gateway));
 	}
