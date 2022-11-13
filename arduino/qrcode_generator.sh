@@ -1,6 +1,6 @@
 #! /usr/bin/env bash
 if [ $# -lt 2 ]; then
-    echo "Usage $0 <SSID> <PSK> <optional output path>"
+    echo "Usage: $0 <SSID> <PSK> <optional output path>"
     exit 1;
 fi
 CHROME="/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
