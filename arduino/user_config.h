@@ -35,8 +35,8 @@
  *
  * 3.3v microcontroller requires a logic level converter to be able to communicate with the SDI shield.
  */
-// #define PIN_SCL        D2
-// #define PIN_SDA        D1
+// #define PIN_SCL           D2
+// #define PIN_SDA           D1
 
 /**
  * The analog pin use for battery level reading.
@@ -45,7 +45,7 @@
  * The voltage level has to be brought down to a range the microcontroller can handle.
  * This is done using a voltage divider.
  */
-// #define PIN_BATTREAD   A0
+// #define PIN_BATTREAD      A0
 
 // End include guard
 #endif
