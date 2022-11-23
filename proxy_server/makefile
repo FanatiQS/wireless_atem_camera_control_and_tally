@@ -59,7 +59,7 @@ $(NAME_DEBUG).exe: $(FILES_EXEC_ALL)
 # Cleans up non-windows build files
 clean_unix:
 	$(RM) $(NAME_RELEASE) $(NAME_DEBUG) $(NAME_LIB_CF).a $(NAME_LIB_CF).h
-	rm -r $(NAME_DEBUG).dSYM
+	rm -fr $(NAME_DEBUG).dSYM
 
 # Cleans up windows build files
 clean_win:
