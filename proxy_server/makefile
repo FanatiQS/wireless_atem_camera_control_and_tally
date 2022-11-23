@@ -9,8 +9,9 @@ FILES_EXEC_ALL = main.c $(FILES_ALL)
 
 FLAGS_ERROR = -Weverything -Wno-pedantic -Wno-implicit-int-conversion -Wno-sign-conversion -Wno-missing-prototypes -Wno-unused-parameter -Wno-\#warnings -Wno-cast-align -Wno-padded
 
-FLAGS_RELEASE = -O2
-FLAGS_DEBUG = -DDEBUG -g -Wall -pedantic
+FLAGS_DEFAULT = -Wall -pedantic -Wextra
+FLAGS_RELEASE = $(FLAGS_DEFAULT) -O2
+FLAGS_DEBUG = $(FLAGS_DEFAULT) -DDEBUG -g
 
 COMPILE_RELEASE = $(CC) $(FILES_EXEC) $(FLAGS_RELEASE) $(CFLAGS)
 COMPILE_DEBUG = $(CC) $(FILES_EXEC) $(FLAGS_DEBUG) $(CFLAGS)
