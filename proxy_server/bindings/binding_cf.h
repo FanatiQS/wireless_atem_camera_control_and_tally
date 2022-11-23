@@ -7,6 +7,7 @@
 extern "C" {
 #endif // __cplusplus
 
+#include <CoreFoundation/CoreFoundation.h> // CFRunLoopRef
 #include <arpa/inet.h> // in_addr_t, inet_addr
 
 /**
