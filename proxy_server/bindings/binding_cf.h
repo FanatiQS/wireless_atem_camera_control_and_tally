@@ -2,6 +2,11 @@
 #ifndef BINDING_CF_H
 #define BINDING_CF_H
 
+// Makes functions available in C++
+#ifdef __cplusplus
+extern "C" {
+#endif // __cplusplus
+
 #include <arpa/inet.h> // in_addr_t, inet_addr
 
 /**
@@ -21,5 +26,10 @@ void atem_relay_enable(const in_addr_t addr);
  * Disables the relay client and disconnects from the ATEM switcher
  */
 void atem_relay_disable(void);
+
+// Exists extern C block
+#ifdef __cplusplus
+}
+#endif // __cplusplus
 
 #endif // BINDING_CF_H
