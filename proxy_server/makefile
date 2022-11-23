@@ -42,7 +42,7 @@ all: release debug
 
 # Compiles release executable for non-windows
 $(NAME_RELEASE): $(FILES_EXEC_ALL)
-	$(COMPILE_RELEASE) -o $@
+	$(COMPILE_RELEASE) -std=c11 -flto -Ofast -o $@
 
 # Compiles release executable for windows
 $(NAME_RELEASE).exe: $(FILES_EXEC_ALL)
@@ -50,7 +50,7 @@ $(NAME_RELEASE).exe: $(FILES_EXEC_ALL)
 
 # Compiles debug executable for non-windows
 $(NAME_DEBUG): $(FILES_EXEC_ALL)
-	$(COMPILE_DEBUG) -o $@
+	$(COMPILE_DEBUG) -std=c11 -o $@
 
 # Compiles debug executable for windows
 $(NAME_DEBUG).exe: $(FILES_EXEC_ALL)
