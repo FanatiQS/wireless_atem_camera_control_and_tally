@@ -1,6 +1,6 @@
 #include <stdio.h> // fprintf, stderr
 #include <stdlib.h> // abort
-#include <stdbool.h> // false
+#include <stdbool.h> // bool, true, false
 #include <time.h> // time, NULL
 #include <float.h> // double, DBL_MAX
 
@@ -65,24 +65,35 @@ static void addSocketToCFRunLoop(CFRunLoopRef rl, int sock, CFFileDescriptorCall
 void atem_server_init(CFRunLoopRef rl, const in_addr_t addr) {
 	startTime = time(NULL) - CFAbsoluteTimeGetCurrent();
 
-	setupProxy();
-	setupRelay();
+	if (!setupProxy()) {
+		perror("Failed to initialize proxy server");
+		abort();
+	}
+	if (!setupRelay()) {
+		close(sockProxy);
+		perror("Failed to initialize relay client");
+		abort();
+	}
+
+	if (addr && !relayEnable(addr)) {
+		perror("Failed to connect relay client to ATEM address");
+		abort();
+	}
 
 	addSocketToCFRunLoop(rl, sockProxy, &proxyCallback);
 	addSocketToCFRunLoop(rl, sockRelay, &relayCallback);
-
-	if (addr) {
-		relayEnable(addr);
-	}
 
 	timerRef = CFRunLoopTimerCreate(kCFAllocatorDefault, getTimer(), DBL_MAX, 0, 0, &timerCallback, NULL);
 	CFRunLoopAddTimer(rl, timerRef, kCFRunLoopDefaultMode);
 }
 
 // Enables relay client
-void atem_relay_enable(const in_addr_t addr) {
-	relayEnable(addr);
+bool atem_relay_enable(const in_addr_t addr) {
+	if (!relayEnable(addr)) {
+		return false;
+	}
 	CFRunLoopTimerSetNextFireDate(timerRef, getTimer());
+	return true;
 }
 
 // Disables relay client

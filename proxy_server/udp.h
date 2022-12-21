@@ -8,8 +8,5 @@
 #include "./udp_unix.h"
 #endif
 
-int createSocket(void);
-struct sockaddr_in createAddr(const in_addr_t addr);
-
 // Ends include guard
 #endif

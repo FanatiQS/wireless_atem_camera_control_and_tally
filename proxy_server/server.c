@@ -33,13 +33,24 @@ static struct packet_t* resendQueueTail;
 
 
 // Creates and opens proxy socket
-void setupProxy() {
- 	sockProxy = createSocket();
-	const struct sockaddr_in sockAddr = createAddr(INADDR_ANY);
-	if (bind(sockProxy, (const struct sockaddr *)&sockAddr, sizeof(sockAddr))) {
-		perror("Failed to bind socket");
-		abort();
+bool setupProxy() {
+	// Creates a UDP socket for the proxy server
+ 	sockProxy = socket(AF_INET, SOCK_DGRAM, 0);
+	if (sockProxy == -1) {
+		return false;
 	}
+
+	// Binds UDP server socket to listen on port used by ATEM
+	const struct sockaddr_in sockAddr = {
+		.sin_family = AF_INET,
+		.sin_port = htons(ATEM_PORT),
+		.sin_addr.s_addr = INADDR_ANY
+	};
+	if (bind(sockProxy, (const struct sockaddr *)&sockAddr, sizeof(sockAddr))) {
+		return false;
+	}
+
+	return true;
 }
 
 

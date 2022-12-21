@@ -1,7 +1,7 @@
 # The directory everything should be output to
 BUILD_DIR = build
 
-FILES_SOURCE = server.c udp.c timer.c cache.c relay.c ../src/atem.c
+FILES_SOURCE = server.c timer.c cache.c relay.c ../src/atem.c
 FILES_HEADER = server.h udp.h timer.h cache.h relay.h ../src/atem.h atem_extra.h debug.h udp_unix.h udp_win.h
 FILES_ALL = makefile $(BUILD_DIR) $(FILES_SOURCE) $(FILES_HEADER)
 FILES_EXEC = main.c $(FILES_SOURCE)
@@ -77,7 +77,6 @@ lib_cf: $(NAME_LIB_CF).a
 # CoreFoundation build rule
 $(NAME_LIB_CF).a: $(FILES_ALL) bindings/binding_cf.c bindings/binding_cf.h
 	$(COMPILE_LIB_CF) server.c -o $(BUILD_DIR)/server.o
-	$(COMPILE_LIB_CF) udp.c -o $(BUILD_DIR)/udp.o
 	$(COMPILE_LIB_CF) timer.c -o $(BUILD_DIR)/timer.o
 	$(COMPILE_LIB_CF) cache.c -o $(BUILD_DIR)/cache.o
 	$(COMPILE_LIB_CF) relay.c -o $(BUILD_DIR)/relay.o

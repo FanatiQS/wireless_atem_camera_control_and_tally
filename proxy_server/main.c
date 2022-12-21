@@ -35,9 +35,18 @@ int main(int argc, char** argv) {
 #endif
 
 	// Initializes proxy server and relay client
-	setupProxy();
-	setupRelay();
-	relayEnable(atemAddr);
+	if (!setupProxy()) {
+		perror("Failed to initialize proxy server");
+		abort();
+	}
+	if (!setupRelay()) {
+		perror("Failed to initialize relay client");
+		abort();
+	}
+	if (!relayEnable(atemAddr)) {
+		perror("Failed to connect relay client to ATEM address");
+		abort();
+	}
 
 	// Sets up for socket event handler
 	int nfds = sockProxy;

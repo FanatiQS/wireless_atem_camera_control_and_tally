@@ -48,7 +48,7 @@ struct sessionChunk_t {
 };
 
 extern int sockProxy;
-void setupProxy(void);
+bool setupProxy(void);
 void processProxyData(void);
 
 void sendAtemCommands(struct session_t* session, uint8_t* commands, uint16_t len);

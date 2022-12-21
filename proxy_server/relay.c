@@ -2,6 +2,7 @@
 #include <stdio.h> // fprintf, stderr, perror
 #include <stdlib.h> // abort
 #include <string.h> // memcpy
+#include <stdbool.h> // bool, true, false
 
 #include "./relay.h"
 #include "./udp.h"
@@ -30,17 +31,21 @@ static void sendAtem() {
 }
 
 // Sets up socket for ATEM relay connection
-void setupRelay() {
-	sockRelay = createSocket();
+bool setupRelay() {
+	sockRelay = socket(AF_INET, SOCK_DGRAM, 0);
+	return (sockRelay != -1);
 }
 
 // Connects to an ATEM switcher
-void relayEnable(const in_addr_t atemAddr) {
+bool relayEnable(const in_addr_t atemAddr) {
 	// Connects ATEM socket to automatically send data to correct address
-	const struct sockaddr_in sockAddr = createAddr(atemAddr);
+	const struct sockaddr_in sockAddr = {
+		.sin_family = AF_INET,
+		.sin_port = htons(ATEM_PORT),
+		.sin_addr.s_addr = atemAddr
+	};
 	if (connect(sockRelay, (const struct sockaddr *)&sockAddr, sizeof(sockAddr))) {
-		perror("Failed to connect relay socket");
-		abort();
+		return false;
 	}
 
 	// Initializes ATEM connection to switcher
@@ -49,6 +54,8 @@ void relayEnable(const in_addr_t atemAddr) {
 	sendAtem();
 
 	DEBUG_PRINTF("enabled relay client\n");
+
+	return true;
 }
 
 // Disconnects from an ATEM switcher

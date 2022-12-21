@@ -7,6 +7,8 @@
 extern "C" {
 #endif // __cplusplus
 
+#include <stdbool.h> // bool
+
 #include <CoreFoundation/CoreFoundation.h> // CFRunLoopRef
 #include <arpa/inet.h> // in_addr_t, inet_addr
 
@@ -21,7 +23,7 @@ void atem_server_init(CFRunLoopRef rl, const in_addr_t addr);
  * Enables the relay client and connects it to an ATEM switcher at the address of the argument addr
  * @param addr The ip address of the ATEM switcher to connect to
  */
-void atem_relay_enable(const in_addr_t addr);
+bool atem_relay_enable(const in_addr_t addr);
 
 /**
  * Disables the relay client and disconnects from the ATEM switcher
