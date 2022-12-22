@@ -36,6 +36,9 @@ static void _atem_init() {
 		// Prints firmware version
 		"Firmware version: " FIRMWARE_VERSION_STRING "\n"
 
+		// Prints LwIP firmware version
+		"Using LwIP version: " LWIP_VERSION_STRING "\n"
+
 		// Prints debugging flags enabled/disabled state
 		"Tally debug: "
 #if DEBUG_TALLY

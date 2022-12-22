@@ -234,8 +234,6 @@ static void atem_sdi_poll(void* arg) {
 
 // Initializes UDP connection to ATEMs
 struct udp_pcb* atem_udp_init(uint32_t addr, uint8_t dest) {
-	DEBUG_PRINTF("Using LWIP version: " LWIP_VERSION_STRING "\n");
-
 	// Sets camera id to serve
 	DEBUG_PRINTF("Camera ID: %d\n", dest);
 	atem.dest = dest;
