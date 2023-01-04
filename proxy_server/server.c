@@ -351,11 +351,9 @@ static void resendPacket(struct packet_t* packet) {
 			packet->buf[ATEM_INDEX_REMOTEID_HIGH], packet->buf[ATEM_INDEX_REMOTEID_LOW],
 			session->chunk->id, session->id
 		);
-		return;
 	}
-
 	// Requests closing session after resends run out
-	if (!session->closed) {
+	else if (!session->closed) {
 		// Removes and releases all of sessions local packets
 		flushPackets(session);
 		sendClosingPacket(session);
@@ -372,7 +370,7 @@ static void resendPacket(struct packet_t* packet) {
 
 		DEBUG_PRINTF("closing session 0x%02x%02x for not responding\n", session->chunk->id, session->id);
 	}
-	// Removes and releases session after closing packet resends run out
+	// Removes and releases session after closing packets resends run out
 	else {
 		printf("Closing session 0x%02x%02x, dropped\n", session->chunk->id, session->id);
 
@@ -460,7 +458,7 @@ static void startHandshake(uint8_t high, uint8_t low, struct sockaddr* sockAddr,
 	// Resends handshake response if session already exists
 	else if (handshakeChunk->sessions[low]) {
 		DEBUG_PRINTF("resending handshake SYNACK for session 0x%02x%02x\n", high, low);
-		resendPacket(handshakeChunk->sessions[low]->localPacketHead); // should it resend, ignore or send extra?
+		resendPacket(handshakeChunk->sessions[low]->localPacketHead); // @todo should it resend, ignore or send extra?
 		return;
 	}
 
@@ -748,7 +746,7 @@ void pingProxySessions() {
 		// Creates ATEM packet
 		struct packet_t* packet = createPacket(session, ATEM_LEN_HEADER, session->chunk->id, session->id);
 
-		// Adds packet to the session local queue and make it part of a chunk
+		// Adds packet to the sessions local queue and makes it part of a chunk
 		pushPacket(session, packet);
 		packet->lastInChunk = false;
 

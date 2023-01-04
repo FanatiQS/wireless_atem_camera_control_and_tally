@@ -188,7 +188,7 @@ void timerEvent() {
 	if (nextTimer == nextPingTimer) {
 		pingProxySessions();
 	}
-	if (nextTimer == nextResendTimer) {
+	else if (nextTimer == nextResendTimer) {
 		resendProxyPackets();
 	}
 	else if (nextTimer == nextDropTimer) {
