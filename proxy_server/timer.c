@@ -1,7 +1,7 @@
 #include <stdint.h> // uint16_t
 #include <stdlib.h> // abort
 #include <stdio.h> // printf, fprintf, stderr, perror, fflush, stdout
-#include <time.h> // timespec
+#include <time.h> // timespec, timespec_get, TIME_UTC
 
 #include "./timer.h"
 #include "./udp.h"
@@ -14,9 +14,9 @@
 
 
 // Shim timespec_get for MacOS 10.14 and older
-#if defined(__APPLE__) && !defined(TIME_UTC)
-#define timespec_get(ts, base) clock_gettime(CLOCK_REALTIME, ts)
+#ifndef TIME_UTC
 #define TIME_UTC 0
+#define timespec_get(ts, base) clock_gettime(CLOCK_REALTIME, ts)
 #warning Shimming timespec_get with clock_gettime
 #endif
 
