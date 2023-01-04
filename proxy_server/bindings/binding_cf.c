@@ -11,6 +11,9 @@
 #include "../timer.h"
 #include "../relay.h"
 
+// Used to indicate what functions should be accessable when compiled to a library
+#define EXPORT __attribute__ ((visibility ("default")))
+
 
 
 // Timer variables used to dispatch proxy server timers in CF
@@ -62,7 +65,7 @@ static void addSocketToCFRunLoop(CFRunLoopRef rl, int sock, CFFileDescriptorCall
 }
 
 // Initializes proxy server
-void atem_server_init(CFRunLoopRef rl, const in_addr_t addr) {
+EXPORT void atem_server_init(CFRunLoopRef rl, const in_addr_t addr) {
 	startTime = time(NULL) - CFAbsoluteTimeGetCurrent();
 
 	if (!setupProxy()) {
@@ -88,7 +91,7 @@ void atem_server_init(CFRunLoopRef rl, const in_addr_t addr) {
 }
 
 // Enables relay client
-bool atem_relay_enable(const in_addr_t addr) {
+EXPORT bool atem_relay_enable(const in_addr_t addr) {
 	if (!relayEnable(addr)) {
 		return false;
 	}
@@ -97,7 +100,7 @@ bool atem_relay_enable(const in_addr_t addr) {
 }
 
 // Disables relay client
-void atem_relay_disable() {
+EXPORT void atem_relay_disable() {
 	relayDisable();
 	CFRunLoopTimerSetNextFireDate(timerRef, getTimer());
 }

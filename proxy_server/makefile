@@ -76,12 +76,13 @@ lib_cf: $(NAME_LIB_CF).a
 
 # CoreFoundation build rule
 $(NAME_LIB_CF).a: $(FILES_ALL) bindings/binding_cf.c bindings/binding_cf.h
+	$(COMPILE_LIB_CF) bindings/binding_cf.c -o $(BUILD_DIR)/binding_cf.o
 	$(COMPILE_LIB_CF) server.c -o $(BUILD_DIR)/server.o
 	$(COMPILE_LIB_CF) timer.c -o $(BUILD_DIR)/timer.o
 	$(COMPILE_LIB_CF) cache.c -o $(BUILD_DIR)/cache.o
 	$(COMPILE_LIB_CF) relay.c -o $(BUILD_DIR)/relay.o
 	$(COMPILE_LIB_CF) ../src/atem.c -o $(BUILD_DIR)/atem.o
-	$(COMPILE_LIB_CF) bindings/binding_cf.c -o $(BUILD_DIR)/binding_cf.o
-	ar -crs $@ $(BUILD_DIR)/*.o
+	ld -r $(BUILD_DIR)/*.o -o $(BUILD_DIR)/stripped.o
+	ar -crs $@ $(BUILD_DIR)/stripped.o
 	cp bindings/binding_cf.h $*.h
 	$(RM) $(BUILD_DIR)/*.o
