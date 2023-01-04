@@ -14,6 +14,9 @@
 // Used to indicate what functions should be accessable when compiled to a library
 #define EXPORT __attribute__ ((visibility ("default")))
 
+// Prevents compiler warnnings about unused arguments
+#define UNUSED(arg) (void)arg
+
 
 
 // Timer variables used to dispatch proxy server timers in CF
@@ -29,12 +32,16 @@ static double getTimer() {
 
 // Callback function to process timer event from CF
 static void timerCallback(CFRunLoopTimerRef timer, void* info) {
+	UNUSED(timer);
+	UNUSED(info);
 	timerEvent();
 	CFRunLoopTimerSetNextFireDate(timerRef, getTimer());
 }
 
 // Callback function to process proxy server socket data dispatched from CF
 static void proxyCallback(CFFileDescriptorRef fdRef, CFOptionFlags callBackTypes, void* info) {
+	UNUSED(callBackTypes);
+	UNUSED(info);
 	processProxyData();
 	CFFileDescriptorEnableCallBacks(fdRef, kCFFileDescriptorReadCallBack);
 	CFRunLoopTimerSetNextFireDate(timerRef, getTimer());
@@ -42,6 +49,8 @@ static void proxyCallback(CFFileDescriptorRef fdRef, CFOptionFlags callBackTypes
 
 // Callback function to process relay client socket data dispatched from CF
 static void relayCallback(CFFileDescriptorRef fdRef, CFOptionFlags callBackTypes, void* info) {
+	UNUSED(callBackTypes);
+	UNUSED(info);
 	processProxyData();
 	CFFileDescriptorEnableCallBacks(fdRef, kCFFileDescriptorReadCallBack);
 	CFRunLoopTimerSetNextFireDate(timerRef, getTimer());
