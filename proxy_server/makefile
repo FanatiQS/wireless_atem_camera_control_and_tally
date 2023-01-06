@@ -79,8 +79,8 @@ $(NAME_LIB_CF).a: $(FILES_ALL) bindings/binding_cf.c $(NAME_LIB_CF).h
 	for f in bindings/binding_cf.c $(FILES_SOURCE); do\
 		$(CC) $(FLAGS_DEFAULT_UNIX) $(FLAGS_RELEASE) -Ofast -c $${f} -o $(BUILD_DIR)/`basename $${f} .c`.o $(CFLAGS);\
 	done
-	ld -r $(BUILD_DIR)/*.o -o $(BUILD_DIR)/stripped.o
-	ar -crs $@ $(BUILD_DIR)/stripped.o
+	ld -r $(BUILD_DIR)/*.o -o $(BUILD_DIR)/linked.o
+	ar -crs $@ $(BUILD_DIR)/linked.o
 	$(RM) $(BUILD_DIR)/*.o
 
 # CoreFoundation copy header
