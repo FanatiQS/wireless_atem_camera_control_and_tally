@@ -1,9 +1,10 @@
-# The directory everything should be output to
+# The directory used for temporary files and where everything should be output to
 BUILD_DIR = build
+OUT_DIR = $(BUILD_DIR)
 
-NAME_RELEASE = $(BUILD_DIR)/proxy_release
-NAME_DEBUG = $(BUILD_DIR)/proxy_debug
-NAME_LIB_CF = $(BUILD_DIR)/atem_server_cf
+NAME_RELEASE = $(OUT_DIR)/proxy_release
+NAME_DEBUG = $(OUT_DIR)/proxy_debug
+NAME_LIB_CF = $(OUT_DIR)/atem_server_cf
 
 # Windows rules for NMAKE (works since nmake doesn't see line continuation from back slash)\
 !ifndef 0 #\
@@ -42,14 +43,14 @@ all: release debug
 
 # Creates directory for output if it does not exist
 $(BUILD_DIR):
-	mkdir -p $(BUILD_DIR)
+	mkdir -p $@
 
 # Compiles release executable for non-windows
 $(NAME_RELEASE): $(FILES_EXEC_ALL)
 	$(CC) $(FILES_EXEC) $(FLAGS_DEFAULT_UNIX) $(FLAGS_RELEASE) -flto -Ofast $(CFLAGS)
 
 # Compiles release executable for windows
-$(NAME_RELEASE).exe: $(FILES_EXEC_ALL)
+$(NAME_RELEASE).exe: $(FILES_EXEC_ALL) $(BUILD_DIR)
 	$(CC) $(FILES_EXEC) $(FLAGS_DEFAULT_WIN) $(FLAGS_RELEASE) -GL -Gw $(CFLAGS)
 
 # Compiles debug executable for non-windows
@@ -57,7 +58,7 @@ $(NAME_DEBUG): $(FILES_EXEC_ALL)
 	$(CC) $(FILES_EXEC) $(FLAGS_DEFAULT_UNIX) $(FLAGS_DEBUG) $(CFLAGS)
 
 # Compiles debug executable for windows
-$(NAME_DEBUG).exe: $(FILES_EXEC_ALL)
+$(NAME_DEBUG).exe: $(FILES_EXEC_ALL) $(BUILD_DIR)
 	$(CC) $(FILES_EXEC) $(FLAGS_DEFAULT_WIN) $(FLAGS_DEBUG) $(CFLAGS)
 
 # Cleans up non-windows build files
@@ -75,7 +76,7 @@ clean_win:
 lib_cf: $(NAME_LIB_CF).a
 
 # CoreFoundation build static library
-$(NAME_LIB_CF).a: $(FILES_ALL) bindings/binding_cf.c $(NAME_LIB_CF).h
+$(NAME_LIB_CF).a: $(FILES_ALL) bindings/binding_cf.c $(NAME_LIB_CF).h $(BUILD_DIR)
 	for f in bindings/binding_cf.c $(FILES_SOURCE); do\
 		$(CC) $(FLAGS_DEFAULT_UNIX) $(FLAGS_RELEASE) -Ofast -c $${f} -o $(BUILD_DIR)/`basename $${f} .c`.o $(CFLAGS);\
 	done
