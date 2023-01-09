@@ -91,7 +91,7 @@ Since the SDI shield only supports a maximum of 12v, it should NOT be powered by
 * Add the logic level shifter between the Wemos D1 Minis I2C pins and the SDI shield.
 * The default pins used are D1 for SDA and D2 for SCL. This is swiched around compared to what is normally documented for the Wemos D1 Mini to get the rotation of the board correct.
 * If they are powered from separate sources, they might need a shared ground to work correctly.
-* A word of warning. If the DC shield is connected to the Wemos D1 Mini when plugging in power over USB for firmware update, it might fry both boards and maybe even the computer if you are really unlucky.
+* **A word of warning**. If the DC shield is connected to the Wemos D1 Mini when plugging in power over USB for firmware update, it might fry both boards and maybe even the computer if you are really unlucky.
 The way I have solved it is to scrape off the traces from the Wemos D1 Mini between the USB port and the rest of the board to only allow power from the DC shield and not USB.
 
 #### Prepare firmware
