@@ -99,11 +99,11 @@ Download and install BMDSDIControl library from blackmagics website (instruction
 
 Fix a compatibility bug in the library by changing line 166 of the file `BMDSDICameraControl.cpp` from
 ```cpp
-		const uint8_t kParamLength     = min(strlen(string), kMaxStringLength);
+const uint8_t kParamLength     = min(strlen(string), kMaxStringLength);
 ```
 to
 ```cpp
-		const uint8_t kParamLength     = _min(strlen(string), kMaxStringLength);
+const uint8_t kParamLength     = _min(strlen(string), kMaxStringLength);
 
 ```
 
@@ -186,21 +186,17 @@ Install from your package manager
 
 Everything can be installed with `xcode-select --install`.
 
-Both nmake and the MSVC compiler are installed with Visual Studio C++.
-
 #### Building
 * Open a terminal window
 * Download this repository if not already done, either manually or from the command line
 ```sh
 git clone https://github.com/FanatiQS/wireless_atem_camera_control.git
 ```
-* Navigate to `proxy_server` directory
+* Navigate to `proxy_server` directory in the downloaded repository and run the build toolchain
 ```sh
 cd wireless_atem_camera_control/proxy_server
-```
-* Build the executable
-```sh
 make
+cd build
 ```
 * Run it with `./server` followed by the IP address of the ATEM switcher delimited by a space. For example:
 ```sh
@@ -213,16 +209,16 @@ make
 * nmake
 * MSVC compiler
 
+Both nmake and the MSVC compiler are installed with Visual Studio C++.
+
 #### Building
-* Download and extract this repository from github if not already done
+* Download and extract this repository if not already done
 * Locate and run the `Developer Command Prompt for VS XXXX` file where `XXXX` is the release year for the version of Visual Studio installed
-* Navigare to the `proxy_server` directory in the downloaded repository
+* Navigare to the `proxy_server` directory in the downloaded repository and run the build toolchain
 ```sh
-cd path/to/wireless_atem_camera_control/proxy_server
-```
-* Build the executable
-```sh
+cd wireless_atem_camera_control/proxy_server
 nmake
+cd build
 ```
 * Run it with `server.exe` followed by the IP address of the ATEM switcher delimited by a space. For example:
 ```sh
