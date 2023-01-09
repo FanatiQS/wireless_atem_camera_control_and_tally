@@ -200,7 +200,7 @@ cd build
 ```
 * Run it with `./server` followed by the IP address of the ATEM switcher delimited by a space. For example:
 ```sh
-./server 192.168.1.240
+./server.exe 192.168.1.240
 ```
 
 ### Windows
