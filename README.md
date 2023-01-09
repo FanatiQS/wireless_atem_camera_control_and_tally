@@ -258,4 +258,4 @@ Feel free to test it out, but please get in touch before using it in a productio
 You can find my contact information in the [contact section](#contact).
 
 ## Contact
-You can reach me at `fanatiqs@me.com`.
+You can reach me at <a href = "mailto: fanatiqs@me.com">fanatiqs@me.com</a>.
