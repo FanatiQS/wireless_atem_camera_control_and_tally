@@ -12,13 +12,17 @@
 #endif // ESP8266
 
 #include "../src/atem.h" // struct atem_t atem_connection_reset, atem_parse, ATEM_CONNECTION_OK, ATEM_CONNECTION_CLOSING, ATEM_CONNECTION_REJECTED, ATEM_TIMEOUT, ATEM_MAX_PACKET_LEN, ATEM_PORT, atem_cmd_available, atem_cmd_next, ATEM_CMDNAME_VERSION, ATEM_CMDNAME_TALLY, ATEM_CMDNAME_CAMERACONTROL, atem_protocol_majorj, atem_protocol_minor
-#include "./user_config.h" // DEBUG_TALLY, DEBUG_CC
+#include "./user_config.h" // DEBUG_TALLY, DEBUG_CC, PIN_CONN, PIN_PGM, PIN_PVW, PIN_SCL, PIN_SDA
 #include "./led.h" // LED_TALLY, LED_CONN
 #include "./sdi.h" // SDI_ENABLED, sdi_write_tally, sdi_write_cc, sdi_connect
 #include "./debug.h" // DEBUG_PRINTF
 #include "./udp.h"
 
 
+
+// Wraps argument into a string
+#define _WRAP(arg) #arg
+#define WRAP(arg) _WRAP(arg)
 
 // Number of milliseconds before switcher kills the connection for no acknowledge sent
 #define ATEM_TIMEOUT_MS (ATEM_TIMEOUT * 1000)
@@ -235,7 +239,7 @@ static void atem_sdi_poll(void* arg) {
 // Initializes UDP connection to ATEMs
 struct udp_pcb* atem_udp_init(uint32_t addr, uint8_t dest) {
 	// Sets camera id to serve
-	DEBUG_PRINTF("Camera ID: %d\n", dest);
+	DEBUG_PRINTF("Filtering for camera ID: %d\n", dest);
 	atem.dest = dest;
 
 	// Sets initial ATEM connection state
@@ -264,13 +268,30 @@ struct udp_pcb* atem_udp_init(uint32_t addr, uint8_t dest) {
 	LED_CONN(false);
 	LED_INIT();
 
-	// Prints SDI I2C pin assignments or disabled
+	// Prints pin assignments
+	DEBUG_PRINTF(
+#ifdef PIN_PGM
+		"Tally PGM pin: " WRAP(PIN_PGM) "\n"
+#else // PIN_PGM
+		"Tally PGM: disabled\n"
+#endif //PIN_PGM
+#ifdef PIN_PVW
+		"Tally PVW pin: " WRAP(PIN_PVW) "\n"
+#else // PIN_PVW
+		"Tally PVW: disabled\n"
+#endif // PIN_PVW
+#ifdef WRAP(PIN_CONN)
+		"CONN pin: " WRAP(PIN_CONN) "\n"
+#else // PIN_CONN
+		"CONN: disabled\n"
+#endif // PIN_CONN
 #ifdef SDI_ENABLED
-	DEBUG_PRINTF("SDI shield I2C SCL pin: %d\n", PIN_SCL);
-	DEBUG_PRINTF("SDI shield I2C SDA pin: %d\n", PIN_SDA);
+		"SDI shield I2C SCL pin: " WRAP(PIN_SCL) "\n"
+		"SDI shield I2C SDA pin: " WRAP(PIN_SDA) "\n"
 #else // SDI_ENABLED
-	DEBUG_PRINTF("SDI shield: disabled\n");
+		"SDI shield: disabled\n"
 #endif // SDI_ENABLED
+	);
 
 	// Initializes ATEM struct for handshake
 	atem_connection_reset(&atem);
