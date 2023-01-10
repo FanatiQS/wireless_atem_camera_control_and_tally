@@ -5,6 +5,7 @@
 #include <float.h> // double, DBL_MAX
 
 #include <CoreFoundation/CoreFoundation.h>
+#include <unistd.h> // close
 
 #include "../udp.h"
 #include "../server.h"
