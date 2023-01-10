@@ -79,7 +79,10 @@ static void _atem_init() {
 #if DEBUG
 	// Gets WiFi station SSID and PSK for debug printing
 	struct station_config stationConfig;
-	wifi_station_get_config(&stationConfig);
+	if (!wifi_station_get_config(&stationConfig)) {
+		DEBUG_PRINTF("Failed to get Station configuration\n");
+		return;
+	}
 	DEBUG_PRINTF(
 		"Station SSID: \"%.*s\"\n"
 		"Station PSK \"%.*s\"\n",
@@ -95,7 +98,10 @@ static void _atem_init() {
 	}
 
 	// Reads configuration from non-volotile flash memory
-	spi_flash_read(CONFIG_START, (uint32_t*)&conf, sizeof(conf));
+	if (spi_flash_read(CONFIG_START, (uint32_t*)&conf, sizeof(conf)) != SPI_FLASH_RESULT_OK) {
+		DEBUG_PRINTF("Failed to read device configuration\n");
+		return;
+	}
 #endif // ESP8266
 
 	// @todo
