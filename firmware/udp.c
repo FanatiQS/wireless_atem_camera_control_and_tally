@@ -263,11 +263,6 @@ struct udp_pcb* atem_udp_init(uint32_t addr, uint8_t dest) {
 		return NULL;
 	}
 
-	// Starts all status LEDs off
-	LED_TALLY(false, false);
-	LED_CONN(false);
-	LED_INIT();
-
 	// Prints pin assignments
 	DEBUG_PRINTF(
 #ifdef PIN_PGM
@@ -292,6 +287,19 @@ struct udp_pcb* atem_udp_init(uint32_t addr, uint8_t dest) {
 		"SDI shield: disabled\n"
 #endif // SDI_ENABLED
 	);
+
+	// Starts all status LEDs off
+#ifdef PIN_CONN
+	LED_INIT(PIN_CONN);
+#endif // PIN_CONN
+#ifdef PIN_PGM
+	LED_INIT(PIN_PGM);
+#endif // PIN_PGM
+#ifdef PIN_PVW
+	LED_INIT(PIN_PVW);
+#endif // PIN_PVW
+	LED_TALLY(false, false);
+	LED_CONN(false);
 
 	// Initializes ATEM struct for handshake
 	atem_connection_reset(&atem);

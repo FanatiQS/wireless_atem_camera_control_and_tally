@@ -9,13 +9,12 @@
 // ESP8266
 #ifdef ESP8266
 
-// Gets a pointer to the registry address
-#define GET_REG_ADDR(addr) *((volatile uint32_t *)(0x60000000+(addr)))
+#include <eagle_soc.h> // GPIO_REG_WRITE, GPIO_PIN0_ADDRESS, GPIO_OUT_W1TS_ADDRESS, GPIO_OUT_W1TC_ADDRESS
 
 // Directly modifies register addresses
-#define GPIO_INIT(mask) (GET_REG_ADDR(0x310) = mask)
-#define GPIO_SET(mask) (GET_REG_ADDR(0x304) = mask)
-#define GPIO_CLR(mask) (GET_REG_ADDR(0x308) = mask)
+#define LED_INIT(pin) GPIO_REG_WRITE(GPIO_PIN0_ADDRESS + pin * 4, 0)
+#define GPIO_SET(mask) GPIO_REG_WRITE(GPIO_OUT_W1TS_ADDRESS, mask)
+#define GPIO_CLR(mask) GPIO_REG_WRITE(GPIO_OUT_W1TC_ADDRESS, mask)
 
 #else // ESP8266
 
@@ -24,13 +23,6 @@
 #endif // ESP8266
 
 
-
-// Gets CONN pin GPIO mask
-#ifdef PIN_CONN
-#define CONN(state) (state<<PIN_CONN)
-#else // PIN_CONN
-#define CONN(state) 0
-#endif // PIN_CONN
 
 // Gets PGM pin GPIO mask
 #ifdef PIN_PGM
@@ -48,14 +40,9 @@
 
 
 
-// Initializes all GPIO LEDs
-#ifndef LED_INIT
-#define LED_INIT() GPIO_INIT(CONN(1) | PGM(1) | PVW(1))
-#endif // LED_INIT
-
 // Enables and disables tally LEDs
 #ifndef LED_TALLY
-#if (defined(PIN_PGM) || defined(PIN_PVW))
+#if defined(PIN_PGM) || defined(PIN_PVW)
 #define LED_TALLY(pgm, pvw) do {\
 		GPIO_SET(PGM(pgm) | PVW(pvw));\
 		GPIO_CLR(PGM(!pgm) | PVW(!pvw));\
@@ -68,7 +55,7 @@
 // Enables or disables connection LED
 #ifndef LED_CONN
 #ifdef PIN_CONN
-#define LED_CONN(state) (state) ? (GPIO_CLR(1 << PIN_CONN)) : GPIO_SET(1 << PIN_CONN)
+#define LED_CONN(state) if (state) (GPIO_CLR(1 << PIN_CONN)); else GPIO_SET(1 << PIN_CONN)
 #else // PIN_CONN
 #define LED_CONN(state)
 #endif // PIN_CONN

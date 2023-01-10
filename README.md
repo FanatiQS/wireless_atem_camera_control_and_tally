@@ -112,6 +112,10 @@ Enable the lines `PIN_SCL` and `PIN_SDA` in `arduino/user_config.h` and set them
 ### Tally and status LEDs (optional)
 Tally and status LEDs can be enabled or disabled individually.
 
+#### Valid GPIO pins
+On the ESP8266, any of the 16 pins between GPIO0 and GPIO15 work.
+GPIO16 (D0 on Wemos D1 Mini) is technically not a GPIO pin and will not work for tally or status LEDs.
+
 #### Pin definitions
 Here are the pins available for triggering LED.
 
@@ -128,7 +132,11 @@ This pin is ON when the device has an active connection to the ATEM switcher.
 One LED with and appropriately sized resistor for each tally/status (red and green LEDs should work with a 100 Ohm resistor on a Wemos D1 Mini).
 
 #### Building
-Attach each LED to a GPIO pin and GND with the resistor in between the LEDs cathode and the microcontrollers GPIO pin.
+Attach the resistors to the LEDs.
+
+Tally LEDs are connected with the anodes to ground and the cathodes resistors to GPIO pins.
+
+Status LEDs are connected the other way around with the cathodes resistors connected to 3.3v and the anodes connected to GPIO pins.
 
 #### Prepare firmware
 Set `PIN_PGM`, `PIN_PVW` and/or `PIN_CONN` in `arduino/user_config.h` to the GPIO pin the LED is attached to.
