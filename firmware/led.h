@@ -9,32 +9,13 @@
 // ESP8266
 #ifdef ESP8266
 
-#include <gpio.h> // gpio_output_set, GPIO_OUTPUT_SET
+// Gets a pointer to the registry address
+#define GET_REG_ADDR(addr) *((volatile uint32_t *)(0x60000000+(addr)))
 
-// @todo
-#define GPIO_SET(pin, state) GPIO_OUTPUT_SET(pin, state)
-
-// Gets PGM pin GPIO mask
-#ifdef PIN_PGM
-#define _PGM(state) (state<<PIN_PGM)
-#else // PIN_PGM
-#define _PGM(state) 0
-#endif // PIN_PGM
-
-// Gets PVW pin GPIO mask
-#ifdef PIN_PVW
-#define _PVW(state) (state<<PIN_PVW)
-#else // PIN_PVW
-#define _PVW(state) 0
-#endif // PIN_PVW
-
-// Enables and disables tally LEDs
-#if defined(PIN_PGM) || defined(PIN_PVW)
-#define _LED_SET(high, low) gpio_output_set(high, low, high | low, 0);
-#define LED_TALLY(pgm, pvw) _LED_SET(_PGM(!pgm) | _PVW(!pvw), _PGM(pgm) | _PVW(pvw))
-#else // PIN_PGM PIN_PVW
-#define LED_TALLY(pgm, pvw)
-#endif // PIN_PGM PIN_PVW
+// Directly modifies register addresses
+#define GPIO_INIT(mask) (GET_REG_ADDR(0x310) = mask)
+#define GPIO_SET(mask) (GET_REG_ADDR(0x304) = mask)
+#define GPIO_CLR(mask) (GET_REG_ADDR(0x308) = mask)
 
 #else // ESP8266
 
@@ -44,10 +25,48 @@
 
 
 
+// Gets CONN pin GPIO mask
+#ifdef PIN_CONN
+#define CONN(state) (state<<PIN_CONN)
+#else // PIN_CONN
+#define CONN(state) 0
+#endif // PIN_CONN
+
+// Gets PGM pin GPIO mask
+#ifdef PIN_PGM
+#define PGM(state) (state<<PIN_PGM)
+#else // PIN_PGM
+#define PGM(state) 0
+#endif // PIN_PGM
+
+// Gets PVW pin GPIO mask
+#ifdef PIN_PVW
+#define PVW(state) (state<<PIN_PVW)
+#else // PIN_PVW
+#define PVW(state) 0
+#endif // PIN_PVW
+
+
+
+// Initializes all GPIO LEDs
+#define LED_INIT() GPIO_INIT(CONN(1) | PGM(1) | PVW(1))
+
+// Enables and disables tally LEDs
+#ifndef LED_TALLY
+#if (defined(PIN_PGM) || defined(PIN_PVW))
+#define LED_TALLY(pgm, pvw) do {\
+		GPIO_SET(PGM(pgm) | PVW(pvw));\
+		GPIO_CLR(PGM(!pgm) | PVW(!pvw));\
+	} while (0)
+#else // PIN_PGM || PIN_PVW
+#define LED_TALLY(pgm, pvw)
+#endif // PIN_PGM || PIN_PVW
+#endif // LED_TALLY
+
 // Enables or disables connection LED
 #ifndef LED_CONN
 #ifdef PIN_CONN
-#define LED_CONN(state) GPIO_SET(PIN_CONN, !state)
+#define LED_CONN(state) (state) ? (GPIO_CLR(1 << PIN_CONN)) : GPIO_SET(1 << PIN_CONN)
 #else // PIN_CONN
 #define LED_CONN(state)
 #endif // PIN_CONN

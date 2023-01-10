@@ -262,6 +262,7 @@ struct udp_pcb* atem_udp_init(uint32_t addr, uint8_t dest) {
 	// Starts all status LEDs off
 	LED_TALLY(false, false);
 	LED_CONN(false);
+	LED_INIT();
 
 	// Prints SDI I2C pin assignments or disabled
 #ifdef SDI_ENABLED
