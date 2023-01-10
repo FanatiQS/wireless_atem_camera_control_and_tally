@@ -49,7 +49,9 @@
 
 
 // Initializes all GPIO LEDs
+#ifndef LED_INIT
 #define LED_INIT() GPIO_INIT(CONN(1) | PGM(1) | PVW(1))
+#endif // LED_INIT
 
 // Enables and disables tally LEDs
 #ifndef LED_TALLY
