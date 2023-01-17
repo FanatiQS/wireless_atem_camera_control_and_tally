@@ -122,14 +122,13 @@ Normally, it is only [resent](#resend-flag-0x20) a single time if it is not resp
 This opcode is a response to a [closing request](#closing-opcode-0x04), informing the other party that the request was received and that the connection has been shut down.
 
 ## Opening handshake
-
 When connecting to an ATEM switcher, it all starts with an opening handshake.
 The ATEM protocol handshake is a 3-way handshake, just like a [TCP handshake](https://developer.mozilla.org/en-US/docs/Glossary/TCP_handshake), consisting of a SYN packet, a SYNACK packet and an ACK packet.
 
 The first packet in the handshake, the [SYN packet](#syn-flag-0x10), is sent by the client with the [opcode](#opcode) set to indicate it wants to [open](#opening-opcode-0x01) a new session.
 It uses a randomly generated [client assigned session id](#session-id) that should be used for all packets during the opening handshake.
 The ATEM server responds to that request with a SYNACK packet (also has the [SYN flag](#syn-flag-0x10) set like the SYN packet) where the [opcode](#opcode) either indicates that the connection was a [success](#successful-opcode-0x02) or that it was [rejected](rejected-opcode-0x03).
-In the case that the client does not receive a response in a timely manner, it should [resend](#retransmit-flag-0x20) the packet, normally a maximum of 10 times before [closing the session](#closing handshake).
+In the case that the client does not receive a response in a timely manner, it should [resend](#retransmit-flag-0x20) the packet, normally a maximum of 10 times before [closing the session](#closing-handshake).
 If a handshake is rejected, it is not going to receive any more data and does not require sending anything in response.
 A successful handshake on the other hand has to be responded to with an ACK packet to complete the 3-way handshake.
 It is also here, in the success response, we get the [server assigned session id](#session-id).
@@ -167,7 +166,6 @@ Client: | 80 0c 74 40 00 00 00 00 00 00 00 00 |
 ```
 
 ## Closing handshake
-
 A closing handshake starts when either the server or the client sends a [SYN packet](#syn-flag-0x10) with the [opcode](#opcode) set to [closing](#closing-opcode-0x04).
 When the other side receives the closing request, it needs to respond to it with a [SYN packet](#syn-flag-0x10) that has the [opcode](#opcode) set to [closed](#closed-opcode-0x05).
 Only after receiving either of these [opcodes](#opcodes) should the session be considered terminated.
