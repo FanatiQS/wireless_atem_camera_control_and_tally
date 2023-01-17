@@ -138,6 +138,8 @@ Tally LEDs are connected with the anodes to ground and the cathodes resistors to
 
 Status LEDs are connected the other way around with the cathodes resistors connected to 3.3v and the anodes connected to GPIO pins.
 
+A power LED can be attached with its anode to ground and the cathodes resistor to 3.3v.
+
 #### Prepare firmware
 Set `PIN_PGM`, `PIN_PVW` and/or `PIN_CONN` in `arduino/user_config.h` to the GPIO pin the LED is attached to.
 To disable one of them, either remove the line or comment it out.
