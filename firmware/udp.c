@@ -212,7 +212,13 @@ static void atem_netif_poll(void* arg) {
 
 	DEBUG_PRINTF(
 		"Connected to network interface\n"
-		"Connecting to ATEM\n"
+		"\tAddress: %s\n"
+		"\tNetmask: %s\n"
+		"\tGateway: %s\n"
+		"Connecting to ATEM\n",
+		ipaddr_ntoa(&netif_default->ip_addr),
+		ipaddr_ntoa(&netif_default->netmask),
+		ipaddr_ntoa(&netif_default->gw)
 	);
 
 	// Sends ATEM handshake
