@@ -12,6 +12,7 @@
 #ifdef ESP8266
 
 #include <user_interface.h> // wifi_set_opmode_current, STATIONAP_MODE, wifi_station_set_reconnect_policy, station_config, wifi_station_get_config, wifi_set_event_handler_cb, wifi_station_connect, wifi_station_dchpc_stop, wifi_set_ip_info, STATION_IF, ip_info
+#include <version.h> // ESP_SDK_VERSION_STRING
 
 // @todo this relies on Arduino
 extern uint32_t _EEPROM_start;
@@ -38,6 +39,10 @@ static void _atem_init() {
 
 		// Prints LwIP firmware version
 		"Using LwIP version: " LWIP_VERSION_STRING "\n"
+
+#ifdef ESP8266
+		"Using ESP8266 SDK version: " ESP_SDK_VERSION_STRING "\n"
+#endif // ESP8266
 
 		// Prints debugging flags enabled/disabled state
 		"Tally debug: "
