@@ -14,10 +14,11 @@
 
 // Strips out SDI writers if SDI is disabled
 #ifdef SDI_ENABLED
-bool sdi_connect(void);
+bool sdi_init();
 void sdi_write_tally(uint8_t, bool, bool);
 void sdi_write_cc(uint8_t*, uint16_t);
 #else // SDI_ENABLED
+#define sdi_init() true
 #define sdi_write_tally(dest, pgm, pvw)
 #define sdi_write_cc(buf, len)
 #endif // SDI_ENABLED

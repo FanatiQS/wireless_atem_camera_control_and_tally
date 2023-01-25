@@ -222,20 +222,6 @@ static void atem_netif_poll(void* arg) {
 	sys_timeout(ATEM_TIMEOUT_MS, atem_timeout_callback, arg);
 }
 
-// Tries to connect to SDI shield
-#ifdef SDI_ENABLED
-static void atem_sdi_poll(void* arg) {
-	// Starts polling network connection if SDI shield is connected
-	if (sdi_connect()) {
-		sys_timeout(0, atem_netif_poll, arg);
-	}
-	// Retries connecting to SDI shield if connection failed
-	else {
-		sys_timeout(0, atem_sdi_poll, arg);
-	}
-}
-#endif // SDI_ENABLED
-
 // Initializes UDP connection to ATEMs
 struct udp_pcb* atem_udp_init(uint32_t addr, uint8_t dest) {
 	// Sets camera id to serve
@@ -304,12 +290,13 @@ struct udp_pcb* atem_udp_init(uint32_t addr, uint8_t dest) {
 	// Initializes ATEM struct for handshake
 	atem_connection_reset(&atem);
 
-	// Starts polling SDI shield and or network interface for connected state
-#ifdef SDI_ENABLED
-	sys_timeout(0, atem_sdi_poll, pcb);
-#else // SDI_ENABLED
-	sys_timeout(0, atem_netif_poll, pcb);
-#endif // SDI_ENABLED
+	// Tries to connect to SDI shield
+	if (!sdi_init()) {
+		udp_remove(pcb);
+		return NULL;
+	}
 
+	// Starts polling network interface for connected state
+	sys_timeout(0, atem_netif_poll, pcb);
 	return pcb;
 }

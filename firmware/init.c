@@ -133,9 +133,12 @@ static void _atem_init() {
 
 	// Initializes connection to ATEM
 	struct udp_pcb* pcb = atem_udp_init(conf.atemAddr, conf.dest);
-	if (pcb == NULL) return;
-
-	DEBUG_PRINTF("Sync boot complete\n");
+	if (pcb == NULL) {
+		DEBUG_PRINTF("Boot failed\n");
+	}
+	else {
+		DEBUG_PRINTF("Boot completed\n");
+	}
 }
 
 // Initilization wrapper to handle multithreaded platforms

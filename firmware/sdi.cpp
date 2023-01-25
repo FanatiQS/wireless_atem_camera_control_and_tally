@@ -4,6 +4,7 @@
 #include "./debug.h" // DEBUG_PRINTF
 #include "./sdi.h" // SDI_ENABLE
 
+#include <Arduino.h>
 #ifdef SDI_ENABLED
 #include <Wire.h>
 #include <BMDSDIControl.h> // BMD_SDITallyControl_I2C, BMD_SDICameraControl_I2C
