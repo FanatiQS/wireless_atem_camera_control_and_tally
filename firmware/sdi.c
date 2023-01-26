@@ -52,20 +52,17 @@
 #define SDI_VERSION_PRINT(reg, label)
 #endif // DEBUG
 
+// Writes variadic number of bytes to SDI shield register
+#define _SDI_WRITE(buf) I2C_WRITE(buf, sizeof(buf) / sizeof(buf[0]))
+#define SDI_WRITE(addr, ...) _SDI_WRITE(((uint8_t[]){ addr & 0xff, addr >> 8, __VA_ARGS__ }))
+
 // Only defines SDI functions if SDI shield is to be used
 #ifdef SDI_ENABLED
 
 // Reads SDI shield data from registers to buffer
 static void sdi_read(uint16_t addr, uint8_t* readBuf, uint8_t readLen) {
-	uint8_t writeBuf[2] = { addr & 0xff, addr >> 8 };
-	I2C_WRITE(writeBuf, sizeof(writeBuf));
+	SDI_WRITE(addr);
 	I2C_READ(readBuf, readLen);
-}
-
-// Writes single octet to SDI shield register
-static void sdi_write8(uint16_t addr, uint8_t value) {
-	uint8_t buf[3] = { addr & 0xff, addr >> 8, value };
-	I2C_WRITE(buf, sizeof(buf));
 }
 
 
@@ -94,7 +91,7 @@ bool sdi_init() {
 	uint8_t ctrl;
 	sdi_read(kRegCONTROL, &ctrl, 1);
 	ctrl |= (kRegCONTROL_COVERIDE_Mask | kRegCONTROL_TOVERIDE_Mask);
-	sdi_write8(kRegCONTROL, ctrl);
+	SDI_WRITE(kRegCONTROL, ctrl);
 
 	// Prints SDI shields internal firmware and protocol version
 	SDI_VERSION_PRINT("firmware", kRegFWVERSION);
