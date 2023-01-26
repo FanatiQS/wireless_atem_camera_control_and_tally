@@ -13,6 +13,11 @@
 #error Both PIN_SCL and PIN_SDA has to be defined if SDI shield is to be used or none of them defined if SDI shield is not to be used
 #endif
 
+// Number of milliseconds to wait for SDI shield FPGA to get ready
+#ifndef SDI_INIT_TIMEOUT
+#define SDI_INIT_TIMEOUT 2000
+#endif // SDI_INIT_TIMEOUT
+
 // I2C address the SDI shield uses by default
 #ifndef SDI_I2C_ADDR
 #define SDI_I2C_ADDR 0x6E
@@ -79,7 +84,7 @@ bool sdi_init() {
 
 	// Awaits SDI shields FPGA booting up
 	while (!sdi_connect()) {
-		if (sys_now() > 2000) {
+		if (sys_now() > SDI_INIT_TIMEOUT) {
 			DEBUG_PRINTF("Failed to connect to SDI shield\n");
 			return false;
 		}
