@@ -92,8 +92,8 @@ static inline void atem_process(struct udp_pcb* pcb, uint8_t* buf, uint16_t len)
 		// Turns on connection status LED and disables access point when connected to ATEM
 		case ATEM_CMDNAME_VERSION: {
 			DEBUG_PRINTF(
-				"Connected to ATEM\n"
-				"Got ATEM protocol version: %d.%d\n",
+				"Got ATEM protocol version: %d.%d\n"
+				"Connected to ATEM\n",
 				atem_protocol_major(&atem), atem_protocol_minor(&atem)
 			);
 			LED_CONN(true);
@@ -212,13 +212,22 @@ static void atem_netif_poll(void* arg) {
 
 	DEBUG_PRINTF(
 		"Connected to network interface\n"
-		"\tAddress: %s\n"
-		"\tNetmask: %s\n"
-		"\tGateway: %s\n"
+		"\tIP address: %u.%u.%u.%u\n"
+		"\tNetmask: %u.%u.%u.%u\n"
+		"\tGateway: %u.%u.%u.%u\n"
 		"Connecting to ATEM\n",
-		ipaddr_ntoa(&netif_default->ip_addr),
-		ipaddr_ntoa(&netif_default->netmask),
-		ipaddr_ntoa(&netif_default->gw)
+		ip4_addr1_16(netif_ip4_addr(netif_default)),
+		ip4_addr2_16(netif_ip4_addr(netif_default)),
+		ip4_addr3_16(netif_ip4_addr(netif_default)),
+		ip4_addr4_16(netif_ip4_addr(netif_default)),
+		ip4_addr1_16(netif_ip4_netmask(netif_default)),
+		ip4_addr2_16(netif_ip4_netmask(netif_default)),
+		ip4_addr3_16(netif_ip4_netmask(netif_default)),
+		ip4_addr4_16(netif_ip4_netmask(netif_default)),
+		ip4_addr1_16(netif_ip4_gw(netif_default)),
+		ip4_addr2_16(netif_ip4_gw(netif_default)),
+		ip4_addr3_16(netif_ip4_gw(netif_default)),
+		ip4_addr4_16(netif_ip4_gw(netif_default))
 	);
 
 	// Sends ATEM handshake
