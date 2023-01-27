@@ -54,14 +54,14 @@
 
 // Writes variadic number of bytes to SDI shield register
 #define _SDI_WRITE(buf) I2C_WRITE(buf, sizeof(buf) / sizeof(buf[0]))
-#define SDI_WRITE(addr, ...) _SDI_WRITE(((uint8_t[]){ addr & 0xff, addr >> 8, __VA_ARGS__ }))
+#define SDI_WRITE(reg, ...) _SDI_WRITE(((uint8_t[]){ reg & 0xff, reg >> 8, __VA_ARGS__ }))
 
 // Only defines SDI functions if SDI shield is to be used
 #ifdef SDI_ENABLED
 
 // Reads SDI shield data from registers to buffer
-static void sdi_read(uint16_t addr, uint8_t* readBuf, uint8_t readLen) {
-	SDI_WRITE(addr);
+static void sdi_read(uint16_t reg, uint8_t* readBuf, uint8_t readLen) {
+	SDI_WRITE(reg);
 	I2C_READ(readBuf, readLen);
 }
 
@@ -88,10 +88,7 @@ bool sdi_init() {
 	}
 
 	// Enables overwriting tally and camera control data in SDI shield
-	uint8_t ctrl;
-	sdi_read(kRegCONTROL, &ctrl, 1);
-	ctrl |= (kRegCONTROL_COVERIDE_Mask | kRegCONTROL_TOVERIDE_Mask);
-	SDI_WRITE(kRegCONTROL, ctrl);
+	SDI_WRITE(kRegCONTROL, kRegCONTROL_COVERIDE_Mask | kRegCONTROL_TOVERIDE_Mask);
 
 	// Prints SDI shields internal firmware and protocol version
 	SDI_VERSION_PRINT("firmware", kRegFWVERSION);
