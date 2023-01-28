@@ -3,7 +3,6 @@
 #define UDP_H
 
 #include <stdint.h> // uint32_t, uint8_t
-#include <stdbool.h> // bool
 
 #include <lwip/udp.h> // struct udp_pcb
 

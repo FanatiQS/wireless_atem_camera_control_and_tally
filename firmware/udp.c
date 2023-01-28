@@ -8,7 +8,7 @@
 #include <lwip/init.h> // LWIP_VERSION_STRING
 #include <lwip/netif.h> // netif_default
 #ifdef ESP8266
-#include <user_interface.h> // wifi_set_opmode, STATION_MODE
+#include <user_interface.h> // wifi_set_opmode_current, STATION_MODE
 #endif // ESP8266
 
 #include "../src/atem.h" // struct atem_t atem_connection_reset, atem_parse, ATEM_CONNECTION_OK, ATEM_CONNECTION_CLOSING, ATEM_CONNECTION_REJECTED, ATEM_TIMEOUT, ATEM_MAX_PACKET_LEN, ATEM_PORT, atem_cmd_available, atem_cmd_next, ATEM_CMDNAME_VERSION, ATEM_CMDNAME_TALLY, ATEM_CMDNAME_CAMERACONTROL, atem_protocol_majorj, atem_protocol_minor
