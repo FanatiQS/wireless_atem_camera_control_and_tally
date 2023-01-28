@@ -18,9 +18,11 @@
 
 #else // ESP8266
 
-#error No GPIO implementation for platform
+#if defined(PIN_PGM) || defined(PIN_PVW) || defined(PIN_CONN)
+#error Platform does not support LED control
+#endif // PIN_PGM || PIN_PVW || PIN_CONN
 
-#endif // ESP8266
+#endif
 
 
 
