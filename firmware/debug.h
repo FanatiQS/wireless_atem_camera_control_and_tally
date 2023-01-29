@@ -17,10 +17,10 @@
 #endif // !DEBUG
 
 // Only prints debug info when it is enabled in user_config.h
-#if DEBUG
-#define DEBUG_PRINTF(...) LWIP_PLATFORM_DIAG((__VA_ARGS__))
-#else // DEBUG
+#if !DEBUG
 #define DEBUG_PRINTF(...)
+#elif !defined(DEBUG_PRINTF) // DEBUG
+#define DEBUG_PRINTF(...) LWIP_PLATFORM_DIAG((__VA_ARGS__))
 #endif // DEBUG
 
 #endif // DEBUG_H
