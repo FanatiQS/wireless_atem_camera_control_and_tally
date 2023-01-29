@@ -45,7 +45,8 @@
 // Enables and disables tally LEDs
 #ifndef LED_TALLY
 #if defined(PIN_PGM) || defined(PIN_PVW)
-#define LED_TALLY(pgm, pvw) do {\
+#define LED_TALLY(pgm, pvw)\
+	do {\
 		GPIO_SET(PGM(pgm) | PVW(pvw));\
 		GPIO_CLR(PGM(!pgm) | PVW(!pvw));\
 	} while (0)
