@@ -13,7 +13,7 @@
 
 #include "../src/atem.h" // struct atem_t atem_connection_reset, atem_parse, ATEM_CONNECTION_OK, ATEM_CONNECTION_CLOSING, ATEM_CONNECTION_REJECTED, ATEM_TIMEOUT, ATEM_MAX_PACKET_LEN, ATEM_PORT, atem_cmd_available, atem_cmd_next, ATEM_CMDNAME_VERSION, ATEM_CMDNAME_TALLY, ATEM_CMDNAME_CAMERACONTROL, atem_protocol_majorj, atem_protocol_minor
 #include "./user_config.h" // DEBUG_TALLY, DEBUG_CC, PIN_CONN, PIN_PGM, PIN_PVW, PIN_SCL, PIN_SDA
-#include "./led.h" // LED_TALLY, LED_CONN
+#include "./led.h" // LED_TALLY, LED_CONN, LED_INIT
 #include "./sdi.h" // SDI_ENABLED, sdi_write_tally, sdi_write_cc, sdi_connect
 #include "./debug.h" // DEBUG_PRINTF
 #include "./udp.h"
