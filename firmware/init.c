@@ -18,9 +18,9 @@
 #include <core_version.h> // ARDUINO_ESP8266_GIT_DESC
 #endif // ARDUINO
 
-// @todo this relies on Arduino
-extern uint32_t _EEPROM_start;
-#define CONFIG_START ((uint32_t)&_EEPROM_start - 0x40200000)
+// Sets configuration to use last memory page of flash before system data, same as arduino uses for EEPROM
+#define FLASH_SIZE (1 << ((spi_flash_get_id() >> 16) & 0xff))
+#define CONFIG_START (FLASH_SIZE - (12 + 4 + 4) * 1024)
 
 #else // ESP8266
 
