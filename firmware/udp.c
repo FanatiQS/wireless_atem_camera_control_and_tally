@@ -135,11 +135,15 @@ static inline void atem_process(struct udp_pcb* pcb, uint8_t* buf, uint16_t len)
 			atem_cc_translate(&atem);
 
 #if DEBUG_CC
-			DEBUG_PRINTF("Got camera control data: ");
+			uint8_t buf[255 * 3 + 1];
+			uint8_t offset = 0;
 			for (uint16_t i = 0; i < atem.cmdLen; i++) {
-				DEBUG_PRINTF("%02x ", atem.cmdBuf[i]);
+				buf[offset++] = ' ';
+				buf[offset++] = "0123456789abcdef"[atem.cmdBuf[i] >> 4];
+				buf[offset++] = "0123456789abcdef"[atem.cmdBuf[i] & 0xf];
 			}
-			DEBUG_PRINTF("\n");
+			buf[offset] = '\0';
+			DEBUG_PRINTF("Got camera control data:%s\n", buf);
 #endif // DEBUG_CC
 
 			// Writes camera control data over SDI
