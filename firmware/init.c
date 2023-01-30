@@ -12,6 +12,7 @@
 #ifdef ESP8266
 
 #include <user_interface.h> // wifi_set_opmode_current, STATIONAP_MODE, wifi_station_set_reconnect_policy, station_config, wifi_station_get_config, wifi_set_event_handler_cb, wifi_station_connect, wifi_station_dchpc_stop, wifi_set_ip_info, STATION_IF, ip_info
+#include <spi_flash.h> // spi_flash_read, SPI_FLASH_RESULT_OK
 #include <version.h> // ESP_SDK_VERSION_STRING
 
 // @todo this relies on Arduino
