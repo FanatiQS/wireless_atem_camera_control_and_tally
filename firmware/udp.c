@@ -74,8 +74,11 @@ static inline void atem_process(struct udp_pcb* pcb, uint8_t* buf, uint16_t len)
 		}
 		case ATEM_CONNECTION_CLOSING: {
 			atem_state = atem_state_disconnected;
-			DEBUG_PRINTF("ATEM connection closed\n");
 			LED_CONN(false);
+			LED_TALLY(false, false);
+			atem.pgmTally = false;
+			atem.pvwTally = false;
+			DEBUG_PRINTF("ATEM connection closed\n");
 			return; // @todo should respond with closed packet
 		}
 		default: {
@@ -164,12 +167,14 @@ static void atem_timeout_callback(void* arg) {
 	atem_connection_reset(&atem);
 	atem_send((struct udp_pcb*)arg);
 
-	// Indicates connection lost with LED
+	// Indicates connection lost with LEDs and HTML
+	atem_state = atem_state_dropped;
 	LED_CONN(false);
+	LED_TALLY(false, false);
+	atem.pgmTally = false;
+	atem.pvwTally = false;
 
-	// Indicates connection lost in HTML
 	if (atem_state == atem_state_connected) {
-		atem_state = atem_state_dropped;
 		DEBUG_PRINTF("Lost connection to ATEM\n");
 	}
 	else if (atem_state == atem_state_dropped || atem_state == atem_state_unconnected) {
