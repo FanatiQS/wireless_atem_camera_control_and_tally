@@ -35,6 +35,12 @@
 #define kRegFWVERSION  0x0004
 #define kRegPVERSION   0x0006
 #define kRegCONTROL    0x1000
+#define kRegOTARM      0x4000
+#define kRegOTLENGTH   0x4001
+#define kRegOTDATA     0x4100
+#define kRegOCARM      0x2000
+#define kRegOCLENGTH   0x2001
+#define kRegOCDATA     0x2100
 
 // SDI shield override masks
 #define kRegCONTROL_COVERIDE_Mask 0x01
@@ -75,7 +81,7 @@ static bool sdi_connect() {
 }
 
 // Tries to connect to the SDI shield
-bool sdi_init() {
+bool sdi_init(uint8_t dest) {
 	// Initializes I2C driver
 	I2C_INIT(PIN_SCL, PIN_SDA);
 
@@ -90,6 +96,9 @@ bool sdi_init() {
 	// Enables overwriting tally and camera control data in SDI shield
 	SDI_WRITE(kRegCONTROL, kRegCONTROL_COVERIDE_Mask | kRegCONTROL_TOVERIDE_Mask);
 
+	// Sets tally data length in SDI shield register
+	SDI_WRITE(kRegOTLENGTH, dest, 0);
+
 	// Prints SDI shields internal firmware and protocol version
 	SDI_VERSION_PRINT("firmware", kRegFWVERSION);
 	SDI_VERSION_PRINT("protocol", kRegPVERSION);
@@ -99,18 +108,29 @@ bool sdi_init() {
 
 
 
-// @todo tally and camera control still uses the bad arduino library
-void _sdi_write_tally(uint8_t, bool, bool);
-void _sdi_write_cc(uint8_t*, uint16_t);
+// Awaits SDI shield override bank to be ready for write
+static void sdi_flush(uint16_t reg) {
+	uint8_t busy;
+	do {
+		sdi_read(reg, &busy, 1);
+	} while (busy);
+}
 
 // Writes tally data to the SDI shield
 void sdi_write_tally(uint8_t dest, bool pgm, bool pvw) {
-	_sdi_write_tally(dest, pgm, pvw);
+	sdi_flush(kRegOTARM);
+	SDI_WRITE(kRegOTDATA + dest + 1, pgm | (pvw << 1));
+	SDI_WRITE(kRegOTARM, true);
 }
 
-// Writes camera control data to the SDI shield
+// Writes camera control data to the SDI shield, requires 2 header bytes for register address
 void sdi_write_cc(uint8_t* buf, uint16_t len) {
-	_sdi_write_cc(buf, len);
+	sdi_flush(kRegOCARM);
+	SDI_WRITE(kRegOCLENGTH, len, 0);
+	buf[0] = kRegOCDATA & 0xff;
+	buf[1] = kRegOCDATA >> 8;
+	I2C_WRITE(buf, len + 2);
+	SDI_WRITE(kRegOCARM, true);
 }
 
 #endif // SDI_ENABLE

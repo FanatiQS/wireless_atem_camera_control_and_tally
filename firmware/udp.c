@@ -150,7 +150,7 @@ static inline void atem_process(struct udp_pcb* pcb, uint8_t* buf, uint16_t len)
 #endif // DEBUG_CC
 
 			// Writes camera control data over SDI
-			sdi_write_cc(atem.cmdBuf, atem.cmdLen);
+			sdi_write_cc(atem.cmdBuf - 2, atem.cmdLen);
 
 			break;
 		}
@@ -313,7 +313,7 @@ struct udp_pcb* atem_udp_init(uint32_t addr, uint8_t dest) {
 	atem_connection_reset(&atem);
 
 	// Tries to connect to SDI shield
-	if (!sdi_init()) {
+	if (!sdi_init(dest)) {
 		udp_remove(pcb);
 		return NULL;
 	}
