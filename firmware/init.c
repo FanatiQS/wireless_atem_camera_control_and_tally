@@ -120,7 +120,7 @@ static void _atem_init() {
 	}
 #endif // ESP8266
 
-	// @todo
+	// Uses static IP if configured to do so
 	if (conf.flags & CONF_FLAG_STATICIP) {
 		DEBUG_PRINTF(
 			"Using static IP:\n"
@@ -139,8 +139,14 @@ static void _atem_init() {
 			netmask: conf.netmask,
 			gw: conf.gateway
 		};
-		wifi_station_dhcpc_stop();
-		wifi_set_ip_info(STATION_IF, &ipInfo);
+		if (!wifi_station_dhcpc_stop()) {
+			DEBUG_PRINTF("Failed to stop DHCP client\n");
+			return;
+		}
+		if (!wifi_set_ip_info(STATION_IF, &ipInfo)) {
+			DEBUG_PRINTF("Failed to set static ip\n");
+			return;
+		}
 #endif // ESP8266
 	}
 	else {
