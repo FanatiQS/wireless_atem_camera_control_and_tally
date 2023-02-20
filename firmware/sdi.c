@@ -55,7 +55,7 @@
 		DEBUG_PRINTF("SDI shield " label " version: %d.%d\n", buf[1], buf[0]);\
 	} while (0)
 #else // DEBUG
-#define SDI_VERSION_PRINT(reg, label)
+#define SDI_VERSION_PRINT(label, reg)
 #endif // DEBUG
 
 // Writes variadic number of bytes to SDI shield register
