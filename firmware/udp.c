@@ -167,19 +167,19 @@ static void atem_timeout_callback(void* arg) {
 	atem_connection_reset(&atem);
 	atem_send((struct udp_pcb*)arg);
 
-	// Indicates connection lost with LEDs and HTML
-	atem_state = atem_state_dropped;
-	LED_CONN(false);
-	LED_TALLY(false, false);
-	atem.pgmTally = false;
-	atem.pvwTally = false;
-
 	if (atem_state == atem_state_connected) {
 		DEBUG_PRINTF("Lost connection to ATEM\n");
 	}
 	else if (atem_state == atem_state_dropped || atem_state == atem_state_unconnected) {
 		DEBUG_PRINTF("Failed to connect to ATEM\n");
 	}
+
+	// Indicates connection lost with LEDs and HTML
+	atem_state = atem_state_dropped;
+	LED_CONN(false);
+	LED_TALLY(false, false);
+	atem.pgmTally = false;
+	atem.pvwTally = false;
 }
 
 // Reads and processces received ATEM packet
