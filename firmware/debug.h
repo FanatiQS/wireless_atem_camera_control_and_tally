@@ -23,4 +23,19 @@
 #define DEBUG_PRINTF(...) LWIP_PLATFORM_DIAG((__VA_ARGS__))
 #endif // DEBUG
 
+// Prints integer IP address
+#define _IP_VALUE(ip, shift) (((ip) >> shift) & 0xff)
+#define IP_VALUE(ip) _IP_VALUE(ip, 0), _IP_VALUE(ip, 8), _IP_VALUE(ip, 16), _IP_VALUE(ip, 24)
+#define IP_FMT "%d.%d.%d.%d"
+#define DEBUG_IP(label, local, netmask, gw)\
+	DEBUG_PRINTF(\
+		label ":\n"\
+		"\tLocal Address: " IP_FMT "\n"\
+		"\tSubnet Mask: " IP_FMT "\n"\
+		"\tGateway: " IP_FMT "\n",\
+		IP_VALUE(local),\
+		IP_VALUE(netmask),\
+		IP_VALUE(gw)\
+	)
+
 #endif // DEBUG_H

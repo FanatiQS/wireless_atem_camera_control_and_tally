@@ -4,7 +4,7 @@
 #include <lwip/tcpip.h> // LOCK_TCPIO_CORE, UNLCOK_TCPIP_CORE
 
 #include "./user_config.h" // DEBUG_TALLY, DEBUG_CC
-#include "./debug.h" // DEBUG_PRINTF
+#include "./debug.h" // DEBUG_PRINTF, DEBUG_IP
 #include "./udp.h" // atem_udp_init
 #include "./http.h" // config_t, CONF_FLAG_STATICIP, http_init
 #include "./init.h" // FIRMWARE_VERSION_STRING
@@ -12,7 +12,7 @@
 #ifdef ESP8266
 
 #include <user_interface.h> // wifi_set_opmode_current, STATIONAP_MODE, wifi_station_set_reconnect_policy, station_config, wifi_station_get_config, wifi_set_event_handler_cb, wifi_station_connect, wifi_station_dchpc_stop, wifi_set_ip_info, STATION_IF, ip_info
-#include <spi_flash.h> // spi_flash_read, SPI_FLASH_RESULT_OK
+#include <spi_flash.h> // spi_flash_read, SPI_FLASH_RESULT_OK, spi_flash_get_id
 #include <version.h> // ESP_SDK_VERSION_STRING
 #ifdef ARDUINO
 #include <core_version.h> // ARDUINO_ESP8266_GIT_DESC
@@ -34,7 +34,7 @@
 #define _WRAP(arg) #arg
 #define WRAP(arg) _WRAP(arg)
 
-// Initializes ATEM connection
+// Initializes firmware
 static void _atem_init() {
 	struct config_t conf;
 
@@ -122,15 +122,7 @@ static void _atem_init() {
 
 	// Uses static IP if configured to do so
 	if (conf.flags & CONF_FLAG_STATICIP) {
-		DEBUG_PRINTF(
-			"Using static IP:\n"
-			"\tLocal address: %s\n"
-			"\tSubnet mask: %s\n"
-			"\tGateway: %s\n",
-			ipaddr_ntoa(&conf.localAddr),
-			ipaddr_ntoa(&conf.netmask), 
-			ipaddr_ntoa(&conf.gateway)
-		);
+		DEBUG_IP("Using static IP", conf.localAddr, conf.netmask, conf.gateway);
 
 		// Sets static ip
 #ifdef ESP8266
@@ -170,7 +162,7 @@ void atem_init() {
 	LOCK_TCPIP_CORE();
 #endif // NO_SYS
 
-	// @todo
+	// Initializes firmware
 	_atem_init();
 
 	// Required when LwIP core is running in another thread

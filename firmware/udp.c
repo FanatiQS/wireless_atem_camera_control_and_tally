@@ -15,7 +15,7 @@
 #include "./user_config.h" // DEBUG_TALLY, DEBUG_CC, PIN_CONN, PIN_PGM, PIN_PVW, PIN_SCL, PIN_SDA
 #include "./led.h" // LED_TALLY, LED_CONN, LED_INIT
 #include "./sdi.h" // SDI_ENABLED, sdi_write_tally, sdi_write_cc, sdi_connect
-#include "./debug.h" // DEBUG_PRINTF
+#include "./debug.h" // DEBUG_PRINTF, DEBUG_IP, IP_FMT, IP_VALUE
 #include "./udp.h"
 
 
@@ -217,25 +217,13 @@ static void atem_netif_poll(void* arg) {
 		return;
 	}
 
-	DEBUG_PRINTF(
-		"Connected to network interface\n"
-		"\tIP address: %u.%u.%u.%u\n"
-		"\tNetmask: %u.%u.%u.%u\n"
-		"\tGateway: %u.%u.%u.%u\n"
-		"Connecting to ATEM\n",
-		ip4_addr1_16(netif_ip4_addr(netif_default)),
-		ip4_addr2_16(netif_ip4_addr(netif_default)),
-		ip4_addr3_16(netif_ip4_addr(netif_default)),
-		ip4_addr4_16(netif_ip4_addr(netif_default)),
-		ip4_addr1_16(netif_ip4_netmask(netif_default)),
-		ip4_addr2_16(netif_ip4_netmask(netif_default)),
-		ip4_addr3_16(netif_ip4_netmask(netif_default)),
-		ip4_addr4_16(netif_ip4_netmask(netif_default)),
-		ip4_addr1_16(netif_ip4_gw(netif_default)),
-		ip4_addr2_16(netif_ip4_gw(netif_default)),
-		ip4_addr3_16(netif_ip4_gw(netif_default)),
-		ip4_addr4_16(netif_ip4_gw(netif_default))
+	DEBUG_IP(
+		"Connected to network interface",
+		netif_ip4_addr(netif_default)->addr,
+		netif_ip4_netmask(netif_default)->addr,
+		netif_ip4_gw(netif_default)->addr
 	);
+	DEBUG_PRINTF("Connecting to ATEM\n");
 
 	// Sends ATEM handshake
 	atem_send((struct udp_pcb*)arg);
@@ -264,7 +252,7 @@ struct udp_pcb* atem_udp_init(uint32_t addr, uint8_t dest) {
 	udp_recv(pcb, atem_recv_callback, NULL);
 
 	// Connects to ATEM switcher
-	DEBUG_PRINTF("Connecting to ATEM at: %s\n", ipaddr_ntoa(&addr));
+	DEBUG_PRINTF("Connecting to ATEM at: " IP_FMT "\n", IP_VALUE(addr));
 	if (udp_connect(pcb, &(const ip_addr_t){ .addr = addr }, ATEM_PORT) != ERR_OK) {
 		DEBUG_PRINTF("Failed to connect to ATEM UDP IP\n");
 		udp_remove(pcb);
