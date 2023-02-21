@@ -15,14 +15,10 @@
 #include "./user_config.h" // DEBUG_TALLY, DEBUG_CC, PIN_CONN, PIN_PGM, PIN_PVW, PIN_SCL, PIN_SDA
 #include "./led.h" // LED_TALLY, LED_CONN, LED_INIT
 #include "./sdi.h" // SDI_ENABLED, sdi_write_tally, sdi_write_cc, sdi_connect
-#include "./debug.h" // DEBUG_PRINTF, DEBUG_IP, IP_FMT, IP_VALUE
+#include "./debug.h" // DEBUG_PRINTF, DEBUG_IP, IP_FMT, IP_VALUE, WRAP
 #include "./udp.h"
 
 
-
-// Wraps argument into a string
-#define _WRAP(arg) #arg
-#define WRAP(arg) _WRAP(arg)
 
 // Number of milliseconds before switcher kills the connection for no acknowledge sent
 #define ATEM_TIMEOUT_MS (ATEM_TIMEOUT * 1000)

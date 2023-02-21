@@ -38,4 +38,8 @@
 		IP_VALUE(gw)\
 	)
 
+// Wraps argument into a string
+#define _WRAP(arg) #arg
+#define WRAP(arg) _WRAP(arg)
+
 #endif // DEBUG_H

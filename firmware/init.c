@@ -4,7 +4,7 @@
 #include <lwip/tcpip.h> // LOCK_TCPIO_CORE, UNLCOK_TCPIP_CORE
 
 #include "./user_config.h" // DEBUG_TALLY, DEBUG_CC
-#include "./debug.h" // DEBUG_PRINTF, DEBUG_IP
+#include "./debug.h" // DEBUG_PRINTF, DEBUG_IP, WRAP
 #include "./udp.h" // atem_udp_init
 #include "./http.h" // config_t, CONF_FLAG_STATICIP, http_init
 #include "./init.h" // FIRMWARE_VERSION_STRING
@@ -29,10 +29,6 @@
 #endif // ESP8266
 
 
-
-// Wraps argument into a string
-#define _WRAP(arg) #arg
-#define WRAP(arg) _WRAP(arg)
 
 // Initializes firmware
 static void _atem_init() {
