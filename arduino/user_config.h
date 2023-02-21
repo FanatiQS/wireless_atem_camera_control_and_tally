@@ -2,6 +2,8 @@
 #ifndef USER_CONFIG_H
 #define USER_CONFIG_H
 
+#include <pins_arduino.h>
+
 /**
  * All macros defined in this file are optional.
  * If a pin is not defined, commented out or removed, that feature is going to be disabled.
