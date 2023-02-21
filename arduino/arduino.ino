@@ -14,6 +14,7 @@
 #include "./src/udp.h" // atem_state
 #include "./src/http.h" // struct config_t, CONF_FLAG_STATICIP
 #include "./src/init.h" // atem_init, FIRMWARE_VERSION_STRING
+#include "./src/debug.h" // WRAP
 
 
 
@@ -33,12 +34,6 @@
 #define DEBUG_PRINTLN(arg) do {} while(0)
 #define DEBUG_PRINTF(...) do {} while(0)
 #endif // DEBUG
-
-
-// Gets the Arduino ESP8266 core version
-#define _GET_ESP_VERSION_A(v) #v
-#define _GET_ESP_VERSION_B(v) _GET_ESP_VERSION_A(v)
-#define ESP_VERSION _GET_ESP_VERSION_B(ARDUINO_ESP8266_GIT_DESC)
 
 
 
@@ -200,7 +195,7 @@ void setup() {
 	if (strcmp(LWIP_VERSION_STRING, EXPECTED_LWIP_VERSION)) {
 		DEBUG_PRINT("WARNING: Expected version for this firmware: " EXPECTED_LWIP_VERSION "\n");
 	}
-	if (strcmp(ESP_VERSION, EXPECTED_ESP_VERSION)) {
+	if (strcmp(WRAP(ARDUINO_ESP8266_GIT_DESC), EXPECTED_ESP_VERSION)) {
 		DEBUG_PRINT("WARNING: Expected version for this firmware: " EXPECTED_ESP_VERSION "\n");
 	}
 #endif // DEBUG
