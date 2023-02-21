@@ -34,6 +34,15 @@ const char* atem_state_dropped = "Lost connection";
 const char* atem_state_rejected = "Rejected";
 const char* atem_state_disconnected = "Disconnected";
 
+// Resets tally and connection status when disconnected from ATEM
+void atem_led_reset() {
+	LED_CONN(false);
+	LED_TALLY(false, false);
+	sdi_write_tally(atem.dest, false, false);
+	atem.pgmTally = false;
+	atem.pvwTally = false;
+}
+
 
 
 // Sends buffered data to ATEM
@@ -70,10 +79,7 @@ static inline void atem_process(struct udp_pcb* pcb, uint8_t* buf, uint16_t len)
 		}
 		case ATEM_CONNECTION_CLOSING: {
 			atem_state = atem_state_disconnected;
-			LED_CONN(false);
-			LED_TALLY(false, false);
-			atem.pgmTally = false;
-			atem.pvwTally = false;
+			atem_led_reset();
 			DEBUG_PRINTF("ATEM connection closed\n");
 			return; // @todo should respond with closed packet
 		}
@@ -163,19 +169,16 @@ static void atem_timeout_callback(void* arg) {
 	atem_connection_reset(&atem);
 	atem_send((struct udp_pcb*)arg);
 
+	// Indicates connection lost with LEDs and HTML
 	if (atem_state == atem_state_connected) {
+		atem_state = atem_state_dropped;
+		atem_led_reset();
 		DEBUG_PRINTF("Lost connection to ATEM\n");
 	}
 	else if (atem_state == atem_state_dropped || atem_state == atem_state_unconnected) {
 		DEBUG_PRINTF("Failed to connect to ATEM\n");
 	}
 
-	// Indicates connection lost with LEDs and HTML
-	atem_state = atem_state_dropped;
-	LED_CONN(false);
-	LED_TALLY(false, false);
-	atem.pgmTally = false;
-	atem.pvwTally = false;
 }
 
 // Reads and processces received ATEM packet
