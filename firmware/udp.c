@@ -62,7 +62,7 @@ static void atem_send(struct udp_pcb* pcb) {
 	if (err == ERR_OK) return;
 
 	// Unsuccessfully returns
-	DEBUG_PRINTF("Failed to send pbuf to ATEM: %d\n", err);
+	DEBUG_PRINTF("Failed to send pbuf to ATEM: %ld\n", err);
 }
 
 // Processes received ATEM packet
