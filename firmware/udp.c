@@ -270,7 +270,7 @@ struct udp_pcb* atem_udp_init(uint32_t addr, uint8_t dest) {
 #else // PIN_PVW
 		"Tally PVW: disabled\n"
 #endif // PIN_PVW
-#ifdef WRAP(PIN_CONN)
+#ifdef PIN_CONN
 		"CONN pin: " WRAP(PIN_CONN) "\n"
 #else // PIN_CONN
 		"CONN: disabled\n"
