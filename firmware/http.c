@@ -20,7 +20,7 @@ bool http_init() {
 		"Soft AP PSK: \"%.*s\"\n"
 		"Soft AP Channel: %d\n",
 		softapConfig.ssid_len, softapConfig.ssid,
-		sizeof(softapConfig.password), softapConfig.password,
+		(int)sizeof(softapConfig.password), softapConfig.password,
 		softapConfig.channel
 	);
 #endif // ESP8266

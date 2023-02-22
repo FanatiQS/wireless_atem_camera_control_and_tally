@@ -98,8 +98,8 @@ static void _atem_init() {
 	DEBUG_PRINTF(
 		"Station SSID: \"%.*s\"\n"
 		"Station PSK \"%.*s\"\n",
-		sizeof(stationConfig.ssid), stationConfig.ssid,
-		sizeof(stationConfig.password), stationConfig.password
+		(int)sizeof(stationConfig.ssid), stationConfig.ssid,
+		(int)sizeof(stationConfig.password), stationConfig.password
 	);
 #endif // DEBUG
 
