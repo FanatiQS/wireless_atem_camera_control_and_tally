@@ -12,7 +12,11 @@
 #include <eagle_soc.h> // GPIO_REG_WRITE, GPIO_PIN0_ADDRESS, GPIO_OUT_W1TS_ADDRESS, GPIO_OUT_W1TC_ADDRESS
 
 // Directly modifies register addresses
-#define LED_INIT(pin) GPIO_REG_WRITE(GPIO_PIN0_ADDRESS + pin * 4, 0)
+#define LED_INIT(pin)\
+	do {\
+		GPIO_REG_WRITE(GPIO_PIN0_ADDRESS + pin * 4, 0);\
+		GPIO_REG_WRITE(GPIO_ENABLE_W1TS_ADDRESS, 1 << pin);\
+	} while (0)
 #define GPIO_SET(mask) GPIO_REG_WRITE(GPIO_OUT_W1TS_ADDRESS, mask)
 #define GPIO_CLR(mask) GPIO_REG_WRITE(GPIO_OUT_W1TC_ADDRESS, mask)
 
