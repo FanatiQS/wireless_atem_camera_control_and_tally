@@ -14,7 +14,7 @@
 #include "./src/udp.h" // atem_state
 #include "./src/http.h" // struct config_t, CONF_FLAG_STATICIP
 #include "./src/init.h" // atem_init, FIRMWARE_VERSION_STRING
-#include "./src/debug.h" // WRAP
+#include "./src/debug.h" // WRAP, DEBUG_PRINTF
 
 
 
