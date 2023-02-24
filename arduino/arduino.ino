@@ -28,11 +28,9 @@
 #if DEBUG
 #define DEBUG_PRINT(...) Serial.print(__VA_ARGS__)
 #define DEBUG_PRINTLN(...) Serial.println(__VA_ARGS__)
-#define DEBUG_PRINTF(...) Serial.printf(__VA_ARGS__)
 #else // DEBUG
 #define DEBUG_PRINT(arg) do {} while(0)
 #define DEBUG_PRINTLN(arg) do {} while(0)
-#define DEBUG_PRINTF(...) do {} while(0)
 #endif // DEBUG
 
 
