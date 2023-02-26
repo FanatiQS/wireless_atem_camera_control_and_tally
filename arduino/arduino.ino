@@ -191,10 +191,10 @@ void setup() {
 	DEBUG_PRINTLN(WiFi.macAddress());
 
 	if (strcmp(LWIP_VERSION_STRING, EXPECTED_LWIP_VERSION)) {
-		DEBUG_PRINT("WARNING: Expected version for this firmware: " EXPECTED_LWIP_VERSION "\n");
+		DEBUG_PRINT("WARNING: Expected LwIP version for this firmware: " EXPECTED_LWIP_VERSION "\n");
 	}
 	if (strcmp(WRAP(ARDUINO_ESP8266_GIT_DESC), EXPECTED_ESP_VERSION)) {
-		DEBUG_PRINT("WARNING: Expected version for this firmware: " EXPECTED_ESP_VERSION "\n");
+		DEBUG_PRINT("WARNING: Expected Arduino version for this firmware: " EXPECTED_ESP_VERSION "\n");
 	}
 #endif // DEBUG
 
