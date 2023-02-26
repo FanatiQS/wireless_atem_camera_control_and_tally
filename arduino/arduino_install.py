@@ -6,13 +6,15 @@ import shutil
 from pathlib import Path
 
 def _cpy(src, dest):
-	shutil.copyfile("../" + src, dest)
+	src = os.path.abspath(os.path.join(__file__, os.pardir) + "/../" + src)
+	shutil.copyfile(src, dest)
 	print("copied", src, "to", dest)
 
 def cpy(dest, dir, file):
 	_cpy(dir + file, dest + "/src" + file)
 
 def main(dest = "."):
+	dest = os.path.abspath(dest)
 	Path(dest + "/src").mkdir(parents=True, exist_ok=True)
 	Path(dest + "/src/user_config.h").write_text("#include \"../user_config.h\"\n")
 	print("generated", dest + "/src/user_config.h")
