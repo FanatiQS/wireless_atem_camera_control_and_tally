@@ -199,6 +199,7 @@ void setup() {
 #endif // DEBUG
 
 	// Sets up configuration HTTP server with soft AP
+	WiFi.persistent(true);
 	EEPROM.begin(sizeof(struct config_t));
 	dnsServer.start(53, "*", WiFi.softAPIP());
 	confServer.onNotFound(handleHTTP);
