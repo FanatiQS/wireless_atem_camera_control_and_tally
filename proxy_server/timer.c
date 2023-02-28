@@ -1,4 +1,5 @@
 #include <stdint.h> // uint16_t
+#include <stdbool.h> // bool
 #include <stdlib.h> // abort
 #include <stdio.h> // printf, fprintf, stderr, perror, fflush, stdout
 #include <time.h> // timespec, timespec_get, TIME_UTC
@@ -66,9 +67,9 @@ void setTimeout(struct timespec* timer, uint16_t msDelay) {
 		perror("Unable to get time");
 		abort();
 	}
-	timer->tv_nsec += (msDelay - msDelay / 1000 * 1000) * 1000000;
-	uint8_t overflow = timer->tv_nsec / 1000000000;
-	timer->tv_sec += overflow + msDelay / 1000;
+	timer->tv_nsec += (msDelay - (msDelay / 1000 * 1000)) * 1000000;
+	bool overflow = (timer->tv_nsec >= 1000000000);
+	timer->tv_sec += msDelay / 1000 + overflow;
 	timer->tv_nsec -= overflow * 1000000000;
 }
 
