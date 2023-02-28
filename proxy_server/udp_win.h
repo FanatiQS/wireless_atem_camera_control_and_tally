@@ -14,11 +14,7 @@ typedef int ssize_t;
 typedef unsigned long in_addr_t;
 typedef int socklen_t;
 
-#define perror(...)\
-	do {\
-		fprintf(stderr, __VA_ARGS__);\
-		fprintf(stderr, ": %d\n", WSAGetLastError());\
-	} while (0)
+#define perror(err) fprintf(stderr, err ": %d\n", WSAGetLastError())
 
 #define abort()\
 	do {\
