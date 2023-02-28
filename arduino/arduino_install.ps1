@@ -1,2 +1,1 @@
-cd (Split-Path $MyInvocation.MyCommand.Path -Parent)
-./arduino/arduino_install
+Invoke-Expression (Out-String -InputObject (Get-Content arduino_install))
