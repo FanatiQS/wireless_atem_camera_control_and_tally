@@ -6,6 +6,7 @@
 echo --% >/dev/null;: ' | out-null
 
 cd ..
+$PSDefaultParameterValues = @{"Out-File:Encoding" = "ASCII"}
 
 function cpy([String]$dest, [String]$src) {
 <#' # Terminates Bash string and starts Powershell multi-line comment
