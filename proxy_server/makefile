@@ -49,7 +49,7 @@ FLAGS_DEBUG = -DDEBUG -g
 # Creates directory for output if it does not exist
 .SILENT: $(BUILD_DIR)
 $(BUILD_DIR):
-	mkdir -p $@
+	mkdir $@
 
 # Compiles release executable for non-windows
 .SILENT: $(NAME_RELEASE)
