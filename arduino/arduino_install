@@ -1,0 +1,39 @@
+#! /usr/bin/env sh
+
+# Credits for Bash and Powershell in one "https://stackoverflow.com/questions/39421131/is-it-possible-to-write-one-script-that-runs-in-bash-shell-and-powershell"
+
+# Starts multi-line string in Bash without printing anything
+echo --% >/dev/null;: ' | out-null
+
+cd ..
+
+function cpy([String]$dest, [String]$src) {
+<#' # Terminates Bash string and starts Powershell multi-line comment
+
+cd "$(dirname $0)/.."
+
+function cpy {
+	dest=$1
+	src=$2
+#> # Terminates Powershell multi-line comment
+	echo "Copying $PWD/$src to $PWD/arduino/$dest"
+	cp $PWD/$src $PWD/arduino/$dest
+}
+
+echo "Creating directory $PWD/src"
+mkdir $PWD/src
+echo "Generating $PWD/src/user_config.h"
+echo '#include "../user_config.h"' > $PWD/src/user_config.h
+cpy src/atem.c  src/atem.c
+cpy src/atem.h  src/atem.h
+cpy src/debug.h firmware/debug.h
+cpy src/http.c  firmware/http.c
+cpy src/http.h  firmware/http.h
+cpy src/init.c  firmware/init.c
+cpy src/init.h  firmware/init.h
+cpy src/led.h   firmware/led.h
+cpy src/sdi.c   firmware/sdi.c
+cpy src/sdi.h   firmware/sdi.h
+cpy src/udp.c   firmware/udp.c
+cpy src/udp.h   firmware/udp.h
+echo "Installed"
