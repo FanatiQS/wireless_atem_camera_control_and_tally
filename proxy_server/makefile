@@ -47,38 +47,31 @@ FLAGS_DEBUG = -DDEBUG -g
 
 
 # Creates directory for output if it does not exist
-.SILENT: $(BUILD_DIR)
 $(BUILD_DIR):
 	mkdir $@
 
 # Compiles release executable for non-windows
-.SILENT: $(NAME_RELEASE)
 $(NAME_RELEASE): $(FILES_EXEC_ALL)
 	$(CC) $(FILES_EXEC) $(FLAGS_DEFAULT_UNIX) $(FLAGS_RELEASE) -flto -Ofast $(CFLAGS)
 
 # Compiles release executable for windows
-.SILENT: $(NAME_RELEASE).exe
 $(NAME_RELEASE).exe: $(FILES_EXEC_ALL) $(BUILD_DIR)
 	$(CC) $(FILES_EXEC) $(FLAGS_DEFAULT_WIN) $(FLAGS_RELEASE) -GL -Gw $(CFLAGS)
 
 # Compiles debug executable for non-windows
-.SILENT: $(NAME_DEBUG)
 $(NAME_DEBUG): $(FILES_EXEC_ALL)
 	$(CC) $(FILES_EXEC) $(FLAGS_DEFAULT_UNIX) $(FLAGS_DEBUG) $(CFLAGS)
 
 # Compiles debug executable for windows
-.SILENT: $(NAME_DEBUG)
 $(NAME_DEBUG).exe: $(FILES_EXEC_ALL) $(BUILD_DIR)
 	$(CC) $(FILES_EXEC) $(FLAGS_DEFAULT_WIN) $(FLAGS_DEBUG) $(CFLAGS)
 
 # Cleans up non-windows build files
-.SILENT: clean_unix
 clean_unix:
 	$(RM) $(NAME_RELEASE) $(NAME_DEBUG) $(NAME_LIB_CF).a $(NAME_LIB_CF).h $(BUILD_DIR)/*.o
 	rm -fr $(NAME_DEBUG).dSYM
 
 # Cleans up windows build files
-.SILENT: clean_win
 clean_win:
 	del $(NAME_RELEASE).exe $(NAME_DEBUG).exe $(BUILD_DIR)/*.obj
 
@@ -86,7 +79,6 @@ clean_win:
 
 # Compiles object files for static library dependency
 NAME_LINKED = $(BUILD_DIR)/linked.o
-.SILENT: $(NAME_LINKED)
 $(NAME_LINKED): $(FILES_ALL) bindings/binding_cf.c $(BUILD_DIR)
 	for f in bindings/binding_cf.c $(FILES_SOURCE); do\
 		$(CC) $(FLAGS_DEFAULT_UNIX) $(FLAGS_RELEASE) -Ofast -c $${f} -o $(BUILD_DIR)/`basename $${f} .c`_tmp.o $(CFLAGS);\
@@ -95,12 +87,10 @@ $(NAME_LINKED): $(FILES_ALL) bindings/binding_cf.c $(BUILD_DIR)
 	$(RM) $(BUILD_DIR)/*_tmp.o
 
 # CoreFoundation build static library
-.SILENT: $(NAME_LIB_CF).a
 $(NAME_LIB_CF).a: $(NAME_LINKED) $(NAME_LIB_CF).h
 	ar -crs $@ $<
 	$(RM) $(NAME_LINKED)
 
 # CoreFoundation copy header
-.SILENT: $(NAME_LIB_CF).h
 $(NAME_LIB_CF).h: bindings/binding_cf.h
 	cp $< $@
