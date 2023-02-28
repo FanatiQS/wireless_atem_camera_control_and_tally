@@ -42,7 +42,7 @@ FLAGS_DEFAULT_UNIX = $(FLAGS_DEFAULT) -pedantic -Wextra -fvisibility=hidden -std
 FLAGS_DEFAULT_WIN = $(FLAGS_DEFAULT) -std:c11 -Fo$(BUILD_DIR)\ -Fe:$@
 
 FLAGS_RELEASE = -O2
-FLAGS_DEBUG = -DDEBUG -g
+FLAGS_DEBUG = -DDEBUG
 
 
 
@@ -60,11 +60,11 @@ $(NAME_RELEASE).exe: $(FILES_EXEC_ALL) $(BUILD_DIR)
 
 # Compiles debug executable for non-windows
 $(NAME_DEBUG): $(FILES_EXEC_ALL)
-	$(CC) $(FILES_EXEC) $(FLAGS_DEFAULT_UNIX) $(FLAGS_DEBUG) $(CFLAGS)
+	$(CC) $(FILES_EXEC) $(FLAGS_DEFAULT_UNIX) $(FLAGS_DEBUG) -g $(CFLAGS)
 
 # Compiles debug executable for windows
 $(NAME_DEBUG).exe: $(FILES_EXEC_ALL) $(BUILD_DIR)
-	$(CC) $(FILES_EXEC) $(FLAGS_DEFAULT_WIN) $(FLAGS_DEBUG) $(CFLAGS)
+	$(CC) $(FILES_EXEC) $(FLAGS_DEFAULT_WIN) $(FLAGS_DEBUG) -Z7 $(CFLAGS)
 
 # Cleans up non-windows build files
 clean_unix:
