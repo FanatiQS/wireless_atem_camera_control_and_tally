@@ -20,10 +20,10 @@ function cpy {
 	cp $PWD/$src $PWD/arduino/$dest
 }
 
-echo "Creating directory $PWD/src"
-mkdir $PWD/src
+echo "Creating directory $PWD/arduino/src"
+mkdir $PWD/arduino/src
 echo "Generating $PWD/src/user_config.h"
-echo '#include "../user_config.h"' > $PWD/src/user_config.h
+echo '#include "../user_config.h"' > $PWD/arduino/src/user_config.h
 cpy src/atem.c  src/atem.c
 cpy src/atem.h  src/atem.h
 cpy src/debug.h firmware/debug.h
