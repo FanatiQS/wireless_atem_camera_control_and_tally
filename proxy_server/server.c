@@ -213,7 +213,7 @@ static struct packet_t* createPacket(struct session_t* session, uint16_t len, ui
 	packet->remainingResends = ATEM_RESEND_OPENINGHANDSHAKE;
 	packet->len = len;
 	memset(packet->buf, 0, len);
-	packet->buf[ATEM_INDEX_LEN_LOW] = len;
+	packet->buf[ATEM_INDEX_LEN_LOW] = (uint8_t)len;
 	packet->buf[ATEM_INDEX_SESSION_HIGH] = high;
 	packet->buf[ATEM_INDEX_SESSION_LOW] = low;
 
