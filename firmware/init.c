@@ -2,6 +2,7 @@
 
 #include <lwip/udp.h> // struct udp_pcb
 #include <lwip/tcpip.h> // LOCK_TCPIO_CORE, UNLCOK_TCPIP_CORE
+#include <lwip/init.h> // LWIP_VERSION_STRING
 
 #include "./user_config.h" // DEBUG_TALLY, DEBUG_CC
 #include "./debug.h" // DEBUG_PRINTF, DEBUG_IP, WRAP
