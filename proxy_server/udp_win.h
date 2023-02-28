@@ -26,5 +26,11 @@ typedef int socklen_t;
 		abort();\
 	} while (0)
 
+// Casts argument to signed integer as expected by standard
+#define send(sock, data, ...) send(sock, (const char*)data, __VA_ARGS__)
+#define sendto(sock, data, ...) sendto(sock, (const char*)data, __VA_ARGS__)
+#define recv(sock, data, ...) recv(sock, (char*)data, __VA_ARGS__)
+#define recvfrom(sock, data, ...) recvfrom(sock, (char*)data, __VA_ARGS__)
+
 // Ends include guard
 #endif
