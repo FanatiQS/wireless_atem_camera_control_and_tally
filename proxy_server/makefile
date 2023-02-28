@@ -39,7 +39,7 @@ FLAGS_ERROR = -Weverything -Wno-pedantic -Wno-implicit-int-conversion -Wno-sign-
 
 FLAGS_DEFAULT = -Wall
 FLAGS_DEFAULT_UNIX = $(FLAGS_DEFAULT) -pedantic -Wextra -fvisibility=hidden -std=c11 -o $@
-FLAGS_DEFAULT_WIN = $(FLAGS_DEFAULT) -std:c11 -Fo:$(BUILD_DIR) -Fe:$@
+FLAGS_DEFAULT_WIN = $(FLAGS_DEFAULT) -std:c11 -Fo$(BUILD_DIR)\ -Fe:$@
 
 FLAGS_RELEASE = -O2
 FLAGS_DEBUG = -DDEBUG -g
