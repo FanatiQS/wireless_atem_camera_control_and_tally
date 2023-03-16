@@ -124,9 +124,9 @@ static void _atem_init() {
 		// Sets static ip
 #ifdef ESP8266
 		struct ip_info ipInfo = {
-			.ip = { .addr = conf.localAddr },
-			.netmask = { .addr = conf.netmask },
-			.gw = { .addr = conf.gateway}
+			.ip.addr = conf.localAddr,
+			.netmask.addr = conf.netmask,
+			.gw.addr = conf.gateway
 		};
 		if (!wifi_station_dhcpc_stop()) {
 			DEBUG_PRINTF("Failed to stop DHCP client\n");
