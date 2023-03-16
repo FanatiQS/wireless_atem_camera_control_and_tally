@@ -1,3 +1,7 @@
+// Only defines SDI functions if SDI shield is to be used
+#include "./sdi.h" // SDI_ENABLED
+#ifdef SDI_ENABLED
+
 #include <stdint.h> // uint8_t, uint16_t
 #include <stdbool.h> // bool, true, false
 
@@ -6,7 +10,6 @@
 
 #include "./user_config.h" // PIN_SCL, PIN_SDA, DEBUG
 #include "./debug.h" // DEBUG_PRINTF
-#include "./sdi.h" // SDI_ENABLED
 
 // Throws compilation error on invalid I2C pin definitions
 #if !(defined(PIN_SCL) && defined(PIN_SDA)) && (defined(PIN_SCL) || defined(PIN_SDA))
@@ -61,9 +64,6 @@
 // Writes variadic number of bytes to SDI shield register
 #define _SDI_WRITE(buf) I2C_WRITE(buf, sizeof(buf) / sizeof(buf[0]))
 #define SDI_WRITE(reg, ...) _SDI_WRITE(((uint8_t[]){ reg & 0xff, reg >> 8, __VA_ARGS__ }))
-
-// Only defines SDI functions if SDI shield is to be used
-#ifdef SDI_ENABLED
 
 // Reads SDI shield data from registers to buffer
 static void sdi_read(uint16_t reg, uint8_t* readBuf, uint8_t readLen) {
