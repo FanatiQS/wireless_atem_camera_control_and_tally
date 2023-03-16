@@ -119,7 +119,7 @@ static void sdi_flush(uint16_t reg) {
 // Writes tally data to the SDI shield
 void sdi_write_tally(uint8_t dest, bool pgm, bool pvw) {
 	sdi_flush(kRegOTARM);
-	SDI_WRITE(kRegOTDATA + dest + 1, pgm | (pvw << 1));
+	SDI_WRITE(kRegOTDATA + dest - 1, pgm | (pvw << 1));
 	SDI_WRITE(kRegOTARM, true);
 }
 
