@@ -254,7 +254,7 @@ If a camera model is not tested, it does not indicate it does not work, just tha
 | 2.30             | 8.1.1+                | Testing |
 
 ## Known issues
-Connecting to the ESP8266s soft AP can be very unstabile. When it has connected to the ATEM switcher it is no longer a problem as configuration is at that point done of the ATEM network.
+Connecting to the ESP8266s soft AP can be very unstable. When it has connected to the ATEM switcher it is no longer a problem as configuration is at that point done of the ATEM network.
 
 ## Test
 The test directory contains a client that can be used to test the protocol parser.
