@@ -10,11 +10,12 @@
 	}
 	#container {
 		display: inline-block;
-		border: 2px solid black;
+		border: 0.125em solid black; /* 0.125 == (2px / 1em) */
 		border-radius: 1em;
 		padding: 1em;
 		text-align: center;
 		font-family: sans-serif;
+		min-width: 16em; /* 16em == (qrcode-width / 1em) == (256px / 1em) */
 	}
 	.credentialsField label {
 		padding: 0 1em;
@@ -22,18 +23,14 @@
 		font-family: sans-serif;
 		font-size: 1.1em;
 		display: inline-block;
-		height: 2rem;
-		margin: 0 1em;
 	}
 	.credentialsField span {
 		font-size: 0.8em;
 		outline: none;
-		border: 1px solid darkgray;
-		padding: 1.5rem 1em 1.16rem;
-		margin-top: -1.5rem;
-		display: flex;
-		align-items: center;
-		justify-content: center;
+		border: 0.078125em solid darkgray; /* 0.078125 == (1px / 1em) */
+		padding: 1.8em 1.25em 1.5em;
+		margin-top: -0.9em;
+		display: block;
 	}
 	.credentialsField {
 		margin: 1.5em 1em 0.5em;
@@ -41,7 +38,12 @@
 	.credentialsField ~ .credentialsField {
 		margin: 0.5em 1em 1em;
 	}
+	#qrcode {
+		position: relative;
+		padding-bottom: 100%;
+	}
 	#qrcode img {
+		position: absolute;
 		width: 100%;
 	}
 	/* html {
