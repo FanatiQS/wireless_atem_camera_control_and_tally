@@ -1,2 +1,2 @@
-Posershell - < arduino_install
+Powershell - < arduino_install
 pause
