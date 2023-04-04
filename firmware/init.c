@@ -1,7 +1,7 @@
 #include <stdbool.h> // true
 
 #include <lwip/udp.h> // struct udp_pcb
-#include <lwip/lwipopts.h> // NO_SYS
+#include <lwipopts.h> // NO_SYS
 #include <lwip/tcpip.h> // LOCK_TCPIO_CORE, UNLCOK_TCPIP_CORE
 #include <lwip/init.h> // LWIP_VERSION_STRING
 
