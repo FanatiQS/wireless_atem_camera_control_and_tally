@@ -17,7 +17,7 @@ void atem_socket_connect(int sock);
 uint16_t atem_socket_listen(int sock, uint8_t* packet);
 int atem_socket_listen_fresh(uint8_t* packet);
 
-void atem_socket_send(int sock, uint8_t* socket);
-void atem_socket_recv(int sock, uint8_t* socket);
+void atem_socket_send(int sock, uint8_t* packet);
+void atem_socket_recv(int sock, uint8_t* packet);
 
 #endif // PROTOCOL_H
