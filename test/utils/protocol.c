@@ -221,3 +221,27 @@ void atem_socket_recv(int sock, uint8_t* packet) {
 	// Verifies received ATEM packet
 	atem_packet_verify(packet, recvLen);
 }
+
+
+
+// Ensures no more data is written when expecting session to be closed
+void atem_socket_norecv(int sock) {
+	struct fd_set fds;
+	FD_ZERO(&fds);
+	FD_SET(sock, &fds);
+	struct timeval timer = { .tv_sec = ATEM_TIMEOUT };
+	int selectLen = select(sock + 1, &fds, NULL, NULL, &timer);
+
+	if (selectLen == 0) return;
+	
+	if (selectLen == -1) {
+		perror("Select got an error");
+	}
+	else {
+		uint8_t packet[ATEM_MAX_PACKET_LEN];
+		atem_socket_recv(sock, packet);
+		print_debug("Received data when execting not to\n");
+	}
+
+	testrunner_abort();
+}

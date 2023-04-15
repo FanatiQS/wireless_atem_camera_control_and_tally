@@ -20,4 +20,6 @@ int atem_socket_listen_fresh(uint8_t* packet);
 void atem_socket_send(int sock, uint8_t* packet);
 void atem_socket_recv(int sock, uint8_t* packet);
 
+void atem_socket_norecv(int sock);
+
 #endif // PROTOCOL_H
