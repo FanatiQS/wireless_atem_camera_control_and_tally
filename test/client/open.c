@@ -4,7 +4,7 @@
 void atem_client_base_open_syn() {
 	uint8_t packet[ATEM_MAX_PACKET_LEN];
 	int sock = atem_socket_listen_fresh(packet);
-	atem_handshake_opcode_verify(packet, ATEM_CONNECTION_OPEN);
+	atem_handshake_opcode_verify(packet, ATEM_OPCODE_OPEN);
 	atem_header_flags_isnotset(packet, ATEM_FLAG_RETX);
 	atem_socket_close(sock);
 }
@@ -14,7 +14,7 @@ void atem_client_strict_open_numberOfResends() {
 	// Awaits client to make a fresh connection
 	uint8_t packet[ATEM_MAX_PACKET_LEN];
 	int sock = atem_socket_listen_fresh(packet);
-	atem_handshake_opcode_verify(packet, ATEM_CONNECTION_OPEN);
+	atem_handshake_opcode_verify(packet, ATEM_OPCODE_OPEN);
 	atem_header_flags_isnotset(packet, ATEM_FLAG_RETX);
 	uint16_t sessionId = atem_header_sessionid_get(packet);
 
@@ -22,7 +22,7 @@ void atem_client_strict_open_numberOfResends() {
 	struct timespec start = timer_start();
 	for (int i = 0; i < ATEM_RESENDS; i++) {
 		atem_socket_recv(sock, packet);
-		atem_handshake_verify(packet, ATEM_CONNECTION_OPEN, true, sessionId);
+		atem_handshake_verify(packet, ATEM_OPCODE_OPEN, true, sessionId);
 	}
 	uint32_t diff = timer_end(start);
 

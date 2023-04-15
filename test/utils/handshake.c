@@ -1,8 +1,8 @@
 #include <stdint.h> // uint8_t, uint16_t
 #include <stdbool.h> // bool
 
-#include "../../src/atem_private.h" // ATEM_INDEX_NEWSESSIONID_HIGH, ATEM_INDEX_NEWSESSIONID_LOW, ATEM_FLAG_SYN, ATEM_LEN_SYN, ATEM_INDEX_OPCODE, ATEM_FLAG_RETX, ATEM_CONNECTION_OPEN
-#include "../../src/atem.h" // ATEM_CONNECTION_SUCCESS, ATEM_CONNECTION_REJECTED, ATEM_CONNECTION_CLOSING, ATEM_CONNECTION_CLOSED, ATEM_MAX_PACKET_LEN
+#include "../../src/atem_private.h" // ATEM_INDEX_NEWSESSIONID_HIGH, ATEM_INDEX_NEWSESSIONID_LOW, ATEM_FLAG_SYN, ATEM_LEN_SYN, ATEM_INDEX_OPCODE, ATEM_FLAG_RETX, ATEM_OPCODE_OPEN, ATEM_OPCODE_SUCCESS, ATEM_OPCODE_REJECT, ATEM_OPCODE_CLOSING, ATEM_OPCODE_CLOSED
+#include "../../src/atem.h" // ATEM_MAX_PACKET_LEN
 #include "./header.h" // atem_packet_word_set, atem_packet_word_get, atem_header_flags_set, atem_header_flags_verify, atem_header_len_set, atem_header_len_verify, atem_header_sessionid_get, atem_header_ackid_verify, atem_header_localid_verify, atem_header_remoteid_verify, atem_header_sessionid_set, atem_header_sessionid_verify
 #include "./runner.h" // testrunner_abort
 #include "./protocol.h" // atem_packet_clear, atem_socket_recv, atem_socket_send
@@ -68,7 +68,7 @@ uint8_t atem_handshake_opcode_get(uint8_t* packet) {
 
 	// Server assigned session ID should only be defined for successful responses
 	uint8_t opcode = packet[ATEM_INDEX_OPCODE];
-	if (opcode != ATEM_CONNECTION_SUCCESS) {
+	if (opcode != ATEM_OPCODE_SUCCESS) {
 		atem_handshake_newsessionid_verify(packet, 0x0000);
 	}
 	else {
@@ -82,15 +82,15 @@ uint8_t atem_handshake_opcode_get(uint8_t* packet) {
 	// Opening handshake uses client assigned session IDs while closing handshake uses server assigned
 	uint16_t sessionId = atem_header_sessionid_get(packet);
 	switch (opcode) {
-		case ATEM_CONNECTION_OPEN:
-		case ATEM_CONNECTION_SUCCESS:
-		case ATEM_CONNECTION_REJECTED: {
+		case ATEM_OPCODE_OPEN:
+		case ATEM_OPCODE_SUCCESS:
+		case ATEM_OPCODE_REJECT: {
 			if (!(sessionId & 0x8000)) break;
 			print_debug("Expected session id MSB to be set: 0x%04x\n", sessionId);
 			testrunner_abort();
 		}
-		case ATEM_CONNECTION_CLOSING:
-		case ATEM_CONNECTION_CLOSED: {
+		case ATEM_OPCODE_CLOSING:
+		case ATEM_OPCODE_CLOSED: {
 			if (sessionId & 0x8000) break;
 			print_debug("Expected session id MSB to be set: 0x%4x\n", sessionId);
 			testrunner_abort();
