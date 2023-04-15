@@ -147,8 +147,7 @@ void atem_header_localid_verify(uint8_t* packet, uint16_t expectedLocalId) {
 
 // Sets unknown id in packet
 void atem_header_unknownid_set(uint8_t* packet, uint16_t unknownId) {
-	print_debug("Setting unknown ID is not supported\n");
-	testrunner_abort();
+	atem_packet_word_set(packet, ATEM_INDEX_UNKNOWNID_HIGH, ATEM_INDEX_UNKNOWNID_LOW, unknownId);
 }
 
 // Gets unknown id from packet
