@@ -6,15 +6,10 @@
 #include <stdbool.h> // bool, true, false
 
 #include <lwip/arch.h> // sys_now
-#include <twi.h> // twi_init, twi_readFrom, twi_writeTo
 
 #include "./user_config.h" // PIN_SCL, PIN_SDA, DEBUG
 #include "./debug.h" // DEBUG_PRINTF
-
-// Throws compilation error on invalid I2C pin definitions
-#if !(defined(PIN_SCL) && defined(PIN_SDA)) && (defined(PIN_SCL) || defined(PIN_SDA))
-#error Both PIN_SCL and PIN_SDA has to be defined if SDI shield is to be used or none of them defined if SDI shield is not to be used
-#endif
+#include "./i2c.h" // I2C_INIT, I2C_READ, I2C_WRITE
 
 // Number of milliseconds to wait for SDI shield FPGA to get ready
 #ifndef SDI_INIT_TIMEOUT
@@ -25,11 +20,6 @@
 #ifndef SDI_I2C_ADDR
 #define SDI_I2C_ADDR 0x6E
 #endif // SDI_I2C_ADDR
-
-// Uses TWI library for I2C communication
-#define I2C_INIT(scl, sda) twi_init(sda, scl)
-#define I2C_READ(buf, len) twi_readFrom(SDI_I2C_ADDR, buf, len, true)
-#define I2C_WRITE(buf, len) twi_writeTo(SDI_I2C_ADDR, buf, len, true)
 
 
 

@@ -30,6 +30,7 @@ cpy src/atem.h  src/atem.h
 cpy src/debug.h firmware/debug.h
 cpy src/http.c  firmware/http.c
 cpy src/http.h  firmware/http.h
+cpy src/i2c.h   firmware/i2c.h
 cpy src/init.c  firmware/init.c
 cpy src/init.h  firmware/init.h
 cpy src/led.h   firmware/led.h
