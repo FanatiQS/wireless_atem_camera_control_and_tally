@@ -28,12 +28,12 @@
 #define kRegFWVERSION  0x0004
 #define kRegPVERSION   0x0006
 #define kRegCONTROL    0x1000
-#define kRegOTARM      0x4000
-#define kRegOTLENGTH   0x4001
-#define kRegOTDATA     0x4100
 #define kRegOCARM      0x2000
 #define kRegOCLENGTH   0x2001
 #define kRegOCDATA     0x2100
+#define kRegOTARM      0x4000
+#define kRegOTLENGTH   0x4001
+#define kRegOTDATA     0x4100
 
 // SDI shield override masks
 #define kRegCONTROL_COVERIDE_Mask 0x01
