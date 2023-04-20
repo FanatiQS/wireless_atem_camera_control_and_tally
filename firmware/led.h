@@ -6,19 +6,76 @@
 
 
 
-// ESP8266
+// Bit mask for the PGM pin
+#ifdef PIN_PGM
+#define PIN_PGM_MASK (1 << PIN_PGM)
+#else // PIN_PGM
+#define PIN_PGM_MASK (0)
+#endif // PIN_PGM
+
+// Bit mask for the PVW pin
+#ifdef PIN_PVW
+#define PIN_PVW_MASK (1 << PIN_PVW)
+#else // PIN_PVW
+#define PIN_PVW_MASK (0)
+#endif // PIN_PVW
+
+// Bit mask for both PGM and PVW pins
+#define TALLY_MASK (PIN_PGM_MASK | PIN_PVW_MASK)
+
+// Bit mask for CONN (connection) pin
+#ifdef PIN_CONN
+#define PIN_CONN_MASK (1 << PIN_CONN)
+#else // PIN_CONN
+#define PIN_CONN_MASK (0)
+#endif // PIN_CONN
+
+
+
+// Gets tally bit masks from PGM and PVW states
+#define TALLY_SET_MASK(pgm, pvw) ((!pgm * PIN_PGM_MASK) | (!pvw * PIN_PVW_MASK))
+#define TALLY_CLR_MASK(pgm, pvw) ((pgm * PIN_PGM_MASK) | (pvw * PIN_PVW_MASK))
+
+
+
 #ifdef ESP8266
 
-#include <eagle_soc.h> // GPIO_REG_WRITE, GPIO_PIN0_ADDRESS, GPIO_OUT_W1TS_ADDRESS, GPIO_OUT_W1TC_ADDRESS
+#include <eagle_soc.h> // GPIO_PIN_COUNT, GPIO_REG_WRITE, GPIO_PIN0_ADDRESS, GPIO_ENABLE_W1TS_ADDRESS, RTC_GPIO_ENABLE, GPIO_OUT_W1TC_DATA_MASK, GPIO_OUT_W1TS_ADDRESS, GPIO_OUT_W1TC_ADDRESS, WRITE_PERI_REG, RTC_GPIO_OUT
 
-// Directly modifies register addresses
+// GPIO16 is not a normal GPIO pin and is processed in other registers as RTC pin
+#define RTC_PIN 16
+
+// Initializes GPIO or RTC pin
 #define LED_INIT(pin)\
 	do {\
-		GPIO_REG_WRITE(GPIO_PIN0_ADDRESS + pin * 4, 0);\
-		GPIO_REG_WRITE(GPIO_ENABLE_W1TS_ADDRESS, 1 << pin);\
+		if (pin < GPIO_PIN_COUNT) {\
+			GPIO_REG_WRITE(GPIO_PIN0_ADDRESS + pin * 4, 0);\
+			GPIO_REG_WRITE(GPIO_ENABLE_W1TS_ADDRESS, 1 << pin);\
+		}\
+		else if (pin == RTC_PIN) {\
+			WRITE_PERI_REG(RTC_GPIO_OUT, 0);\
+			WRITE_PERI_REG(RTC_GPIO_ENABLE, 1);\
+		}\
 	} while (0)
-#define GPIO_SET(mask) GPIO_REG_WRITE(GPIO_OUT_W1TS_ADDRESS, mask)
-#define GPIO_CLR(mask) GPIO_REG_WRITE(GPIO_OUT_W1TC_ADDRESS, mask)
+
+// Separates RTC pin from normal GPIO pins
+#define GPIO_MASK(mask) ((mask) & GPIO_OUT_W1TC_DATA_MASK)
+#define RTC_MASK(mask) (((mask) >> RTC_PIN) & 1)
+
+// Writes bit field to GPIO and/or RTC register
+// Pin masks are able to be eliminated by compiler when defined deterministically
+#define GPIO_WRITE(setPinMask, setValue, clearPinMask, clearValue)\
+	do {\
+		if (GPIO_MASK(setPinMask)) GPIO_REG_WRITE(GPIO_OUT_W1TS_ADDRESS, GPIO_MASK(setValue));\
+		if (GPIO_MASK(clearPinMask)) GPIO_REG_WRITE(GPIO_OUT_W1TC_ADDRESS, GPIO_MASK(clearValue));\
+		if (RTC_MASK(setPinMask | clearPinMask)) WRITE_PERI_REG(RTC_GPIO_OUT, RTC_MASK(setValue));\
+	} while (0)
+
+// Writes CONN (connection) state as bit fields to register
+#define LED_CONN_WRITE(setMask, clearMask) GPIO_WRITE(setMask, setMask, clearMask, clearMask)
+
+// Writes tally states as bit fields to registers
+#define LED_TALLY_WRITE(setMask, clearMask) GPIO_WRITE(TALLY_MASK, setMask, TALLY_MASK, clearMask)
 
 #else // ESP8266
 
@@ -30,42 +87,14 @@
 
 
 
-// Gets PGM pin GPIO mask
-#ifdef PIN_PGM
-#define PGM(state) (state<<PIN_PGM)
-#else // PIN_PGM
-#define PGM(state) 0
-#endif // PIN_PGM
-
-// Gets PVW pin GPIO mask
-#ifdef PIN_PVW
-#define PVW(state) (state<<PIN_PVW)
-#else // PIN_PVW
-#define PVW(state) 0
-#endif // PIN_PVW
-
-
-
-// Enables and disables tally LEDs
+// Uses LED_TALLY_WRITE if LED_TALLY is not defined to convert states to bit fields
 #ifndef LED_TALLY
-#if defined(PIN_PGM) || defined(PIN_PVW)
-#define LED_TALLY(pgm, pvw)\
-	do {\
-		GPIO_SET(PGM(pgm) | PVW(pvw));\
-		GPIO_CLR(PGM(!pgm) | PVW(!pvw));\
-	} while (0)
-#else // PIN_PGM || PIN_PVW
-#define LED_TALLY(pgm, pvw)
-#endif // PIN_PGM || PIN_PVW
+#define LED_TALLY(pgm, pvw) LED_TALLY_WRITE(TALLY_SET_MASK(pgm, pvw), TALLY_CLR_MASK(pgm, pvw))
 #endif // LED_TALLY
 
-// Enables or disables connection LED
+// Uses LED_CONN_WRITE if LED_CONN is not defined to convert state to bit field
 #ifndef LED_CONN
-#ifdef PIN_CONN
-#define LED_CONN(state) if (state) (GPIO_CLR(1 << PIN_CONN)); else GPIO_SET(1 << PIN_CONN)
-#else // PIN_CONN
-#define LED_CONN(state)
-#endif // PIN_CONN
+#define LED_CONN(state) LED_CONN_WRITE(!state * PIN_CONN_MASK, state * PIN_CONN_MASK)
 #endif // LED_CONN
 
 #endif // LED_H
