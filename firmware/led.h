@@ -34,7 +34,7 @@
 
 // Gets tally bit masks from PGM and PVW states
 #define TALLY_SET_MASK(pgm, pvw) ((pgm * PIN_PGM_MASK) | (pvw * PIN_PVW_MASK))
-#define TALLY_CLR_MASK(pgm, pvw) ((!pgm * PIN_PGM_MASK) | (!vw * PIN_PVW_MASK))
+#define TALLY_CLR_MASK(pgm, pvw) ((!pgm * PIN_PGM_MASK) | (!pvw * PIN_PVW_MASK))
 
 
 
