@@ -6,6 +6,8 @@
 void atem_packet_word_set(uint8_t* packet, uint8_t high, uint8_t low, uint16_t word);
 uint16_t atem_packet_word_get(uint8_t* packet, uint8_t high, uint8_t low);
 
+void atem_packet_clear(uint8_t* packet);
+
 void atem_header_flags_set(uint8_t* packet, uint8_t flags);
 uint8_t atem_header_flags_get(uint8_t* packet);
 void atem_header_flags_get_verify(uint8_t* packet, uint8_t requiredFlags, uint8_t optionalFlags);
@@ -36,5 +38,7 @@ void atem_header_unknownid_get_verify(uint8_t* packet, uint16_t expectedUnknownI
 void atem_header_remoteid_set(uint8_t* packet, uint16_t remoteId);
 uint16_t atem_header_remoteid_get(uint8_t* packet);
 void atem_header_remoteid_get_verify(uint8_t* packet, uint16_t expectedRemoteId);
+
+void atem_header_init(void);
 
 #endif // HEADER_H

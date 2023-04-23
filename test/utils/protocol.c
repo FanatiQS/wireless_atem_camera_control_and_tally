@@ -25,11 +25,6 @@ char* atemServerAddr;
 
 
 
-// Zeroes out packet data
-void atem_packet_clear(uint8_t* packet) {
-	memset(packet, 0, ATEM_MAX_PACKET_LEN);
-}
-
 // Verifies ATEM packet length and unknown id
 void atem_packet_verify(uint8_t* packet, ssize_t recvLen) {
 	print_buffer("Received packet", packet, recvLen);

@@ -7,7 +7,6 @@
 
 extern char* atemServerAddr;
 
-void atem_packet_clear(uint8_t* packet);
 void atem_packet_verify(uint8_t* packet, ssize_t recvLen);
 
 int atem_socket_init();
