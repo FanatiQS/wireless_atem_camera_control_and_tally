@@ -3,25 +3,21 @@
 
 #include "../../src/atem_private.h" // ATEM_INDEX_NEWSESSIONID_HIGH, ATEM_INDEX_NEWSESSIONID_LOW, ATEM_FLAG_SYN, ATEM_LEN_SYN, ATEM_INDEX_OPCODE, ATEM_FLAG_RETX, ATEM_OPCODE_OPEN, ATEM_OPCODE_SUCCESS, ATEM_OPCODE_REJECT, ATEM_OPCODE_CLOSING, ATEM_OPCODE_CLOSED
 #include "../../src/atem.h" // ATEM_MAX_PACKET_LEN
-#include "./header.h" // atem_packet_word_set, atem_packet_word_get, atem_header_flags_set, atem_header_flags_verify, atem_header_len_set, atem_header_len_verify, atem_header_sessionid_get, atem_header_ackid_verify, atem_header_localid_verify, atem_header_remoteid_verify, atem_header_sessionid_set, atem_header_sessionid_verify
+#include "./header.h" // atem_packet_clear, atem_packet_word_set, atem_packet_word_get, atem_header_flags_set, atem_header_flags_get_verify, atem_header_len_set, atem_header_len_get_verify, atem_header_sessionid_get, atem_header_ackid_get_verify, atem_header_localid_get_verify, atem_header_remoteid_get_verify, atem_header_sessionid_set, atem_header_sessionid_get_verify
 #include "./runner.h" // testrunner_abort
-#include "./protocol.h" // atem_packet_clear, atem_socket_recv, atem_socket_send
+#include "./protocol.h" // atem_socket_recv, atem_socket_send
 #include "./logs.h" // print_debug
 
 
 
 // Sets new session id in handshake packet
-void atem_handshake_newsessionid_set(uint8_t* packet, uint16_t sessionId) {
-	atem_packet_word_set(packet, ATEM_INDEX_NEWSESSIONID_HIGH, ATEM_INDEX_NEWSESSIONID_LOW, sessionId);
+void atem_handshake_newsessionid_set(uint8_t* packet, uint16_t newSessionId) {
+	atem_packet_word_set(packet, ATEM_INDEX_NEWSESSIONID_HIGH, ATEM_INDEX_NEWSESSIONID_LOW, newSessionId);
 }
 
 // Gets new session id from handshake packet
 uint16_t atem_handshake_newsessionid_get(uint8_t* packet) {
-	uint16_t sessionId = atem_packet_word_get(
-		packet,
-		ATEM_INDEX_NEWSESSIONID_HIGH,
-		ATEM_INDEX_NEWSESSIONID_LOW
-	);
+	uint16_t sessionId = atem_packet_word_get(packet, ATEM_INDEX_NEWSESSIONID_HIGH, ATEM_INDEX_NEWSESSIONID_LOW);
 	if (sessionId & 0x8000) {
 		print_debug("Expected new session id 0x%04x to not have MSB set\n", sessionId);
 		testrunner_abort();
@@ -30,7 +26,7 @@ uint16_t atem_handshake_newsessionid_get(uint8_t* packet) {
 }
 
 // Verifies new session id in handshake packet
-void atem_handshake_newsessionid_verify(uint8_t* packet, uint16_t expectedNewSessionId) {
+void atem_handshake_newsessionid_get_verify(uint8_t* packet, uint16_t expectedNewSessionId) {
 	uint16_t newSessionId = atem_handshake_newsessionid_get(packet);
 	if (newSessionId == expectedNewSessionId) return;
 	print_debug("Expected new session id 0x%04x, but got 0x%04x\n", expectedNewSessionId, newSessionId);
@@ -49,13 +45,13 @@ void atem_handshake_opcode_set(uint8_t* packet, uint8_t opcode) {
 // Gets opcode from handshake packet, does not check session ids, retransmit flag or unknown id
 uint8_t atem_handshake_opcode_get(uint8_t* packet) {
 	// Verifies packet is a SYN packet
-	atem_header_flags_verify(packet, ATEM_FLAG_SYN, ATEM_FLAG_RETX);
-	atem_header_len_verify(packet, ATEM_LEN_SYN);
+	atem_header_flags_get_verify(packet, ATEM_FLAG_SYN, ATEM_FLAG_RETX);
+	atem_header_len_get_verify(packet, ATEM_LEN_SYN);
 
 	// Ack ID, local ID and remote ID should be clear for SYN packets
-	atem_header_ackid_verify(packet, 0x0000);
-	atem_header_localid_verify(packet, 0x0000);
-	atem_header_remoteid_verify(packet, 0x0000);
+	atem_header_ackid_get_verify(packet, 0x0000);
+	atem_header_localid_get_verify(packet, 0x0000);
+	atem_header_remoteid_get_verify(packet, 0x0000);
 
 	// Only sections for server assigned session ID and opcode can have data
 	int expectClear[] = { 13, 16, 17, 18, 19 };
@@ -69,7 +65,7 @@ uint8_t atem_handshake_opcode_get(uint8_t* packet) {
 	// Server assigned session ID should only be defined for successful responses
 	uint8_t opcode = packet[ATEM_INDEX_OPCODE];
 	if (opcode != ATEM_OPCODE_SUCCESS) {
-		atem_handshake_newsessionid_verify(packet, 0x0000);
+		atem_handshake_newsessionid_get_verify(packet, 0x0000);
 	}
 	else {
 		uint16_t newSessionId = atem_handshake_newsessionid_get(packet);
@@ -105,7 +101,7 @@ uint8_t atem_handshake_opcode_get(uint8_t* packet) {
 }
 
 // Verifies opcode in handshake packet
-void atem_handshake_opcode_verify(uint8_t* packet, uint8_t expectedOpcode) {
+void atem_handshake_opcode_get_verify(uint8_t* packet, uint8_t expectedOpcode) {
 	uint8_t opcode = atem_handshake_opcode_get(packet);
 	if (opcode == expectedOpcode) return;
 	print_debug("Expected opcode 0x%02x, but got 0x%02x\n", expectedOpcode, opcode);
@@ -114,41 +110,75 @@ void atem_handshake_opcode_verify(uint8_t* packet, uint8_t expectedOpcode) {
 
 
 
-// Sets opcode, retransmit flags and session id for handshake packet
-void atem_handshake_set(uint8_t* packet, uint8_t opcode, bool retx, uint16_t sessionId) {
+// Sets opcode, retransmit flag and session id for handshake packet
+void atem_handshake_common_set(uint8_t* packet, uint8_t opcode, bool retx, uint16_t sessionId) {
 	atem_handshake_opcode_set(packet, opcode);
 	atem_header_flags_set(packet, ATEM_FLAG_RETX * retx);
 	atem_header_sessionid_set(packet, sessionId);
 }
 
 // Gets opcode from verified handshake packet
-uint8_t atem_handshake_get(uint8_t* packet, bool retx, uint16_t sessionId) {
+uint8_t atem_handshake_common_get(uint8_t* packet, bool retx, uint16_t sessionId) {
 	uint8_t opcode = atem_handshake_opcode_get(packet);
-	atem_header_flags_verify(packet, ATEM_FLAG_RETX * retx, ~ATEM_FLAG_RETX);
-	atem_header_sessionid_verify(packet, sessionId);
+	atem_header_flags_get_verify(packet, ATEM_FLAG_RETX * retx, ~ATEM_FLAG_RETX);
+	atem_header_sessionid_get_verify(packet, sessionId);
 	return opcode;
 }
 
 // Verifies opcode, retransmit flag and session id for handshake packet
-void atem_handshake_verify(uint8_t* packet, uint8_t opcode, bool retx, uint16_t sessionId) {
-	atem_handshake_opcode_verify(packet, opcode);
-	atem_header_flags_verify(packet, ATEM_FLAG_RETX * retx, ~ATEM_FLAG_RETX);
-	atem_header_sessionid_verify(packet, sessionId);
+void atem_handshake_common_get_verify(uint8_t* packet, uint8_t opcode, bool retx, uint16_t sessionId) {
+	atem_handshake_opcode_get_verify(packet, opcode);
+	atem_header_flags_get_verify(packet, ATEM_FLAG_RETX * retx, ~ATEM_FLAG_RETX);
+	atem_header_sessionid_get_verify(packet, sessionId);
 }
 
 
 
-// Sends a handshake packet
-void atem_handshake_send(int sock, uint8_t opcode, bool retx, uint16_t sessionId) {
-	uint8_t packet[ATEM_MAX_PACKET_LEN];
-	atem_packet_clear(packet);
-	atem_handshake_set(packet, opcode, retx, sessionId);
+// Sends handshake packet with opcode, retransmit flag and session id
+void atem_handshake_sessionid_send(int sock, uint8_t opcode, bool retx, uint16_t sessionId) {
+	uint8_t packet[ATEM_MAX_PACKET_LEN] = {0};
+	atem_handshake_common_set(packet, opcode, retx, sessionId);
 	atem_socket_send(sock, packet);
 }
 
-// Receives a handshake packet with specified opcode and sessionId
-void atem_handshake_recv(int sock, uint8_t opcode, bool retx, uint16_t sessionId) {
+// Gets session id from handshake packet and verifies opcode and retransmit flag
+uint16_t atem_handshake_sessionid_recv(int sock, uint8_t opcode, bool retx) {
 	uint8_t packet[ATEM_MAX_PACKET_LEN];
 	atem_socket_recv(sock, packet);
-	atem_handshake_verify(packet, opcode, retx, sessionId);
+	atem_handshake_opcode_get_verify(packet, opcode);
+	atem_header_flags_get_verify(packet, ATEM_FLAG_RETX * retx, ~ATEM_FLAG_RETX);
+	return atem_header_sessionid_get(packet);
+}
+
+// Verifies opcode, retransmit flag and session id in received handshake packet
+void atem_handshake_sessionid_recv_verify(int sock, uint8_t opcode, bool retx, uint16_t expectedSessionId) {
+	uint8_t packet[ATEM_MAX_PACKET_LEN];
+	atem_socket_recv(sock, packet);
+	atem_handshake_common_get_verify(packet, opcode, retx, expectedSessionId);
+}
+
+
+
+// Sends handshake packet with opcode, retransmit flag, session id and new session id
+void atem_handshake_newsessionid_send(int sock, uint8_t opcode, bool retx, uint16_t sessionId, uint16_t newSessionId) {
+	uint8_t packet[ATEM_MAX_PACKET_LEN] = {0};
+	atem_handshake_common_set(packet, opcode, retx, sessionId);
+	atem_handshake_newsessionid_set(packet, newSessionId);
+	atem_socket_send(sock, packet);
+}
+
+// Gets new session id from received handshake packet and verifies opcode, retransmit flag and session id
+uint16_t atem_handshake_newsessionid_recv(int sock, uint8_t opcode, bool retx, uint16_t sessionId) {
+	uint8_t packet[ATEM_MAX_PACKET_LEN];
+	atem_socket_recv(sock, packet);
+	atem_handshake_common_get_verify(packet, opcode, retx, sessionId);
+	return atem_handshake_newsessionid_get(packet);
+}
+
+// Verifies opcode, retransmit flag, session id and new session id in received handshake packet
+void atem_handshake_newsessionid_recv_verify(int sock, uint8_t opcode, bool retx, uint16_t sessionId, uint16_t expectedNewSessionId) {
+	uint8_t packet[ATEM_MAX_PACKET_LEN];
+	atem_socket_recv(sock, packet);
+	atem_handshake_common_get_verify(packet, opcode, retx, sessionId);
+	atem_handshake_newsessionid_get_verify(packet, expectedNewSessionId);
 }
