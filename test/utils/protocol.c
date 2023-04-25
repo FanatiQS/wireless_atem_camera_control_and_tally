@@ -160,21 +160,6 @@ uint16_t atem_socket_listen(int sock, uint8_t* packet) {
 	return htons(peerAddr.sin_port);
 }
 
-// Listens for a fresh ATEM client to connect
-int atem_socket_listen_fresh(uint8_t* packet) {
-	// Gets socket already trying to connect
-	int sock = atem_socket_init();
-	int port = atem_socket_listen(sock, packet);
-
-	// Flushes all requests made to already trying socket to process request from initial packet
-	do {
-		atem_socket_close(sock);
-		sock = atem_socket_init();
-	} while (atem_socket_listen(sock, packet) == port);
-
-	return sock;
-}
-
 
 
 // Sends ATEM packet

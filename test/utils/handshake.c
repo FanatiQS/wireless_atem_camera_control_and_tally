@@ -182,3 +182,53 @@ void atem_handshake_newsessionid_recv_verify(int sock, uint8_t opcode, bool retx
 	atem_handshake_common_get_verify(packet, opcode, retx, sessionId);
 	atem_handshake_newsessionid_get_verify(packet, expectedNewSessionId);
 }
+
+
+
+// Connects to the ATEM switcher by completing entire opening handshake
+uint16_t atem_handshake_connect(int sock, uint16_t sessionId) {
+	atem_socket_connect(sock);
+	atem_handshake_sessionid_send(sock, ATEM_OPCODE_OPEN, false, sessionId);
+	uint16_t newSessionId = atem_handshake_newsessionid_recv(sock, ATEM_OPCODE_SUCCESS, false, sessionId);
+	atem_ack_send(sock, sessionId, 0x0000);
+}
+
+// Gets ATEM client connection by completing entire opening handshake
+uint16_t atem_handshake_listen(int sock, uint16_t newSessionId) {
+	uint8_t packet[ATEM_MAX_PACKET_LEN];
+	atem_socket_listen(sock, packet);
+	atem_handshake_opcode_get_verify(packet, ATEM_OPCODE_OPEN);
+	uint16_t sessionId = atem_header_sessionid_get(packet);
+	atem_handshake_newsessionid_send(sock, ATEM_OPCODE_SUCCESS, false, sessionId, newSessionId);
+	atem_ack_recv_verify(sock, sessionId, 0x0000);
+	return newSessionId | 0x8000;
+}
+
+// Closes connection to ATEM switcher or client by completing entire closing handshake
+void atem_handshake_close(int sock, uint16_t sessionId) {
+	atem_handshake_sessionid_send(sock, ATEM_OPCODE_CLOSING, false, sessionId);
+	atem_handshake_sessionid_recv_verify(sock, ATEM_OPCODE_CLOSED, false, sessionId);
+}
+
+// Forces the ATEM client trying to connect to restart the connection
+void atem_handshake_resetpeer() {
+	uint8_t packet[ATEM_MAX_PACKET_LEN];
+	int sock = atem_socket_create();
+	atem_socket_listen(sock, packet);
+	atem_handshake_opcode_get_verify(packet, ATEM_OPCODE_OPEN);
+	uint16_t sessionId = atem_header_sessionid_get(packet);
+	atem_handshake_sessionid_send(sock, ATEM_OPCODE_REJECT, false, sessionId);
+	atem_socket_close(sock);
+}
+
+
+
+// Receives an opening handshake SYN packet from an ATEM client
+uint16_t atem_handshake_start_server(int sock) {
+	uint8_t* packet[ATEM_MAX_PACKET_LEN];
+	atem_handshake_resetpeer();
+	atem_socket_listen(sock, packet);
+	atem_handshake_opcode_get_verify(packet, ATEM_OPCODE_OPEN);
+	atem_header_flags_isnotset(packet, ATEM_FLAG_RETX);
+	return atem_header_sessionid_get(packet);
+}
