@@ -1,15 +1,14 @@
 #include <stdint.h> // uint8_t, uint16_t
 #include <stdio.h> // perror
-#include <string.h> // memset
 
 #include <unistd.h> // close
-#include <sys/socket.h> // socket, AF_INET, SOCK_DGRAM, struct timeval, setsockopt, SOL_SOCKET SO_RCVTIMEO, SO_SNDTIMEO, ssize_t send, recv, bind, connect, struct sockaddr
+#include <sys/socket.h> // socket, AF_INET, SOCK_DGRAM, struct timeval, setsockopt, SOL_SOCKET SO_RCVTIMEO, SO_SNDTIMEO, ssize_t, send, recv, bind, connect, struct sockaddr, recvfrom
 #include <arpa/inet.h> // struct sockaddr_in, htons, inet_addr
 #include <sys/select.h> // select, FD_ZERO, FD_SET, fd_set
 
-#include "../../src/atem_private.h" // ATEM_FLAG_ACK, ATEM_LEN_ACK, ATEM_INDEX_UNKNOWNID_HIGH, ATEM_INDEX_UNKNOWNID_LOW, ATEM_FLAG_SYN, ATEM_FLAG_RETX
+#include "../../src/atem_private.h" // ATEM_FLAG_SYN, ATEM_FLAG_RETX, ATEM_FLAG_ACK, ATEM_LEN_ACK
 #include "../../src/atem.h" // ATEM_MAX_PACKET_LEN
-#include "./header.h" // atem_header_len_get, atem_header_len_verify, atem_header_flags_set, atem_header_flags_get, atem_header_len_set, atem_packet_word_get
+#include "./header.h" // atem_header_len_get, atem_header_flags_get, atem_packet_unknownid_get, atem_header_len_get_verify, atem_header_flags_set, atem_header_len_set
 #include "./runner.h" // testrunner_abort
 #include "./logs.h" // print_buffer, print_debug
 
@@ -33,7 +32,7 @@ void atem_packet_verify(uint8_t* packet, ssize_t recvLen) {
 	int checkUnknownId = 0;
 	if (checkUnknownId) {
 		uint8_t flags = atem_header_flags_get(packet);
-		uint8_t unknownId = atem_packet_word_get(packet, ATEM_INDEX_UNKNOWNID_HIGH, ATEM_INDEX_UNKNOWNID_LOW);
+		uint8_t unknownId = atem_header_unknownid_get(packet);
 		if (flags == ATEM_FLAG_SYN) {
 			if (unknownId != 0x003a) {
 				print_debug("uknown id 0x3a\n");
@@ -55,13 +54,13 @@ void atem_packet_verify(uint8_t* packet, ssize_t recvLen) {
 	}
 
 	// Verifies packet length
-	atem_header_len_verify(packet, recvLen);
+	atem_header_len_get_verify(packet, recvLen);
 }
 
 
 
-// Initializes UDP socket to ATEM switcher or client
-int atem_socket_init() {
+// Creates a UDP socket for communicating with an ATEM switcher or client
+int atem_socket_create(void) {
 	// Creates socket
 	int sock = socket(AF_INET, SOCK_DGRAM, 0);
 	if (sock == -1) {
@@ -90,7 +89,7 @@ void atem_socket_close(int sock) {
 
 
 
-// Connects client socket to ATEM server address
+// Connects to the ATEM switcher at atemServerAddr
 void atem_socket_connect(int sock) {
 	struct sockaddr_in addr = {
 		.sin_family = AF_INET,
@@ -105,7 +104,7 @@ void atem_socket_connect(int sock) {
 
 // Listens for an ATEM client to connect
 uint16_t atem_socket_listen(int sock, uint8_t* packet) {
-	// Binds socket to ATEM client address for receiving packets
+	// Binds socket for receiving ATEM client packets
 	struct sockaddr_in bindAddr = {
 		.sin_family = AF_INET,
 		.sin_port = htons(ATEM_PORT),
@@ -116,7 +115,7 @@ uint16_t atem_socket_listen(int sock, uint8_t* packet) {
 		testrunner_abort();
 	}
 
-	// Awaits first packet from client
+	// Awaits first packet from ATEM client
 	fd_set fds;
 	FD_ZERO(&fds);
 	FD_SET(sock, &fds);
@@ -135,19 +134,23 @@ uint16_t atem_socket_listen(int sock, uint8_t* packet) {
 	struct sockaddr_in peerAddr;
 	socklen_t peerAddrLen = sizeof(peerAddr);
 	ssize_t recvLen = recvfrom(sock, packet, ATEM_MAX_PACKET_LEN, 0, (struct sockaddr*)&peerAddr, &peerAddrLen);
-	if (recvLen < 0) {
+	if (recvLen <= 0) {
 		if (recvLen == -1) {
 			perror("Failed to recvfrom packet");
+		}
+		else if (recvLen == 0) {
+			print_debug("Received empty packet from client\n");
 		}
 		else {
 			print_debug("Function call 'recvfrom' failed: %zu\n", recvLen);
 		}
+		testrunner_abort();
 	}
 
 	// Verifies received ATEM packet
 	atem_packet_verify(packet, recvLen);
 
-	// Connects socket to ATEM client for outgoing packets
+	// Connects socket to ATEM client
 	if (connect(sock, (struct sockaddr*)&peerAddr, peerAddrLen)) {
 		perror("Failed to connect socket");
 		testrunner_abort();
@@ -203,9 +206,12 @@ void atem_socket_send(int sock, uint8_t* packet) {
 void atem_socket_recv(int sock, uint8_t* packet) {
 	// Receives packet
 	ssize_t recvLen = recv(sock, packet, ATEM_MAX_PACKET_LEN, 0);
-	if (recvLen < 0) {
+	if (recvLen <= 0) {
 		if (recvLen == -1) {
 			perror("Failed to recv packet");
+		}
+		else if (recvLen == 0) {
+			print_debug("Received empty packet from client\n");
 		}
 		else {
 			print_debug("Function call 'recv' failed: %zu\n", recvLen);
@@ -235,7 +241,7 @@ void atem_socket_norecv(int sock) {
 	else {
 		uint8_t packet[ATEM_MAX_PACKET_LEN];
 		atem_socket_recv(sock, packet);
-		print_debug("Received data when execting not to\n");
+		print_debug("Received data when expecting not to\n");
 	}
 
 	testrunner_abort();
