@@ -1,5 +1,5 @@
-#ifndef PROTOCOL_H
-#define PROTOCOL_H
+#ifndef SOCKET_H
+#define SOCKET_H
 
 #include <stdint.h> // uint8_t, uint16_t
 
@@ -21,4 +21,4 @@ void atem_socket_recv(int sock, uint8_t* packet);
 
 void atem_socket_norecv(int sock);
 
-#endif // PROTOCOL_H
+#endif // SOCKET_H

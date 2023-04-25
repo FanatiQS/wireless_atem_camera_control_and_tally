@@ -5,7 +5,7 @@
 #include "../../src/atem.h" // ATEM_MAX_PACKET_LEN
 #include "./header.h" // atem_packet_clear, atem_packet_word_set, atem_packet_word_get, atem_header_flags_set, atem_header_flags_get_verify, atem_header_len_set, atem_header_len_get_verify, atem_header_sessionid_get, atem_header_ackid_get_verify, atem_header_localid_get_verify, atem_header_remoteid_get_verify, atem_header_sessionid_set, atem_header_sessionid_get_verify
 #include "./runner.h" // testrunner_abort
-#include "./protocol.h" // atem_socket_recv, atem_socket_send
+#include "./socket.h" // atem_socket_recv, atem_socket_send
 #include "./logs.h" // print_debug
 
 
