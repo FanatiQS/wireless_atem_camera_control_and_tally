@@ -31,5 +31,6 @@ void atem_handshake_close(int sock, uint16_t sessionId);
 void atem_handshake_resetpeer();
 
 uint16_t atem_handshake_start_server(int sock);
+uint16_t atem_handshake_start_client(int sock, uint16_t sessionId);
 
 #endif // HANDSHAKE_H

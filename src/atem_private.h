@@ -31,6 +31,7 @@
 
 // ATEM protocol opcodes
 #define ATEM_OPCODE_OPEN    0x01
+#define ATEM_OPCODE_ACCEPT  0x02
 #define ATEM_OPCODE_SUCCESS 0x02
 #define ATEM_OPCODE_REJECT  0x03
 #define ATEM_OPCODE_CLOSING 0x04
