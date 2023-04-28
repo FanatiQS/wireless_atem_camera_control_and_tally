@@ -1,7 +1,7 @@
 #ifndef UTILS_H
 #define UTILS_H
 
-#include "../../src/atem_private.h"
+#include "../../src/atem_protocol.h"
 #include "../../src/atem.h"
 #include "./header.h"
 #include "./socket.h"

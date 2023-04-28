@@ -1,7 +1,7 @@
 #include <stdint.h> // uint8_t, uint16_t
 
 #include "../../src/atem.h" // ATEM_MAX_PACKET_LEN
-#include "../../src/atem_private.h" // ATEM_FLAG_ACK, ATEM_LEN_ACK
+#include "../../src/atem_protocol.h" // ATEM_FLAG_ACK, ATEM_LEN_ACK
 #include "./header.h" // atem_header_len_get_verify, atem_header_flags_set, atem_header_len_set, atem_header_sessionid_set, atem_header_ackid_set, atem_header_flags_get_verify, atem_header_sessionid_get_verify, atem_header_ackid_get_verify, atem_header_ackid_get
 #include "./socket.h" // atem_socket_send, atem_socket_recv
 

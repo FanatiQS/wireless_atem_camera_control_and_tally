@@ -6,7 +6,7 @@
 #include <arpa/inet.h> // struct sockaddr_in, htons, inet_addr
 #include <sys/select.h> // select, FD_ZERO, FD_SET, fd_set
 
-#include "../../src/atem_private.h" // ATEM_FLAG_SYN, ATEM_FLAG_RETX
+#include "../../src/atem_protocol.h" // ATEM_FLAG_SYN, ATEM_FLAG_RETX
 #include "../../src/atem.h" // ATEM_MAX_PACKET_LEN
 #include "./header.h" // atem_header_len_get, atem_header_flags_get, atem_packet_unknownid_get, atem_header_len_get_verify
 #include "./runner.h" // testrunner_abort
