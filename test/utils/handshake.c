@@ -83,13 +83,13 @@ uint8_t atem_handshake_opcode_get(uint8_t* packet) {
 		case ATEM_OPCODE_ACCEPT:
 		case ATEM_OPCODE_REJECT: {
 			if (!(sessionId & 0x8000)) break;
-			print_debug("Expected session id MSB to be set: 0x%04x\n", sessionId);
+			print_debug("Expected session id MSB to be clear: 0x%04x\n", sessionId);
 			testrunner_abort();
 		}
 		case ATEM_OPCODE_CLOSING:
 		case ATEM_OPCODE_CLOSED: {
 			if (sessionId & 0x8000) break;
-			print_debug("Expected session id MSB to be set: 0x%4x\n", sessionId);
+			print_debug("Expected session id MSB to be set: 0x%04x\n", sessionId);
 			testrunner_abort();
 		}
 		default: {
