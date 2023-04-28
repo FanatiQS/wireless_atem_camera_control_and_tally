@@ -35,19 +35,15 @@ void atem_client_open_accept() {
 }
 
 // Tests that a client resends the SYN packet 10 times if not answered with about 200ms between each resend
-void atem_client_strict_open_numberOfResends() {
-	// Awaits client to make a fresh connection
-	uint8_t packet[ATEM_MAX_PACKET_LEN];
-	int sock = atem_socket_listen_fresh(packet);
-	atem_handshake_opcode_verify(packet, ATEM_OPCODE_OPEN);
-	atem_header_flags_isnotset(packet, ATEM_FLAG_RETX);
-	uint16_t sessionId = atem_header_sessionid_get(packet);
+void atem_client_open_numberOfResends() {
+	// ATEM client starts connecting
+	int sock = atem_socket_create();
+	uint16_t sessionId = atem_handshake_start_server(sock);
 
 	// Lets it retry connecting 10 times
 	struct timespec start = timer_start();
 	for (int i = 0; i < ATEM_RESENDS; i++) {
-		atem_socket_recv(sock, packet);
-		atem_handshake_verify(packet, ATEM_OPCODE_OPEN, true, sessionId);
+		atem_handshake_sessionid_recv_verify(sock, ATEM_OPCODE_OPEN, true, sessionId);
 	}
 	uint32_t diff = timer_end(start);
 
@@ -65,12 +61,17 @@ void atem_client_strict_open_numberOfResends() {
 }
 
 // Tests that client regenerates the client assigned session id after restarting failed connection
-void atem_client_strict_open_randomSessionId() {
-	uint8_t packet[ATEM_MAX_PACKET_LEN];
-	atem_socket_close(atem_socket_listen_fresh(packet));
-	uint16_t sessionId = atem_header_sessionid_get(packet);
-	atem_socket_close(atem_socket_listen_fresh(packet));
-	uint16_t reconnectSessionId = atem_header_sessionid_get(packet);
+void atem_client_open_randomSessionId() {
+	int sock = atem_socket_create();
+	uint16_t sessionId = atem_handshake_start_server(sock);
+	atem_handshake_sessionid_send(sock, ATEM_OPCODE_REJECT, false, sessionId);
+	atem_socket_close(sock);
+
+	sock = atem_socket_create();
+	uint16_t reconnectSessionId = atem_handshake_start_server(sock);
+	atem_handshake_sessionid_send(sock, ATEM_OPCODE_REJECT, false, reconnectSessionId);
+	atem_socket_close(sock);
+
 	if (reconnectSessionId == sessionId) {
 		print_debug("Session ID did not change as expected: 0x%04x(old), 0x%04x(new)\n", sessionId, reconnectSessionId);
 		testrunner_abort();
@@ -86,10 +87,11 @@ void atem_client_open_minimal() {
 	TESTRUNNER(atem_client_open_accept);
 }
 
-// Runs tests that validate a client would be indistinguishable from ATEM Software Control
-void atem_client_strict_open() {
-	TESTRUNNER(atem_client_strict_open_numberOfResends);
-	TESTRUNNER(atem_client_strict_open_randomSessionId);
+// Runs optional tests validating a client would be indistinguishable from ATEM Software Control
+void atem_client_open_optional() {
+	TESTRUNNER(atem_client_open_rejectReconnectDelay);
+	TESTRUNNER(atem_client_open_numberOfResends);
+	TESTRUNNER(atem_client_open_randomSessionId);
 }
 
 // Runs tests that validates a clients response to invalid ATEM protocol packets
