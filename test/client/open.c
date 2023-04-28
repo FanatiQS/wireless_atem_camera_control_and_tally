@@ -1,11 +1,36 @@
 #include "../utils/utils.h"
 
-// Tests that the first packet from a client is a non resent SYN packet
-void atem_client_base_open_syn() {
-	uint8_t packet[ATEM_MAX_PACKET_LEN];
-	int sock = atem_socket_listen_fresh(packet);
-	atem_handshake_opcode_verify(packet, ATEM_OPCODE_OPEN);
-	atem_header_flags_isnotset(packet, ATEM_FLAG_RETX);
+// Tests that an unanswered SYN packet is resent
+void atem_client_open_retry() {
+	int sock = atem_socket_create();
+	atem_handshake_start_server(sock);
+	atem_socket_close(sock);
+
+	for (int i = 0; i < ATEM_RESENDS; i++) {
+		uint8_t packet[ATEM_MAX_PACKET_LEN];
+		int sock = atem_socket_create();
+		atem_socket_listen(sock, packet);
+		uint16_t sessionId = atem_header_sessionid_get(packet);
+		atem_handshake_common_get_verify(packet, ATEM_OPCODE_OPEN, true, sessionId);
+		atem_socket_close(sock);
+	}
+}
+
+// Tests that a rejected ATEM client retries connecting again
+void atem_client_open_reject() {
+	for (int i = 0; i < 5; i++) {
+		int sock = atem_socket_create();
+		uint16_t sessionId = atem_handshake_start_server(sock);
+		atem_handshake_sessionid_send(sock, ATEM_OPCODE_REJECT, false, sessionId);
+		atem_socket_close(sock);
+	}
+}
+
+// Tests that a successful SYN/ACK response is acknowledged
+void atem_client_open_accept() {
+	int sock = atem_socket_create();
+	uint16_t newSessionId = atem_handshake_listen(sock, 0x0001);
+	atem_handshake_close(sock, newSessionId);
 	atem_socket_close(sock);
 }
 
@@ -55,8 +80,10 @@ void atem_client_strict_open_randomSessionId() {
 
 
 // Runs tests that validate a client would work with an ATEM switcher
-void atem_client_base_open() {
-	TESTRUNNER(atem_client_base_open_syn);
+void atem_client_open_minimal() {
+	TESTRUNNER(atem_client_open_reject);
+	TESTRUNNER(atem_client_open_retry);
+	TESTRUNNER(atem_client_open_accept);
 }
 
 // Runs tests that validate a client would be indistinguishable from ATEM Software Control
