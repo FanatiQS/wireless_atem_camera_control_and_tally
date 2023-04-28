@@ -34,6 +34,19 @@ void atem_client_open_accept() {
 	atem_socket_close(sock);
 }
 
+// Tests that data after closing handshake is not processed
+void atem_client_open_afterClose() {
+	int sock = atem_socket_create();
+	uint16_t sessionId = atem_handshake_listen(sock, 0x0001);
+	atem_handshake_close(sock, sessionId);
+	atem_ping_send(sock, sessionId, 0x0001);
+	atem_socket_close(sock);
+	sock = atem_socket_create();
+	sessionId = atem_handshake_listen(sock, 0x0002);
+	atem_handshake_close(sock, sessionId);
+	atem_socket_close(sock);
+}
+
 // Tests that a client resends the SYN packet 10 times if not answered with about 200ms between each resend
 void atem_client_open_numberOfResends() {
 	// ATEM client starts connecting
