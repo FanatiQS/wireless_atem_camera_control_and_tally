@@ -200,9 +200,10 @@ void atem_handshake_resetpeer() {
 
 
 // Sending an opening handshake SYN packet to the ATEM switcher
-void atem_handshake_start_client(int sock, uint16_t sessionId) {
+uint16_t atem_handshake_start_client(int sock, uint16_t sessionId) {
 	atem_socket_connect(sock);
 	atem_handshake_sessionid_send(sock, ATEM_OPCODE_OPEN, false, sessionId);
+	return atem_handshake_newsessionid_recv(sock, ATEM_OPCODE_ACCEPT, false, sessionId);
 }
 
 // Receives an opening handshake SYN packet from an ATEM client
@@ -219,8 +220,7 @@ uint16_t atem_handshake_start_server(int sock) {
 
 // Connects to the ATEM switcher by completing entire opening handshake
 uint16_t atem_handshake_connect(int sock, uint16_t sessionId) {
-	atem_handshake_start_client(sock, sessionId);
-	uint16_t newSessionId = atem_handshake_newsessionid_recv(sock, ATEM_OPCODE_ACCEPT, false, sessionId);
+	uint16_t newSessionId = atem_handshake_start_client(sock, sessionId);
 	atem_ack_send(sock, sessionId, 0x0000);
 	return newSessionId;
 }
