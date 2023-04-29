@@ -43,14 +43,14 @@
 
 // Initializes GPIO or RTC pin
 inline void led_init(uint32_t pin) {
-	if (pin < GPIO_PIN_COUNT) {\
-		GPIO_REG_WRITE(GPIO_PIN0_ADDRESS + pin * 4, 0);\
-		GPIO_REG_WRITE(GPIO_ENABLE_W1TS_ADDRESS, 1 << pin);\
-	}\
-	else if (pin == RTC_PIN) {\
-		WRITE_PERI_REG(RTC_GPIO_OUT, 0);\
-		WRITE_PERI_REG(RTC_GPIO_ENABLE, 1);\
-	}\
+	if (pin < GPIO_PIN_COUNT) {
+		GPIO_REG_WRITE(GPIO_PIN0_ADDRESS + pin * 4, 0);
+		GPIO_REG_WRITE(GPIO_ENABLE_W1TS_ADDRESS, 1 << pin);
+	}
+	else if (pin == RTC_PIN) {
+		WRITE_PERI_REG(RTC_GPIO_OUT, 0);
+		WRITE_PERI_REG(RTC_GPIO_ENABLE, 1);
+	}
 }
 #define LED_INIT(pin) led_init(pin)
 
