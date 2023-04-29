@@ -78,7 +78,7 @@ void atem_ping_get_verify(uint8_t* packet, uint16_t sessionId, uint16_t remoteId
 
 // Sends a heartbeat packet
 void atem_ping_send(int sock, uint16_t sessionId, uint16_t remoteId) {
-	uint8_t packet[ATEM_MAX_PACKET_LEN];
+	uint8_t packet[ATEM_MAX_PACKET_LEN] = {0};
 	atem_ping_set(packet, sessionId, remoteId);
 	atem_socket_send(sock, packet);
 }
