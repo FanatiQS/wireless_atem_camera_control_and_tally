@@ -15,12 +15,17 @@
 #define ATEM_CMDNAME_TALLY ATEM_CMDNAME('T', 'l', 'I', 'n')
 #define ATEM_CMDNAME_VERSION ATEM_CMDNAME('_', 'v', 'e', 'r')
 
-// ATEM opcodes available as return value from atem_parse
-#define ATEM_CONNECTION_OK 0
-#define ATEM_CONNECTION_ERROR -1
-#define ATEM_CONNECTION_REJECTED 0x03
-#define ATEM_CONNECTION_CLOSING 0x04
-#define ATEM_CONNECTION_CLOSED 0x05
+// ATEM states available as return value from atem_parse
+enum atem_status_t {
+	ATEM_STATUS_ERROR = -1,
+	ATEM_STATUS_WRITE = 0,
+	ATEM_STATUS_ACCEPTED = 0x02,
+	ATEM_STATUS_REJECTED = 0x03,
+	ATEM_STATUS_CLOSING = 0x04,
+	ATEM_STATUS_CLOSED = 0x05,
+	ATEM_STATUS_WRITE_ONLY = 6,
+	ATEM_STATUS_NONE = 7
+};
 
 // Default port for ATEM
 #define ATEM_PORT 9910
@@ -101,7 +106,7 @@ void atem_connection_close(struct atem_t *atem);
  *
  * @note It is not required to use the return value from this function.
  */
-int8_t atem_parse(struct atem_t *atem);
+enum atem_status_t atem_parse(struct atem_t *atem);
 
 uint32_t atem_cmd_next(struct atem_t *atem);
 

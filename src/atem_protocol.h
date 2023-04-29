@@ -1,10 +1,12 @@
-#ifndef ATEM_PRIVATE_H
-#define ATEM_PRIVATE_H
+#ifndef ATEM_PROTOCOL_H
+#define ATEM_PROTOCOL_H
 
 #include "./atem.h" // ATEM_MAX_PACKET_LEN
 
+// Mask to use when filtering out flags
 #define ATEM_MASK_LEN_HIGH (ATEM_MAX_PACKET_LEN >> 8)
 
+// ATEM protocol flags
 #define ATEM_FLAG_ACKREQ  0x08
 #define ATEM_FLAG_SYN     0x10
 #define ATEM_FLAG_RETX    0x20
@@ -32,19 +34,23 @@
 // ATEM protocol opcodes
 #define ATEM_OPCODE_OPEN    0x01
 #define ATEM_OPCODE_ACCEPT  0x02
-#define ATEM_OPCODE_SUCCESS 0x02
 #define ATEM_OPCODE_REJECT  0x03
 #define ATEM_OPCODE_CLOSING 0x04
 #define ATEM_OPCODE_CLOSED  0x05
 
+// ATEM protocol lengths
 #define ATEM_LEN_HEADER    12
 #define ATEM_LEN_SYN       20
 #define ATEM_LEN_ACK       12
 #define ATEM_LEN_CMDHEADER 8
 
+// ATEM remote id range mask
 #define ATEM_LIMIT_REMOTEID 0x7fff
+
+// Byte offset from start of command block to command name
+#define ATEM_OFFSET_CMDNAME 4
 
 #define ATEM_RESENDS     10
 #define ATEM_RESEND_TIME 200
 
-#endif // ATEM_PRIVATE_H
+#endif // ATEM_PROTOCOL_H

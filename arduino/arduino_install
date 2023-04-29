@@ -25,17 +25,18 @@ echo "Creating directory $PWD/arduino/src"
 mkdir $PWD/arduino/src
 echo "Generating $PWD/src/user_config.h"
 echo '#include "../user_config.h"' > $PWD/arduino/src/user_config.h
-cpy src/atem.c  src/atem.c
-cpy src/atem.h  src/atem.h
-cpy src/debug.h firmware/debug.h
-cpy src/http.c  firmware/http.c
-cpy src/http.h  firmware/http.h
-cpy src/i2c.h   firmware/i2c.h
-cpy src/init.c  firmware/init.c
-cpy src/init.h  firmware/init.h
-cpy src/led.h   firmware/led.h
-cpy src/sdi.c   firmware/sdi.c
-cpy src/sdi.h   firmware/sdi.h
-cpy src/udp.c   firmware/udp.c
-cpy src/udp.h   firmware/udp.h
+cpy src/atem.c            src/atem.c
+cpy src/atem.h            src/atem.h
+cpy src/atem_protocol.h   src/atem_protocol.h
+cpy src/debug.h           firmware/debug.h
+cpy src/http.c            firmware/http.c
+cpy src/http.h            firmware/http.h
+cpy src/i2c.h             firmware/i2c.h
+cpy src/init.c            firmware/init.c
+cpy src/init.h            firmware/init.h
+cpy src/led.h             firmware/led.h
+cpy src/sdi.c             firmware/sdi.c
+cpy src/sdi.h             firmware/sdi.h
+cpy src/udp.c             firmware/udp.c
+cpy src/udp.h             firmware/udp.h
 echo "Installed"

@@ -70,20 +70,24 @@ static inline void atem_process(struct udp_pcb* pcb, uint8_t* buf, uint16_t len)
 
 	// Parses received ATEM packet
 	switch (atem_parse(&atem)) {
-		case ATEM_CONNECTION_OK: break;
-		case ATEM_CONNECTION_REJECTED: {
+		case ATEM_STATUS_ERROR:
+		case ATEM_STATUS_CLOSED:
+		case ATEM_STATUS_NONE: return;
+		case ATEM_STATUS_REJECTED: {
 			atem_state = atem_state_rejected;
 			DEBUG_PRINTF("ATEM connection rejected\n");
 			return;
 		}
-		case ATEM_CONNECTION_CLOSING: {
+		case ATEM_STATUS_WRITE: break;
+		case ATEM_STATUS_CLOSING: {
 			atem_state = atem_state_disconnected;
 			atem_led_reset();
 			DEBUG_PRINTF("ATEM connection closed\n");
-			return; // @todo should respond with closed packet
+			break;
 		}
-		default: {
-			DEBUG_PRINTF("Got an error parsing ATEM packet: (%d)\n", atem_parse(&atem));
+		case ATEM_STATUS_ACCEPTED:
+		case ATEM_STATUS_WRITE_ONLY: {
+			atem_send(pcb);
 			return;
 		}
 	}
