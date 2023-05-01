@@ -3,7 +3,7 @@
 #define INIT_H
 
 // Firmware version
-#define FIRMWARE_VERSION_STRING "0.6.0"
+#define FIRMWARE_VERSION_STRING "0.6.1-dev"
 
 // Makes it work with C++ (Arduino)
 #ifdef __cplusplus

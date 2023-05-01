@@ -46,3 +46,10 @@ Started implementing test suite.
 
 ### Proxy server
 Proxy server currently broken.
+
+
+
+## Version 0.6.1
+
+### Firmware
+* Fixed unstable configuration access point.

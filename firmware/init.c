@@ -23,6 +23,32 @@
 #define FLASH_SIZE (1 << ((spi_flash_get_id() >> 16) & 0xff))
 #define CONFIG_START (FLASH_SIZE - (12 + 4 + 4) * 1024)
 
+// Disables scanning for wifi station when configuration network is used
+static void network_callback(System_Event_t* event) {
+	switch (event->event) {
+		// Disables scanning for station when connection is made to soft ap
+		case EVENT_SOFTAPMODE_STACONNECTED: {
+			if (wifi_softap_get_station_num() == 0) break;
+			DEBUG_PRINTF("Disabled wifi station\n");
+			if (!wifi_station_disconnect()) {
+				DEBUG_PRINTF("Failed to disable wifi station\n");
+				break;
+			}
+			break;
+		}
+		// Re enables scanning for station when soft ap is unused
+		case EVENT_SOFTAPMODE_STADISCONNECTED: {
+			if (wifi_softap_get_station_num()) break;
+			DEBUG_PRINTF("Enabled wifi station\n");
+			if (!wifi_station_connect()) {
+				DEBUG_PRINTF("Failed to enable wifi station\n");
+				break;
+			}
+			break;
+		}
+	}
+}
+
 #else // ESP8266
 
 #error No WiFi implementation for platform
@@ -102,6 +128,9 @@ static void _atem_init() {
 		(int)sizeof(stationConfig.ssid), stationConfig.ssid,
 		(int)sizeof(stationConfig.password), stationConfig.password
 	);
+
+	// Disables station scanning when soft ap is used to fix soft ap stability issue
+	wifi_set_event_handler_cb(network_callback);
 #endif // DEBUG
 
 	// Starts connecting to WiFi station
