@@ -27,14 +27,14 @@ struct atem_t atem;
 
 // HTML text states of connection to ATEM
 const char* atem_state;
-const char atem_state_unconnected[] = "Unconnected";
-const char atem_state_connected[] = "Connected";
-const char atem_state_dropped[] = "Lost connection";
-const char atem_state_rejected[] = "Rejected";
-const char atem_state_disconnected[] = "Disconnected";
+const char* atem_state_unconnected = "Unconnected";
+const char* atem_state_connected = "Connected";
+const char* atem_state_dropped = "Lost connection";
+const char* atem_state_rejected = "Rejected";
+const char* atem_state_disconnected = "Disconnected";
 
 // Resets tally and connection status when disconnected from ATEM
-void atem_led_reset() {
+static void atem_led_reset() {
 	LED_CONN(false);
 	LED_TALLY(false, false);
 	sdi_write_tally(atem.dest, false, false);
