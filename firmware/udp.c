@@ -3,7 +3,7 @@
 #include <stdbool.h> // bool, true, false
 #include <string.h> // memcpy // @todo remove when not needed anymore
 
-#include <lwip/udp.h> // struct udp_pcb, udp_send, udp_new, udp_recv, udp_connect, udp_remove, struct pbuf, pbuf_alloc_reference, PBUF_REF, pbuf_free, pbuf_get_contiguous, ip_addr_t, ipaddr_ntoa, err_t, ERR_OK, LWIP_UNUSED_ARG
+#include <lwip/udp.h> // struct udp_pcb, udp_send, udp_new, udp_recv, udp_connect, udp_remove, struct pbuf, pbuf_alloc_reference, PBUF_REF, pbuf_free, pbuf_get_contiguous, ip_addr_t, ipaddr_ntoa, err_t, ERR_OK, LWIP_UNUSED_ARG, IPADDR4_INIT
 #include <lwip/timeouts.h> // sys_timeout, sys_untimeout
 #include <lwip/netif.h> // netif_default
 #ifdef ESP8266
