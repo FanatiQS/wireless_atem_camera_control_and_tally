@@ -81,9 +81,19 @@ void processRelayData() {
 
 	// Parses ATEM packet and lets connection time out if not connected
 	switch (atem_parse(&atem)) {
-		case ATEM_CONNECTION_OK:
-		case ATEM_CONNECTION_CLOSED: break;
-		default: return;
+		case ATEM_STATUS_CLOSED: {
+			atem_connection_reset(&atem);
+		}
+		case ATEM_STATUS_ACCEPTED:
+		case ATEM_STATUS_CLOSING:
+		case ATEM_STATUS_WRITE_ONLY: {
+			atem.cmdIndex = ATEM_MAX_PACKET_LEN;
+			break;
+		}
+		case ATEM_STATUS_WRITE: break;
+		case ATEM_STATUS_ERROR:
+		case ATEM_STATUS_REJECTED:
+		case ATEM_STATUS_NONE: return;
 	}
 
 	// Sends response to parsed packet

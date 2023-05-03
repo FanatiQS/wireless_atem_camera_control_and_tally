@@ -4,6 +4,7 @@
 #include <stdio.h> // printf, fprintf, stderr, perror
 #include <string.h> // memset, memcpy
 
+#include "../src/atem_protocol.h"
 #include "../src/atem.h"
 #include "./udp.h"
 #include "./server.h"
@@ -189,9 +190,9 @@ static void sendRejectPacket(uint8_t high, uint8_t low, struct sockaddr* sockAdd
 	uint8_t buf[ATEM_LEN_SYN] = {
 		[ATEM_INDEX_FLAGS] = ATEM_FLAG_SYN,
 		[ATEM_INDEX_LEN_LOW] = ATEM_LEN_SYN,
-		[ATEM_INDEX_SESSION_HIGH] = high,
-		[ATEM_INDEX_SESSION_LOW] = low,
-		[ATEM_INDEX_OPCODE] = ATEM_CONNECTION_REJECTED
+		[ATEM_INDEX_SESSIONID_HIGH] = high,
+		[ATEM_INDEX_SESSIONID_LOW] = low,
+		[ATEM_INDEX_OPCODE] = ATEM_OPCODE_REJECT
 	};
 	sendBuffer(buf, ATEM_LEN_SYN, sockAddr, sockLen);
 }
@@ -214,8 +215,8 @@ static struct packet_t* createPacket(struct session_t* session, uint16_t len, ui
 	packet->len = len;
 	memset(packet->buf, 0, len);
 	packet->buf[ATEM_INDEX_LEN_LOW] = (uint8_t)len;
-	packet->buf[ATEM_INDEX_SESSION_HIGH] = high;
-	packet->buf[ATEM_INDEX_SESSION_LOW] = low;
+	packet->buf[ATEM_INDEX_SESSIONID_HIGH] = high;
+	packet->buf[ATEM_INDEX_SESSIONID_LOW] = low;
 
 	DEBUG_PRINTF("allocated memory for packet\n");
 
@@ -281,7 +282,7 @@ static void dequeuePacket(struct packet_t* packet) {
 static void sendPacket(struct packet_t* packet, bool isRetransmit) {
 	// Sets resend flag if this packet is being resent
 	if (isRetransmit) {
-		packet->buf[ATEM_INDEX_FLAGS] |= ATEM_FLAG_RETRANSMIT;
+		packet->buf[ATEM_INDEX_FLAGS] |= ATEM_FLAG_RETX;
 	}
 
 	// Sends and enqueues packet
@@ -294,7 +295,7 @@ static void sendPacket(struct packet_t* packet, bool isRetransmit) {
 static void releasePacket(struct packet_t* packet) {
 	DEBUG_PRINTF("releasing packet 0x%02x%02x for session 0x%02x%02x\n",
 		packet->buf[ATEM_INDEX_REMOTEID_HIGH], packet->buf[ATEM_INDEX_REMOTEID_LOW],
-		packet->buf[ATEM_INDEX_SESSION_HIGH], packet->buf[ATEM_INDEX_SESSION_LOW]
+		packet->buf[ATEM_INDEX_SESSIONID_HIGH], packet->buf[ATEM_INDEX_SESSIONID_LOW]
 	);
 
 	dequeuePacket(packet);
@@ -332,7 +333,7 @@ static void sendClosingPacket(struct session_t* session) {
 
 	// Sets packets buffer
 	packet->buf[ATEM_INDEX_FLAGS] = ATEM_FLAG_SYN;
-	packet->buf[ATEM_INDEX_OPCODE] = ATEM_CONNECTION_CLOSING;
+	packet->buf[ATEM_INDEX_OPCODE] = ATEM_OPCODE_CLOSING;
 
 	// Sends packet
 	sendPacket(packet, false);
@@ -386,7 +387,7 @@ static void acknowledgeNextPacket(struct session_t* session) {
 	session->localPacketHead = packet->localNext;
 	DEBUG_PRINTF("acknowledged packet 0x%02x%02x for session 0x%02x%02x\n",
 		packet->buf[ATEM_INDEX_REMOTEID_HIGH], packet->buf[ATEM_INDEX_REMOTEID_LOW],
-		packet->buf[ATEM_INDEX_SESSION_HIGH], packet->buf[ATEM_INDEX_SESSION_LOW]
+		packet->buf[ATEM_INDEX_SESSIONID_HIGH], packet->buf[ATEM_INDEX_SESSIONID_LOW]
 	);
 	releasePacket(packet);
 }
@@ -400,7 +401,7 @@ static void sendDataPacket(struct session_t* session, uint8_t* commands, uint16_
 	pushPacket(session, packet);
 
 	// Sets packets buffer
-	packet->buf[ATEM_INDEX_FLAGS] = ATEM_FLAG_ACKREQUEST | len >> 8;
+	packet->buf[ATEM_INDEX_FLAGS] = ATEM_FLAG_ACKREQ | len >> 8;
 	setPacketRemoteId(packet);
 	memcpy(packet->buf + ATEM_LEN_HEADER, commands, len);
 
@@ -503,9 +504,9 @@ static void startHandshake(uint8_t high, uint8_t low, struct sockaddr* sockAddr,
 	packet->localNext = NULL;
 	packet->lastInChunk = true;
 	packet->buf[ATEM_INDEX_FLAGS] = ATEM_FLAG_SYN;
-	packet->buf[ATEM_INDEX_OPCODE] = ATEM_CONNECTION_SUCCESS;
-	packet->buf[ATEM_INDEX_NEW_SESSION_HIGH] = sessionIdHigh & 0x7f;
-	packet->buf[ATEM_INDEX_NEW_SESSION_LOW] = session->id;
+	packet->buf[ATEM_INDEX_OPCODE] = ATEM_OPCODE_ACCEPT;
+	packet->buf[ATEM_INDEX_NEWSESSIONID_HIGH] = sessionIdHigh & 0x7f;
+	packet->buf[ATEM_INDEX_NEWSESSIONID_LOW] = session->id;
 	sendPacket(packet, false);
 
 	// Logs information about session
@@ -553,9 +554,9 @@ static void closeOpenSession(struct session_t* session) {
 	uint8_t buf[ATEM_LEN_SYN] = {
 		[ATEM_INDEX_FLAGS] = ATEM_FLAG_SYN,
 		[ATEM_INDEX_LEN_LOW] = ATEM_LEN_SYN,
-		[ATEM_INDEX_SESSION_HIGH] = session->chunk->id,
-		[ATEM_INDEX_SESSION_LOW] = session->id,
-		[ATEM_INDEX_OPCODE] = ATEM_CONNECTION_CLOSED
+		[ATEM_INDEX_SESSIONID_HIGH] = session->chunk->id,
+		[ATEM_INDEX_SESSIONID_LOW] = session->id,
+		[ATEM_INDEX_OPCODE] = ATEM_OPCODE_CLOSED
 	};
 	sendBuffer(buf, ATEM_LEN_SYN, &session->sockAddr, session->sockLen);
 
@@ -604,8 +605,8 @@ static void acknowledgeRemotePacket(struct session_t* session, uint8_t localHigh
 	uint8_t buf[ATEM_LEN_HEADER] = {
 		[ATEM_INDEX_FLAGS] = ATEM_FLAG_ACK,
 		[ATEM_INDEX_LEN_LOW] = ATEM_LEN_HEADER,
-		[ATEM_INDEX_SESSION_HIGH] = session->chunk->id,
-		[ATEM_INDEX_SESSION_LOW] = session->id,
+		[ATEM_INDEX_SESSIONID_HIGH] = session->chunk->id,
+		[ATEM_INDEX_SESSIONID_LOW] = session->id,
 		[ATEM_INDEX_ACKID_HIGH] = localHigh,
 		[ATEM_INDEX_ACKID_LOW] = localLow,
 	};
@@ -639,7 +640,7 @@ void processProxyData() {
 	);
 
 	// Processes opening handshake
-	if (!(buf[ATEM_INDEX_SESSION_HIGH] & 0x80)) {
+	if (!(buf[ATEM_INDEX_SESSIONID_HIGH] & 0x80)) {
 		if (HAS_FLAGS(buf, ATEM_FLAG_SYN)) {
 			if (recvLen != ATEM_LEN_SYN) {
 				fprintf(stderr,
@@ -648,14 +649,14 @@ void processProxyData() {
 				);
 				return;
 			}
-			if (!IS_OPCODE(buf, ATEM_CONNECTION_OPENING)) {
+			if (!IS_OPCODE(buf, ATEM_OPCODE_OPEN)) {
 				fprintf(stderr,
 					"Received SYN packet for unconnected session had an invalid opcode %02x\n",
 					buf[ATEM_INDEX_FLAGS]
 				);
 				return;
 			}
-			startHandshake(buf[ATEM_INDEX_SESSION_HIGH], buf[ATEM_INDEX_SESSION_LOW], &sockAddr, sockLen);
+			startHandshake(buf[ATEM_INDEX_SESSIONID_HIGH], buf[ATEM_INDEX_SESSIONID_LOW], &sockAddr, sockLen);
 		}
 		else if (HAS_FLAGS(buf, ATEM_FLAG_ACK)) {
 			if (recvLen != ATEM_LEN_HEADER) {
@@ -665,7 +666,7 @@ void processProxyData() {
 				);
 				return;
 			}
-			completeHandshake(buf[ATEM_INDEX_SESSION_HIGH], buf[ATEM_INDEX_SESSION_LOW]);
+			completeHandshake(buf[ATEM_INDEX_SESSIONID_HIGH], buf[ATEM_INDEX_SESSIONID_LOW]);
 		}
 		return;
 	}
@@ -677,23 +678,23 @@ void processProxyData() {
 	}
 
 	// Gets session from session table
-	struct session_t* session = getSession(buf[ATEM_INDEX_SESSION_HIGH], buf[ATEM_INDEX_SESSION_LOW]);
+	struct session_t* session = getSession(buf[ATEM_INDEX_SESSIONID_HIGH], buf[ATEM_INDEX_SESSIONID_LOW]);
 
 	// Aborts if session id does not exist
 	if (session == NULL) {
 		fprintf(stderr,
 			"Session 0x%02x%02x did not exist\n",
-			buf[ATEM_INDEX_SESSION_HIGH], buf[ATEM_INDEX_SESSION_LOW]
+			buf[ATEM_INDEX_SESSIONID_HIGH], buf[ATEM_INDEX_SESSIONID_LOW]
 		);
 		return;
 	}
 
 	// Processes closing handshake
 	if (HAS_FLAGS(buf, ATEM_FLAG_SYN)) {
-		if (IS_OPCODE(buf, ATEM_CONNECTION_CLOSING)) {
+		if (IS_OPCODE(buf, ATEM_OPCODE_CLOSING)) {
 			closeOpenSession(session);
 		}
-		else if (IS_OPCODE(buf, ATEM_CONNECTION_CLOSED)) {
+		else if (IS_OPCODE(buf, ATEM_OPCODE_CLOSED)) {
 			closeClosingSession(session);
 		}
 		else {
@@ -720,7 +721,7 @@ void processProxyData() {
 	}
 
 	// Processes acknowledge requests
-	if (HAS_FLAGS(buf, ATEM_FLAG_ACKREQUEST)) {
+	if (HAS_FLAGS(buf, ATEM_FLAG_ACKREQ)) {
 		acknowledgeRemotePacket(session, buf[ATEM_INDEX_REMOTEID_HIGH], buf[ATEM_INDEX_REMOTEID_LOW]);
 	}
 }
@@ -751,7 +752,7 @@ void pingProxySessions() {
 		packet->lastInChunk = false;
 
 		// Sets packet buffer
-		packet->buf[ATEM_INDEX_FLAGS] = ATEM_FLAG_ACKREQUEST;
+		packet->buf[ATEM_INDEX_FLAGS] = ATEM_FLAG_ACKREQ;
 		setPacketRemoteId(packet);
 
 		// Sends packet
