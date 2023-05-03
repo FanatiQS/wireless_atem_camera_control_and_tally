@@ -49,7 +49,9 @@ Proxy server currently broken.
 
 
 
-## Version 0.6.1
+## Version 0.6.1 (development)
 
 ### Firmware
 * Fixed unstable configuration access point.
+* Fixed `arduino/arduino_install` not working on linux.
+* Updated proxy server to work with the 0.6.0 reworked source api.
