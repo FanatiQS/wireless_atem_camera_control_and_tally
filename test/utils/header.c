@@ -187,7 +187,7 @@ uint16_t atem_header_remoteid_get(uint8_t* packet) {
 void atem_header_remoteid_get_verify(uint8_t* packet, uint16_t expectedRemoteId) {
 	uint16_t remoteId = atem_header_remoteid_get(packet);
 	if (remoteId == expectedRemoteId) return;
-	print_debug("Expected remote id between 0x%04x, but got 0x%04x\n", expectedRemoteId, remoteId);
+	print_debug("Expected remote id 0x%04x, but got 0x%04x\n", expectedRemoteId, remoteId);
 	testrunner_abort();
 }
 
