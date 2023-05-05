@@ -5,6 +5,8 @@
 #include "./header.h" // atem_header_len_get_verify, atem_header_flags_set, atem_header_len_set, atem_header_sessionid_set, atem_header_ackid_set, atem_header_flags_get_verify, atem_header_sessionid_get_verify, atem_header_ackid_get_verify, atem_header_ackid_get
 #include "./socket.h" // atem_socket_send, atem_socket_recv
 
+
+
 // Sets packet to be an ACK packet
 void atem_ack_set(uint8_t* packet, uint16_t sessionId, uint16_t ackId) {
 	atem_header_flags_set(packet, ATEM_FLAG_ACK);
@@ -95,4 +97,15 @@ void atem_ping_recv_verify(int sock, uint16_t sessionId, uint16_t remoteId) {
 	uint8_t packet[ATEM_MAX_PACKET_LEN];
 	atem_socket_recv(sock, packet);
 	atem_ping_get_verify(packet, sessionId, remoteId);
+}
+
+
+
+// Receives data and responds to pings
+bool atem_keepalive(int sock, uint8_t* packet, uint16_t sessionId) {
+	atem_socket_recv(sock, packet);
+	if (!(atem_header_flags_get(packet) & ATEM_FLAG_ACKREQ)) return false;
+	atem_header_sessionid_get_verify(packet, sessionId);
+	atem_ack_send(sock, sessionId, atem_header_remoteid_get(packet));
+	return true;
 }
