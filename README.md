@@ -242,9 +242,6 @@ If a camera model is not tested, it does not indicate it does not work, just tha
 | ---------------- | --------------------- | ------- |
 | 2.30             | 8.1.1+                | Testing |
 
-## Known issues
-Connecting to the ESP8266s soft AP can be very unstable. When it has connected to the ATEM switcher it is no longer a problem as configuration is at that point done of the ATEM network.
-
 ## Test
 **The testing suite is very incomplete so far.**
 Whenever the ATEM firmware updates, there is a risk of something breaking since the protocol is proprietary.
