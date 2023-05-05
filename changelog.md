@@ -49,7 +49,7 @@ Proxy server currently broken.
 
 
 
-## Version 0.6.1 (development)
+## Version 0.6.1
 
 ### Firmware
 * Fixed unstable configuration access point.
