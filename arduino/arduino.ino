@@ -2,7 +2,6 @@
 #include <ESP8266WebServer.h>
 #include <ESP8266mDNS.h>
 #include <EEPROM.h>
-#include <DNSServer.h>
 #include <ArduinoOTA.h>
 
 #include <lwip/init.h>
@@ -42,7 +41,6 @@
 
 // Configuration HTTP server and redirection DNS
 ESP8266WebServer confServer(80);
-DNSServer dnsServer;
 
 // Names for all HTTP POST keys
 #define KEY_SSID "ssid"
@@ -201,7 +199,6 @@ void setup() {
 	// Sets up configuration HTTP server with soft AP
 	WiFi.persistent(true);
 	EEPROM.begin(sizeof(struct config_t));
-	dnsServer.start(53, "*", WiFi.softAPIP());
 	confServer.onNotFound(handleHTTP);
 	confServer.begin();
 
@@ -217,7 +214,6 @@ void setup() {
 }
 
 void loop() {
-	dnsServer.processNextRequest();
 	MDNS.update();
 	confServer.handleClient();
 	ArduinoOTA.handle();

@@ -9,6 +9,7 @@
 #include "./udp.h" // atem_udp_init
 #include "./http.h" // config_t, CONF_FLAG_STATICIP, http_init
 #include "./init.h" // FIRMWARE_VERSION_STRING
+#include "./dns.h" // captive_portal_init
 
 #ifdef ESP8266
 
@@ -105,6 +106,11 @@ static void _atem_init() {
 
 	// Initializes the HTTP configuration server
 	if (!http_init()) {
+		return;
+	}
+
+	// Initializes captive portal
+	if (!captive_portal_init()) {
 		return;
 	}
 

@@ -29,6 +29,8 @@ cpy src/atem.c            src/atem.c
 cpy src/atem.h            src/atem.h
 cpy src/atem_protocol.h   src/atem_protocol.h
 cpy src/debug.h           firmware/debug.h
+cpy src/dns.c             firmware/dns.c
+cpy src/dns.h             firmware/dns.h
 cpy src/http.c            firmware/http.c
 cpy src/http.h            firmware/http.h
 cpy src/i2c.h             firmware/i2c.h
