@@ -74,11 +74,16 @@ inline void gpio_write(uint32_t setPins, uint32_t setValue, uint32_t clearPins, 
 
 #else // ESP8266
 
+// Throws compilation error if any LED pin is used for platform without LED support
 #if defined(PIN_PGM) || defined(PIN_PVW) || defined(PIN_CONN)
 #error Platform does not support LED control
 #endif // PIN_PGM || PIN_PVW || PIN_CONN
 
-#endif // ESP8266
+// Strips out LED setters for platforms without LED support
+#define LED_TALLY(pgm, pvw)
+#define LED_CONN(state)
+
+#endif
 
 
 
