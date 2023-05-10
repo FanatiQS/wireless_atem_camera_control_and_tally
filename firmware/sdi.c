@@ -2,16 +2,17 @@
 #include "./sdi.h" // SDI_ENABLED
 #ifdef SDI_ENABLED
 
-#include <stdint.h> // uint8_t, uint16_t
+#include <stdint.h> // uint8_t, uint16_t, uint32_t
 #include <stdbool.h> // bool, true, false
 
 #include <lwip/arch.h> // sys_now
+#include <lwip/def.h> // lwip_htonl
 
-#include "./user_config.h" // PIN_SCL, PIN_SDA, DEBUG
+#include "./user_config.h" // PIN_SCL, PIN_SDA, DEBUG, SDI_INIT_TIMEOUT
 #include "./debug.h" // DEBUG_PRINTF
 #include "./i2c.h" // I2C_INIT, I2C_READ, I2C_WRITE
 
-// Number of milliseconds to wait for SDI shield FPGA to get ready
+// Number of milliseconds to wait for SDI shield FPGA to get ready before failing
 #ifndef SDI_INIT_TIMEOUT
 #define SDI_INIT_TIMEOUT 2000
 #endif // SDI_INIT_TIMEOUT
@@ -60,9 +61,9 @@ static void sdi_read(uint16_t reg, uint8_t* readBuf, uint8_t readLen) {
 
 // Checks if SDI shield FPGA has booted
 static bool sdi_connect() {
-	uint8_t buf[4];
-	sdi_read(kRegIDENTIFIER, buf, 4);
-	return (buf[0] == 'S') && (buf[1] == 'D') && (buf[2] == 'I') && (buf[3] == 'C');
+	uint32_t buf;
+	sdi_read(kRegIDENTIFIER, (uint8_t*)&buf, sizeof(buf));
+	return buf == lwip_htonl('SDIC');
 }
 
 // Tries to connect to the SDI shield
@@ -97,7 +98,7 @@ bool sdi_init(uint8_t dest) {
 static void sdi_flush(uint16_t reg) {
 	uint8_t busy;
 	do {
-		sdi_read(reg, &busy, 1);
+		sdi_read(reg, &busy, sizeof(busy));
 	} while (busy);
 }
 
