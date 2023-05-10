@@ -16,11 +16,6 @@
 #define SDI_INIT_TIMEOUT 2000
 #endif // SDI_INIT_TIMEOUT
 
-// I2C address the SDI shield uses by default
-#ifndef SDI_I2C_ADDR
-#define SDI_I2C_ADDR 0x6E
-#endif // SDI_I2C_ADDR
-
 
 
 // SDI shield registers
