@@ -30,8 +30,9 @@ enum atem_status_t {
 // Default port for ATEM
 #define ATEM_PORT 9910
 
-// Number of seconds before switcher kills the connection for no acknowledge sent
+// Number of seconds or milliseconds before switcher kills the connection for no acknowledge sent
 #define ATEM_TIMEOUT 5
+#define ATEM_TIMEOUT_MS (ATEM_TIMEOUT * 1000)
 
 // Size of read buffer in an atem_t struct
 #define ATEM_MAX_PACKET_LEN 2047
