@@ -15,7 +15,7 @@
 #include "./led.h" // LED_TALLY, LED_CONN, LED_INIT
 #include "./sdi.h" // SDI_ENABLED, sdi_write_tally, sdi_write_cc, sdi_connect
 #include "./debug.h" // DEBUG_PRINTF, DEBUG_IP, IP_FMT, IP_VALUE, WRAP
-#include "./udp.h"
+#include "./atem_sock.h"
 
 
 
@@ -235,7 +235,7 @@ static void atem_netif_poll(void* arg) {
 }
 
 // Initializes UDP connection to ATEMs
-struct udp_pcb* atem_udp_init(uint32_t addr, uint8_t dest) {
+struct udp_pcb* atem_init(uint32_t addr, uint8_t dest) {
 	// Sets camera id to serve
 	DEBUG_PRINTF("Filtering for camera ID: %d\n", dest);
 	atem.dest = dest;

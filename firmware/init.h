@@ -22,7 +22,7 @@ extern "C" {
  * It connects directly to LwIP and therefore does not
  * require any ATEM specific polling.
  */
-void atem_init(void);
+void waccat_init(void);
 
 // Ends extern C block
 #ifdef __cplusplus

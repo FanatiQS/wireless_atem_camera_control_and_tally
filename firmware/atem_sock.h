@@ -10,6 +10,6 @@
 extern const char* atem_state;
 
 // Initializes ATEM UDP client
-struct udp_pcb* atem_udp_init(uint32_t, uint8_t);
+struct udp_pcb* atem_init(uint32_t, uint8_t);
 
 #endif // UDP_H

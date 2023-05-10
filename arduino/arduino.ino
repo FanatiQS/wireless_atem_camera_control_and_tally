@@ -10,9 +10,9 @@
 #include "user_config.h"
 
 #define LWIP_HDR_TCP_H // Fixes arduino and lwip collision
-#include "./src/udp.h" // atem_state
+#include "./src/atem_sock.h" // atem_state
 #include "./src/http.h" // struct config_t, CONF_FLAG_STATICIP
-#include "./src/init.h" // atem_init, FIRMWARE_VERSION_STRING
+#include "./src/init.h" // waccat_init, FIRMWARE_VERSION_STRING
 #include "./src/debug.h" // WRAP, DEBUG_PRINTF
 
 
@@ -210,7 +210,7 @@ void setup() {
 	MDNS.addService("http", "tcp", 80);
 
 	// Initializes wifi, ATEM connection, SDI shield and GPIO LEDs
-	atem_init();
+	waccat_init();
 }
 
 void loop() {
