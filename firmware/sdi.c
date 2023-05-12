@@ -6,7 +6,6 @@
 #include <stdbool.h> // bool, true, false
 
 #include <lwip/arch.h> // sys_now
-#include <lwip/def.h> // lwip_htonl
 
 #include "./user_config.h" // PIN_SCL, PIN_SDA, DEBUG, SDI_INIT_TIMEOUT
 #include "./debug.h" // DEBUG_PRINTF
@@ -49,7 +48,7 @@
 
 // Writes variadic number of bytes to SDI shield register
 #define _SDI_WRITE(buf) I2C_WRITE(buf, sizeof(buf) / sizeof(buf[0]))
-#define SDI_WRITE(reg, ...) _SDI_WRITE(((uint8_t[]){ reg & 0xff, reg >> 8, __VA_ARGS__ }))
+#define SDI_WRITE(reg, ...) _SDI_WRITE(((uint8_t[]){ (reg) & 0xff, (reg) >> 8, __VA_ARGS__ }))
 
 // Reads SDI shield data from registers to buffer
 static void sdi_read(uint16_t reg, uint8_t* readBuf, uint8_t readLen) {
@@ -63,7 +62,7 @@ static void sdi_read(uint16_t reg, uint8_t* readBuf, uint8_t readLen) {
 static bool sdi_connect() {
 	uint32_t buf;
 	sdi_read(kRegIDENTIFIER, (uint8_t*)&buf, sizeof(buf));
-	return buf == lwip_htonl('SDIC');
+	return buf == *(uint32_t*)"SDIC";
 }
 
 // Tries to connect to the SDI shield
