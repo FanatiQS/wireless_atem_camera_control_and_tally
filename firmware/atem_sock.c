@@ -254,7 +254,7 @@ struct udp_pcb* atem_init(uint32_t addr, uint8_t dest) {
 	DEBUG_PRINTF("Connecting to ATEM at: " IP_FMT "\n", IP_VALUE(addr));
 	err_t err = udp_connect(pcb, &(const ip_addr_t)IPADDR4_INIT(addr), ATEM_PORT);
 	if (err != ERR_OK) {
-		DEBUG_PRINTF("Failed to connect to ATEM UDP IP: %d\n", err);
+		DEBUG_PRINTF("Failed to connect to ATEM UDP IP: %d\n", (int)err);
 		udp_remove(pcb);
 		return NULL;
 	}
