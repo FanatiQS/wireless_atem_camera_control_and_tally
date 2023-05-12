@@ -31,7 +31,7 @@ const char* atem_state_rejected = "Rejected";
 const char* atem_state_disconnected = "Disconnected";
 
 // Resets tally and connection status when disconnected from ATEM
-static void atem_led_reset() {
+static void tally_reset() {
 	LED_CONN(false);
 	LED_TALLY(false, false);
 	sdi_write_tally(atem.dest, false, false);
@@ -78,7 +78,7 @@ static inline void atem_process(struct udp_pcb* pcb, uint8_t* buf, uint16_t len)
 		case ATEM_STATUS_WRITE: break;
 		case ATEM_STATUS_CLOSING: {
 			atem_state = atem_state_disconnected;
-			atem_led_reset();
+			tally_reset();
 			DEBUG_PRINTF("ATEM connection closed\n");
 			break;
 		}
@@ -172,7 +172,7 @@ static void atem_timeout_callback(void* arg) {
 	// Indicates connection lost with LEDs and HTML
 	if (atem_state == atem_state_connected) {
 		atem_state = atem_state_dropped;
-		atem_led_reset();
+		tally_reset();
 		DEBUG_PRINTF("Lost connection to ATEM\n");
 	}
 	else if (atem_state == atem_state_rejected || atem_state == atem_state_disconnected) {
