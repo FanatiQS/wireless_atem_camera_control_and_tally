@@ -175,10 +175,12 @@ static void atem_timeout_callback(void* arg) {
 		atem_led_reset();
 		DEBUG_PRINTF("Lost connection to ATEM\n");
 	}
-	else if (atem_state == atem_state_dropped || atem_state == atem_state_unconnected) {
+	else if (atem_state == atem_state_rejected || atem_state == atem_state_disconnected) {
+		DEBUG_PRINTF("Reconnecting to ATEM\n");
+	}
+	else {
 		DEBUG_PRINTF("Failed to connect to ATEM\n");
 	}
-
 }
 
 // Reads and processces received ATEM packet
