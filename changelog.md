@@ -11,6 +11,15 @@
 
 
 
+## Version 0.6.2
+
+### Firmware
+* Fixed platforms not implementing LED driver not having LED macro function defined.
+* Enabled fix for unstabile configuration access point when debug is not enabled.
+* Fixed compiler failure for ESP8266 Arduino framework version 3.0.0 and newer.
+
+
+
 ## Version 0.6.1
 
 ### Firmware
