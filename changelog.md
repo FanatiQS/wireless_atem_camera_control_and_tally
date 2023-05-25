@@ -1,7 +1,24 @@
 # Changelog
 
-## Version 0.5.0
-No changelog available.
+## Version 0.7.0 (development)
+
+### Firmware
+* Ported Arduinos DNS captive portal to C.
+* Renamed file `/firmware/udp.c` to `/firmware/atem_sock.c`.
+* Renamed file `/firmware/udp.h` to `/firmware/atem_sock.h`.
+* Renamed `atem_init` to `waccat_init`.
+* Renamed `atem_udp_init` to `atem_init`.
+
+
+
+## Version 0.6.1
+
+### Firmware
+* Fixed unstable configuration access point.
+* Fixed `arduino/arduino_install` not working on linux.
+
+### Proxy server
+* Proxy server now works with the 0.6.0 reworked source api.
 
 
 
@@ -49,22 +66,5 @@ Proxy server currently broken.
 
 
 
-## Version 0.6.1
-
-### Firmware
-* Fixed unstable configuration access point.
-* Fixed `arduino/arduino_install` not working on linux.
-
-### Proxy server
-* Proxy server now works with the 0.6.0 reworked source api.
-
-
-
-## Version 0.7.0 (development)
-
-### Firmware
-* Ported Arduinos DNS captive portal to C.
-* Renamed file `/firmware/udp.c` to `/firmware/atem_sock.c`.
-* Renamed file `/firmware/udp.h` to `/firmware/atem_sock.h`.
-* Renamed `atem_init` to `waccat_init`.
-* Renamed `atem_udp_init` to `atem_init`.
+## Version 0.5.0
+No changelog available.
