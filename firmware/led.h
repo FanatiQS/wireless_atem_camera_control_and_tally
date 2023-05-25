@@ -61,9 +61,9 @@ inline void led_init(uint32_t pin) {
 // Writes bit field to GPIO and/or RTC register
 // Pin masks are able to be eliminated by compiler when defined deterministically
 inline void gpio_write(uint32_t setPins, uint32_t setValue, uint32_t clearPins, uint32_t clearValue) {
-	if (GPIO_MASK(setPins)) GPIO_REG_WRITE(GPIO_OUT_W1TS_ADDRESS, GPIO_MASK(setValue));\
-	if (GPIO_MASK(clearPins)) GPIO_REG_WRITE(GPIO_OUT_W1TC_ADDRESS, GPIO_MASK(clearValue));\
-	if (RTC_MASK(setPins | clearPins)) WRITE_PERI_REG(RTC_GPIO_OUT, RTC_MASK(setValue));\
+	if (GPIO_MASK(setPins)) GPIO_REG_WRITE(GPIO_OUT_W1TS_ADDRESS, GPIO_MASK(setValue));
+	if (GPIO_MASK(clearPins)) GPIO_REG_WRITE(GPIO_OUT_W1TC_ADDRESS, GPIO_MASK(clearValue));
+	if (RTC_MASK(setPins | clearPins)) WRITE_PERI_REG(RTC_GPIO_OUT, RTC_MASK(setValue));
 }
 
 // Writes CONN (connection) state as bit fields to register
