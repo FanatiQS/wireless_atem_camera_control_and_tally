@@ -57,3 +57,10 @@ Proxy server currently broken.
 
 ### Proxy server
 * Proxy server now works with the 0.6.0 reworked source api.
+
+## Version 0.6.2
+
+### Firmware
+* Fixed platforms not implementing LED driver not having LED macro function defined.
+* Enabled fix for unstabile configuration access point when debug is not enabled.
+* Fixed compiler failure for ESP8266 Arduino framework version 3.0.0 and newer.
