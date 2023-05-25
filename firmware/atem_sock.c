@@ -10,17 +10,14 @@
 #include <user_interface.h> // wifi_set_opmode_current, STATION_MODE
 #endif // ESP8266
 
-#include "../src/atem.h" // struct atem_t atem_connection_reset, atem_parse, ATEM_CONNECTION_OK, ATEM_CONNECTION_CLOSING, ATEM_CONNECTION_REJECTED, ATEM_TIMEOUT, ATEM_MAX_PACKET_LEN, ATEM_PORT, atem_cmd_available, atem_cmd_next, ATEM_CMDNAME_VERSION, ATEM_CMDNAME_TALLY, ATEM_CMDNAME_CAMERACONTROL, atem_protocol_majorj, atem_protocol_minor
+#include "../src/atem.h" // struct atem_t atem_connection_reset, atem_parse, ATEM_CONNECTION_OK, ATEM_CONNECTION_CLOSING, ATEM_CONNECTION_REJECTED, ATEM_TIMEOUT, ATEM_MAX_PACKET_LEN, ATEM_PORT, atem_cmd_available, atem_cmd_next, ATEM_CMDNAME_VERSION, ATEM_CMDNAME_TALLY, ATEM_CMDNAME_CAMERACONTROL, atem_protocol_majorj, atem_protocol_minor, ATEM_TIMEOUT_MS
 #include "./user_config.h" // DEBUG_TALLY, DEBUG_CC, PIN_CONN, PIN_PGM, PIN_PVW, PIN_SCL, PIN_SDA
 #include "./led.h" // LED_TALLY, LED_CONN, LED_INIT
 #include "./sdi.h" // SDI_ENABLED, sdi_write_tally, sdi_write_cc, sdi_connect
 #include "./debug.h" // DEBUG_PRINTF, DEBUG_IP, IP_FMT, IP_VALUE, WRAP
-#include "./udp.h"
+#include "./atem_sock.h"
 
 
-
-// Number of milliseconds before switcher kills the connection for no acknowledge sent
-#define ATEM_TIMEOUT_MS (ATEM_TIMEOUT * 1000)
 
 // ATEM connection context
 struct atem_t atem;
@@ -34,7 +31,7 @@ const char* atem_state_rejected = "Rejected";
 const char* atem_state_disconnected = "Disconnected";
 
 // Resets tally and connection status when disconnected from ATEM
-static void atem_led_reset() {
+static void tally_reset() {
 	LED_CONN(false);
 	LED_TALLY(false, false);
 	sdi_write_tally(atem.dest, false, false);
@@ -81,7 +78,7 @@ static inline void atem_process(struct udp_pcb* pcb, uint8_t* buf, uint16_t len)
 		case ATEM_STATUS_WRITE: break;
 		case ATEM_STATUS_CLOSING: {
 			atem_state = atem_state_disconnected;
-			atem_led_reset();
+			tally_reset();
 			DEBUG_PRINTF("ATEM connection closed\n");
 			break;
 		}
@@ -175,13 +172,15 @@ static void atem_timeout_callback(void* arg) {
 	// Indicates connection lost with LEDs and HTML
 	if (atem_state == atem_state_connected) {
 		atem_state = atem_state_dropped;
-		atem_led_reset();
+		tally_reset();
 		DEBUG_PRINTF("Lost connection to ATEM\n");
 	}
-	else if (atem_state == atem_state_dropped || atem_state == atem_state_unconnected) {
+	else if (atem_state == atem_state_rejected || atem_state == atem_state_disconnected) {
+		DEBUG_PRINTF("Reconnecting to ATEM\n");
+	}
+	else {
 		DEBUG_PRINTF("Failed to connect to ATEM\n");
 	}
-
 }
 
 // Reads and processces received ATEM packet
@@ -234,8 +233,8 @@ static void atem_netif_poll(void* arg) {
 	sys_timeout(ATEM_TIMEOUT_MS, atem_timeout_callback, arg);
 }
 
-// Initializes UDP connection to ATEMs
-struct udp_pcb* atem_udp_init(uint32_t addr, uint8_t dest) {
+// Initializes UDP connection to ATEM
+struct udp_pcb* atem_init(uint32_t addr, uint8_t dest) {
 	// Sets camera id to serve
 	DEBUG_PRINTF("Filtering for camera ID: %d\n", dest);
 	atem.dest = dest;
@@ -255,8 +254,9 @@ struct udp_pcb* atem_udp_init(uint32_t addr, uint8_t dest) {
 
 	// Connects to ATEM switcher
 	DEBUG_PRINTF("Connecting to ATEM at: " IP_FMT "\n", IP_VALUE(addr));
-	if (udp_connect(pcb, &(const ip_addr_t)IPADDR4_INIT(addr), ATEM_PORT) != ERR_OK) {
-		DEBUG_PRINTF("Failed to connect to ATEM UDP IP\n");
+	err_t err = udp_connect(pcb, &(const ip_addr_t)IPADDR4_INIT(addr), ATEM_PORT);
+	if (err != ERR_OK) {
+		DEBUG_PRINTF("Failed to connect to ATEM UDP IP: %d\n", (int)err);
 		udp_remove(pcb);
 		return NULL;
 	}

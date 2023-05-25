@@ -6,9 +6,10 @@
 
 #include "./user_config.h" // DEBUG_TALLY, DEBUG_CC
 #include "./debug.h" // DEBUG_PRINTF, DEBUG_IP, WRAP
-#include "./udp.h" // atem_udp_init
+#include "./atem_sock.h" // atem_init
 #include "./http.h" // config_t, CONF_FLAG_STATICIP, http_init
 #include "./init.h" // FIRMWARE_VERSION_STRING
+#include "./dns.h" // captive_portal_init
 
 #ifdef ESP8266
 
@@ -58,7 +59,7 @@ static void network_callback(System_Event_t* event) {
 
 
 // Initializes firmware
-static void _atem_init() {
+static void _waccat_init() {
 	struct config_t conf;
 
 	DEBUG_PRINTF(
@@ -105,6 +106,11 @@ static void _atem_init() {
 
 	// Initializes the HTTP configuration server
 	if (!http_init()) {
+		return;
+	}
+
+	// Initializes captive portal
+	if (!captive_portal_init()) {
 		return;
 	}
 
@@ -172,7 +178,7 @@ static void _atem_init() {
 	}
 
 	// Initializes connection to ATEM
-	struct udp_pcb* pcb = atem_udp_init(conf.atemAddr, conf.dest);
+	struct udp_pcb* pcb = atem_init(conf.atemAddr, conf.dest);
 	if (pcb == NULL) {
 		DEBUG_PRINTF("Boot failed\n");
 	}
@@ -182,18 +188,17 @@ static void _atem_init() {
 }
 
 // Initilization wrapper to handle multithreaded platforms
-void atem_init() {
+void waccat_init() {
 	// Required when LwIP core is running in another thread
 #ifndef NO_SYS
 	LOCK_TCPIP_CORE();
 #endif // NO_SYS
 
 	// Initializes firmware
-	_atem_init();
+	_waccat_init();
 
 	// Required when LwIP core is running in another thread
 #ifndef NO_SYS
 	UNLOCK_TCPIP_CORE();
 #endif // NO_SYS
 }
-

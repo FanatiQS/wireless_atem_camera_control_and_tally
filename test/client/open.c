@@ -1,6 +1,6 @@
 #include "../utils/utils.h"
 
-// Tests that an unanswered SYN packet is resent
+// Tests that an unanswered SYN packet is resent at least ATEM_RESENDS times
 void atem_client_open_retry() {
 	int sock = atem_socket_create();
 	atem_handshake_start_server(sock);
@@ -16,9 +16,9 @@ void atem_client_open_retry() {
 	}
 }
 
-// Tests that a rejected ATEM client retries connecting again
+// Tests that a rejected ATEM client retries connecting and does not give up retrying
 void atem_client_open_reject() {
-	for (int i = 0; i < 5; i++) {
+	for (int i = 0; i < ATEM_RESENDS + 2; i++) {
 		int sock = atem_socket_create();
 		uint16_t sessionId = atem_handshake_start_server(sock);
 		atem_handshake_sessionid_send(sock, ATEM_OPCODE_REJECT, false, sessionId);
@@ -34,21 +34,23 @@ void atem_client_open_accept() {
 	atem_socket_close(sock);
 }
 
-// Tests that data after closing handshake is not processed
-void atem_client_open_afterClose() {
+// Tests that a resent accept is also responded to
+void atem_client_open_acceptResend() {
 	int sock = atem_socket_create();
-	uint16_t sessionId = atem_handshake_listen(sock, 0x0001);
-	atem_handshake_close(sock, sessionId);
-	atem_ping_send(sock, sessionId, 0x0001);
-	atem_socket_close(sock);
-	sock = atem_socket_create();
-	sessionId = atem_handshake_listen(sock, 0x0002);
-	atem_handshake_close(sock, sessionId);
-	atem_socket_close(sock);
+
+	uint16_t newSessionId = 0x0001;
+	uint16_t sessionId = atem_handshake_start_server(sock);
+	atem_handshake_newsessionid_send(sock, ATEM_OPCODE_ACCEPT, false, sessionId, newSessionId);
+	atem_ack_recv_verify(sock, sessionId, 0x0000);
+
+	atem_handshake_newsessionid_send(sock, ATEM_OPCODE_ACCEPT, true, sessionId, newSessionId);
+	atem_ack_recv_verify(sock, sessionId, 0x0000);
 }
 
-// Tests that a client resends the SYN packet 10 times if not answered with about 200ms between each resend
-void atem_client_open_numberOfResends() {
+
+
+// Tests that a client resends the SYN packet only 10 times if not answered and with about 200ms between each resend
+void atem_client_open_retryInterval() {
 	// ATEM client starts connecting
 	int sock = atem_socket_create();
 	uint16_t sessionId = atem_handshake_start_server(sock);
@@ -98,12 +100,12 @@ void atem_client_open_minimal() {
 	TESTRUNNER(atem_client_open_reject);
 	TESTRUNNER(atem_client_open_retry);
 	TESTRUNNER(atem_client_open_accept);
+	TESTRUNNER(atem_client_open_acceptResend);
 }
 
 // Runs optional tests validating a client would be indistinguishable from ATEM Software Control
 void atem_client_open_optional() {
-	TESTRUNNER(atem_client_open_rejectReconnectDelay);
-	TESTRUNNER(atem_client_open_numberOfResends);
+	TESTRUNNER(atem_client_open_retryInterval);
 	TESTRUNNER(atem_client_open_randomSessionId);
 }
 

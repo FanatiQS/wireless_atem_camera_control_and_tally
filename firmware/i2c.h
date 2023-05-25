@@ -1,6 +1,17 @@
 #ifndef I2C_H
 #define I2C_H
 
+#include <stdbool.h> // true
+
+#include "./user_config.h" // SDI_I2C_ADDR
+
+// I2C address the SDI shield uses by default
+#ifndef SDI_I2C_ADDR
+#define SDI_I2C_ADDR 0x6E
+#endif // SDI_I2C_ADDR
+
+
+
 #ifdef ESP8266
 
 #include <twi.h> // twi_init, twi_readFrom, twi_writeTo
