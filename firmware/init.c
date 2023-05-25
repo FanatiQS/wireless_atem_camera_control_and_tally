@@ -128,10 +128,10 @@ static void _atem_init() {
 		(int)sizeof(stationConfig.ssid), stationConfig.ssid,
 		(int)sizeof(stationConfig.password), stationConfig.password
 	);
+#endif // DEBUG
 
 	// Disables station scanning when soft ap is used to fix soft ap stability issue
 	wifi_set_event_handler_cb(network_callback);
-#endif // DEBUG
 
 	// Starts connecting to WiFi station
 	if (!wifi_station_connect()) {
