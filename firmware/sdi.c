@@ -59,7 +59,7 @@ static void sdi_read(uint16_t reg, uint8_t* readBuf, uint8_t readLen) {
 
 
 // Checks if SDI shield FPGA has booted
-static bool sdi_connect() {
+static bool sdi_connect(void) {
 	uint32_t buf;
 	sdi_read(kRegIDENTIFIER, (uint8_t*)&buf, sizeof(buf));
 	return buf == *(uint32_t*)"SDIC";

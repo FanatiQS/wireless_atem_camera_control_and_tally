@@ -31,7 +31,7 @@ const char* atem_state_rejected = "Rejected";
 const char* atem_state_disconnected = "Disconnected";
 
 // Resets tally and connection status when disconnected from ATEM
-static void tally_reset() {
+static void tally_reset(void) {
 	LED_CONN(false);
 	LED_TALLY(false, false);
 	sdi_write_tally(atem.dest, false, false);

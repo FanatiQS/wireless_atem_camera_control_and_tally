@@ -59,7 +59,7 @@ static void network_callback(System_Event_t* event) {
 
 
 // Initializes firmware
-static void _waccat_init() {
+static void _waccat_init(void) {
 	struct config_t conf;
 
 	DEBUG_PRINTF(
@@ -188,7 +188,7 @@ static void _waccat_init() {
 }
 
 // Initilization wrapper to handle multithreaded platforms
-void waccat_init() {
+void waccat_init(void) {
 	// Required when LwIP core is running in another thread
 #ifndef NO_SYS
 	LOCK_TCPIP_CORE();

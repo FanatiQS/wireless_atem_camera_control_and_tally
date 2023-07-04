@@ -157,7 +157,7 @@ static void dns_recv_callback(void* arg, struct udp_pcb* pcb, struct pbuf* p, co
 }
 
 // Initializes captive portal dns server
-struct udp_pcb* captive_portal_init() {
+struct udp_pcb* captive_portal_init(void) {
 	// Creates protocol control buffer for captive portal DNS server
 	struct udp_pcb* pcb = udp_new();
 	if (pcb == NULL) {
