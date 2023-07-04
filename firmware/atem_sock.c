@@ -11,7 +11,8 @@
 #endif // ESP8266
 
 #include "../src/atem.h" // struct atem_t atem_connection_reset, atem_parse, ATEM_CONNECTION_OK, ATEM_CONNECTION_CLOSING, ATEM_CONNECTION_REJECTED, ATEM_TIMEOUT, ATEM_MAX_PACKET_LEN, ATEM_PORT, atem_cmd_available, atem_cmd_next, ATEM_CMDNAME_VERSION, ATEM_CMDNAME_TALLY, ATEM_CMDNAME_CAMERACONTROL, atem_protocol_majorj, atem_protocol_minor, ATEM_TIMEOUT_MS
-#include "./user_config.h" // DEBUG_TALLY, DEBUG_CC, PIN_CONN, PIN_PGM, PIN_PVW, PIN_SCL, PIN_SDA
+#include "../src/atem_private.h" // ATEM_INDEX_FLAGS, ATEM_INDEX_REMOTEID_HIGH, ATEM_INDEX_REMOTEID_LOW, ATEM_FLAG_ACK
+#include "./user_config.h" // DEBUG_TALLY, DEBUG_CC, DEBUG_ATEM, PIN_CONN, PIN_PGM, PIN_PVW, PIN_SCL, PIN_SDA
 #include "./led.h" // LED_TALLY, LED_CONN, LED_INIT
 #include "./sdi.h" // SDI_ENABLED, sdi_write_tally, sdi_write_cc, sdi_connect
 #include "./debug.h" // DEBUG_PRINTF, DEBUG_IP, IP_FMT, IP_VALUE, WRAP
@@ -75,7 +76,12 @@ static inline void atem_process(struct udp_pcb* pcb, uint8_t* buf, uint16_t len)
 			DEBUG_PRINTF("ATEM connection rejected\n");
 			return;
 		}
-		case ATEM_STATUS_WRITE: break;
+		case ATEM_STATUS_WRITE: {
+#ifdef DEBUG_ATEM
+			DEBUG_PRINTF("ATEM packet to acknowledge: %d\n", atem.lastRemoteId);
+#endif // DEBUG_ATEM
+			break;
+		}
 		case ATEM_STATUS_CLOSING: {
 			atem_state = atem_state_disconnected;
 			tally_reset();
@@ -85,6 +91,15 @@ static inline void atem_process(struct udp_pcb* pcb, uint8_t* buf, uint16_t len)
 		case ATEM_STATUS_ACCEPTED:
 		case ATEM_STATUS_WRITE_ONLY: {
 			atem_send(pcb);
+#ifdef DEBUG_ATEM
+			if (atem.lastRemoteId > 0 && atem.writeBuf[ATEM_INDEX_FLAGS] == ATEM_FLAG_ACK) {
+				DEBUG_PRINTF(
+					"ATEM out-of-order packet: %d\n",
+					atem.readBuf[ATEM_INDEX_REMOTEID_HIGH] << 8 |
+					atem.readBuf[ATEM_INDEX_REMOTEID_LOW]
+				);
+			}
+#endif // DEBUG_ATEM
 			return;
 		}
 	}

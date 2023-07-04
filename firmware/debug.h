@@ -4,9 +4,9 @@
 
 #include <lwip/arch.h> // LWIP_PLATFORM_DIAG
 
-#include "./user_config.h" // DEBUG, DEBUG_TALLY, DEBUG_CC
+#include "./user_config.h" // DEBUG, DEBUG_TALLY, DEBUG_CC, DEBUG_ATEM
 
-// Throws compilation error if tally or camera control debugging is enabled without general debugging being enabled
+// Throws compilation error if specific debugging is enabled without general debugging being enabled
 #if !DEBUG
 #if DEBUG_TALLY
 #error Enabling tally debugging requires general debugging to be enabled
@@ -14,6 +14,9 @@
 #if DEBUG_CC
 #error Enabling camera control debugging requires general debugging to be enabled
 #endif // DEBUG_CC
+#if DEBUG_ATEM
+#error Enabling ATEM protocol debugging requires general debugging to be enabled
+#endif // DEBUG_ATEM
 #endif // !DEBUG
 
 // Only prints debug info when it is enabled in user_config.h
