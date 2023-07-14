@@ -111,8 +111,9 @@ static void dns_recv_callback(void* arg, struct udp_pcb* pcb, struct pbuf* p, co
 	}
 
 	// Gets questions type and class
-	uint16_t qtype = pbuf_get_at(p, questionIndex++) << 8 | pbuf_get_at(p, questionIndex++);
-	uint16_t qclass = pbuf_get_at(p, questionIndex++) << 8 | pbuf_get_at(p, questionIndex++);
+	uint16_t qtype = pbuf_get_at(p, questionIndex) << 8 | pbuf_get_at(p, questionIndex + 1);
+	uint16_t qclass = pbuf_get_at(p, questionIndex + 2) << 8 | pbuf_get_at(p, questionIndex + 3);
+	questionIndex += 4;
 
 	// Validates question type
 	if (qtype != DNS_QTYPE_A && qtype != DNS_QTYPE_ANY) {
