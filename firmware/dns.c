@@ -173,7 +173,7 @@ struct udp_pcb* captive_portal_init(void) {
 	udp_recv(pcb, dns_recv_callback, NULL);
 
 	// Binds captive portal DNS pcb to any IP address on default DNS port
-	if (udp_bind(pcb, IPADDR_ANY, DNS_PORT)) {
+	if (udp_bind(pcb, IP_ADDR_ANY, DNS_PORT)) {
 		DEBUG_PRINTF("Failed to bind captive portal DNS to its port\n");
 		return NULL;
 	}
