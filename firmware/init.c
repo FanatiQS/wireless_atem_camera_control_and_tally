@@ -11,8 +11,7 @@
 #include "./init.h" // FIRMWARE_VERSION_STRING
 #include "./dns.h" // captive_portal_init
 
-
-
+// Defines empty LWIP thread locking macros when LWIP is not running in a separate thread
 #if NO_SYS
 #define LOCK_TCPIP_CORE()
 #define UNLOCK_TCPIP_CORE()
@@ -25,7 +24,7 @@
 #include <user_interface.h> // wifi_set_opmode_current, STATIONAP_MODE, wifi_station_set_reconnect_policy, station_config, wifi_station_get_config, wifi_set_event_handler_cb, wifi_station_connect, wifi_station_dchpc_stop, wifi_set_ip_info, STATION_IF, ip_info
 #include <spi_flash.h> // spi_flash_read, SPI_FLASH_RESULT_OK, spi_flash_get_id
 #include <version.h> // ESP_SDK_VERSION_STRING
-#ifdef ARDUINO
+#if ARDUINO
 #include <core_version.h> // ARDUINO_ESP8266_GIT_DESC
 #endif // ARDUINO
 
@@ -59,11 +58,41 @@ static void network_callback(System_Event_t* event) {
 	}
 }
 
+// Debug info of the SDK version
+#define BOOT_INFO_VERSION_ESP "Using ESP8266 SDK version: " ESP_SDK_VERSION_STRING "\n"
+#if ARDUINO
+#define BOOT_INFO_VERSION_ARDUINO "Using Arduino SDK version: " WRAP(ARDUINO_ESP8266_GIT_DESC) "\n"
+#endif // ARDUINO
+#define BOOT_INFO_VERSIONS BOOT_INFO_VERSION_ESP BOOT_INFO_VERSION_ARDUINO
+
 #else // ESP8266
 
 #error No WiFi implementation for platform
 
 #endif // ESP8266
+
+
+
+// Defines string label of DEBUG_TALLY flag
+#if DEBUG_TALLY
+#define DEBUG_TALLY_LABEL "enabled"
+#else // DEBUG_TALLY
+#define DEBUG_TALLY_LABEL "disabled"
+#endif // DEBUG_TALLY
+
+// Defines string label of DEBUG_CC flag
+#if DEBUG_CC
+#define DEBUG_CC_LABEL "enabled"
+#else // DEBUG_CC
+#define DEBUG_CC_LABEL "disabled"
+#endif // DEBUG_CC
+
+// Defines string label of DEBUG_ATEM flag
+#if DEBUG_ATEM
+#define DEBUG_ATEM_LABEL "enabled"
+#else // DEBUG_ATEM
+#define DEBUG_ATEM_LABEL "disabled"
+#endif // DEBUG_ATEM
 
 
 
@@ -75,34 +104,15 @@ static void _waccat_init(void) {
 		"\n\n"
 		"Booting...\n"
 
-		// Prints firmware version
+		// Prints versions
 		"Firmware version: " FIRMWARE_VERSION_STRING "\n"
-
-		// Prints LwIP firmware version
 		"Using LwIP version: " LWIP_VERSION_STRING "\n"
-
-#ifdef ESP8266
-		"Using ESP8266 SDK version: " ESP_SDK_VERSION_STRING "\n"
-#ifdef ARDUINO
-		"Using Arduino SDK version: " WRAP(ARDUINO_ESP8266_GIT_DESC) "\n"
-#endif // ARDUINO
-#endif // ESP8266
+		BOOT_INFO_VERSIONS
 
 		// Prints debugging flags enabled/disabled state
-		"Tally debug: "
-#if DEBUG_TALLY
-		"enabled"
-#else // DEBUG_TALLY
-		"disabled"
-#endif // DEBUG_TALLY
-		"\n"
-		"Camera control debug: "
-#if DEBUG_CC
-		"enabled"
-#else // DEBUG_CC
-		"disabled"
-#endif // DEBUG_CC
-		"\n"
+		"Tally debug: " DEBUG_TALLY_LABEL "\n"
+		"Camera control debug: " DEBUG_CC_LABEL "\n"
+		"ATEM debug: " DEBUG_ATEM_LABEL "\n"
 	);
 
 #ifdef ESP8266
