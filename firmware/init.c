@@ -11,6 +11,15 @@
 #include "./init.h" // FIRMWARE_VERSION_STRING
 #include "./dns.h" // captive_portal_init
 
+
+
+#if NO_SYS
+#define LOCK_TCPIP_CORE()
+#define UNLOCK_TCPIP_CORE()
+#endif // NO_SYS
+
+
+
 #ifdef ESP8266
 
 #include <user_interface.h> // wifi_set_opmode_current, STATIONAP_MODE, wifi_station_set_reconnect_policy, station_config, wifi_station_get_config, wifi_set_event_handler_cb, wifi_station_connect, wifi_station_dchpc_stop, wifi_set_ip_info, STATION_IF, ip_info
@@ -190,15 +199,11 @@ static void _waccat_init(void) {
 // Initilization wrapper to handle multithreaded platforms
 void waccat_init(void) {
 	// Required when LwIP core is running in another thread
-#ifndef NO_SYS
 	LOCK_TCPIP_CORE();
-#endif // NO_SYS
 
 	// Initializes firmware
 	_waccat_init();
 
 	// Required when LwIP core is running in another thread
-#ifndef NO_SYS
 	UNLOCK_TCPIP_CORE();
-#endif // NO_SYS
 }
