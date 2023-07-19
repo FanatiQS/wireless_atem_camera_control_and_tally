@@ -24,6 +24,37 @@
 
 
 
+// Logging string for PGM tally pins
+#if PIN_PGM
+#define BOOT_INFO_PIN_PGM "Tally PGM pin: " WRAP(PIN_PGM) "\n"
+#else // PIN_PGM
+#define BOOT_INFO_PIN_PGM "Tally PGM: disabled\n"
+#endif // PIN_PGM
+
+// Logging string for PVW tally pins
+#if PIN_PVW
+#define BOOT_INFO_PIN_PVW "Tally PVW pin: " WRAP(PIN_PVW) "\n"
+#else // PIN_PVW
+#define BOOT_INFO_PIN_PVW "Tally PVW: disabled\n"
+#endif // PIN_PVW
+
+// Logging string for CONN LED pins
+#if PIN_CONN
+#define BOOT_INFO_PIN_CONN "CONN LED pin: " WRAP(PIN_CONN) "\n"
+#else // PIN_CONN
+#define BOOT_INFO_PIN_CONN "CONN LED: disabled\n"
+#endif // PIN_CONN
+
+// Logging string for I2C pins
+#ifdef SDI_ENABLED
+#define BOOT_INFO_PIN_I2C "SDI shield I2C SCL pin: " WRAP(PIN_SCL) "\nSDI shield I2C SDA pin: " WRAP(PIN_SDA) "\n"
+#else // SDI_ENABLED
+#define BOOT_INFO_PIN_I2C "SDI shield: disabled\n"
+#endif // SDI_ENABLED
+
+
+
+
 // ATEM connection context
 struct atem_t atem;
 
@@ -282,27 +313,10 @@ struct udp_pcb* atem_init(uint32_t addr, uint8_t dest) {
 
 	// Prints pin assignments
 	DEBUG_PRINTF(
-#ifdef PIN_PGM
-		"Tally PGM pin: " WRAP(PIN_PGM) "\n"
-#else // PIN_PGM
-		"Tally PGM: disabled\n"
-#endif //PIN_PGM
-#ifdef PIN_PVW
-		"Tally PVW pin: " WRAP(PIN_PVW) "\n"
-#else // PIN_PVW
-		"Tally PVW: disabled\n"
-#endif // PIN_PVW
-#ifdef PIN_CONN
-		"CONN pin: " WRAP(PIN_CONN) "\n"
-#else // PIN_CONN
-		"CONN: disabled\n"
-#endif // PIN_CONN
-#ifdef SDI_ENABLED
-		"SDI shield I2C SCL pin: " WRAP(PIN_SCL) "\n"
-		"SDI shield I2C SDA pin: " WRAP(PIN_SDA) "\n"
-#else // SDI_ENABLED
-		"SDI shield: disabled\n"
-#endif // SDI_ENABLED
+		BOOT_INFO_PIN_PGM
+		BOOT_INFO_PIN_PVW
+		BOOT_INFO_PIN_CONN
+		BOOT_INFO_PIN_I2C
 	);
 
 	// Starts all status LEDs off
