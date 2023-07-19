@@ -9,7 +9,7 @@
 #include <lwip/err.h> // err_t, ERR_OK
 #include <lwip/arch.h> // LWIP_UNUSED_ARG
 #include <lwip/timeouts.h> // sys_timeout, sys_untimeout
-#include <lwip/netif.h> // netif_default
+#include <lwip/netif.h> // netif_default, netif_ip4_addr, netif_ip4_netmaksk, netif_ip4_gw
 #ifdef ESP8266
 #include <user_interface.h> // wifi_set_opmode_current, STATION_MODE
 #endif // ESP8266

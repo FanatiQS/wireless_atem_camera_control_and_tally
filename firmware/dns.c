@@ -1,9 +1,12 @@
 #include <stddef.h> // NULL
 #include <stdint.h> // uint8_t, uint16_t
 
-#include <lwip/udp.h> // struct udp_pcb, udp_new, udp_recv, udp_bind, LWIP_UNUSED_ARG, ip_addr_t, IP_ADDR_ANY, udp_sendto
+#include <lwip/udp.h> // struct udp_pcb, udp_new, udp_recv, udp_bind, udp_sendto
+#include <lwip/ip_addr.h> // ip_addr_t, IP_ADDR_ANY
+#include <lwip/arch.h> // LWIP_UNUSED_ARG
 #include <lwip/pbuf.h> // struct pbuf, pbuf_free, pbuf_realloc, pbuf_alloc, PBUF_TRANSPORT, PBUF_POOL, pbuf_take, pbuf_take_at, pbuf_cat, pbuf_get_at, pbuf_put_at, pbuf_memcmp
 #include <lwip/def.h> // lwip_ntohl, lwip_htons, lwip_htonl
+#include <lwip/ip.h> // ip_current_dest_addr
 
 #include "./debug.h" // DEBUG_PRINTF
 
