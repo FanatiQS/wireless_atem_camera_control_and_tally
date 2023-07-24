@@ -367,4 +367,6 @@ int main(int argc, char** argv) {
 	RUN(test_post_success_segment("static=1", "&psk=1")); // Tests segmented concatenated flag property
 	RUN(test_post_err("static=2", "Invalid character in boolean POST body value")); // Tests invalid character in flag value
 	RUN(test_post_err("static=12", "Invalid character in boolean POST body value")); // Tests too many characters
+
+	printf("All tests successfully completed\n");
 }
