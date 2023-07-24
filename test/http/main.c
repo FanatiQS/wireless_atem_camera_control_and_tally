@@ -151,17 +151,18 @@ void test_cmp_code(struct test_t* test, int code) {
 }
 
 // Sends HTTP request expecting specified response code
-void test_code(int code, const char* req) {
+struct test_t test_code(int code, const char* req) {
 	struct test_t test = test_create();
 	test_send(&test, req);
 	test_recv(&test);
 	test_cmp_code(&test, code);
 	printf("Test for %d success\n", code);
 	test_close(&test);
+	return test;
 }
 
 // Sends HTTP request in two separate segments expecting specified response code
-void test_code_segment(int code, const char* req1, const char* req2) {
+struct test_t test_code_segment(int code, const char* req1, const char* req2) {
 	struct test_t test = test_create();
 	test_send(&test, req1);
 	test_send(&test, req2);
@@ -169,10 +170,11 @@ void test_code_segment(int code, const char* req1, const char* req2) {
 	test_cmp_code(&test, code);
 	printf("Test for %d (segmented) success\n", code);
 	test_close(&test);
+	return test;
 }
 
 // Sends HTTP request expecting timeout
-void test_timeout(const char* req) {
+struct test_t test_timeout(const char* req) {
 	struct test_t test = test_create();
 	test_send(&test, req);
 	test_recv(&test);
@@ -182,25 +184,67 @@ void test_timeout(const char* req) {
 	}
 	printf("Test timed out as expected\n");
 	test_close(&test);
+	return test;
 }
+
+
 
 // HTTP template used for sending POST requests
 #define HTTP_POST_TEMPLATE "POST / HTTP/1.1\r\nContent-Length: %zu\r\n\r\n%s"
 
 // Sends HTTP request with specified body expecting specified response code
-void test_post(int code, const char* body) {
+struct test_t test_post(int code, const char* body) {
 	char req[1024];
 	assert(sizeof(req) > (snprintf(NULL, 0, HTTP_POST_TEMPLATE, (size_t)UINT32_MAX, body)));
 	sprintf(req, HTTP_POST_TEMPLATE, strlen(body), body);
-	test_code(code, req);
+	return test_code(code, req);
 }
 
 // Sends HTTP request with specified body in two separate segments expecting specified response code
-void test_post_segment(int code, const char* body1, const char* body2) {
+struct test_t test_post_segment(int code, const char* body1, const char* body2) {
 	char req[1024];
 	assert(sizeof(req) > (snprintf(NULL, 0, HTTP_POST_TEMPLATE "%s", (size_t)UINT32_MAX, body1, body2)));
 	sprintf(req, HTTP_POST_TEMPLATE, strlen(body1) + strlen(body2), body1);
-	test_code_segment(code, req, body2);
+	return test_code_segment(code, req, body2);
+}
+
+// Compares the response body to compare string
+void test_body(struct test_t* test, const char* cmp) {
+	char* buf = strstr(test->recvBuf, "\r\n\r\n");
+	if (buf == NULL) {
+		fprintf(stderr, "Failed to find beginning of body\nres: %s\n", test->recvBuf);
+		abort();
+	}
+	buf += 4;
+	if (strcmp(buf, cmp)) {
+		fprintf(stderr, "Failed to compare HTTP body:\nres: %s\ncmp: %s\n", buf, cmp);
+		abort();
+	}
+	printf("Test body compare success\n");
+}
+
+// Sends HTTP POST request expecting success
+void test_post_success(const char* body) {
+	struct test_t test = test_post(200, body);
+	test_body(&test, "success");
+}
+
+// Sends segmented HTTP POST request expecting success
+void test_post_success_segment(const char* body1, const char* body2) {
+	struct test_t test = test_post_segment(200, body1, body2);
+	test_body(&test, "success");
+}
+
+// Sends HTTP POST request expecning error response
+void test_post_err(const char* body, const char* err) {
+	struct test_t test = test_post(400, body);
+	test_body(&test, err);
+}
+
+// Sends segmented HTTP POST request expecting error response
+void test_post_err_segment(const char* body1, const char* body2, const char* err) {
+	struct test_t test = test_post_segment(400, body1, body2);
+	test_body(&test, err);
 }
 
 
@@ -264,63 +308,63 @@ int main(int argc, char** argv) {
 
 
 	// HTTP POST body key
-	RUN(test_post(400, "x")); // Tests invalid body key short
-	RUN(test_post(400, "xyz=123")); // Tests invalid body key full
-	RUN(test_post_segment(400, "x", "yz=123")); // Tests segmented invalid body key full
-	RUN(test_post(400, "ssi")); // Tests incomplete key
-	RUN(test_post(400, "ssk=1")); // Tests back comparing body key
-	RUN(test_post_segment(400, "ss", "k=1")); // Tests segmented back comparing body key
+	RUN(test_post_err("x", "Invalid POST body key")); // Tests invalid body key short
+	RUN(test_post_err("xyz=123", "Invalid POST body key")); // Tests invalid body key full
+	RUN(test_post_err_segment("x", "yz=123", "Invalid POST body key")); // Tests segmented invalid body key full
+	RUN(test_post_err("ssi", "Invalid POST body key")); // Tests incomplete key
+	RUN(test_post_err("ssk=1", "Invalid POST body key")); // Tests back comparing body key
+	RUN(test_post_err_segment("ss", "k=1", "Invalid POST body key")); // Tests segmented back comparing body key
 
 	// HTTP POST body string
-	RUN(test_post(200, "ssid=")); // Tests empty string value
-	RUN(test_post(200, "ssid=12")); // Tests valid string value
-	RUN(test_post_segment(200, "ssi", "d=12")); // Tests segmented key in valid string value
-	RUN(test_post_segment(200, "ssid=1", "2")); // Tests segmented value in valid string value
-	RUN(test_post(200, "ssid=1&")); // Tests terminator as last character
-	RUN(test_post(200, "psk=1&ssid=1")); // Tests concatenated string property
-	RUN(test_post(200, "ssid=12345678901234567890123456789012")); // Tests max string length
-	RUN(test_post(400, "ssid=123456789012345678901234567890123")); // Tests overflowing string length
+	RUN(test_post_success("name=")); // Tests empty string value
+	RUN(test_post_success("name=12")); // Tests valid string value
+	RUN(test_post_success_segment("nam", "e=12")); // Tests segmented key in valid string value
+	RUN(test_post_success_segment("name=1", "2")); // Tests segmented value in valid string value
+	RUN(test_post_success("name=1&")); // Tests terminator as last character
+	RUN(test_post_success("iplocal=1&name=1")); // Tests concatenated string property
+	RUN(test_post_success("name=12345678901234567890123456789012")); // Tests max string length
+	RUN(test_post_err("name=123456789012345678901234567890123", "String POST body value too long")); // Tests overflowing string length
 
 	// HTTP POST body integer value
-	RUN(test_post(200, "dest=")); // Tests empty uint8 value
-	RUN(test_post(200, "dest=12")); // Tests valid uint8 value
-	RUN(test_post_segment(200, "des", "t=12")); // Tests segmented key in valid uint8 value
-	RUN(test_post_segment(200, "dest=1", "2")); // Tests segmented value in valid uint8 value
-	RUN(test_post(200, "dest=1&")); // Tests terminator as last character
-	RUN(test_post(200, "psk=1&dest=1")); // Tests concatenated uint8 property before
-	RUN(test_post(200, "dest=1&psk=1")); // Tests concatenated uint8 property after
-	RUN(test_post(400, "dest=abc123")); // Tests invalid characters in uint8
-	RUN(test_post_segment(400, "dest=ab", "c123")); // Tests segmented invalid characters in uint8
-	RUN(test_post(400, "dest=256")); // Tests overflowing int
-	RUN(test_post(400, "dest=0")); // Tests int under min
-	RUN(test_post(400, "dest=255")); // Tests int over max
-	RUN(test_post(200, "dest=254")); // Tests max integer value
-	RUN(test_post(200, "dest=1")); // Tests min integer value
+	RUN(test_post_success("dest=")); // Tests empty uint8 value
+	RUN(test_post_success("dest=12")); // Tests valid uint8 value
+	RUN(test_post_success_segment("des", "t=12")); // Tests segmented key in valid uint8 value
+	RUN(test_post_success_segment("dest=1", "2")); // Tests segmented value in valid uint8 value
+	RUN(test_post_success("dest=1&")); // Tests terminator as last character
+	RUN(test_post_success("name=1&dest=1")); // Tests concatenated uint8 property before
+	RUN(test_post_success("dest=1&name=1")); // Tests concatenated uint8 property after
+	RUN(test_post_err("dest=abc123", "Invalid character in integer POST body value")); // Tests invalid characters in uint8
+	RUN(test_post_err_segment("dest=ab", "c123", "Invalid character in integer POST body value")); // Tests segmented invalid characters in uint8
+	RUN(test_post_err("dest=256", "Integer POST body value out of range")); // Tests overflowing int
+	RUN(test_post_err("dest=0", "Integer POST body value out of range")); // Tests int under min
+	RUN(test_post_err("dest=255", "Integer POST body value out of range")); // Tests int over max
+	RUN(test_post_success("dest=254")); // Tests max integer value
+	RUN(test_post_success("dest=1")); // Tests min integer value
 
 	// HTTP POST body IPV4 value
-	RUN(test_post(200, "atem=")); // Tests empty ipv4 value
-	RUN(test_post(200, "atem=192.168.1.240")); // Tests valid ipv4 value
-	RUN(test_post_segment(200, "ate", "m=192.168.1.240")); // Tests segmented key in valid ipv4 value
-	RUN(test_post_segment(200, "atem=1", "92.168.1.240")); // Tests segmented value in valid ipv4 value
-	RUN(test_post(200, "atem=192.168.1.240&")); // Tests terminator as last character
-	RUN(test_post(200, "ipmask=255.255.255.0&atem=192.168.1.240")); // Tests concatennated ipv4 property
-	RUN(test_post(400, "atem=19a")); // Tests invalid character in ipv4 short
-	RUN(test_post(400, "atem=19a.168.1.240")); // Tests invalid character in ipv4 full
-	RUN(test_post_segment(400, "atem=19a", ".168.1.240")); // Tests segmented invalid characters in ipv4
-	RUN(test_post(400, "atem=192.168.1.24b")); // Tests invalid character in ipv4 last octet
-	RUN(test_post(400, "atem=256.168.1.240")); // Tests overflowing octet
-	RUN(test_post(400, "atem=192.168.1.240.1")); // Tests too many ip segments
+	RUN(test_post_success("atem=")); // Tests empty ipv4 value
+	RUN(test_post_success("atem=192.168.1.240")); // Tests valid ipv4 value
+	RUN(test_post_success_segment("ate", "m=192.168.1.240")); // Tests segmented key in valid ipv4 value
+	RUN(test_post_success_segment("atem=1", "92.168.1.240")); // Tests segmented value in valid ipv4 value
+	RUN(test_post_success("atem=192.168.1.240&")); // Tests terminator as last character
+	RUN(test_post_success("ipmask=255.255.255.0&atem=192.168.1.240")); // Tests concatennated ipv4 property
+	RUN(test_post_err("atem=19a", "Invalid character in IPV4 POST body value")); // Tests invalid character in ipv4 short
+	RUN(test_post_err("atem=19a.168.1.240", "Invalid character in IPV4 POST body value")); // Tests invalid character in ipv4 full
+	RUN(test_post_err_segment("atem=19a", ".168.1.240", "Invalid character in IPV4 POST body value")); // Tests segmented invalid characters in ipv4
+	RUN(test_post_err("atem=192.168.1.24b", "Invalid character in IPV4 POST body value")); // Tests invalid character in ipv4 last octet
+	RUN(test_post_err("atem=256.168.1.240", "Invalid IPV4 address")); // Tests overflowing octet
+	RUN(test_post_err("atem=192.168.1.240.1", "Invalid IPV4 address")); // Tests too many ip segments
 
 	// HTTP POST body flag value
-	RUN(test_post(200, "static=")); // Tests empty flag value
-	RUN(test_post(200, "static=1")); // Tests valid flag value (enable)
-	RUN(test_post(200, "static=0")); // Tests valid flag value (disable)
-	RUN(test_post_segment(200, "static=", "1")); // Tests segmented valid flag value
-	RUN(test_post_segment(200, "stati", "c=1")); // Tests segmented key in valid flag value
-	RUN(test_post(200, "static=1&")); // Tests terminator as last character
-	RUN(test_post(200, "static=1&psk=1")); // Tests concatenated flag property before
-	RUN(test_post(200, "psk=1&static=1")); // Tests concatenated flag property after
-	RUN(test_post_segment(200, "static=1", "&psk=1")); // Tests segmented concatenated flag property
-	RUN(test_post(400, "static=2")); // Tests invalid character in flag value
-	RUN(test_post(400, "static=12")); // Tests too many characters
+	RUN(test_post_success("static=")); // Tests empty flag value
+	RUN(test_post_success("static=1")); // Tests valid flag value (enable)
+	RUN(test_post_success("static=0")); // Tests valid flag value (disable)
+	RUN(test_post_success_segment("static=", "1")); // Tests segmented valid flag value
+	RUN(test_post_success_segment("stati", "c=1")); // Tests segmented key in valid flag value
+	RUN(test_post_success("static=1&")); // Tests terminator as last character
+	RUN(test_post_success("static=1&psk=1")); // Tests concatenated flag property before
+	RUN(test_post_success("psk=1&static=1")); // Tests concatenated flag property after
+	RUN(test_post_success_segment("static=1", "&psk=1")); // Tests segmented concatenated flag property
+	RUN(test_post_err("static=2", "Invalid character in boolean POST body value")); // Tests invalid character in flag value
+	RUN(test_post_err("static=12", "Invalid character in boolean POST body value")); // Tests too many characters
 }
