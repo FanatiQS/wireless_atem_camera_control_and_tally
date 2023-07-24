@@ -4,7 +4,7 @@
 #include <lwip/tcpip.h> // LOCK_TCPIO_CORE, UNLCOK_TCPIP_CORE
 #include <lwip/init.h> // LWIP_VERSION_STRING
 
-#include "./user_config.h" // DEBUG_TALLY, DEBUG_CC
+#include "./user_config.h" // DEBUG, DEBUG_TALLY, DEBUG_CC, DEBUG_HTTP
 #include "./debug.h" // DEBUG_PRINTF, DEBUG_IP, WRAP
 #include "./atem_sock.h" // atem_init
 #include "./http.h" // http_init
@@ -22,8 +22,9 @@
 
 #ifdef ESP8266
 
-#include <user_interface.h> // wifi_set_opmode_current, STATIONAP_MODE, wifi_station_set_reconnect_policy, struct station_config, wifi_station_get_config, wifi_set_event_handler_cb, wifi_station_connect, wifi_station_dchpc_stop, wifi_set_ip_info, STATION_IF, ip_info, struct softap, wifi_softap_get_config
+#include <user_interface.h> // wifi_set_opmode_current, STATIONAP_MODE, wifi_station_set_reconnect_policy, struct station_config, wifi_station_get_config, wifi_set_event_handler_cb, wifi_station_connect, wifi_station_dchpc_stop, wifi_set_ip_info, STATION_IF, ip_info, uart_div_modify, struct softap, wifi_softap_get_config
 #include <version.h> // ESP_SDK_VERSION_STRING
+#include <eagle_soc.h> // UART_CLK_FREQ, WRITE_PERI_REG, PERIPHS_IO_MUX_U0TXD_U
 #if ARDUINO
 #include <core_version.h> // ARDUINO_ESP8266_GIT_DESC
 #endif // ARDUINO
@@ -99,9 +100,24 @@ static void network_callback(System_Event_t* event) {
 
 
 
+// Sets default uart baud rate if not specified
+#ifndef DEBUG_BAUD
+#define DEBUG_BAUD 115200
+#endif // DEBUG_BAUD
+
+
+
 // Initializes firmware
 static void _waccat_init(void) {
 	struct config_t conf;
+
+	// Initializes uart serial printing
+#if DEBUG
+#ifdef ESP8266
+	WRITE_PERI_REG(PERIPHS_IO_MUX_U0TXD_U, 0);
+	uart_div_modify(0, UART_CLK_FREQ / DEBUG_BAUD);
+#endif // ESP8266
+#endif // DEBUG
 
 	DEBUG_PRINTF(
 		"\n\n"
