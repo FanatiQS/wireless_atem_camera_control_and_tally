@@ -28,10 +28,6 @@
 #include <core_version.h> // ARDUINO_ESP8266_GIT_DESC
 #endif // ARDUINO
 
-// Sets configuration to use last memory page of flash before system data, same as arduino uses for EEPROM
-#define FLASH_SIZE (1 << ((spi_flash_get_id() >> 16) & 0xff))
-#define CONFIG_START (FLASH_SIZE - (12 + 4 + 4) * 1024)
-
 // Disables scanning for wifi station when configuration network is used
 static void network_callback(System_Event_t* event) {
 	switch (event->event) {
