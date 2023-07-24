@@ -1,13 +1,11 @@
 #include <stdio.h> // printf, perror, fprintf, stderr, sprintf, snprintf, NULL
 #include <stdlib.h> // exit, EXIT_FAILURE, abort
 #include <assert.h> // assert
-#include <string.h> // strlen, strcmp, memcmp
-#include <errno.h> // errno, EPIPE
+#include <string.h> // strlen, strcmp, memcmp, strstr
 #include <signal.h> // signal, SIGPIPE, SIG_IGN
-#include <assert.h> // assert
 #include <stdint.h> // UINT32_MAX
 
-#include <unistd.h> // close, usleep, sleep
+#include <unistd.h> // close
 #include <sys/socket.h> // socket, AF_INET, SOCK_STREAM, struct sockaddr, htons
 #include <arpa/inet.h> // struct sockaddr_in, inet_addr
 
