@@ -202,7 +202,6 @@ static bool http_post_completed(struct http_t* http) {
 static inline bool http_post_int_complete(struct http_t* http, const char c) {
 	if (c != '&') return false;
 	http->remainingBodyLen--;
-	if (http_post_completed(http)) return false;
 	http->state = HTTP_STATE_POST_ROOT_BODY_KEYS;
 	return true;
 }
