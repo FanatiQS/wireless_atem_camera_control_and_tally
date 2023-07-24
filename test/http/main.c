@@ -87,7 +87,7 @@ struct test_t test_create() {
 
 	// Connect socket to HTTP server on default port
 	if (connect(test.sock, (const struct sockaddr*)&sockAddr, sizeof(sockAddr))) {
-		perror("Failed to connect socket to server\n");
+		perror("Failed to connect socket to server");
 		abort();
 	}
 
