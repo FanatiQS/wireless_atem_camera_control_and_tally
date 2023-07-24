@@ -17,6 +17,9 @@
 #if DEBUG_ATEM
 #error Enabling ATEM protocol debugging requires general debugging to be enabled
 #endif // DEBUG_ATEM
+#if DEBUG_HTTP
+#error Enabling HTTP debugging requires general debugging to be enabled
+#endif // DEBUG_HTTP
 #endif // !DEBUG
 
 // Only prints debug info when it is enabled in user_config.h
