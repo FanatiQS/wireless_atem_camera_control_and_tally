@@ -99,7 +99,7 @@ static void network_callback(System_Event_t* event) {
 #if DEBUG_HTTP
 #define DEBUG_HTTP_LABEL "enabled"
 #else // DEBUG_ATEM
-#define DEBUG_ATEM_LABEL "disabled"
+#define DEBUG_HTTP_LABEL "disabled"
 #endif // DEBUG_HTTP
 
 
