@@ -7,7 +7,8 @@
 #include "./user_config.h" // DEBUG_TALLY, DEBUG_CC
 #include "./debug.h" // DEBUG_PRINTF, DEBUG_IP, WRAP
 #include "./atem_sock.h" // atem_init
-#include "./http.h" // config_t, CONF_FLAG_STATICIP, http_init
+#include "./http.h" // http_init
+#include "./flash.h" // struct config_t, CONF_FLAG_STATICIP, flash_config_read
 #include "./init.h" // FIRMWARE_VERSION_STRING
 #include "./dns.h" // captive_portal_init
 
@@ -94,6 +95,13 @@ static void network_callback(System_Event_t* event) {
 #define DEBUG_ATEM_LABEL "disabled"
 #endif // DEBUG_ATEM
 
+// Defines string label of DEBUG_HTTP flag
+#if DEBUG_HTTP
+#define DEBUG_HTTP_LABEL "enabled"
+#else // DEBUG_ATEM
+#define DEBUG_ATEM_LABEL "disabled"
+#endif // DEBUG_HTTP
+
 
 
 // Initializes firmware
@@ -113,6 +121,7 @@ static void _waccat_init(void) {
 		"Tally debug: " DEBUG_TALLY_LABEL "\n"
 		"Camera control debug: " DEBUG_CC_LABEL "\n"
 		"ATEM debug: " DEBUG_ATEM_LABEL "\n"
+		"HTTP debug: " DEBUG_HTTP_LABEL "\n"
 	);
 
 #ifdef ESP8266
@@ -133,7 +142,27 @@ static void _waccat_init(void) {
 		return;
 	}
 
+	// Reads configuration from non-volotile flash memory
+	if (!flash_config_read(&conf)) {
+		return;
+	}
+
 #ifdef ESP8266
+	// Gets WiFi softap SSID and PSK for debug printing
+	struct softap_config softapConfig;
+	if (!wifi_softap_get_config(&softapConfig)) {
+		DEBUG_PRINTF("Failed to read soft ap configuration\n");
+		return false;
+	}
+	DEBUG_PRINTF(
+		"Soft AP SSID: \"%.*s\"\n"
+		"Soft AP PSK: \"%.*s\"\n"
+		"Soft AP Channel: %d\n",
+		softapConfig.ssid_len, softapConfig.ssid,
+		(int)sizeof(softapConfig.password), softapConfig.password,
+		softapConfig.channel
+	);
+
 	// Sets WiFi to automatically reconnect when connection is lost
 	if (!wifi_station_set_reconnect_policy(true)) {
 		DEBUG_PRINTF("Failed to set reconnect policy\n");
@@ -161,12 +190,6 @@ static void _waccat_init(void) {
 	// Starts connecting to WiFi station
 	if (!wifi_station_connect()) {
 		DEBUG_PRINTF("Failed to start wifi connection\n");
-		return;
-	}
-
-	// Reads configuration from non-volotile flash memory
-	if (spi_flash_read(CONFIG_START, (uint32_t*)&conf, sizeof(conf)) != SPI_FLASH_RESULT_OK) {
-		DEBUG_PRINTF("Failed to read device configuration\n");
 		return;
 	}
 #endif // ESP8266

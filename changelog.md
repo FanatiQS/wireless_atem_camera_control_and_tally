@@ -8,6 +8,16 @@
 * Renamed file `/firmware/udp.h` to `/firmware/atem_sock.h`.
 * Renamed `atem_init` to `waccat_init`.
 * Renamed `atem_udp_init` to `atem_init`.
+* Improved debug logs.
+* Added debug flag to print acknlowedged ATEM packets.
+* Added optional single source include file
+* Moved HTTP POST parser to custom streaming parser (available on port 8080 until GET parser is moved as well).
+* Changed HTTP POST keys.
+* HTML input fileds for IP addresses are now a single text box rather than 4 individual ones.
+* Configuration properties are only updated if available in HTTP POST (static ip is switched to '1' or '0' instead of 'on' or undefined).
+* Added HTTP debug flag.
+* Added tests for HTTP parser.
+* Added simple configuration bash script.
 
 
 

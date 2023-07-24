@@ -4,7 +4,7 @@
 
 #include <lwip/arch.h> // LWIP_PLATFORM_DIAG
 
-#include "./user_config.h" // DEBUG, DEBUG_TALLY, DEBUG_CC, DEBUG_ATEM
+#include "./user_config.h" // DEBUG, DEBUG_TALLY, DEBUG_CC, DEBUG_ATEM, DEBUG_HTTP
 
 // Throws compilation error if specific debugging is enabled without general debugging being enabled
 #if !DEBUG
@@ -40,6 +40,13 @@
 		IP_VALUE(netmask),\
 		IP_VALUE(gw)\
 	)
+
+// Only prints HTTP debug info when it is enabled in user_config.h
+#ifdef DEBUG_HTTP
+#define DEBUG_HTTP_PRINTF(...) DEBUG_PRINTF("[ HTTP ] " __VA_ARGS__)
+#else // DEBUG_HTTP
+#define DEBUG_HTTP_PRINTF(...)
+#endif // DEBUG_HTTP
 
 // Wraps argument into a string
 #define _WRAP(arg) #arg

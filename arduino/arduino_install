@@ -33,6 +33,7 @@ cpy src/atem_sock.h       firmware/atem_sock.h
 cpy src/debug.h           firmware/debug.h
 cpy src/dns.c             firmware/dns.c
 cpy src/dns.h             firmware/dns.h
+cpy src/flash.c           firmware/flash.c
 cpy src/flash.h           firmware/flash.h
 cpy src/http.c            firmware/http.c
 cpy src/http.h            firmware/http.h

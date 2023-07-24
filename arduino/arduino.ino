@@ -10,6 +10,7 @@
 #include "user_config.h"
 
 #define LWIP_HDR_TCP_H // Fixes arduino and lwip collision
+#undef FLASH_H
 #include "./src/atem_sock.h" // atem_state
 #include "./src/flash.h" // struct config_t, CONF_FLAG_STATICIP
 #include "./src/init.h" // waccat_init, FIRMWARE_VERSION_STRING
@@ -46,11 +47,11 @@ ESP8266WebServer confServer(80);
 #define KEY_SSID "ssid"
 #define KEY_PSK "psk"
 #define KEY_DEST "dest"
-#define KEY_ATEMADDR "atemAddr"
-#define KEY_USESTATICIP "useStaticIP"
-#define KEY_LOCALIP "localIP"
-#define KEY_NETMASK "netmask"
-#define KEY_GATEWAY "gateway"
+#define KEY_ATEMADDR "atem"
+#define KEY_USESTATICIP "static"
+#define KEY_LOCALIP "iplocal"
+#define KEY_NETMASK "ipmask"
+#define KEY_GATEWAY "ipgw"
 #define KEY_NAME "name"
 
 // Gets the analog voltage level calculated from voltage divider
@@ -68,6 +69,7 @@ ESP8266WebServer confServer(80);
 // HTML configuration page template for use with html templating engine
 #define HTML_CONFIG($, conf)\
 	HTML($, "<!DOCTYPEhtml>"\
+		"<meta charset=utf-8>"\
 		"<meta content=\"width=device-width\"name=viewport>"\
 		"<title>Configure Device</title>"\
 		"<style>"\
@@ -99,7 +101,8 @@ ESP8266WebServer confServer(80);
 	HTML_INPUT_IP($, "Local IP", (uint32_t)WiFi.localIP(), KEY_LOCALIP)\
 	HTML_INPUT_IP($, "Subnet mask", (uint32_t)WiFi.subnetMask(), KEY_NETMASK)\
 	HTML_INPUT_IP($, "Gateway", (uint32_t)WiFi.gatewayIP(), KEY_GATEWAY)\
-	HTML($, "</table><button style=\"margin:1em 2em\">Submit</button></form>")
+	HTML($, "</table><button style=\"margin:1em 2em\">Submit</button></form>")\
+	HTML($, "<script>document.querySelector('form').action = location.origin + ':8080'</script>")
 
 // Gets ip address from 4 HTML post fields as a single 32 bit int
 #define IP_FROM_HTTP(server, name) ((server.arg(name "1").toInt()) |\
