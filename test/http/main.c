@@ -234,11 +234,11 @@ int main(int argc, char** argv) {
 	test_code_segment(200, "GET", " / "); // Tests segmented successful GET request short
 	test_code(200, "GET / HTTP/1.1\r\n\r\n"); // Tests successful GET request full
 	test_code_segment(200, "GET / ", "HTTP/1.1\r\n\r\n"); // Tests segmented successful GET request full
-	test_code(404, "GET /i"); // Tests invalid URI short
-	test_code_segment(404, "GET /", "i"); // Tests segmented invalid URI short
-	test_code(404, "GET /invalid HTTP/1.1\r\n\r\n"); // Tests invalid URI full
-	test_code_segment(404, "GET /i", "nvalid HTTP/1.1\r\n\r\n"); // Tests segmented invalid URI full
 #endif // 0
+	RUN(test_code(404, "GET /i")); // Tests invalid URI short
+	RUN(test_code_segment(404, "GET /", "i")); // Tests segmented invalid URI short
+	RUN(test_code(404, "GET /invalid HTTP/1.1\r\n\r\n")); // Tests invalid URI full
+	RUN(test_code_segment(404, "GET /i", "nvalid HTTP/1.1\r\n\r\n")); // Tests segmented invalid URI full
 
 	// HTTP POST headers
 	RUN(test_timeout(  "POST /")); // Tests incomplete POST URI
