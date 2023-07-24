@@ -192,7 +192,7 @@ struct test_t test_timeout(const char* req) {
 
 // Sends HTTP request with specified body expecting specified response code
 struct test_t test_post(int code, const char* body) {
-	char req[1024];
+	char req[BUF_LEN];
 	assert(sizeof(req) > (snprintf(NULL, 0, HTTP_POST_TEMPLATE, (size_t)UINT32_MAX, body)));
 	sprintf(req, HTTP_POST_TEMPLATE, strlen(body), body);
 	return test_code(code, req);
@@ -200,7 +200,7 @@ struct test_t test_post(int code, const char* body) {
 
 // Sends HTTP request with specified body in two separate segments expecting specified response code
 struct test_t test_post_segment(int code, const char* body1, const char* body2) {
-	char req[1024];
+	char req[BUF_LEN];
 	assert(sizeof(req) > (snprintf(NULL, 0, HTTP_POST_TEMPLATE "%s", (size_t)UINT32_MAX, body1, body2)));
 	sprintf(req, HTTP_POST_TEMPLATE, strlen(body1) + strlen(body2), body1);
 	return test_code_segment(code, req, body2);
