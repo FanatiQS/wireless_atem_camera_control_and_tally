@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-if [ "$1" == "" ]; then
+if [[ "$1" == "" || "$2" == "" ]]; then
 	echo "Usage: $0 <ip-addr> key=value..."
 	exit
 fi
