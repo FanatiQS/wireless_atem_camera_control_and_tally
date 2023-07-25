@@ -780,7 +780,7 @@ static err_t http_recv_callback(void* arg, struct tcp_pcb* pcb, struct pbuf* p, 
 static void http_err_callback(void* arg, err_t err) {
 	LWIP_UNUSED_ARG(arg);
 	LWIP_UNUSED_ARG(err);
-	DEBUG_PRINTF("Client %p got an error: %d\n", ((struct http_t*)arg)->pcb, (int)err);
+	DEBUG_PRINTF("HTTP client %p got an error: %d\n", ((struct http_t*)arg)->pcb, (int)err);
 	mem_free(arg);
 }
 
