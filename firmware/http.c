@@ -761,7 +761,10 @@ static err_t http_recv_callback(void* arg, struct tcp_pcb* pcb, struct pbuf* p, 
 	if (p == NULL) {
 		DEBUG_HTTP_PRINTF("Closed client %p\n", pcb);
 		err_t ret = http_close(arg, pcb);
-		if (ret == ERR_OK) mem_free(arg);
+		if (ret == ERR_OK) {
+			tcp_err(pcb, NULL);
+			mem_free(arg);
+		}
 		return ret;
 	}
 
