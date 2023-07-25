@@ -757,9 +757,9 @@ static err_t http_recv_callback(void* arg, struct tcp_pcb* pcb, struct pbuf* p, 
 	// Closes the TCP connection on client request
 	if (p == NULL) {
 		DEBUG_HTTP_PRINTF("Closed client %p\n", pcb);
-		err_t err = http_close(arg, pcb);
-		if (err == ERR_OK) mem_free(arg);
-		return err;
+		err_t ret = http_close(arg, pcb);
+		if (ret == ERR_OK) mem_free(arg);
+		return ret;
 	}
 
 	// Processes the TCP packet data
