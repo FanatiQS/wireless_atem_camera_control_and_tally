@@ -357,12 +357,12 @@ int main(int argc, char** argv) {
 	RUN(test_post_success("static=")); // Tests empty flag value
 	RUN(test_post_success("static=1")); // Tests valid flag value (enable)
 	RUN(test_post_success("static=0")); // Tests valid flag value (disable)
-	RUN(test_post_success_segment("static=", "1")); // Tests segmented valid flag value
-	RUN(test_post_success_segment("stati", "c=1")); // Tests segmented key in valid flag value
-	RUN(test_post_success("static=1&")); // Tests terminator as last character
-	RUN(test_post_success("static=1&psk=1")); // Tests concatenated flag property before
-	RUN(test_post_success("psk=1&static=1")); // Tests concatenated flag property after
-	RUN(test_post_success_segment("static=1", "&psk=1")); // Tests segmented concatenated flag property
+	RUN(test_post_success_segment("static=", "0")); // Tests segmented valid flag value
+	RUN(test_post_success_segment("stati", "c=0")); // Tests segmented key in valid flag value
+	RUN(test_post_success("static=0&")); // Tests terminator as last character
+	RUN(test_post_success("static=0&dest=1")); // Tests concatenated flag property before
+	RUN(test_post_success("dest=1&static=0")); // Tests concatenated flag property after
+	RUN(test_post_success_segment("static=0", "&dest=1")); // Tests segmented concatenated flag property
 	RUN(test_post_err("static=2", "Invalid character in boolean POST body value")); // Tests invalid character in flag value
 	RUN(test_post_err("static=12", "Invalid character in boolean POST body value")); // Tests too many characters
 
