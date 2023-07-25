@@ -18,6 +18,9 @@
 * Added HTTP debug flag.
 * Added tests for HTTP parser.
 * Added simple configuration bash script.
+* Writes configuration to flash after HTTP client is closed.
+* Reboots after configuration is written to flash.
+* Fixed crash when after writing configuration on softap.
 
 
 

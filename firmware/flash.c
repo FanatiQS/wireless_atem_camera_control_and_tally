@@ -2,7 +2,7 @@
 #include <string.h> // memcmp
 
 #ifdef ESP8266
-#include <user_interface.h> // wifi_station_get_config, wifi_softap_get_config, wifi_station_set_config, wifi_softap_set_config
+#include <user_interface.h> // wifi_station_get_config, wifi_softap_get_config, wifi_station_set_config, wifi_softap_set_config, system_restart, wifi_set_event_handler_cb
 #include <spi_flash.h> // spi_flash_erase_sector, spi_flash_write, spi_flash_read, SPI_FLASH_RESULT_OK, spi_flash_get_id
 #endif // ESP8266
 
@@ -63,21 +63,28 @@ bool flash_cache_read(struct cache_t* cache) {
 }
 
 // Writes flash configuration and other platform specific configurations for HTTP cache
-bool flash_cache_write(struct cache_t* cache) {
+void flash_cache_write(struct cache_t* cache) {
 #ifdef ESP8266
 	if (!wifi_station_set_config(&cache->wlan_station)) {
 		DEBUG_PRINTF("Failed to write station config\n");
-		return false;
+		return;
 	}
 	if (!wifi_softap_set_config(&cache->wlan_softap)) {
 		DEBUG_PRINTF("Failed to write softap config\n");
-		return false;
+		return;
 	}
 #endif // ESP8266
 
 	// Only updates flash if required
 	struct config_t conf;
-	if (!flash_config_read(&conf)) return false;
-	if (!memcmp(&conf, &(cache->config), sizeof(conf))) return true;
-	return flash_config_write(&(cache->config));
+	if (!flash_config_read(&conf)) return;
+	if (memcmp(&conf, &(cache->config), sizeof(conf))) {
+		if (!flash_config_write(&(cache->config))) return;
+	}
+
+	DEBUG_HTTP_PRINTF("Rebooting...\n");
+#ifdef ESP8266
+	wifi_set_event_handler_cb(NULL);
+	system_restart();
+#endif // ESP8266
 }

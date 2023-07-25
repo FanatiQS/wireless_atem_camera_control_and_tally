@@ -181,18 +181,29 @@ static bool http_post_key_incomplete(struct http_t* http) {
 
 
 
-// @todo make better response
+// Writes cache to flash and reboots
+static err_t http_recv_reboot_callback(void* arg, struct tcp_pcb* pcb, struct pbuf* p, err_t err) {
+	if (p != NULL) {
+		if (err == ERR_OK || err == ERR_MEM) pbuf_free(p);
+		return err;
+	}
+
+	struct http_t* http = (struct http_t*)arg;
+	flash_cache_write(&(http->cache));
+	return ERR_OK;
+}
+
+// Sends response HTTP if entire POST body is parsed
 static bool http_post_completed(struct http_t* http) {
 	if (http->remainingBodyLen > 0) return false;
 
-	if (!flash_cache_write(&(http->cache))) {
-		http_err(http, "500 Internal Server Error");
-		return true;
-	}
+	// Writes cache to flash and reboots when close is acknowledged
+	tcp_recv(http->pcb, http_recv_reboot_callback);
 
+	// Sends HTTP response to client
+	// @todo make better response
 	TCP_SEND(http->pcb, "HTTP/1.1 200 OK\r\n\r\nsuccess");
 	http_output(http);
-	http->state = HTTP_STATE_DONE;
 	return true;
 }
 
@@ -715,20 +726,11 @@ static inline void http_parse(struct http_t* http, struct pbuf* p) {
 
 
 // Closes HTTP connection and prevents dispaching invalid events after close
-static err_t http_close(void* arg, struct tcp_pcb* pcb) {
+static inline err_t http_close(void* arg, struct tcp_pcb* pcb) {
 	err_t err = tcp_close(pcb);
-	if (err != ERR_OK) {
-		DEBUG_PRINTF("Failed to close HTTP TCP pcb %p: %d", pcb, (int)err);
-		return err;
-	}
-
-	DEBUG_HTTP_PRINTF("Closed client %p\n", pcb);
-	tcp_poll(pcb, NULL, 0);
-	tcp_recv(pcb, NULL);
-	tcp_err(pcb, NULL);
-	tcp_sent(pcb, NULL);
-	mem_free(arg);
-	return ERR_OK;
+	if (err == ERR_OK) return ERR_OK;
+	DEBUG_PRINTF("Failed to close HTTP TCP pcb %p: %d", pcb, (int)err);
+	return err;
 }
 
 // Closes HTTP connection when all response data is sent
@@ -737,24 +739,27 @@ static err_t http_sent_callback(void* arg, struct tcp_pcb* pcb, uint16_t len) {
 
 	DEBUG_HTTP_PRINTF("Sent %d bytes of data to client %p\n", len, pcb);
 
-	// Closes connection when response is completely sent
-	if (tcp_sndqueuelen(pcb) == 0) {
-		return http_close(arg, pcb);
-	}
+	// Only closes connection when response is completely sent
+	if (tcp_sndqueuelen(pcb) != 0) return ERR_OK;
 
-	return ERR_OK;
+	DEBUG_HTTP_PRINTF("Closing client %p\n", pcb);
+	tcp_poll(pcb, NULL, 0);
+	return http_close(arg, pcb);
 }
 
 // Processes the received TCP packet data
 static err_t http_recv_callback(void* arg, struct tcp_pcb* pcb, struct pbuf* p, err_t err) {
 	if (err != ERR_OK) {
-		if (p != NULL) pbuf_free(p);
+		if (p != NULL && err == ERR_MEM) pbuf_free(p);
 		return err;
 	}
 
 	// Closes the TCP connection on client request
 	if (p == NULL) {
-		return http_close(arg, pcb);
+		DEBUG_HTTP_PRINTF("Closed client %p\n", pcb);
+		err_t err = http_close(arg, pcb);
+		if (err == ERR_OK) mem_free(arg);
+		return err;
 	}
 
 	// Processes the TCP packet data
@@ -776,6 +781,7 @@ static void http_err_callback(void* arg, err_t err) {
 // Closes TCP connection after timeout
 static err_t http_drop_callback(void* arg, struct tcp_pcb* pcb) {
 	DEBUG_HTTP_PRINTF("Dropping client %p due to inactivity\n", pcb);
+	tcp_poll(pcb, NULL, 0);
 	return http_close(arg, pcb);
 }
 
