@@ -183,6 +183,8 @@ static bool http_post_key_incomplete(struct http_t* http) {
 
 // Writes cache to flash and reboots
 static err_t http_recv_reboot_callback(void* arg, struct tcp_pcb* pcb, struct pbuf* p, err_t err) {
+	LWIP_UNUSED_ARG(pcb);
+
 	if (p != NULL) {
 		if (err == ERR_OK || err == ERR_MEM) pbuf_free(p);
 		return err;
@@ -727,6 +729,7 @@ static inline void http_parse(struct http_t* http, struct pbuf* p) {
 
 // Closes HTTP connection and prevents dispaching invalid events after close
 static inline err_t http_close(void* arg, struct tcp_pcb* pcb) {
+	LWIP_UNUSED_ARG(arg);
 	err_t err = tcp_close(pcb);
 	if (err == ERR_OK) return ERR_OK;
 	DEBUG_PRINTF("Failed to close HTTP TCP pcb %p: %d", pcb, (int)err);
