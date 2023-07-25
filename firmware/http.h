@@ -2,7 +2,12 @@
 #ifndef HTTP_H
 #define HTTP_H
 
-#include "./flash.h" // struct config_t
+#include <stdint.h> // uint8_t, uint16_t, int32_t
+
+#include <lwip/tcp.h> // struct tcp_pcb
+#include <lwip/pbuf.h> // struct pbuf
+
+#include "./flash.h" // struct cache_t
 
 
 
