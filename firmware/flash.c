@@ -69,6 +69,7 @@ void flash_cache_write(struct cache_t* cache) {
 		DEBUG_PRINTF("Failed to write station config\n");
 		return;
 	}
+	cache->wlan_softap.ssid_len = 0;
 	if (!wifi_softap_set_config(&cache->wlan_softap)) {
 		DEBUG_PRINTF("Failed to write softap config\n");
 		return;
