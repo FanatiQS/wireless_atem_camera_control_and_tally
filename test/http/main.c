@@ -4,9 +4,10 @@
 #include <string.h> // strlen, strcmp, memcmp, strstr
 #include <signal.h> // signal, SIGPIPE, SIG_IGN
 #include <stdint.h> // UINT32_MAX
+#include <stddef.h> // size_t
 
 #include <unistd.h> // close
-#include <sys/socket.h> // socket, AF_INET, SOCK_STREAM, struct sockaddr, htons
+#include <sys/socket.h> // socket, AF_INET, SOCK_STREAM, struct sockaddr, htons, ssize_t, send, recv
 #include <arpa/inet.h> // struct sockaddr_in, inet_addr
 
 #define HTTP_PORT 8080
