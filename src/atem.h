@@ -1,9 +1,9 @@
-#include <stdbool.h>
-#include <stdint.h>
-
 // Include guard
 #ifndef ATEM_H
 #define ATEM_H
+
+#include <stdbool.h>
+#include <stdint.h>
 
 // The Blackmagic bluetooth UUIDs
 #define ATEM_BLE_UUID_SERVICE "291D567A-6D75-11E6-8B77-86F30CA893D3"
