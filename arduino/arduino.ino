@@ -97,7 +97,7 @@ ESP8266WebServer confServer(80);
 	HTML_INPUT_NUMBER($, "Camera number", conf.dest, 254, 1, KEY_DEST)\
 	HTML_INPUT_IP($, "ATEM IP", (uint32_t)conf.atemAddr, KEY_ATEMADDR)\
 	HTML_SPACER($)\
-	HTML_INPUT_CHECKBOX($, "Use Static IP", conf.flags, KEY_USESTATICIP)\
+	HTML_INPUT_CHECKBOX($, "Use Static IP", conf.flags & CONF_FLAG_STATICIP, KEY_USESTATICIP)\
 	HTML_INPUT_IP($, "Local IP", (uint32_t)WiFi.localIP(), KEY_LOCALIP)\
 	HTML_INPUT_IP($, "Subnet mask", (uint32_t)WiFi.subnetMask(), KEY_NETMASK)\
 	HTML_INPUT_IP($, "Gateway", (uint32_t)WiFi.gatewayIP(), KEY_GATEWAY)\
