@@ -183,8 +183,6 @@ static bool http_post_key_incomplete(struct http_t* http) {
 
 // Writes cache to flash and reboots
 static err_t http_recv_reboot_callback(void* arg, struct tcp_pcb* pcb, struct pbuf* p, err_t err) {
-	LWIP_UNUSED_ARG(pcb);
-
 	if (p != NULL) {
 		if (err == ERR_OK || err == ERR_MEM) pbuf_free(p);
 		return err;
@@ -729,8 +727,7 @@ static inline void http_parse(struct http_t* http, struct pbuf* p) {
 
 
 // Closes HTTP connection and prevents dispaching invalid events after close
-static inline err_t http_close(void* arg, struct tcp_pcb* pcb) {
-	LWIP_UNUSED_ARG(arg);
+static inline err_t http_close(struct tcp_pcb* pcb) {
 	err_t err = tcp_close(pcb);
 	if (err == ERR_OK) return ERR_OK;
 	DEBUG_PRINTF("Failed to close HTTP TCP pcb %p: %d", pcb, (int)err);
@@ -739,6 +736,7 @@ static inline err_t http_close(void* arg, struct tcp_pcb* pcb) {
 
 // Closes HTTP connection when all response data is sent
 static err_t http_sent_callback(void* arg, struct tcp_pcb* pcb, uint16_t len) {
+	LWIP_UNUSED_ARG(arg);
 	LWIP_UNUSED_ARG(len);
 
 	DEBUG_HTTP_PRINTF("Sent %d bytes of data to client %p\n", len, pcb);
@@ -748,7 +746,7 @@ static err_t http_sent_callback(void* arg, struct tcp_pcb* pcb, uint16_t len) {
 
 	DEBUG_HTTP_PRINTF("Closing client %p\n", pcb);
 	tcp_poll(pcb, NULL, 0);
-	return http_close(arg, pcb);
+	return http_close(pcb);
 }
 
 // Processes the received TCP packet data
@@ -761,12 +759,11 @@ static err_t http_recv_callback(void* arg, struct tcp_pcb* pcb, struct pbuf* p, 
 	// Closes the TCP connection on client request
 	if (p == NULL) {
 		DEBUG_HTTP_PRINTF("Closed client %p\n", pcb);
-		err_t ret = http_close(arg, pcb);
-		if (ret == ERR_OK) {
-			tcp_err(pcb, NULL);
-			mem_free(arg);
-		}
-		return ret;
+		err_t ret = http_close(pcb);
+		if (ret != ERR_OK) return ret;
+		tcp_err(pcb, NULL);
+		mem_free(arg);
+		return ERR_OK;
 	}
 
 	// Processes the TCP packet data
@@ -779,7 +776,6 @@ static err_t http_recv_callback(void* arg, struct tcp_pcb* pcb, struct pbuf* p, 
 
 // Frees argument memory on TCP socket error
 static void http_err_callback(void* arg, err_t err) {
-	LWIP_UNUSED_ARG(arg);
 	LWIP_UNUSED_ARG(err);
 	DEBUG_PRINTF("HTTP client %p got an error: %d\n", ((struct http_t*)arg)->pcb, (int)err);
 	mem_free(arg);
@@ -787,9 +783,10 @@ static void http_err_callback(void* arg, err_t err) {
 
 // Closes TCP connection after timeout
 static err_t http_drop_callback(void* arg, struct tcp_pcb* pcb) {
+	LWIP_UNUSED_ARG(arg);
 	DEBUG_HTTP_PRINTF("Dropping client %p due to inactivity\n", pcb);
 	tcp_poll(pcb, NULL, 0);
-	return http_close(arg, pcb);
+	return http_close(pcb);
 }
 
 // Accepts TCP connection for HTTP configuration server
