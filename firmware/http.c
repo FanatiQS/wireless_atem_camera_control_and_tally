@@ -191,6 +191,7 @@ static err_t http_recv_reboot_callback(void* arg, struct tcp_pcb* pcb, struct pb
 	}
 
 	struct http_t* http = (struct http_t*)arg;
+	tcp_err(pcb, NULL);
 	flash_cache_write(&(http->cache));
 	return ERR_OK;
 }
