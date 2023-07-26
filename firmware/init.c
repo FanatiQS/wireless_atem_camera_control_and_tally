@@ -163,7 +163,7 @@ static void _waccat_init(void) {
 	struct softap_config softapConfig;
 	if (!wifi_softap_get_config(&softapConfig)) {
 		DEBUG_PRINTF("Failed to read soft ap configuration\n");
-		return false;
+		return;
 	}
 	DEBUG_PRINTF(
 		"Soft AP SSID: \"%.*s\"\n"
