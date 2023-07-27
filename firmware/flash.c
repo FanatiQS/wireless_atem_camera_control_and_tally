@@ -1,18 +1,16 @@
 #include <stdbool.h> // bool true, false
 #include <string.h> // memcmp
 
-#ifdef ESP8266
-#include <user_interface.h> // wifi_station_get_config, wifi_softap_get_config, wifi_station_set_config, wifi_softap_set_config, system_restart, wifi_set_event_handler_cb
-#include <spi_flash.h> // spi_flash_erase_sector, spi_flash_write, spi_flash_read, SPI_FLASH_RESULT_OK, spi_flash_get_id
-#endif // ESP8266
-
 #include "./debug.h" // DEBUG_PRINTF, DEBUG_HTTP_PRINTF
 #include "./flash.h" // struct config_t, struct cache_t
 
 
 
-// Sets configuration address to last memory page of flash before system data, same as arduino uses for EEPROM
 #ifdef ESP8266
+#include <user_interface.h> // wifi_station_get_config, wifi_softap_get_config, wifi_station_set_config, wifi_softap_set_config, system_restart, wifi_set_event_handler_cb
+#include <spi_flash.h> // spi_flash_erase_sector, spi_flash_write, spi_flash_read, SPI_FLASH_RESULT_OK, spi_flash_get_id, SPI_FLASH_SEC_SIZE
+
+// Sets configuration address to last memory page of flash before system data, same as arduino uses for EEPROM
 #define FLASH_SIZE (1 << ((spi_flash_get_id() >> 16) & 0xff))
 #define CONFIG_START (FLASH_SIZE - (12 + 4 + 4) * 1024)
 #endif // ESP8266
@@ -33,7 +31,7 @@ bool flash_config_read(struct config_t* conf) {
 // Writes configuration to persistent storage
 static inline bool flash_config_write(struct config_t* conf) {
 #ifdef ESP8266
-	if (spi_flash_erase_sector(CONFIG_START >> 12)) {
+	if (spi_flash_erase_sector(CONFIG_START / SPI_FLASH_SEC_SIZE)) {
 		DEBUG_PRINTF("Failed to erase flash sector\n");
 		return false;
 	}
