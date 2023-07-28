@@ -729,6 +729,9 @@ static err_t http_recv_reboot_callback(void* arg, struct tcp_pcb* pcb, struct pb
 		if (err == ERR_OK || err == ERR_MEM) pbuf_free(p);
 		return err;
 	}
+	if (err != ERR_OK) {
+		return err;
+	}
 
 	struct http_t* http = (struct http_t*)arg;
 	DEBUG_HTTP_PRINTF("Closed client %p\n", pcb);
