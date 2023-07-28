@@ -159,6 +159,7 @@ static void _waccat_init(void) {
 	}
 
 #ifdef ESP8266
+#if DEBUG
 	// Gets WiFi softap SSID and PSK for debug printing
 	struct softap_config softapConfig;
 	if (!wifi_softap_get_config(&softapConfig)) {
@@ -173,6 +174,7 @@ static void _waccat_init(void) {
 		(int)sizeof(softapConfig.password), softapConfig.password,
 		softapConfig.channel
 	);
+#endif // DEBUG
 
 	// Sets WiFi to automatically reconnect when connection is lost
 	if (!wifi_station_set_reconnect_policy(true)) {
@@ -189,7 +191,7 @@ static void _waccat_init(void) {
 	}
 	DEBUG_PRINTF(
 		"Station SSID: \"%.*s\"\n"
-		"Station PSK \"%.*s\"\n",
+		"Station PSK: \"%.*s\"\n",
 		(int)sizeof(stationConfig.ssid), stationConfig.ssid,
 		(int)sizeof(stationConfig.password), stationConfig.password
 	);
