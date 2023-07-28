@@ -181,18 +181,7 @@ static bool http_post_key_incomplete(struct http_t* http) {
 
 
 
-// Writes cache to flash and reboots
-static err_t http_recv_reboot_callback(void* arg, struct tcp_pcb* pcb, struct pbuf* p, err_t err) {
-	if (p != NULL) {
-		if (err == ERR_OK || err == ERR_MEM) pbuf_free(p);
-		return err;
-	}
-
-	struct http_t* http = (struct http_t*)arg;
-	tcp_err(pcb, NULL);
-	flash_cache_write(&(http->cache));
-	return ERR_OK;
-}
+static err_t http_recv_reboot_callback(void* arg, struct tcp_pcb* pcb, struct pbuf* p, err_t err);
 
 // Sends response HTTP if entire POST body is parsed
 static bool http_post_completed(struct http_t* http) {
@@ -732,6 +721,22 @@ static inline err_t http_close(struct tcp_pcb* pcb) {
 	if (err == ERR_OK) return ERR_OK;
 	DEBUG_PRINTF("Failed to close HTTP TCP pcb %p: %d", pcb, (int)err);
 	return err;
+}
+
+// Writes cache to flash and reboots
+static err_t http_recv_reboot_callback(void* arg, struct tcp_pcb* pcb, struct pbuf* p, err_t err) {
+	if (p != NULL) {
+		if (err == ERR_OK || err == ERR_MEM) pbuf_free(p);
+		return err;
+	}
+
+	struct http_t* http = (struct http_t*)arg;
+	DEBUG_HTTP_PRINTF("Closed client %p\n", pcb);
+	err_t ret = http_close(pcb);
+	tcp_err(pcb, NULL);
+	mem_free(arg);
+	flash_cache_write(&(http->cache));
+	return ret;
 }
 
 // Closes HTTP connection when all response data is sent
