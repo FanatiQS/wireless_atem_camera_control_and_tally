@@ -737,8 +737,8 @@ static err_t http_recv_reboot_callback(void* arg, struct tcp_pcb* pcb, struct pb
 	DEBUG_HTTP_PRINTF("Closed client %p\n", pcb);
 	err_t ret = http_close(pcb);
 	tcp_err(pcb, NULL);
-	mem_free(arg);
 	flash_cache_write(&(http->cache));
+	mem_free(arg);
 	return ret;
 }
 
