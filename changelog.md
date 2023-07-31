@@ -23,6 +23,7 @@
 * Reboots after configuration is written to flash.
 * Fixed crash when after writing configuration on softap.
 * Uses devices name as hostname.
+* Prints compiler version used to build.
 
 
 

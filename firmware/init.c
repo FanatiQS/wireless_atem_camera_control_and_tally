@@ -98,6 +98,11 @@ static void network_callback(System_Event_t* event) {
 #define DEBUG_HTTP_LABEL "disabled"
 #endif // DEBUG_HTTP
 
+// Defines undefined version for compilers where the macro does not exist
+#ifndef __VERSION__
+#define __VERSION__ "undefined"
+#endif // __VERSION__
+
 
 
 // Sets default uart baud rate if not specified
@@ -127,6 +132,7 @@ static void _waccat_init(void) {
 		"Firmware version: " FIRMWARE_VERSION_STRING "\n"
 		"Using LwIP version: " LWIP_VERSION_STRING "\n"
 		BOOT_INFO_VERSIONS
+		"Using compiler version: " __VERSION__ "\n"
 
 		// Prints debugging flags enabled/disabled state
 		"Tally debug: " DEBUG_TALLY_LABEL "\n"
