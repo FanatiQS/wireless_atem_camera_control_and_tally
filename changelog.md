@@ -15,12 +15,14 @@
 * Changed HTTP POST keys.
 * HTML input fileds for IP addresses are now a single text box rather than 4 individual ones.
 * Configuration properties are only updated if available in HTTP POST (static ip is switched to '1' or '0' instead of 'on' or undefined).
+* Validates HTTP POST data before updating.
 * Added HTTP debug flag.
 * Added tests for HTTP parser.
 * Added simple configuration bash script.
 * Writes configuration to flash after HTTP client is closed.
 * Reboots after configuration is written to flash.
 * Fixed crash when after writing configuration on softap.
+* Uses devices name as hostname.
 
 
 

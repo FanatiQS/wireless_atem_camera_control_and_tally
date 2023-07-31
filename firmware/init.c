@@ -21,8 +21,8 @@
 
 
 #ifdef ESP8266
-
-#include <user_interface.h> // wifi_set_opmode_current, STATIONAP_MODE, wifi_station_set_reconnect_policy, struct station_config, wifi_station_get_config, wifi_set_event_handler_cb, wifi_station_connect, wifi_station_dchpc_stop, wifi_set_ip_info, STATION_IF, ip_info, uart_div_modify, struct softap, wifi_softap_get_config
+#include <string.h> // strncpy
+#include <user_interface.h> // wifi_set_opmode_current, STATIONAP_MODE, wifi_station_set_reconnect_policy, struct station_config, wifi_station_get_config, wifi_set_event_handler_cb, wifi_station_connect, wifi_station_dchpc_stop, wifi_set_ip_info, STATION_IF, ip_info, uart_div_modify, struct softap, wifi_softap_get_config, wifi_station_set_hostname
 #include <version.h> // ESP_SDK_VERSION_STRING
 #include <eagle_soc.h> // UART_CLK_FREQ, WRITE_PERI_REG, PERIPHS_IO_MUX_U0TXD_U
 #if ARDUINO
@@ -159,13 +159,13 @@ static void _waccat_init(void) {
 	}
 
 #ifdef ESP8266
-#if DEBUG
-	// Gets WiFi softap SSID and PSK for debug printing
+	// Gets WiFi softap SSID and PSK for debug printing and hostname
 	struct softap_config softapConfig;
 	if (!wifi_softap_get_config(&softapConfig)) {
 		DEBUG_PRINTF("Failed to read soft ap configuration\n");
 		return;
 	}
+
 	DEBUG_PRINTF(
 		"Soft AP SSID: \"%.*s\"\n"
 		"Soft AP PSK: \"%.*s\"\n"
@@ -174,7 +174,14 @@ static void _waccat_init(void) {
 		(int)sizeof(softapConfig.password), softapConfig.password,
 		softapConfig.channel
 	);
-#endif // DEBUG
+
+	// Sets hostname of device
+	char hostname[sizeof(softapConfig.ssid) + 1] = {0};
+	strncpy(hostname, softapConfig.ssid, sizeof(hostname));
+	if (!wifi_station_set_hostname(hostname)) {
+		DEBUG_PRINTF("Failed to set hostname\n");
+		return;
+	}
 
 	// Sets WiFi to automatically reconnect when connection is lost
 	if (!wifi_station_set_reconnect_policy(true)) {
