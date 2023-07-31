@@ -2,9 +2,9 @@
 
 #include <lwip/udp.h> // struct udp_pcb
 #include <lwip/tcpip.h> // LOCK_TCPIO_CORE, UNLCOK_TCPIP_CORE
-#include <lwip/init.h> // LWIP_VERSION_STRING
+#include <lwip/init.h> // LWIP_VERSION_STRING, LWIP_VERSION
 
-#include "./user_config.h" // DEBUG, DEBUG_TALLY, DEBUG_CC, DEBUG_HTTP
+#include "./user_config.h" // DEBUG, DEBUG_TALLY, DEBUG_CC, DEBUG_HTTP, VERSIONS_ANY
 #include "./debug.h" // DEBUG_PRINTF, DEBUG_IP, WRAP
 #include "./atem_sock.h" // atem_init
 #include "./http.h" // http_init
@@ -23,10 +23,10 @@
 #ifdef ESP8266
 #include <string.h> // strncpy
 #include <user_interface.h> // wifi_set_opmode_current, STATIONAP_MODE, wifi_station_set_reconnect_policy, struct station_config, wifi_station_get_config, wifi_set_event_handler_cb, wifi_station_connect, wifi_station_dchpc_stop, wifi_set_ip_info, STATION_IF, ip_info, uart_div_modify, struct softap, wifi_softap_get_config, wifi_station_set_hostname
-#include <version.h> // ESP_SDK_VERSION_STRING
+#include <version.h> // ESP_SDK_VERSION_STRING, ESP_SDK_VERSION_NUMBER
 #include <eagle_soc.h> // UART_CLK_FREQ, WRITE_PERI_REG, PERIPHS_IO_MUX_U0TXD_U
 #if ARDUINO
-#include <core_version.h> // ARDUINO_ESP8266_GIT_DESC
+#include <core_version.h> // ARDUINO_ESP8266_GIT_DESC, ARDUINO_ESP8266_GIT_VER
 #endif // ARDUINO
 
 // Disables scanning for wifi station when configuration network is used
@@ -62,11 +62,30 @@ static void network_callback(System_Event_t* event) {
 #endif // ARDUINO
 #define BOOT_INFO_VERSIONS BOOT_INFO_VERSION_ESP BOOT_INFO_VERSION_ARDUINO
 
-#else // ESP8266
+// Verifies versions of ESP8266 SDK and Arduino
+#if !VERSIONS_ANY
+#if ESP_SDK_VERSION_NUMBER != 0x020200
+#error Expected ESP8266 SDK version 2.2.0
+#endif // ESP_SDK_VERSION_NUMBER
+#if ARDUINO && ARDUINO_ESP8266_GIT_VER != 0x9c56ed1f
+#error Expected Arduino ESP8266 version 2.7.0
+#endif // ARDUINO_ESP8266_GIT_VER
+#endif // !VERSIONS_ANY
+
+#else
 
 #error No WiFi implementation for platform
 
-#endif // ESP8266
+#endif
+
+
+
+// Verifies LwIP version
+#if !VERSIONS_ANY
+#if LWIP_VERSION != 0x020102ff
+#error Expected LwIP version 2.1.2
+#endif // LWIP_VERSION
+#endif // !VERSIONS_ANY
 
 
 

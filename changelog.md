@@ -24,6 +24,7 @@
 * Fixed crash when after writing configuration on softap.
 * Uses devices name as hostname.
 * Prints compiler version used to build.
+* Checks libraries/sdk versions at compile-time with user_config macro to disable strict version checking (VERSIONS_ANY = 1).
 
 
 

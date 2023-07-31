@@ -18,12 +18,6 @@
 
 
 
-// Expected versions of libraries and SDKs
-#define EXPECTED_LWIP_VERSION "2.1.2"
-#define EXPECTED_ESP_VERSION "2.7.0"
-
-
-
 // Only prints debug data when enabled from user_config.h
 #if DEBUG
 #define DEBUG_PRINT(...) Serial.print(__VA_ARGS__)
@@ -190,13 +184,6 @@ void setup() {
 	// Prints mac address that is used as psk by soft AP
 	DEBUG_PRINT("Mac address: ");
 	DEBUG_PRINTLN(WiFi.macAddress());
-
-	if (strcmp(LWIP_VERSION_STRING, EXPECTED_LWIP_VERSION)) {
-		DEBUG_PRINT("WARNING: Expected LwIP version for this firmware: " EXPECTED_LWIP_VERSION "\n");
-	}
-	if (strcmp(WRAP(ARDUINO_ESP8266_GIT_DESC), EXPECTED_ESP_VERSION)) {
-		DEBUG_PRINT("WARNING: Expected Arduino version for this firmware: " EXPECTED_ESP_VERSION "\n");
-	}
 #endif // DEBUG
 
 	// Sets up configuration HTTP server with soft AP
