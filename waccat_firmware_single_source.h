@@ -11,6 +11,7 @@
 #include "./src/atem.c"
 #include "./firmware/atem_sock.c"
 #include "./firmware/dns.c"
+#include "./firmware/flash.c"
 #include "./firmware/http.c"
 #include "./firmware/init.c"
 #include "./firmware/main.c"
