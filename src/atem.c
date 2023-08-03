@@ -46,10 +46,6 @@ void atem_connection_close(struct atem_t *atem) {
 
 // Parses a received ATEM UDP packet
 enum atem_status_t atem_parse(struct atem_t *atem) {
-	// Sets length of read buffer
-	atem->readLen = (atem->readBuf[ATEM_INDEX_LEN_HIGH] & ATEM_MASK_LEN_HIGH) << 8 |
-		atem->readBuf[ATEM_INDEX_LEN_LOW];
-
 	// Resends close packet without processing potential payload
 	if (atem->writeBuf == closeBuf) {
 		// Sets default branch to resend closing request
@@ -95,6 +91,10 @@ enum atem_status_t atem_parse(struct atem_t *atem) {
 
 			// Updates last acknolwedged remote id
 			atem->lastRemoteId = remoteId;
+
+			// Sets length of read buffer
+			atem->readLen = (atem->readBuf[ATEM_INDEX_LEN_HIGH] & ATEM_MASK_LEN_HIGH) << 8 |
+				atem->readBuf[ATEM_INDEX_LEN_LOW];
 
 			// Sets up for parsing ATEM commands in payload
 			atem->cmdIndex = ATEM_LEN_HEADER;
