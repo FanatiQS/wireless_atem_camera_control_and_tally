@@ -23,7 +23,7 @@
 // The number of TCP coarse grained timer shots before the TCP socket is closed automatically
 #define HTTP_POLL_TIMEOUT 10
 
-#define TCP_SEND(pcb, str) tcp_write(pcb, str, strlen(str), 0)
+#define TCP_SEND(pcb, str) tcp_write(pcb, str, (uint16_t)strlen(str), 0)
 
 // Converts percent encoded HEX character set to decimal value
 #define HEX_IDLE  (1)
@@ -214,7 +214,7 @@ static inline bool http_post_int_isnum(const char c) {
 
 // Increments integer with numeric character from HTTP stream
 static inline bool http_post_octet(struct http_t* http, const char c, uint8_t* addr) {
-	uint8_t num = c - '0';
+	uint8_t num = (uint8_t)c - '0';
 
 	// Validates that incrementation will not overflow integer
 	if ((*addr + num) > ((UINT8_MAX / 10) + (UINT8_MAX % 10))) return false;
@@ -242,7 +242,7 @@ static bool http_post_value_string(struct http_t* http, char* addr, size_t addrS
 				continue;
 			}
 			else {
-				c = http->hex | HEX_TO_DEC(c);
+				c = (char)http->hex | HEX_TO_DEC(c);
 				http->hex = HEX_IDLE;
 			}
 		}

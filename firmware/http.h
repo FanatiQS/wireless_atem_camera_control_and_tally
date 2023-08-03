@@ -54,7 +54,7 @@ struct http_t {
 	uint16_t offset;
 	union {
 		const char* cmp;
-		uint8_t hex;
+		int hex;
 	};
 	int32_t remainingBodyLen;
 	struct cache_t cache;
