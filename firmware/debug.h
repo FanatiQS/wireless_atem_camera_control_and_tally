@@ -30,8 +30,8 @@
 #endif // DEBUG
 
 // Prints integer IP address
-#define _IP_VALUE(ip, shift) (uint8_t)(((ip) >> shift) & 0xff)
-#define IP_VALUE(ip) _IP_VALUE(ip, 0), _IP_VALUE(ip, 8), _IP_VALUE(ip, 16), _IP_VALUE(ip, 24)
+#define IP_OCTET(ip, shift) (uint8_t)(((ip) >> shift) & 0xff)
+#define IP_VALUE(ip) IP_OCTET(ip, 0), IP_OCTET(ip, 8), IP_OCTET(ip, 16), IP_OCTET(ip, 24)
 #define IP_FMT "%u.%u.%u.%u"
 #define DEBUG_IP(label, local, netmask, gw)\
 	DEBUG_PRINTF(\
@@ -52,7 +52,7 @@
 #endif // DEBUG_HTTP
 
 // Wraps argument into a string
-#define _WRAP(arg) #arg
-#define WRAP(arg) _WRAP(arg)
+#define WRAP_INNER(arg) #arg
+#define WRAP(arg) WRAP_INNER(arg)
 
 #endif // DEBUG_H
