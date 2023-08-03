@@ -76,7 +76,7 @@ enum atem_status_t atem_parse(struct atem_t *atem) {
 	// Responds with ACK packet to packet requesting it
 	if (atem->readBuf[ATEM_INDEX_FLAGS] & ATEM_FLAG_ACKREQ) {
 		// Gets remote id of this packet
-		const uint16_t remoteId = atem->readBuf[ATEM_INDEX_REMOTEID_HIGH] << 8 |
+		const uint16_t remoteId = (uint16_t)(atem->readBuf[ATEM_INDEX_REMOTEID_HIGH] << 8) |
 			atem->readBuf[ATEM_INDEX_REMOTEID_LOW];
 
 		// Copies over session id from incomming packet to ACK response
@@ -93,7 +93,7 @@ enum atem_status_t atem_parse(struct atem_t *atem) {
 			atem->lastRemoteId = remoteId;
 
 			// Sets length of read buffer
-			atem->readLen = (atem->readBuf[ATEM_INDEX_LEN_HIGH] & ATEM_MASK_LEN_HIGH) << 8 |
+			atem->readLen = (uint16_t)((atem->readBuf[ATEM_INDEX_LEN_HIGH] & ATEM_MASK_LEN_HIGH) << 8) |
 				atem->readBuf[ATEM_INDEX_LEN_LOW];
 
 			// Sets up for parsing ATEM commands in payload
@@ -155,17 +155,17 @@ uint32_t atem_cmd_next(struct atem_t *atem) {
 	const uint16_t index = atem->cmdIndex;
 
 	// Increment start index of command with command length to get start index for next command
-	atem->cmdLen = (atem->readBuf[index] << 8) | atem->readBuf[index + 1];
+	atem->cmdLen = (uint16_t)(atem->readBuf[index] << 8) | atem->readBuf[index + 1];
 	atem->cmdIndex += atem->cmdLen;
 
 	// Sets pointer to command to start of command data
 	atem->cmdBuf = atem->readBuf + index + ATEM_LEN_CMDHEADER;
 
 	// Converts command name to a 32 bit integer for easy comparison
-	return (atem->readBuf[index + ATEM_OFFSET_CMDNAME + 0] << 24) |
+	return (uint32_t)((atem->readBuf[index + ATEM_OFFSET_CMDNAME + 0] << 24) |
 		(atem->readBuf[index + ATEM_OFFSET_CMDNAME + 1] << 16) |
 		(atem->readBuf[index + ATEM_OFFSET_CMDNAME + 2] << 8) |
-		atem->readBuf[index + ATEM_OFFSET_CMDNAME + 3];
+		atem->readBuf[index + ATEM_OFFSET_CMDNAME + 3]);
 }
 
 
@@ -197,7 +197,7 @@ bool atem_tally_updated(struct atem_t *atem) {
 	}
 
 	// Stores old states for PGM and PVW tally
-	const uint8_t oldTally = atem->pgmTally | atem->pvwTally << 1;
+	const uint8_t oldTally = (uint8_t)(atem->pgmTally | atem->pvwTally << 1);
 
 	// Updates states for PGM and PVW tally
 	atem->pgmTally = atem->cmdBuf[TALLY_OFFSET + atem->dest] & TALLY_FLAG_PGM;
@@ -210,12 +210,12 @@ bool atem_tally_updated(struct atem_t *atem) {
 // Translates tally data from ATEMs protocol to Blackmagic Embedded Tally Control Protocol
 void atem_tally_translate(struct atem_t *atem) {
 	// Gets the number of items in the tally index array
-	const uint16_t len = atem->cmdBuf[TALLY_INDEX_LEN_HIGH] << 8 |
+	const uint16_t len = (uint16_t)(atem->cmdBuf[TALLY_INDEX_LEN_HIGH] << 8) |
 		atem->cmdBuf[TALLY_INDEX_LEN_LOW];
 
 	// Remaps indexes to Blackmagic Embedded Tally Control Protocol
 	for (uint16_t i = 2; i <= len; i += 2) {
-		atem->cmdBuf[i / 2 + 1] = atem->cmdBuf[i] | atem->cmdBuf[i + 1] << 4;
+		atem->cmdBuf[i / 2 + 1] = atem->cmdBuf[i] | (uint8_t)(atem->cmdBuf[i + 1] << 4);
 	}
 
 	// Updates translated pointer, length and sets first byte in translation
