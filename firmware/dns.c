@@ -9,6 +9,7 @@
 #include <lwip/ip.h> // ip_current_dest_addr
 
 #include "./debug.h" // DEBUG_PRINTF
+#include "./dns.h" // captive_portal_init
 
 
 
@@ -46,7 +47,7 @@
 
 
 // Reuses pbuf for response
-static void dns_prepare_send(struct pbuf* p, size_t len) {
+static void dns_prepare_send(struct pbuf* p, uint16_t len) {
 	pbuf_put_at(p, DNS_INDEX_FLAGS, pbuf_get_at(p, DNS_INDEX_FLAGS) | DNS_FLAGS_MASK_QR);
 	pbuf_realloc(p, len);
 }
@@ -92,7 +93,7 @@ static void dns_recv_callback(void* arg, struct udp_pcb* pcb, struct pbuf* p, co
 	}
 
 	// Parses question label to get its type and class
-	int questionIndex = DNS_LEN_HEADER;
+	uint16_t questionIndex = DNS_LEN_HEADER;
 	int labelLen;
 	while ((labelLen = pbuf_get_at(p, questionIndex)) != 0) {
 		questionIndex += labelLen + 1;
@@ -114,8 +115,8 @@ static void dns_recv_callback(void* arg, struct udp_pcb* pcb, struct pbuf* p, co
 	}
 
 	// Gets questions type and class
-	uint16_t qtype = pbuf_get_at(p, questionIndex) << 8 | pbuf_get_at(p, questionIndex + 1);
-	uint16_t qclass = pbuf_get_at(p, questionIndex + 2) << 8 | pbuf_get_at(p, questionIndex + 3);
+	int qtype = pbuf_get_at(p, questionIndex) << 8 | pbuf_get_at(p, questionIndex + 1);
+	int qclass = pbuf_get_at(p, questionIndex + 2) << 8 | pbuf_get_at(p, questionIndex + 3);
 	questionIndex += 4;
 
 	// Validates question type
