@@ -5,7 +5,7 @@
 #include <stdint.h> // uint8_t, uint16_t, uint32_t
 #include <stdbool.h> // bool, true, false
 
-#include <lwip/arch.h> // sys_now
+#include <lwip/sys.h> // sys_now
 
 #include "./user_config.h" // PIN_SCL, PIN_SDA, DEBUG, SDI_INIT_TIMEOUT
 #include "./debug.h" // DEBUG_PRINTF
@@ -47,12 +47,12 @@
 #endif // DEBUG
 
 // Writes variadic number of bytes to SDI shield register
-#define _SDI_WRITE(buf) I2C_WRITE(buf, sizeof(buf) / sizeof(buf[0]))
-#define SDI_WRITE(reg, ...) _SDI_WRITE(((uint8_t[]){ (reg) & 0xff, (reg) >> 8, __VA_ARGS__ }))
+#define SDI_WRITE_BUF(buf) I2C_WRITE(buf, sizeof(buf) / sizeof(buf[0]))
+#define SDI_WRITE(reg, ...) SDI_WRITE_BUF(((uint8_t[]){ (reg) & 0xff, (reg) >> 8, __VA_ARGS__ }))
 
 // Reads SDI shield data from registers to buffer
 static void sdi_read(uint16_t reg, uint8_t* readBuf, uint8_t readLen) {
-	SDI_WRITE(reg);
+	SDI_WRITE_BUF(((uint8_t[]){ reg & 0xff, reg >> 8 }));
 	I2C_READ(readBuf, readLen);
 }
 
@@ -104,14 +104,14 @@ static void sdi_flush(uint16_t reg) {
 // Writes tally data to the SDI shield
 void sdi_write_tally(uint8_t dest, bool pgm, bool pvw) {
 	sdi_flush(kRegOTARM);
-	SDI_WRITE(kRegOTDATA + dest - 1, pgm | (pvw << 1));
+	SDI_WRITE(kRegOTDATA + dest - 1, pgm | (uint8_t)(pvw << 1));
 	SDI_WRITE(kRegOTARM, true);
 }
 
 // Writes camera control data to the SDI shield, requires 2 header bytes for register address
 void sdi_write_cc(uint8_t* buf, uint16_t len) {
 	sdi_flush(kRegOCARM);
-	SDI_WRITE(kRegOCLENGTH, len, 0);
+	SDI_WRITE(kRegOCLENGTH, len & 0xff, len >> 8);
 	buf[0] = kRegOCDATA & 0xff;
 	buf[1] = kRegOCDATA >> 8;
 	I2C_WRITE(buf, len + 2);
