@@ -162,7 +162,7 @@ static bool http_find(struct http_t* http, const char* cmp) {
 static bool http_post_key(struct http_t* http, const char* key) {
 	if (!http_cmp(http, key)) return false;
 	http->remainingBodyLen -= strlen(key);
-	DEBUG_HTTP_PRINTF("Found POST body key '%s'\n", key);
+	DEBUG_HTTP_PRINTF("Found POST body key '%s' for %p\n", key, (void*)http->pcb);
 	return true;
 }
 
