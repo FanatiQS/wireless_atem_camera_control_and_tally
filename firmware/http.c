@@ -58,7 +58,7 @@ static void http_post_err(struct http_t* http, const char* msg) {
 	TCP_SEND(http->pcb, "HTTP/1.1 400 Bad Request\r\nContent-Type: text/plain\r\n\r\n");
 	TCP_SEND(http->pcb, msg);
 	http_output(http);
-	DEBUG_HTTP_PRINTF("%s for %p\n", msg, http->pcb);
+	DEBUG_HTTP_PRINTF("%s for %p\n", msg, (void*)http->pcb);
 }
 
 
@@ -387,7 +387,7 @@ static inline void http_parse(struct http_t* http, struct pbuf* p) {
 	http->index = 0;
 
 #ifdef DEBUG_HTTP
-	DEBUG_HTTP_PRINTF("Received data from client %p:\n", http->pcb);
+	DEBUG_HTTP_PRINTF("Received data from client %p:\n", (void*)http->pcb);
 	DEBUG_PRINTF("========START========\n");
 	while (true) {
 		DEBUG_PRINTF("%.*s\n", p->len, p->payload);
@@ -411,12 +411,12 @@ static inline void http_parse(struct http_t* http, struct pbuf* p) {
 				http->state = HTTP_STATE_METHOD_POST;
 				continue;
 			}
-			DEBUG_HTTP_PRINTF("Got a GET request from %p\n", http->pcb);
+			DEBUG_HTTP_PRINTF("Got a GET request from %p\n", (void*)http->pcb);
 		}
 		// Reject all get requests until a proper HTML tramsmission is implemented
 		case HTTP_STATE_GET_404: {
 			http_err(http, "404 Not Found");
-			DEBUG_HTTP_PRINTF("Invalid GET URI from %p\n", http->pcb);
+			DEBUG_HTTP_PRINTF("Invalid GET URI from %p\n", (void*)http->pcb);
 			return;
 		}
 
@@ -432,11 +432,11 @@ static inline void http_parse(struct http_t* http, struct pbuf* p) {
 				}
 				else {
 					http_err(http, "405 Method Not Allowed");
-					DEBUG_HTTP_PRINTF("Invalid HTTP method from %p\n", http->pcb);
+					DEBUG_HTTP_PRINTF("Invalid HTTP method from %p\n", (void*)http->pcb);
 				}
 				return;
 			}
-			DEBUG_HTTP_PRINTF("Got a POST request from %p\n", http->pcb);
+			DEBUG_HTTP_PRINTF("Got a POST request from %p\n", (void*)http->pcb);
 		}
 		// Flushes start line up to beginning of next header field
 		case HTTP_STATE_POST_ROOT_HEADER_NEXT: {
@@ -449,7 +449,7 @@ static inline void http_parse(struct http_t* http, struct pbuf* p) {
 		case HTTP_STATE_POST_ROOT_HEADER_CONTENT_LENGTH_MISSING: {
 			if (http_cmp(http, "\r\n")) {
 				http_err(http, "411 Length Required");
-				DEBUG_HTTP_PRINTF("Missing content length header from %p\n", http->pcb);
+				DEBUG_HTTP_PRINTF("Missing content length header from %p\n", (void*)http->pcb);
 				return;
 			}
 			if (http_cmp_incomplete(http)) {
@@ -484,7 +484,7 @@ static inline void http_parse(struct http_t* http, struct pbuf* p) {
 				if (num < 10) {
 					if ((http->remainingBodyLen + num) > ((INT32_MAX / 10) + (INT32_MAX % 10))) {
 						http_err(http, "413 Payload Too Large");
-						DEBUG_HTTP_PRINTF("Content length too large from %p\n", http->pcb);
+						DEBUG_HTTP_PRINTF("Content length too large from %p\n", (void*)http->pcb);
 						return;
 					}
 					http->remainingBodyLen *= 10;
@@ -504,7 +504,7 @@ static inline void http_parse(struct http_t* http, struct pbuf* p) {
 					return;
 				}
 				http_err(http, "400 Bad Request");
-				DEBUG_HTTP_PRINTF("Invalid characters in content length from %p\n", http->pcb);
+				DEBUG_HTTP_PRINTF("Invalid characters in content length from %p\n", (void*)http->pcb);
 				return;
 			}
 			http->offset = 2; // Just encountered a CRLF, next scans for 2 in a row
@@ -517,7 +517,7 @@ static inline void http_parse(struct http_t* http, struct pbuf* p) {
 			}
 			DEBUG_HTTP_PRINTF(
 				"Got a content length of %u bytes from %p\n",
-				http->remainingBodyLen, http->pcb
+				http->remainingBodyLen, (void*)http->pcb
 			);
 		}
 		// Reads current configuration into clients cache
@@ -719,7 +719,7 @@ static inline void http_parse(struct http_t* http, struct pbuf* p) {
 static inline err_t http_close(struct tcp_pcb* pcb) {
 	err_t err = tcp_close(pcb);
 	if (err == ERR_OK) return ERR_OK;
-	DEBUG_PRINTF("Failed to close HTTP TCP pcb %p: %d", pcb, (int)err);
+	DEBUG_PRINTF("Failed to close HTTP TCP pcb %p: %d", (void*)pcb, (int)err);
 	return err;
 }
 
@@ -734,7 +734,7 @@ static err_t http_recv_reboot_callback(void* arg, struct tcp_pcb* pcb, struct pb
 	}
 
 	struct http_t* http = (struct http_t*)arg;
-	DEBUG_HTTP_PRINTF("Closed client %p\n", pcb);
+	DEBUG_HTTP_PRINTF("Closed client %p\n", (void*)pcb);
 	err_t ret = http_close(pcb);
 	tcp_err(pcb, NULL);
 	flash_cache_write(&(http->cache));
@@ -747,12 +747,12 @@ static err_t http_sent_callback(void* arg, struct tcp_pcb* pcb, uint16_t len) {
 	LWIP_UNUSED_ARG(arg);
 	LWIP_UNUSED_ARG(len);
 
-	DEBUG_HTTP_PRINTF("Sent %d bytes of data to client %p\n", len, pcb);
+	DEBUG_HTTP_PRINTF("Sent %d bytes of data to client %p\n", len, (void*)pcb);
 
 	// Only closes connection when response is completely sent
 	if (tcp_sndqueuelen(pcb) != 0) return ERR_OK;
 
-	DEBUG_HTTP_PRINTF("Closing client %p\n", pcb);
+	DEBUG_HTTP_PRINTF("Closing client %p\n", (void*)pcb);
 	tcp_poll(pcb, NULL, 0);
 	return http_close(pcb);
 }
@@ -766,7 +766,7 @@ static err_t http_recv_callback(void* arg, struct tcp_pcb* pcb, struct pbuf* p, 
 
 	// Closes the TCP connection on client request
 	if (p == NULL) {
-		DEBUG_HTTP_PRINTF("Closed client %p\n", pcb);
+		DEBUG_HTTP_PRINTF("Closed client %p\n", (void*)pcb);
 		err_t ret = http_close(pcb);
 		if (ret != ERR_OK) return ret;
 		tcp_err(pcb, NULL);
@@ -785,14 +785,14 @@ static err_t http_recv_callback(void* arg, struct tcp_pcb* pcb, struct pbuf* p, 
 // Frees argument memory on TCP socket error
 static void http_err_callback(void* arg, err_t err) {
 	LWIP_UNUSED_ARG(err);
-	DEBUG_PRINTF("HTTP client %p got an error: %d\n", ((struct http_t*)arg)->pcb, (int)err);
+	DEBUG_PRINTF("HTTP client %p got an error: %d\n", (void*)((struct http_t*)arg)->pcb, (int)err);
 	mem_free(arg);
 }
 
 // Closes TCP connection after timeout
 static err_t http_drop_callback(void* arg, struct tcp_pcb* pcb) {
 	LWIP_UNUSED_ARG(arg);
-	DEBUG_HTTP_PRINTF("Dropping client %p due to inactivity\n", pcb);
+	DEBUG_HTTP_PRINTF("Dropping client %p due to inactivity\n", (void*)pcb);
 	tcp_poll(pcb, NULL, 0);
 	return http_close(pcb);
 }
@@ -823,7 +823,7 @@ static err_t http_accept_callback(void* arg, struct tcp_pcb* newpcb, err_t err) 
 	http->pcb = newpcb;
 	http->cmp = NULL;
 
-	DEBUG_HTTP_PRINTF("A client connected to configuration server with id %p\n", newpcb);
+	DEBUG_HTTP_PRINTF("A client connected to configuration server with id %p\n", (void*)newpcb);
 
 	// Sets callback functions for pcb
 	tcp_recv(newpcb, http_recv_callback);
