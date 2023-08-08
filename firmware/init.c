@@ -201,8 +201,9 @@ static void _waccat_init(void) {
 	);
 
 	// Sets hostname of device
-	char hostname[sizeof(softapConfig.ssid) + 1] = {0};
-	strncpy(hostname, softapConfig.ssid, sizeof(hostname));
+	char hostname[sizeof(softapConfig.ssid) + 1];
+	hostname[sizeof(softapConfig.ssid)] = '\0';
+	strncpy(hostname, softapConfig.ssid, sizeof(softapConfig.ssid));
 	if (!wifi_station_set_hostname(hostname)) {
 		DEBUG_PRINTF("Failed to set hostname\n");
 		return;
