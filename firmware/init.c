@@ -35,6 +35,7 @@ static void network_callback(System_Event_t* event) {
 		// Disables scanning for station when connection is made to soft ap
 		case EVENT_SOFTAPMODE_STACONNECTED: {
 			if (wifi_softap_get_station_num() == 0) break;
+			if (wifi_station_get_connect_status() == STATION_GOT_IP) break;
 			DEBUG_PRINTF("Disabled wifi station\n");
 			if (!wifi_station_disconnect()) {
 				DEBUG_PRINTF("Failed to disable wifi station\n");
@@ -45,6 +46,7 @@ static void network_callback(System_Event_t* event) {
 		// Re enables scanning for station when soft ap is unused
 		case EVENT_SOFTAPMODE_STADISCONNECTED: {
 			if (wifi_softap_get_station_num()) break;
+			if (wifi_station_get_connect_status() == STATION_GOT_IP) break;
 			DEBUG_PRINTF("Enabled wifi station\n");
 			if (!wifi_station_connect()) {
 				DEBUG_PRINTF("Failed to enable wifi station\n");
