@@ -9,7 +9,7 @@
 * Renamed `atem_init` to `waccat_init`.
 * Renamed `atem_udp_init` to `atem_init`.
 * Improved debug logs.
-* Added debug flag to print acknlowedged ATEM packets.
+* Added debug flag to print acknowledged ATEM packets.
 * Added optional single source include file
 * Moved HTTP POST parser to custom streaming parser (available on port 8080 until GET parser is moved as well).
 * Changed HTTP POST keys.
@@ -17,15 +17,22 @@
 * Configuration properties are only updated if available in HTTP POST (static ip is switched to '1' or '0' instead of 'on' or undefined).
 * Validates HTTP POST data before updating.
 * Added HTTP debug flag.
-* Added tests for HTTP parser.
-* Added simple configuration bash script.
-* Writes configuration to flash after HTTP client is closed.
-* Reboots after configuration is written to flash.
-* Fixed crash when after writing configuration on softap.
+* Fixed crash when configuring device over softap.
 * Uses devices name as hostname.
 * Prints compiler version used to build.
 * Checks libraries/sdk versions at compile-time with user_config macro to disable strict version checking (VERSIONS_ANY = 1).
+* Default configuration for DEBUG_CC is now to be disabled for performance issues.
+* Does not disable wlan station when connecting to wlan softap if station has a working connection.
 
+### Source API
+* Now only updates property `readLen` when it is allowed to be used.
+* Fixed warnings after bit shift type promotion.
+
+### Test Suite
+* Added tests for firmware HTTP parser.
+
+### Tools
+* Added simple configuration bash script.
 
 
 ## Version 0.6.2
