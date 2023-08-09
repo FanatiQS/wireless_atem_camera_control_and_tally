@@ -82,6 +82,7 @@ static void dns_recv_callback(void* arg, struct udp_pcb* pcb, struct pbuf* p, co
 		// Responds with error for non query opcode requests
 		dns_header_error(p, DNS_RCODE_NOT_IMPLEMENTED);
 		udp_sendto(pcb, p, addr, port);
+		pbuf_free(p);
 		return;
 	}
 
@@ -89,6 +90,7 @@ static void dns_recv_callback(void* arg, struct udp_pcb* pcb, struct pbuf* p, co
 	if (pbuf_memcmp(p, DNS_INDEX_COUNTS, (uint16_t[]){ lwip_htons(0x0001), 0x0000, 0x0000, 0x0000 }, DNS_LEN_COUNTS)) {
 		dns_header_error(p, DNS_RCODE_FORM_ERROR);
 		udp_sendto(pcb, p, addr, port);
+		pbuf_free(p);
 		return;
 	}
 
@@ -101,6 +103,7 @@ static void dns_recv_callback(void* arg, struct udp_pcb* pcb, struct pbuf* p, co
 			pbuf_put_at(p, DNS_INDEX_RCODE, DNS_RCODE_FORM_ERROR);
 			dns_prepare_send(p, DNS_LEN_HEADER);
 			udp_sendto(pcb, p, addr, port);
+			pbuf_free(p);
 			return;
 		}
 	}
@@ -111,6 +114,7 @@ static void dns_recv_callback(void* arg, struct udp_pcb* pcb, struct pbuf* p, co
 		pbuf_put_at(p, DNS_INDEX_RCODE, DNS_RCODE_FORM_ERROR);
 		dns_prepare_send(p, DNS_LEN_HEADER);
 		udp_sendto(pcb, p, addr, port);
+		pbuf_free(p);
 		return;
 	}
 
@@ -124,14 +128,16 @@ static void dns_recv_callback(void* arg, struct udp_pcb* pcb, struct pbuf* p, co
 		pbuf_put_at(p, DNS_INDEX_RCODE, DNS_RCODE_NON_EXISTENT_DOMAIN);
 		dns_prepare_send(p, questionIndex);
 		udp_sendto(pcb, p, addr, port);
+		pbuf_free(p);
 		return;
 	}
-	
+
 	// Validates question class
 	if (qclass != DNS_QCLASS_IN && qclass != DNS_QCLASS_ANY) {
 		pbuf_put_at(p, DNS_INDEX_RCODE, DNS_RCODE_NON_EXISTENT_DOMAIN);
 		dns_prepare_send(p, questionIndex);
 		udp_sendto(pcb, p, addr, port);
+		pbuf_free(p);
 		return;
 	}
 
@@ -159,6 +165,7 @@ static void dns_recv_callback(void* arg, struct udp_pcb* pcb, struct pbuf* p, co
 	// Sends DNS response with header, query and answer
 	pbuf_cat(p, answer);
 	udp_sendto(pcb, p, addr, port);
+	pbuf_free(p);
 }
 
 // Initializes captive portal dns server
