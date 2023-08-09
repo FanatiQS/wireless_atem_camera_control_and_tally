@@ -32,9 +32,10 @@
 #define DNS_FLAGS_MASK_OPCODE (0x08 | 0x10 | 0x20 | 0x40)
 
 // DNS rcode response codes
-#define DNS_RCODE_FORM_ERROR          1
-#define DNS_RCODE_NON_EXISTENT_DOMAIN 3
-#define DNS_RCODE_NOT_IMPLEMENTED     4
+#define DNS_RCODE_FORMERR  1
+#define DNS_RCODE_SERVFAIL 2
+#define DNS_RCODE_NXDOMAIN 3
+#define DNS_RCODE_NOTIMP   4
 
 // DNS query classes
 #define DNS_QCLASS_IN  0x01
@@ -80,7 +81,7 @@ static void dns_recv_callback(void* arg, struct udp_pcb* pcb, struct pbuf* p, co
 		}
 
 		// Responds with error for non query opcode requests
-		dns_header_error(p, DNS_RCODE_NOT_IMPLEMENTED);
+		dns_header_error(p, DNS_RCODE_NOTIMP);
 		udp_sendto(pcb, p, addr, port);
 		pbuf_free(p);
 		return;
@@ -88,7 +89,7 @@ static void dns_recv_callback(void* arg, struct udp_pcb* pcb, struct pbuf* p, co
 
 	// Only supports single question and ANCount, NSCount and ARCount should be clear for non answers
 	if (pbuf_memcmp(p, DNS_INDEX_COUNTS, (uint16_t[]){ lwip_htons(0x0001), 0x0000, 0x0000, 0x0000 }, DNS_LEN_COUNTS)) {
-		dns_header_error(p, DNS_RCODE_FORM_ERROR);
+		dns_header_error(p, DNS_RCODE_FORMERR);
 		udp_sendto(pcb, p, addr, port);
 		pbuf_free(p);
 		return;
@@ -100,7 +101,7 @@ static void dns_recv_callback(void* arg, struct udp_pcb* pcb, struct pbuf* p, co
 	while ((labelLen = pbuf_get_at(p, questionIndex)) != 0) {
 		questionIndex += labelLen + 1;
 		if (questionIndex > p->len) {
-			pbuf_put_at(p, DNS_INDEX_RCODE, DNS_RCODE_FORM_ERROR);
+			pbuf_put_at(p, DNS_INDEX_RCODE, DNS_RCODE_FORMERR);
 			dns_prepare_send(p, DNS_LEN_HEADER);
 			udp_sendto(pcb, p, addr, port);
 			pbuf_free(p);
@@ -111,7 +112,7 @@ static void dns_recv_callback(void* arg, struct udp_pcb* pcb, struct pbuf* p, co
 
 	// Ensures label doesn't extend outside packet
 	if ((questionIndex + 4) > p->len) {
-		pbuf_put_at(p, DNS_INDEX_RCODE, DNS_RCODE_FORM_ERROR);
+		pbuf_put_at(p, DNS_INDEX_RCODE, DNS_RCODE_FORMERR);
 		dns_prepare_send(p, DNS_LEN_HEADER);
 		udp_sendto(pcb, p, addr, port);
 		pbuf_free(p);
@@ -125,7 +126,7 @@ static void dns_recv_callback(void* arg, struct udp_pcb* pcb, struct pbuf* p, co
 
 	// Validates question type
 	if (qtype != DNS_QTYPE_A && qtype != DNS_QTYPE_ANY) {
-		pbuf_put_at(p, DNS_INDEX_RCODE, DNS_RCODE_NON_EXISTENT_DOMAIN);
+		pbuf_put_at(p, DNS_INDEX_RCODE, DNS_RCODE_NXDOMAIN);
 		dns_prepare_send(p, questionIndex);
 		udp_sendto(pcb, p, addr, port);
 		pbuf_free(p);
@@ -134,7 +135,7 @@ static void dns_recv_callback(void* arg, struct udp_pcb* pcb, struct pbuf* p, co
 
 	// Validates question class
 	if (qclass != DNS_QCLASS_IN && qclass != DNS_QCLASS_ANY) {
-		pbuf_put_at(p, DNS_INDEX_RCODE, DNS_RCODE_NON_EXISTENT_DOMAIN);
+		pbuf_put_at(p, DNS_INDEX_RCODE, DNS_RCODE_NXDOMAIN);
 		dns_prepare_send(p, questionIndex);
 		udp_sendto(pcb, p, addr, port);
 		pbuf_free(p);
@@ -147,6 +148,12 @@ static void dns_recv_callback(void* arg, struct udp_pcb* pcb, struct pbuf* p, co
 
 	// Creates DNS answer
 	struct pbuf* answer = pbuf_alloc(PBUF_TRANSPORT, DNS_LEN_ANSWER, PBUF_POOL);
+	if (answer == NULL) {
+		dns_header_error(p, DNS_RCODE_SERVFAIL);
+		udp_sendto(pcb, p, addr, port);
+		pbuf_free(p);
+		return;
+	}
 	uint16_t answerBuf[] = {
 		// Pointer to the queried name already defined in the packet
 		lwip_htons(0xc000 | DNS_LEN_HEADER),
