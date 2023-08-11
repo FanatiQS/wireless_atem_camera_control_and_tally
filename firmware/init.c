@@ -61,6 +61,8 @@ static void network_callback(System_Event_t* event) {
 #define BOOT_INFO_VERSION_ESP "Using ESP8266 SDK version: " ESP_SDK_VERSION_STRING "\n"
 #if ARDUINO
 #define BOOT_INFO_VERSION_ARDUINO "Using Arduino SDK version: " WRAP(ARDUINO_ESP8266_GIT_DESC) "\n"
+#else // ARDUINO
+#define BOOT_INFO_VERSION_ARDUINO ""
 #endif // ARDUINO
 #define BOOT_INFO_VERSIONS BOOT_INFO_VERSION_ESP BOOT_INFO_VERSION_ARDUINO
 
