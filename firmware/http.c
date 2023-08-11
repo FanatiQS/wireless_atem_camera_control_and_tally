@@ -390,7 +390,7 @@ static inline void http_parse(struct http_t* http, struct pbuf* p) {
 	DEBUG_HTTP_PRINTF("Received data from client %p:\n", (void*)http->pcb);
 	DEBUG_PRINTF("========START========\n");
 	while (true) {
-		DEBUG_PRINTF("%.*s\n", p->len, p->payload);
+		DEBUG_PRINTF("%.*s\n", p->len, (char*)p->payload);
 		if (p->len == p->tot_len) break;
 		p = p->next;
 	}
