@@ -10,6 +10,28 @@
 #define ATEM_BLE_UUID_CHARACTERISTIC "5DD3465F-1AEE-4299-8493-D2ECA2F8E1BB"
 
 /**
+ * Default port for ATEM
+ */
+#define ATEM_PORT 9910
+
+/**
+ * Number of seconds before ATEM switcher kills the connection for not
+ * acknowledging packets it sent.
+ */
+#define ATEM_TIMEOUT 5
+
+/**
+ * Number of milliseconds before ATEM switcher kills the connection for not
+ * acknowledging packets it sent.
+ */
+#define ATEM_TIMEOUT_MS (ATEM_TIMEOUT * 1000)
+
+/**
+ * Maximum size of an ATEM packet, used by \ref atem_t.readBuf.
+ */
+#define ATEM_MAX_PACKET_LEN 2047
+
+/**
  * Converts a command name from 4 characters to a 32bit integer
  */
 #define ATEM_CMDNAME(a, b, c, d) ((a << 24) | (b << 16) | (c << 8) | (d))
@@ -88,28 +110,6 @@ enum atem_status_t {
 	 */
 	ATEM_STATUS_NONE = 7
 };
-
-/**
- * Default port for ATEM
- */
-#define ATEM_PORT 9910
-
-/**
- * Number of seconds before ATEM switcher kills the connection for not
- * acknowledging packets it sent.
- */
-#define ATEM_TIMEOUT 5
-
-/**
- * Number of milliseconds before ATEM switcher kills the connection for not
- * acknowledging packets it sent.
- */
-#define ATEM_TIMEOUT_MS (ATEM_TIMEOUT * 1000)
-
-/**
- * Maximum size of an ATEM packet, used by \ref atem_t.readBuf.
- */
-#define ATEM_MAX_PACKET_LEN 2047
 
 // Contains incoming and outgoing ATEM socket data
 typedef struct atem_t {
