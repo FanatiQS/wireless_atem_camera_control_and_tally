@@ -207,23 +207,6 @@ bool atem_tally_updated(struct atem_t *atem) {
  	return oldTally != (atem->pgmTally | atem->pvwTally << 1);
 }
 
-// Translates tally data from ATEMs protocol to Blackmagic Embedded Tally Control Protocol
-void atem_tally_translate(struct atem_t *atem) {
-	// Gets the number of items in the tally index array
-	const uint16_t len = (uint16_t)(atem->cmdBuf[TALLY_INDEX_LEN_HIGH] << 8) |
-		atem->cmdBuf[TALLY_INDEX_LEN_LOW];
-
-	// Remaps indexes to Blackmagic Embedded Tally Control Protocol
-	for (uint16_t i = 2; i <= len; i += 2) {
-		atem->cmdBuf[i / 2 + 1] = atem->cmdBuf[i] | (uint8_t)(atem->cmdBuf[i + 1] << 4);
-	}
-
-	// Updates translated pointer, length and sets first byte in translation
-	atem->cmdBuf += 1;
-	atem->cmdLen = len / 2 + 1;
-	atem->cmdBuf[0] = 0x00;
-}
-
 // Translates camera control data from ATEMs protocol to Blackmagis SDI camera control protocol
 void atem_cc_translate(struct atem_t *atem) {
 	// Gets length of available data

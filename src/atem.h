@@ -114,7 +114,6 @@ uint32_t atem_cmd_next(struct atem_t *atem);
 //!! This function has to be called before atem_tally_translate
 bool atem_tally_updated(struct atem_t *atem);
 
-void atem_tally_translate(struct atem_t *atem);
 
 void atem_cc_translate(struct atem_t *atem);
 
