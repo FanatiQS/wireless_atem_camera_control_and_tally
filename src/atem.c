@@ -1,7 +1,27 @@
-#include <stdint.h> // uint8_t
+#include <stdint.h> // uint8_t, uint16_t, uint32_t
+#include <stdbool.h> // bool, false
 
-#include "./atem_protocol.h"
-#include "./atem.h"
+#include "./atem_protocol.h" // ATEM_LEN_SYN, ATEM_INDEX_FLAGS, ATEM_INDEX_LEN_HIGH, ATEM_INDEX_LEN_LOW, ATEM_INDEX_SESSIONID_HIGH, ATEM_INDEX_SESSIONID_LOW, ATEM_FLAG_SYN, ATEM_INDEX_OPCODE, ATEM_OPCODE_OPEN, ATEM_LEN_ACK, ATEM_FLAG_ACK, ATEM_FLAG_RETX, ATEM_OPCODE_CLOSING, ATEM_OPCODE_CLOSED, ATEM_FLAG_ACKREQ, ATEM_INDEX_REMOTEID_HIGH, ATEM_INDEX_REMOTEID_LOW, ATEM_LIMIT_REMOTEID, ATEM_INDEX_ACKID_HIGH, ATEM_INDEX_ACKID_LOW, ATEM_MASK_LEN_HIGH, ATEM_LEN_HEADER, ATEM_OPCODE_ACCEPT, ATEM_OPCODE_REJECT, ATEM_LEN_CMDHEADER, ATEM_OFFSET_CMDNAME
+#include "./atem.h" // struct atem_t, enum atem_status_t, ATEM_STATUS_CLOSED, ATEM_STATUS_WRITE_ONLY, ATEM_STATUS_WRITE, ATEM_STATUS_NONE, ATEM_STATUS_ACCEPTED, ATEM_STATUS_CLOSING, ATEM_STATUS_REJECTED, ATEM_STATUS_ERROR
+
+
+
+// Tally flags indicating the status
+#define TALLY_FLAG_PGM 0x01
+#define TALLY_FLAG_PVW 0x02
+
+// Indexes of length for number of tally values
+#define TALLY_INDEX_LEN_HIGH 0
+#define TALLY_INDEX_LEN_LOW 1
+
+// Offset for when using tally index as command index
+#define TALLY_OFFSET 1
+
+// Atem and camera control protocol lengths and offsets
+#define CC_HEADER_LEN 4
+#define CC_CMD_HEADER_LEN 4
+#define CC_HEADER_OFFSET -3
+#define CC_ATEM_DATA_OFFSET 16
 
 
 
@@ -167,25 +187,6 @@ uint32_t atem_cmd_next(struct atem_t *atem) {
 		(atem->readBuf[index + ATEM_OFFSET_CMDNAME + 2] << 8) |
 		atem->readBuf[index + ATEM_OFFSET_CMDNAME + 3]);
 }
-
-
-
-// Tally flags indicating the status
-#define TALLY_FLAG_PGM 0x01
-#define TALLY_FLAG_PVW 0x02
-
-// Indexes of length for number of tally values
-#define TALLY_INDEX_LEN_HIGH 0
-#define TALLY_INDEX_LEN_LOW 1
-
-// Offset for when using tally index as command index
-#define TALLY_OFFSET 1
-
-// Atem and camera control protocol lengths and offsets
-#define CC_HEADER_LEN 4
-#define CC_CMD_HEADER_LEN 4
-#define CC_HEADER_OFFSET -3
-#define CC_ATEM_DATA_OFFSET 16
 
 
 
