@@ -54,7 +54,6 @@
 
 
 
-
 // ATEM connection context
 struct atem_t atem;
 
