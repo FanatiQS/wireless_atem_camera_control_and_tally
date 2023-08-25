@@ -59,10 +59,10 @@ struct atem_t atem;
 
 // HTML text states of connection to ATEM
 const char* atem_state = "Unconnected";
-const char* atem_state_connected = "Connected";
-const char* atem_state_dropped = "Lost connection";
-const char* atem_state_rejected = "Rejected";
-const char* atem_state_disconnected = "Disconnected";
+const char* const atem_state_connected = "Connected";
+const char* const atem_state_dropped = "Lost connection";
+const char* const atem_state_rejected = "Rejected";
+const char* const atem_state_disconnected = "Disconnected";
 
 
 
