@@ -58,12 +58,13 @@
 struct atem_t atem;
 
 // HTML text states of connection to ATEM
-const char* atem_state;
-const char* atem_state_unconnected = "Unconnected";
+const char* atem_state = "Unconnected";
 const char* atem_state_connected = "Connected";
 const char* atem_state_dropped = "Lost connection";
 const char* atem_state_rejected = "Rejected";
 const char* atem_state_disconnected = "Disconnected";
+
+
 
 // Resets tally and connection status when disconnected from ATEM
 static void tally_reset(void) {
@@ -73,8 +74,6 @@ static void tally_reset(void) {
 	atem.pgmTally = false;
 	atem.pvwTally = false;
 }
-
-
 
 // Sends buffered data to ATEM
 static void atem_send(struct udp_pcb* pcb) {
@@ -287,9 +286,6 @@ struct udp_pcb* atem_init(uint32_t addr, uint8_t dest) {
 	// Sets camera id to serve
 	DEBUG_PRINTF("Filtering for camera ID: %d\n", dest);
 	atem.dest = dest;
-
-	// Sets initial ATEM connection state
-	atem_state = atem_state_unconnected;
 
 	// Creates protocol control buffer for UDP connection
 	struct udp_pcb* pcb = udp_new();
