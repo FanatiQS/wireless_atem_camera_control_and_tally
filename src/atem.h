@@ -174,6 +174,9 @@ void atem_connection_close(struct atem_t *atem);
  * The statuses \ref ATEM_STATUS_WRITE, \ref ATEM_STATUS_WRITE_ONLY,
  * \ref ATEM_STATUS_ACCEPTED and \ref ATEM_STATUS_CLOSING all require sending
  * a response that is put in \ref atem_t.writeBuf.
+ * These statues are all represented by even numbers, so detemining if a status
+ * requires sending data or not is as easy as checking if the status is odd or
+ * even.
  * 
  * @attention Copy ATEM UDP packet to \ref atem_t.readBuf array manually before
  * calling this function with a max length of \ref ATEM_MAX_PACKET_LEN.
@@ -190,6 +193,7 @@ enum atem_status_t atem_parse(struct atem_t *atem);
  * be used in combination with atem_cmd_available() to iterate through all
  * commands in ATEM the packet.
  * Some commands are available in \ref atem_commands_t.
+ * Command names can be constructed using ATEM_CMDNAME() macro function.
  * 
  * @attention This function can ONLY be called when atem_parse() returns
  * \ref ATEM_STATUS_WRITE.
@@ -197,9 +201,7 @@ enum atem_status_t atem_parse(struct atem_t *atem);
  * returns true to indicate there is a command available in the ATEM packet.
  * 
  * @param[in,out] atem The atem connection context containing the parsed data.
- * @returns A command name as a 32 bit integer. Some command names are available
- * in \ref atem_commands_t. Command names can be constructed using
- * ATEM_CMDNAME() macro function.
+ * @returns A command name as a 32 bit integer.
  */
 uint32_t atem_cmd_next(struct atem_t *atem);
 
@@ -261,6 +263,7 @@ void atem_cc_translate(struct atem_t *atem);
  * 
  * @attention This function can only be called after atem_parse() returns
  * \ref ATEM_STATUS_VERSION.
+ * @returns The major version of the ATEM protocol.
  */
 #define atem_protocol_major(atem) ((atem)->cmdBuf[0] << 8 | (atem)->cmdBuf[1])
 
@@ -270,6 +273,7 @@ void atem_cc_translate(struct atem_t *atem);
  * 
  * @attention This function can only be called after atem_parse() returns
  * \ref ATEM_STATUS_VERSION.
+ * @returns The minor version of the ATEM protocol.
  */
 #define atem_protocol_minor(atem) ((atem)->cmdBuf[2] << 8 | (atem)->cmdBuf[3])
 
