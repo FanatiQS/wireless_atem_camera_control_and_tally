@@ -84,7 +84,7 @@ static void atem_send(struct udp_pcb* pcb) {
 		return;
 	}
 
-	// Sends data to ATEM and releases the buffer container
+	// Sends data to ATEM and hands over the responsibility of the buffer container to LwIP UDP
 	err_t err = udp_send(pcb, p);
 	pbuf_free(p);
 
@@ -217,7 +217,7 @@ static void atem_timeout_callback(void* arg) {
 	atem_connection_reset(&atem);
 	atem_send((struct udp_pcb*)arg);
 
-	// Indicates connection lost with LEDs and HTML
+	// Indicates connection lost with LEDs, SDI, HTML and serial
 	if (atem_state == atem_state_connected) {
 		atem_state = atem_state_dropped;
 		tally_reset();
@@ -233,7 +233,7 @@ static void atem_timeout_callback(void* arg) {
 
 // Reads and processces received ATEM packet
 static void atem_recv_callback(void* arg, struct udp_pcb* pcb, struct pbuf* p, const ip_addr_t* addr, uint16_t port) {
-	// Prevents compiler warnings
+	// Prevents compiler warnings for unused argument
 	LWIP_UNUSED_ARG(arg);
 	LWIP_UNUSED_ARG(addr);
 	LWIP_UNUSED_ARG(port);
@@ -283,11 +283,11 @@ static void atem_netif_poll(void* arg) {
 
 // Initializes UDP connection to ATEM
 struct udp_pcb* atem_init(uint32_t addr, uint8_t dest) {
-	// Sets camera id to serve
+	// Sets the camera id to serve
 	DEBUG_PRINTF("Filtering for camera ID: %d\n", dest);
 	atem.dest = dest;
 
-	// Creates protocol control buffer for UDP connection
+	// Creates pcb (protocol control buffer) for UDP connection
 	struct udp_pcb* pcb = udp_new();
 	if (pcb == NULL) {
 		DEBUG_PRINTF("Failed to create ATEM UDP pcb\n");
@@ -336,7 +336,7 @@ struct udp_pcb* atem_init(uint32_t addr, uint8_t dest) {
 		return NULL;
 	}
 
-	// Starts polling network interface for connected state
+	// Starts polling network interface to send ATEM handshake when connected
 	sys_timeout(0, atem_netif_poll, pcb);
 	return pcb;
 }
