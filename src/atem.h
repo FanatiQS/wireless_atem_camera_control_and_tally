@@ -273,8 +273,21 @@ void atem_cc_translate(struct atem_t *atem);
  */
 #define atem_protocol_minor(atem) ((atem)->cmdBuf[2] << 8 | (atem)->cmdBuf[3])
 
-// Gets the camera destination number for a camera control command
-#define atem_cc_dest(atem) ((atem)->cmdBuf[0])
+/**
+ * @brief Checks dest in the \ref ATEM_CMDNAME_CAMERACONTROL command in ATEM packet.
+ * 
+ * Call this function when receiving a \ref ATEM_CMDNAME_CAMERACONTROL
+ * command to check if the content of the command is for the contexts camera
+ * identifier defined in \ref atem_t.dest.
+ * 
+ * @attention This function can ONLY be called when atem_cmd_next() returns
+ * the command name \ref ATEM_CMDNAME_CAMERACONTROL.
+ * 
+ * @param[in,out] atem The atem connection context containing the parsed data.
+ * @returns Boolean indicating if the internal camera identifier matched the
+ * commands destination identifier.
+ */
+#define atem_cc_updated(atem) ((atem)->cmdBuf[0] == (atem)->dest)
 
 // Ends include guard
 #endif

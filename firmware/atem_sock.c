@@ -182,7 +182,7 @@ static inline void atem_process(struct udp_pcb* pcb, uint8_t* buf, uint16_t len)
 		// Sends camera control data over SDI
 		case ATEM_CMDNAME_CAMERACONTROL: {
 			// Only processes camera control updates for selected camera
-			if (atem_cc_dest(&atem) != atem.dest) break;
+			if (!atem_cc_updated(&atem)) break;
 
 			// Translates ATEM camera control protocol to SDI camera control protocol
 			atem_cc_translate(&atem);
