@@ -1,10 +1,9 @@
 #include <stdint.h> // uint8_t, uint16_t, uint32_t
 #include <stddef.h> // NULL
 #include <stdbool.h> // bool, true, false
-#include <string.h> // memcpy // @todo remove when not needed anymore
 
 #include <lwip/udp.h> // struct udp_pcb, udp_send, udp_new, udp_recv, udp_connect, udp_remove
-#include <lwip/pbuf.h> // struct pbuf, pbuf_alloc_reference, PBUF_REF, pbuf_free, pbuf_get_contiguous
+#include <lwip/pbuf.h> // struct pbuf, pbuf_alloc_reference, PBUF_REF, pbuf_free, pbuf_copy_partial
 #include <lwip/ip_addr.h> // ip_addr_t, IPADDR4_INIT
 #include <lwip/err.h> // err_t, ERR_OK
 #include <lwip/arch.h> // LWIP_UNUSED_ARG
@@ -14,7 +13,7 @@
 #include <user_interface.h> // wifi_set_opmode_current, STATION_MODE
 #endif // ESP8266
 
-#include "../src/atem.h" // struct atem_t atem_connection_reset, atem_parse, ATEM_STATUS_WRITE, ATEM_STATUS_CLOSING, ATEM_STATUS_REJECTED, ATEM_STATUS_WRITE_ONLY, ATEM_STATUS_CLOSED, ATEM_STATUS_ACCEPTED, ATEM_STATUS_ERROR, ATEM_STATUS_NONE, ATEM_TIMEOUT, ATEM_MAX_PACKET_LEN, ATEM_PORT, atem_cmd_available, atem_cmd_next, ATEM_CMDNAME_VERSION, ATEM_CMDNAME_TALLY, ATEM_CMDNAME_CAMERACONTROL, atem_protocol_major, atem_protocol_minor, ATEM_TIMEOUT_MS
+#include "../src/atem.h" // struct atem_t atem_connection_reset, atem_parse, ATEM_STATUS_WRITE, ATEM_STATUS_CLOSING, ATEM_STATUS_REJECTED, ATEM_STATUS_WRITE_ONLY, ATEM_STATUS_CLOSED, ATEM_STATUS_ACCEPTED, ATEM_STATUS_ERROR, ATEM_STATUS_NONE, ATEM_TIMEOUT, ATEM_PORT, atem_cmd_available, atem_cmd_next, ATEM_CMDNAME_VERSION, ATEM_CMDNAME_TALLY, ATEM_CMDNAME_CAMERACONTROL, atem_protocol_major, atem_protocol_minor, ATEM_TIMEOUT_MS
 #include "../src/atem_protocol.h" // ATEM_INDEX_FLAGS, ATEM_INDEX_REMOTEID_HIGH, ATEM_INDEX_REMOTEID_LOW, ATEM_FLAG_ACK
 #include "./user_config.h" // DEBUG_TALLY, DEBUG_CC, DEBUG_ATEM, PIN_CONN, PIN_PGM, PIN_PVW, PIN_SCL, PIN_SDA
 #include "./led.h" // LED_TALLY, LED_CONN, LED_INIT
@@ -96,9 +95,7 @@ static void atem_send(struct udp_pcb* pcb) {
 }
 
 // Processes received ATEM packet
-static inline void atem_process(struct udp_pcb* pcb, uint8_t* buf, uint16_t len) {
-	memcpy(atem.readBuf, buf, len); // @todo rework atem_parse to not require any copying
-
+static inline void atem_process(struct udp_pcb* pcb) {
 	// Parses received ATEM packet
 	switch (atem_parse(&atem)) {
 		case ATEM_STATUS_ERROR:
@@ -238,11 +235,9 @@ static void atem_recv_callback(void* arg, struct udp_pcb* pcb, struct pbuf* p, c
 	LWIP_UNUSED_ARG(addr);
 	LWIP_UNUSED_ARG(port);
 
-	// Reads ATEM packet
-	uint8_t _buf[ATEM_MAX_PACKET_LEN];
-	uint8_t* buf = pbuf_get_contiguous(p, _buf, ATEM_MAX_PACKET_LEN, p->tot_len, 0);
-	if (buf == NULL) {
-		DEBUG_PRINTF("Failed to read ATEM packet\n");
+	// Copies contents of pbuf to atem structs processing buffer
+	if (!pbuf_copy_partial(p, atem.readBuf, sizeof(atem.readBuf), 0)) {
+		DEBUG_PRINTF("Failed to copy ATEM packet\n");
 		pbuf_free(p);
 		return;
 	}
@@ -252,7 +247,7 @@ static void atem_recv_callback(void* arg, struct udp_pcb* pcb, struct pbuf* p, c
 	sys_timeout(ATEM_TIMEOUT_MS, atem_timeout_callback, pcb);
 
 	// Processes the received ATEM packet
-	atem_process(pcb, buf, p->tot_len);
+	atem_process(pcb);
 
 	// Releases pbuf
 	pbuf_free(p);
