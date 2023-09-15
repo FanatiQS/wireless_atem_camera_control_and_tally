@@ -27,6 +27,10 @@
 ### Source API
 * Now only updates property `readLen` when it is allowed to be used.
 * Fixed warnings after bit shift type promotion.
+* Huge improvement to source API documentation.
+* Deprecated unused and broken `atem_tally_translate` function.
+* Predefined ATEM command names is now in an enum instead of being macros.
+* Replaced `atem_cc_dest` function with `atem_cc_updated` to do similar thing.
 
 ### Test Suite
 * Added tests for firmware HTTP parser.
