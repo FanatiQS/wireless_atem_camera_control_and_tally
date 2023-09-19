@@ -59,7 +59,7 @@
 // Creates an HTML ip address input row
 #define HTML_INPUT_IP($, label, value, name)\
 	HTML_ROW($, label)\
-	HTML($, "<input type=string name=" name " value=")\
+	HTML($, "<input type=string pattern=^((25[0-5]|(2[0-4]|1\\d|[1-9]|)\\d)(\\.(?!$)|$)){4}$ name=" name " value=")\
 	TEMPLATE($, "%u", (value & 0xff), STRLEN(INT_TO_STR2(UINT8_MAX)))\
 	HTML($, ".")\
 	TEMPLATE($, "%u", (value >> 8) & 0xff, STRLEN(INT_TO_STR2(UINT8_MAX)))\
