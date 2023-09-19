@@ -113,14 +113,14 @@ enum atem_status_t {
 
 // Contains incoming and outgoing ATEM socket data
 typedef struct atem_t {
-	uint8_t *writeBuf;
-	uint8_t *cmdBuf;
-	uint16_t dest;
+	uint8_t* writeBuf;
+	uint8_t* cmdBuf;
 	uint16_t readLen;
 	uint16_t writeLen;
 	uint16_t cmdLen;
 	uint16_t cmdIndex;
 	uint16_t lastRemoteId;
+	uint8_t dest;
 	uint8_t readBuf[ATEM_MAX_PACKET_LEN];
 	bool pvwTally;
 	bool pgmTally;
@@ -293,5 +293,4 @@ void atem_cc_translate(struct atem_t *atem);
  */
 #define atem_cc_updated(atem) ((atem)->cmdBuf[0] == (atem)->dest)
 
-// Ends include guard
-#endif
+#endif // ATEM_H
