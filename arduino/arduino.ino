@@ -35,7 +35,7 @@
 
 
 // Configuration HTTP server and redirection DNS
-ESP8266WebServer confServer(80);
+ESP8266WebServer confServer(81);
 
 // Names for all HTTP POST keys
 #define KEY_SSID "ssid"

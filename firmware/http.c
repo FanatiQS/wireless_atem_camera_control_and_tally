@@ -5,7 +5,7 @@
 #include <ctype.h> // tolower
 #include <string.h> // strlen
 
-#include <lwip/tcp.h> // struct tcp_pcb, tcp_new, tcp_bind, tcp_close, tcp_listen, tcp_accept, tcp_nagle_disable, tcp_poll, tcp_recv, tcp_sent, tcp_err, tcp_recved, tcp_arg, tcp_sndqueuelen, tcp_abort, tcp_write, tcp_output
+#include <lwip/tcp.h> // struct tcp_pcb, tcp_new, tcp_bind, tcp_close, tcp_listen, tcp_accept, tcp_nagle_disable, tcp_poll, tcp_recv, tcp_sent, tcp_err, tcp_recved, tcp_arg, tcp_abort
 #include <lwip/err.h> // err_t, ERR_OK, ERR_VAL
 #include <lwip/pbuf.h> // struct pbuf, pbuf_free
 #include <lwip/ip_addr.h> // IP_ADDR_ANY
@@ -16,14 +16,13 @@
 #include "./debug.h" // DEBUG_PRINTF, DEBUG_HTTP_PRINTF
 #include "./flash.h" // CACHE_SSID, CACHE_PSK, CACHE_NAME, flash_cache_write, flash_cache_read
 #include "./http.h" // enum http_state, struct http_t, http_init
+#include "./http_respond.h" // http_respond, http_err, http_post_err, enum http_response_state
 
 // Default port for unencrypted HTTP traffic
-#define HTTP_PORT 8080
+#define HTTP_PORT 80
 
 // The number of TCP coarse grained timer shots before the TCP socket is closed automatically
 #define HTTP_POLL_TIMEOUT 10
-
-#define TCP_SEND(pcb, str) tcp_write(pcb, str, (uint16_t)strlen(str), 0)
 
 // Converts percent encoded HEX character set to decimal value
 #define HEX_IDLE  (1)
@@ -33,33 +32,6 @@
 // Maximum and minimum camera id (dest) values
 #define DEST_MIN (1)
 #define DEST_MAX (254)
-
-
-
-// Sends buffered HTTP response data
-static inline void http_output(struct http_t* http) {
-	tcp_output(http->pcb);
-	http->state = HTTP_STATE_DONE;
-}
-
-// Responds with HTTP status code
-// @todo add error handling for TCP_SEND
-static void http_err(struct http_t* http, const char* status) {
-	TCP_SEND(http->pcb, "HTTP/1.1 ");
-	TCP_SEND(http->pcb, status);
-	TCP_SEND(http->pcb, "\r\nContent-Type: text/plain\r\n\r\n");
-	TCP_SEND(http->pcb, status);
-	http_output(http);
-}
-
-// Responds with and logs error when parsing HTTP POST body
-// @todo add error handling for TCP_SEND
-static void http_post_err(struct http_t* http, const char* msg) {
-	TCP_SEND(http->pcb, "HTTP/1.1 400 Bad Request\r\nContent-Type: text/plain\r\n\r\n");
-	TCP_SEND(http->pcb, msg);
-	http_output(http);
-	DEBUG_HTTP_PRINTF("%s for %p\n", msg, (void*)http->pcb);
-}
 
 
 
@@ -181,19 +153,11 @@ static bool http_post_key_incomplete(struct http_t* http) {
 
 
 
-static err_t http_recv_reboot_callback(void* arg, struct tcp_pcb* pcb, struct pbuf* p, err_t err);
-
 // Sends response HTTP if entire POST body is parsed
 static bool http_post_completed(struct http_t* http) {
 	if (http->remainingBodyLen > 0) return false;
-
-	// Writes cache to flash and reboots when close is acknowledged
-	tcp_recv(http->pcb, http_recv_reboot_callback);
-
-	// Sends HTTP response to client
-	// @todo make better response
-	TCP_SEND(http->pcb, "HTTP/1.1 200 OK\r\n\r\nsuccess");
-	http_output(http);
+	http->responseState = HTTP_RESPONSE_STATE_POST_ROOT;
+	http_respond(http);
 	return true;
 }
 
@@ -413,10 +377,16 @@ static inline void http_parse(struct http_t* http, struct pbuf* p) {
 			}
 			DEBUG_HTTP_PRINTF("Got a GET request from %p\n", (void*)http->pcb);
 		}
-		// Reject all get requests until a proper HTML tramsmission is implemented
-		case HTTP_STATE_GET_404: {
-			http_err(http, "404 Not Found");
-			DEBUG_HTTP_PRINTF("Invalid GET URI from %p\n", (void*)http->pcb);
+		// Responds with root HTML to all HTTP GET requests
+		case HTTP_STATE_GET_ROOT: {
+			if (!flash_cache_read(&(http->cache))) {
+				http_err(http, "500 Internal Server Error");
+				return;
+			}
+			http->responseState = HTTP_RESPONSE_STATE_ROOT;
+			http->state = HTTP_STATE_DONE;
+			http_respond(http);
+			DEBUG_HTTP_PRINTF("Responding to unspecified GET request from %p\n", (void*)http->pcb);
 			return;
 		}
 
@@ -723,35 +693,16 @@ static inline err_t http_close(struct tcp_pcb* pcb) {
 	return err;
 }
 
-// Writes cache to flash and reboots
-static err_t http_recv_reboot_callback(void* arg, struct tcp_pcb* pcb, struct pbuf* p, err_t err) {
-	if (p != NULL) {
-		if (err == ERR_OK || err == ERR_MEM) pbuf_free(p);
-		return err;
-	}
-	if (err != ERR_OK) {
-		return err;
-	}
-
-	struct http_t* http = (struct http_t*)arg;
-	DEBUG_HTTP_PRINTF("Closed client %p\n", (void*)pcb);
-	err_t ret = http_close(pcb);
-	tcp_err(pcb, NULL);
-	flash_cache_write(&(http->cache));
-	mem_free(arg);
-	return ret;
-}
-
 // Closes HTTP connection when all response data is sent
 static err_t http_sent_callback(void* arg, struct tcp_pcb* pcb, uint16_t len) {
-	LWIP_UNUSED_ARG(arg);
 	LWIP_UNUSED_ARG(len);
 
 	DEBUG_HTTP_PRINTF("Sent %d bytes of data to client %p\n", len, (void*)pcb);
 
-	// Only closes connection when response is completely sent
-	if (tcp_sndqueuelen(pcb) != 0) return ERR_OK;
+	// Sends more unsent response data
+	if (http_respond((struct http_t*)arg)) return ERR_OK;
 
+	// Closes connection when response is completely sent
 	DEBUG_HTTP_PRINTF("Closing client %p\n", (void*)pcb);
 	tcp_poll(pcb, NULL, 0);
 	return http_close(pcb);
@@ -767,10 +718,20 @@ static err_t http_recv_callback(void* arg, struct tcp_pcb* pcb, struct pbuf* p, 
 	// Closes the TCP connection on client request
 	if (p == NULL) {
 		DEBUG_HTTP_PRINTF("Closed client %p\n", (void*)pcb);
+
+		// Closes client connection
 		err_t ret = http_close(pcb);
 		if (ret != ERR_OK) return ret;
 		tcp_err(pcb, NULL);
-		mem_free(arg);
+
+		// Writes cached configuration to flash and reboots on complete HTTP POST
+		struct http_t* http = (struct http_t*)arg;
+		if (http->responseState == HTTP_RESPONSE_STATE_POST_ROOT_COMPLETE) {
+			flash_cache_write(&(http->cache));
+		}
+
+		mem_free(http);
+
 		return ERR_OK;
 	}
 
@@ -791,7 +752,7 @@ static void http_err_callback(void* arg, err_t err) {
 
 // Closes TCP connection after timeout
 static err_t http_drop_callback(void* arg, struct tcp_pcb* pcb) {
-	LWIP_UNUSED_ARG(arg);
+	if (http_respond((struct http_t*)arg)) return ERR_OK;
 	DEBUG_HTTP_PRINTF("Dropping client %p due to inactivity\n", (void*)pcb);
 	tcp_poll(pcb, NULL, 0);
 	return http_close(pcb);
@@ -819,7 +780,7 @@ static err_t http_accept_callback(void* arg, struct tcp_pcb* newpcb, err_t err) 
 	}
 	tcp_arg(newpcb, http);
 	http->offset = 0;
-	http->state = 0;
+	http->state = (enum http_state)0;
 	http->pcb = newpcb;
 	http->cmp = NULL;
 

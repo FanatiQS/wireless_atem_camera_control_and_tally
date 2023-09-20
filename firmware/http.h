@@ -14,7 +14,7 @@
 // States for the streaming HTTP state machine parser
 enum http_state {
 	HTTP_STATE_METHOD_GET,
-	HTTP_STATE_GET_404,
+	HTTP_STATE_GET_ROOT,
 	HTTP_STATE_METHOD_POST,
 	HTTP_STATE_POST_ROOT_HEADER_NEXT,
 	HTTP_STATE_POST_ROOT_HEADER_CONTENT_LENGTH_MISSING,
@@ -53,11 +53,18 @@ struct http_t {
 	uint16_t index;
 	uint16_t offset;
 	union {
-		const char* cmp;
-		int hex;
+		const char* cmp; // Uses by http_cmp_* functions
+		int hex; // Used by http_post_value_string and setup in http_post_key_string
+		int responseState; // Used by http_respond
 	};
 	int32_t remainingBodyLen;
-	struct cache_t cache;
+	union {
+		struct cache_t cache;
+		struct {
+			const char* errCode;
+			const char* errBody;
+		};
+	};
 	enum http_state state;
 };
 
