@@ -84,6 +84,7 @@ cat >> $outfile << EOF
 			highest: arr[arr.length - 1],
 			lowest: arr[0],
 			"99th": getPercentile(99),
+			"95th": getPercentile(95),
 			"90th": getPercentile(90),
 			"80th": getPercentile(80),
 			"70th": getPercentile(70)
