@@ -23,6 +23,9 @@
 * Checks libraries/sdk versions at compile-time with user_config macro to disable strict version checking (VERSIONS_ANY = 1).
 * Default configuration for DEBUG_CC is now to be disabled for performance issues.
 * Does not disable wlan station when connecting to wlan softap if station has a working connection.
+* Added pattern checking for ip address input.
+* Added HTTP GET handling for non-arduino http server.
+* Default HTTP server is now the custom implementation and the old arduino one can be found on port 81.
 
 ### Source API
 * Now only updates property `readLen` when it is allowed to be used.
@@ -31,6 +34,7 @@
 * Deprecated unused and broken `atem_tally_translate` function.
 * Predefined ATEM command names is now in an enum instead of being macros.
 * Replaced `atem_cc_dest` function with `atem_cc_updated` to do similar thing.
+* Atem struct changed `dest` parameter to a uint8_t type to match other code.
 
 ### Test Suite
 * Added tests for firmware HTTP parser.
