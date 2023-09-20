@@ -350,7 +350,7 @@ static inline void http_parse(struct http_t* http, struct pbuf* p) {
 	http->p = p;
 	http->index = 0;
 
-#ifdef DEBUG_HTTP
+#if DEBUG_HTTP
 	DEBUG_HTTP_PRINTF("Received data from client %p:\n", (void*)http->pcb);
 	DEBUG_PRINTF("========START========\n");
 	while (true) {

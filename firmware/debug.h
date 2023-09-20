@@ -45,7 +45,7 @@
 	)
 
 // Only prints HTTP debug info when it is enabled in user_config.h
-#ifdef DEBUG_HTTP
+#if DEBUG_HTTP
 #define DEBUG_HTTP_PRINTF(...) DEBUG_PRINTF("[ HTTP ] " __VA_ARGS__)
 #else // DEBUG_HTTP
 #define DEBUG_HTTP_PRINTF(...)
