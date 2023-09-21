@@ -31,7 +31,7 @@ bool flash_config_read(struct config_t* conf) {
 // Writes configuration to persistent storage
 static inline bool flash_config_write(struct config_t* conf) {
 #ifdef ESP8266
-	if (spi_flash_erase_sector(CONFIG_START / SPI_FLASH_SEC_SIZE)) {
+	if (spi_flash_erase_sector((uint16_t)(CONFIG_START / SPI_FLASH_SEC_SIZE))) {
 		DEBUG_PRINTF("Failed to erase flash sector\n");
 		return false;
 	}
