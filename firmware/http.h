@@ -71,6 +71,6 @@ struct http_t {
 
 
 // Initializes HTTP configuration server
-bool http_init(void);
+struct tcp_pcb* http_init(void);
 
 #endif // HTTP_H

@@ -789,12 +789,12 @@ static err_t http_accept_callback(void* arg, struct tcp_pcb* newpcb, err_t err) 
 }
 
 // Initializes HTTP configuration server
-bool http_init(void) {
+struct tcp_pcb* http_init(void) {
 	// Creates protocol control buffer for HTTP servers TCP listener
 	struct tcp_pcb* pcb = tcp_new();
 	if (pcb == NULL) {
 		DEBUG_PRINTF("Failed to create HTTP pcb\n");
-		return false;
+		return NULL;
 	}
 
 	// Binds TCP listener to allow traffic from any address to a specified port
@@ -802,7 +802,7 @@ bool http_init(void) {
 	if (err != ERR_OK) {
 		DEBUG_PRINTF("Failed to bind HTTP listen pcb: %d\n", (int)err);
 		tcp_close(pcb);
-		return false;
+		return NULL;
 	}
 
 	// Allows TCP listener to listen for incomming traffic
@@ -810,11 +810,11 @@ bool http_init(void) {
 	if (listenPcb == NULL) {
 		DEBUG_PRINTF("Failed to set up HTTP listening pcb\n");
 		tcp_close(pcb);
-		return false;
+		return NULL;
 	}
 
 	// Sets callback for handling connected clients after TCP handshake
 	tcp_accept(listenPcb, http_accept_callback);
 
-	return true;
+	return listenPcb;
 }
