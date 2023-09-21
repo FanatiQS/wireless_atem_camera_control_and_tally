@@ -15,6 +15,7 @@ enum http_response_state {
 
 bool http_respond(struct http_t* http);
 void http_err(struct http_t* http, const char* status);
+bool http_post_completed(struct http_t* http);
 void http_post_err(struct http_t* http, const char* msg);
 
 #endif // HTTP_RESPONDER_H

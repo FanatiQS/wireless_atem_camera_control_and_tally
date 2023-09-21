@@ -223,9 +223,19 @@ bool http_respond(struct http_t* http) {
 	return true;
 }
 
+// Sends response HTTP if entire POST body is parsed
+bool http_post_completed(struct http_t* http) {
+	if (http->remainingBodyLen > 0) return false;
+	http->responseState = HTTP_RESPONSE_STATE_POST_ROOT;
+	http->offset = 0;
+	http_respond(http);
+	return true;
+}
+
 // Responds with specified HTTP error code
 void http_err(struct http_t* http, const char* code) {
 	http->responseState = HTTP_RESPONSE_STATE_ERR;
+	http->offset = 0;
 	http->errCode = code;
 	http->errBody = code;
 	http_respond(http);
@@ -234,6 +244,7 @@ void http_err(struct http_t* http, const char* code) {
 // Responds with HTTP 400 code and custom message
 void http_post_err(struct http_t* http, const char* msg) {
 	http->responseState = HTTP_RESPONSE_STATE_ERR;
+	http->offset = 0;
 	http->errCode = "400 Bad Request";
 	http->errBody = msg;
 	http_respond(http);

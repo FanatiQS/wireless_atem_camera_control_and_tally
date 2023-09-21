@@ -16,7 +16,7 @@
 #include "./debug.h" // DEBUG_PRINTF, DEBUG_HTTP_PRINTF
 #include "./flash.h" // CACHE_SSID, CACHE_PSK, CACHE_NAME, flash_cache_write, flash_cache_read
 #include "./http.h" // enum http_state, struct http_t, http_init
-#include "./http_respond.h" // http_respond, http_err, http_post_err, enum http_response_state
+#include "./http_respond.h" // http_respond, http_err, http_post_err, enum http_response_state, http_post_completed
 
 // Default port for unencrypted HTTP traffic
 #define HTTP_PORT 80
@@ -138,7 +138,7 @@ static bool http_post_key(struct http_t* http, const char* key) {
 	return true;
 }
 
-// Comares HTTP stream against POST body key leading to a string value
+// Compares HTTP stream against POST body key leading to a string value
 static bool http_post_key_string(struct http_t* http, const char* key) {
 	if (!http_post_key(http, key)) return false;
 	http->hex = HEX_IDLE;
@@ -149,16 +149,6 @@ static bool http_post_key_string(struct http_t* http, const char* key) {
 static bool http_post_key_incomplete(struct http_t* http) {
 	if (!http_cmp_incomplete(http)) return false;
 	return (http->remainingBodyLen > http->offset);
-}
-
-
-
-// Sends response HTTP if entire POST body is parsed
-static bool http_post_completed(struct http_t* http) {
-	if (http->remainingBodyLen > 0) return false;
-	http->responseState = HTTP_RESPONSE_STATE_POST_ROOT;
-	http_respond(http);
-	return true;
 }
 
 
