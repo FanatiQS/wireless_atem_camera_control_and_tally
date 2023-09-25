@@ -692,10 +692,13 @@ static err_t http_sent_callback(void* arg, struct tcp_pcb* pcb, uint16_t len) {
 	// Sends more unsent response data
 	if (http_respond((struct http_t*)arg)) return ERR_OK;
 
-	// Closes connection when response is completely sent
 	DEBUG_HTTP_PRINTF("Closing client %p\n", (void*)pcb);
+
+	// Closes connection when response is completely sent
+	err_t err = http_close(pcb);
+	if (err != ERR_OK) return err;
 	tcp_poll(pcb, NULL, 0);
-	return http_close(pcb);
+	return ERR_OK;
 }
 
 // Processes the received TCP packet data
@@ -743,9 +746,13 @@ static void http_err_callback(void* arg, err_t err) {
 // Closes TCP connection after timeout
 static err_t http_drop_callback(void* arg, struct tcp_pcb* pcb) {
 	if (http_respond((struct http_t*)arg)) return ERR_OK;
+
 	DEBUG_HTTP_PRINTF("Dropping client %p due to inactivity\n", (void*)pcb);
+
+	err_t err = http_close(pcb);
+	if (err != ERR_OK) return err;
 	tcp_poll(pcb, NULL, 0);
-	return http_close(pcb);
+	return ERR_OK;
 }
 
 // Accepts TCP connection for HTTP configuration server
