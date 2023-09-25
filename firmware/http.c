@@ -767,7 +767,7 @@ static err_t http_accept_callback(void* arg, struct tcp_pcb* newpcb, err_t err) 
 	// Creates context to use when parsing HTTP data stream
 	struct http_t* http = (struct http_t*)mem_malloc(sizeof(struct http_t));
 	if (http == NULL) {
-		DEBUG_PRINTF("Failed to allocate http struct new client\n");
+		DEBUG_PRINTF("Failed to allocate HTTP struct for new client\n");
 		return ERR_MEM;
 	}
 	tcp_arg(newpcb, http);
