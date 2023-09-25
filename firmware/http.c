@@ -754,18 +754,13 @@ static err_t http_accept_callback(void* arg, struct tcp_pcb* newpcb, err_t err) 
 
 	if (err != ERR_OK) {
 		DEBUG_PRINTF("HTTP server received accept error: %d\n", (int)err);
-		return ERR_VAL;
-	}
-	if (newpcb == NULL) {
-		DEBUG_PRINTF("HTTP server received undefined pcb\n");
-		return ERR_VAL;
+		return err;
 	}
 
 	// Creates context to use when parsing HTTP data stream
 	struct http_t* http = (struct http_t*)mem_malloc(sizeof(struct http_t));
 	if (http == NULL) {
 		DEBUG_PRINTF("Failed to allocate http struct new client\n");
-		tcp_abort(newpcb);
 		return ERR_MEM;
 	}
 	tcp_arg(newpcb, http);
@@ -797,7 +792,7 @@ struct tcp_pcb* http_init(void) {
 		return NULL;
 	}
 
-	// Binds TCP listener to allow traffic from any address to a specified port
+	// Binds TCP listener to allow traffic from any address to default HTTP port
 	err_t err = tcp_bind(pcb, IP_ADDR_ANY, HTTP_PORT);
 	if (err != ERR_OK) {
 		DEBUG_PRINTF("Failed to bind HTTP listen pcb: %d\n", (int)err);
