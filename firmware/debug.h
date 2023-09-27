@@ -6,6 +6,8 @@
 
 #include "./user_config.h" // DEBUG, DEBUG_TALLY, DEBUG_CC, DEBUG_ATEM, DEBUG_HTTP
 
+
+
 // Throws compilation error if specific debugging is enabled without general debugging being enabled
 #if !DEBUG
 #if DEBUG_TALLY
@@ -21,6 +23,8 @@
 #error Enabling HTTP debugging requires general debugging to be enabled
 #endif // DEBUG_HTTP
 #endif // !DEBUG
+
+
 
 // Only prints debug info when it is enabled in user_config.h
 #if !DEBUG
@@ -44,12 +48,19 @@
 		IP_VALUE(gw)\
 	)
 
+
+
+// Prints error messages with prefix
+#define DEBUG_ERR_PRINTF(...) DEBUG_PRINTF("[ ERR ] " __VA_ARGS__)
+
 // Only prints HTTP debug info when it is enabled in user_config.h
 #if DEBUG_HTTP
 #define DEBUG_HTTP_PRINTF(...) DEBUG_PRINTF("[ HTTP ] " __VA_ARGS__)
 #else // DEBUG_HTTP
 #define DEBUG_HTTP_PRINTF(...)
 #endif // DEBUG_HTTP
+
+
 
 // Wraps argument into a string
 #define WRAP_INNER(arg) #arg

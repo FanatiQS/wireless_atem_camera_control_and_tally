@@ -73,7 +73,7 @@ bool sdi_init(uint8_t dest) {
 	// Awaits SDI shields FPGA booting up
 	while (!sdi_connect()) {
 		if (sys_now() > SDI_INIT_TIMEOUT) {
-			DEBUG_PRINTF("Failed to connect to SDI shield\n");
+			DEBUG_ERR_PRINTF("Failed to connect to SDI shield\n");
 			return false;
 		}
 	}

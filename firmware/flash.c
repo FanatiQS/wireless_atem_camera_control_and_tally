@@ -21,7 +21,7 @@
 bool flash_config_read(struct config_t* conf) {
 #ifdef ESP8266
 	if (spi_flash_read(CONFIG_START, (uint32_t*)conf, sizeof(*conf)) != SPI_FLASH_RESULT_OK) {
-		DEBUG_PRINTF("Failed to read device configuration\n");
+		DEBUG_ERR_PRINTF("Failed to read device configuration\n");
 		return false;
 	}
 	return true;
@@ -32,11 +32,11 @@ bool flash_config_read(struct config_t* conf) {
 static inline bool flash_config_write(struct config_t* conf) {
 #ifdef ESP8266
 	if (spi_flash_erase_sector((uint16_t)(CONFIG_START / SPI_FLASH_SEC_SIZE))) {
-		DEBUG_PRINTF("Failed to erase flash sector\n");
+		DEBUG_ERR_PRINTF("Failed to erase flash sector\n");
 		return false;
 	}
 	if (spi_flash_write(CONFIG_START, (uint32_t*)conf, sizeof(*conf)) != SPI_FLASH_RESULT_OK) {
-		DEBUG_PRINTF("Failed to write config data\n");
+		DEBUG_ERR_PRINTF("Failed to write config data\n");
 		return false;
 	}
 	return true;
@@ -49,11 +49,11 @@ static inline bool flash_config_write(struct config_t* conf) {
 bool flash_cache_read(struct cache_t* cache) {
 #ifdef ESP8266
 	if (!wifi_station_get_config(&(cache->wlan_station))) {
-		DEBUG_PRINTF("Failed to read station config\n");
+		DEBUG_ERR_PRINTF("Failed to read station config\n");
 		return false;
 	}
 	if (!wifi_softap_get_config(&(cache->wlan_softap))) {
-		DEBUG_PRINTF("Failed to read softap config\n");
+		DEBUG_ERR_PRINTF("Failed to read softap config\n");
 		return false;
 	}
 #endif // ESP8266
@@ -64,12 +64,12 @@ bool flash_cache_read(struct cache_t* cache) {
 void flash_cache_write(struct cache_t* cache) {
 #ifdef ESP8266
 	if (!wifi_station_set_config(&cache->wlan_station)) {
-		DEBUG_PRINTF("Failed to write station config\n");
+		DEBUG_ERR_PRINTF("Failed to write station config\n");
 		return;
 	}
 	cache->wlan_softap.ssid_len = 0;
 	if (!wifi_softap_set_config(&cache->wlan_softap)) {
-		DEBUG_PRINTF("Failed to write softap config\n");
+		DEBUG_ERR_PRINTF("Failed to write softap config\n");
 		return;
 	}
 #endif // ESP8266

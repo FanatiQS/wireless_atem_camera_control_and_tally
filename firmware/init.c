@@ -38,7 +38,7 @@ static void network_callback(System_Event_t* event) {
 			if (wifi_station_get_connect_status() == STATION_GOT_IP) break;
 			DEBUG_PRINTF("Disabled wifi station\n");
 			if (!wifi_station_disconnect()) {
-				DEBUG_PRINTF("Failed to disable wifi station\n");
+				DEBUG_ERR_PRINTF("Failed to disable wifi station\n");
 				break;
 			}
 			break;
@@ -49,7 +49,7 @@ static void network_callback(System_Event_t* event) {
 			if (wifi_station_get_connect_status() == STATION_GOT_IP) break;
 			DEBUG_PRINTF("Enabled wifi station\n");
 			if (!wifi_station_connect()) {
-				DEBUG_PRINTF("Failed to enable wifi station\n");
+				DEBUG_ERR_PRINTF("Failed to enable wifi station\n");
 				break;
 			}
 			break;
@@ -167,7 +167,7 @@ static void _waccat_init(void) {
 #ifdef ESP8266
 	// Enables both station mode and ap mode without writing to flash
 	if (!wifi_set_opmode_current(STATIONAP_MODE)) {
-		DEBUG_PRINTF("Failed to set wifi opmode\n");
+		DEBUG_ERR_PRINTF("Failed to set wifi opmode\n");
 		return;
 	}
 #endif // ESP8266
@@ -191,7 +191,7 @@ static void _waccat_init(void) {
 	// Gets WiFi softap SSID and PSK for debug printing and hostname
 	struct softap_config softapConfig;
 	if (!wifi_softap_get_config(&softapConfig)) {
-		DEBUG_PRINTF("Failed to read soft ap configuration\n");
+		DEBUG_ERR_PRINTF("Failed to read soft ap configuration\n");
 		return;
 	}
 
@@ -209,13 +209,13 @@ static void _waccat_init(void) {
 	hostname[sizeof(softapConfig.ssid)] = '\0';
 	strncpy(hostname, (char*)softapConfig.ssid, sizeof(softapConfig.ssid));
 	if (!wifi_station_set_hostname(hostname)) {
-		DEBUG_PRINTF("Failed to set hostname\n");
+		DEBUG_ERR_PRINTF("Failed to set hostname\n");
 		return;
 	}
 
 	// Sets WiFi to automatically reconnect when connection is lost
 	if (!wifi_station_set_reconnect_policy(true)) {
-		DEBUG_PRINTF("Failed to set reconnect policy\n");
+		DEBUG_ERR_PRINTF("Failed to set reconnect policy\n");
 		return;
 	}
 
@@ -223,7 +223,7 @@ static void _waccat_init(void) {
 	// Gets WiFi station SSID and PSK for debug printing
 	struct station_config stationConfig;
 	if (!wifi_station_get_config(&stationConfig)) {
-		DEBUG_PRINTF("Failed to get Station configuration\n");
+		DEBUG_ERR_PRINTF("Failed to get Station configuration\n");
 		return;
 	}
 	DEBUG_PRINTF(
@@ -239,7 +239,7 @@ static void _waccat_init(void) {
 
 	// Starts connecting to WiFi station
 	if (!wifi_station_connect()) {
-		DEBUG_PRINTF("Failed to start wifi connection\n");
+		DEBUG_ERR_PRINTF("Failed to start wifi connection\n");
 		return;
 	}
 #endif // ESP8266
@@ -256,11 +256,11 @@ static void _waccat_init(void) {
 			.gw.addr = conf.gateway
 		};
 		if (!wifi_station_dhcpc_stop()) {
-			DEBUG_PRINTF("Failed to stop DHCP client\n");
+			DEBUG_ERR_PRINTF("Failed to stop DHCP client\n");
 			return;
 		}
 		if (!wifi_set_ip_info(STATION_IF, &ipInfo)) {
-			DEBUG_PRINTF("Failed to set static ip\n");
+			DEBUG_ERR_PRINTF("Failed to set static ip\n");
 			return;
 		}
 #endif // ESP8266

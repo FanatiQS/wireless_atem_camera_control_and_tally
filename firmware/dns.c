@@ -180,7 +180,7 @@ struct udp_pcb* captive_portal_init(void) {
 	// Creates protocol control buffer for captive portal DNS server
 	struct udp_pcb* pcb = udp_new();
 	if (pcb == NULL) {
-		DEBUG_PRINTF("Failed to create captive portal dns pcb\n");
+		DEBUG_ERR_PRINTF("Failed to create captive portal dns pcb\n");
 		return NULL;
 	}
 
@@ -190,7 +190,7 @@ struct udp_pcb* captive_portal_init(void) {
 	// Binds captive portal DNS pcb to any IP address on default DNS port
 	err_t err = udp_bind(pcb, IP_ADDR_ANY, DNS_PORT);
 	if (err != ERR_OK) {
-		DEBUG_PRINTF("Failed to bind captive portal DNS to its port: %d\n", (int)err);
+		DEBUG_ERR_PRINTF("Failed to bind captive portal DNS to its port: %d\n", (int)err);
 		udp_remove(pcb);
 		return NULL;
 	}

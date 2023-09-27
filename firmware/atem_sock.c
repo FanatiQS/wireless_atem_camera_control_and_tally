@@ -79,7 +79,7 @@ static void atem_send(struct udp_pcb* pcb) {
 	// Creates pbuf container for ATEM data without copying
 	struct pbuf* p = pbuf_alloc_reference(atem.writeBuf, atem.writeLen, PBUF_REF);
 	if (p == NULL) {
-		DEBUG_PRINTF("Failed to alloc pbuf for ATEM\n");
+		DEBUG_ERR_PRINTF("Failed to alloc pbuf for ATEM\n");
 		return;
 	}
 
@@ -91,7 +91,7 @@ static void atem_send(struct udp_pcb* pcb) {
 	if (err == ERR_OK) return;
 
 	// Unsuccessfully returns
-	DEBUG_PRINTF("Failed to send pbuf to ATEM: %d\n", (int)err);
+	DEBUG_ERR_PRINTF("Failed to send pbuf to ATEM: %d\n", (int)err);
 }
 
 // Processes received ATEM packet
@@ -150,7 +150,7 @@ static inline void atem_process(struct udp_pcb* pcb) {
 			atem_state = atem_state_connected;
 #ifdef ESP8266
 			if (!wifi_set_opmode_current(STATION_MODE)) {
-				DEBUG_PRINTF("Failed to disable soft AP\n");
+				DEBUG_ERR_PRINTF("Failed to disable soft AP\n");
 			}
 #endif // ESP8266
 			break;
@@ -237,7 +237,7 @@ static void atem_recv_callback(void* arg, struct udp_pcb* pcb, struct pbuf* p, c
 
 	// Copies contents of pbuf to atem structs processing buffer
 	if (!pbuf_copy_partial(p, atem.readBuf, sizeof(atem.readBuf), 0)) {
-		DEBUG_PRINTF("Failed to copy ATEM packet\n");
+		DEBUG_ERR_PRINTF("Failed to copy ATEM packet\n");
 		pbuf_free(p);
 		return;
 	}
@@ -285,7 +285,7 @@ struct udp_pcb* atem_init(uint32_t addr, uint8_t dest) {
 	// Creates pcb (protocol control buffer) for UDP connection
 	struct udp_pcb* pcb = udp_new();
 	if (pcb == NULL) {
-		DEBUG_PRINTF("Failed to create ATEM UDP pcb\n");
+		DEBUG_ERR_PRINTF("Failed to create ATEM UDP pcb\n");
 		return NULL;
 	}
 
@@ -296,7 +296,7 @@ struct udp_pcb* atem_init(uint32_t addr, uint8_t dest) {
 	DEBUG_PRINTF("Connecting to ATEM at: " IP_FMT "\n", IP_VALUE(addr));
 	err_t err = udp_connect(pcb, &(const ip_addr_t)IPADDR4_INIT(addr), ATEM_PORT);
 	if (err != ERR_OK) {
-		DEBUG_PRINTF("Failed to connect to ATEM UDP IP: %d\n", (int)err);
+		DEBUG_ERR_PRINTF("Failed to connect to ATEM UDP IP: %d\n", (int)err);
 		udp_remove(pcb);
 		return NULL;
 	}

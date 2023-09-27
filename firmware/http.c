@@ -679,7 +679,7 @@ static inline void http_parse(struct http_t* http, struct pbuf* p) {
 static inline err_t http_close(struct tcp_pcb* pcb) {
 	err_t err = tcp_close(pcb);
 	if (err == ERR_OK) return ERR_OK;
-	DEBUG_PRINTF("Failed to close HTTP TCP pcb %p: %d", (void*)pcb, (int)err);
+	DEBUG_ERR_PRINTF("Failed to close HTTP TCP pcb %p: %d", (void*)pcb, (int)err);
 	return err;
 }
 
@@ -739,7 +739,7 @@ static err_t http_recv_callback(void* arg, struct tcp_pcb* pcb, struct pbuf* p, 
 // Frees argument memory on TCP socket error
 static void http_err_callback(void* arg, err_t err) {
 	LWIP_UNUSED_ARG(err);
-	DEBUG_PRINTF("HTTP client %p got an error: %d\n", (void*)((struct http_t*)arg)->pcb, (int)err);
+	DEBUG_ERR_PRINTF("HTTP client %p got an error: %d\n", (void*)((struct http_t*)arg)->pcb, (int)err);
 	mem_free(arg);
 }
 
@@ -760,14 +760,14 @@ static err_t http_accept_callback(void* arg, struct tcp_pcb* newpcb, err_t err) 
 	LWIP_UNUSED_ARG(arg);
 
 	if (err != ERR_OK) {
-		DEBUG_PRINTF("HTTP server received accept error: %d\n", (int)err);
+		DEBUG_ERR_PRINTF("HTTP server received accept error: %d\n", (int)err);
 		return err;
 	}
 
 	// Creates context to use when parsing HTTP data stream
 	struct http_t* http = (struct http_t*)mem_malloc(sizeof(struct http_t));
 	if (http == NULL) {
-		DEBUG_PRINTF("Failed to allocate HTTP struct for new client\n");
+		DEBUG_ERR_PRINTF("Failed to allocate HTTP struct for new client\n");
 		return ERR_MEM;
 	}
 	tcp_arg(newpcb, http);
@@ -795,14 +795,14 @@ struct tcp_pcb* http_init(void) {
 	// Creates protocol control buffer for HTTP servers TCP listener
 	struct tcp_pcb* pcb = tcp_new();
 	if (pcb == NULL) {
-		DEBUG_PRINTF("Failed to create HTTP pcb\n");
+		DEBUG_ERR_PRINTF("Failed to create HTTP pcb\n");
 		return NULL;
 	}
 
 	// Binds TCP listener to allow traffic from any address to default HTTP port
 	err_t err = tcp_bind(pcb, IP_ADDR_ANY, HTTP_PORT);
 	if (err != ERR_OK) {
-		DEBUG_PRINTF("Failed to bind HTTP listen pcb: %d\n", (int)err);
+		DEBUG_ERR_PRINTF("Failed to bind HTTP listen pcb: %d\n", (int)err);
 		tcp_close(pcb);
 		return NULL;
 	}
@@ -810,7 +810,7 @@ struct tcp_pcb* http_init(void) {
 	// Allows TCP listener to listen for incomming traffic
 	struct tcp_pcb* listenPcb = tcp_listen(pcb);
 	if (listenPcb == NULL) {
-		DEBUG_PRINTF("Failed to set up HTTP listening pcb\n");
+		DEBUG_ERR_PRINTF("Failed to set up HTTP listening pcb\n");
 		tcp_close(pcb);
 		return NULL;
 	}
