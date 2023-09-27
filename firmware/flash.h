@@ -3,6 +3,7 @@
 #define FLASH_H
 
 #include <stdint.h> // uint8_t, uint32_t
+#include <stdbool.h> // bool
 
 #ifdef ESP8266
 #include <user_interface.h> // struct station_config, struct softap_config
