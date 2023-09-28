@@ -34,7 +34,6 @@ static void network_callback(System_Event_t* event) {
 	switch (event->event) {
 		// Disables scanning for station when connection is made to soft ap
 		case EVENT_SOFTAPMODE_STACONNECTED: {
-			if (wifi_softap_get_station_num() == 0) break;
 			if (wifi_station_get_connect_status() == STATION_GOT_IP) break;
 			DEBUG_PRINTF("Disabled wifi station\n");
 			if (!wifi_station_disconnect()) {
@@ -164,14 +163,6 @@ static void _waccat_init(void) {
 		"HTTP debug: " DEBUG_HTTP_LABEL "\n"
 	);
 
-#ifdef ESP8266
-	// Enables both station mode and ap mode without writing to flash
-	if (!wifi_set_opmode_current(STATIONAP_MODE)) {
-		DEBUG_ERR_PRINTF("Failed to set wifi opmode\n");
-		return;
-	}
-#endif // ESP8266
-
 	// Initializes the HTTP configuration server
 	if (!http_init()) {
 		return;
@@ -188,6 +179,12 @@ static void _waccat_init(void) {
 	}
 
 #ifdef ESP8266
+	// Enables both station mode and ap mode without writing to flash
+	if (!wifi_set_opmode_current(STATIONAP_MODE)) {
+		DEBUG_ERR_PRINTF("Failed to set wifi opmode\n");
+		return;
+	}
+
 	// Gets WiFi softap SSID and PSK for debug printing and hostname
 	struct softap_config softapConfig;
 	if (!wifi_softap_get_config(&softapConfig)) {
