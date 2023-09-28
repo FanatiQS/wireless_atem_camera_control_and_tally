@@ -194,11 +194,9 @@ static void _waccat_init(void) {
 
 	DEBUG_PRINTF(
 		"Soft AP SSID: \"%.*s\"\n"
-		"Soft AP PSK: \"%.*s\"\n"
-		"Soft AP Channel: %d\n",
+		"Soft AP PSK: \"%.*s\"\n",
 		softapConfig.ssid_len, softapConfig.ssid,
-		(int)sizeof(softapConfig.password), softapConfig.password,
-		softapConfig.channel
+		(int)sizeof(softapConfig.password), softapConfig.password
 	);
 
 	// Sets hostname of device
