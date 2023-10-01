@@ -678,9 +678,16 @@ static inline void http_parse(struct http_t* http, struct pbuf* p) {
 // Closes HTTP connection and prevents dispaching invalid events after close
 static inline err_t http_close(struct tcp_pcb* pcb) {
 	err_t err = tcp_close(pcb);
-	if (err == ERR_OK) return ERR_OK;
-	DEBUG_ERR_PRINTF("Failed to close HTTP TCP pcb %p: %d", (void*)pcb, (int)err);
-	return err;
+	if (err != ERR_OK) {
+		DEBUG_ERR_PRINTF("Failed to close HTTP TCP pcb %p: %d", (void*)pcb, (int)err);
+		return err;
+	}
+
+	tcp_poll(pcb, NULL, 0);
+	tcp_recv(pcb, NULL);
+	tcp_err(pcb, NULL);
+
+	return ERR_OK;
 }
 
 // Closes HTTP connection when all response data is sent
@@ -692,12 +699,12 @@ static err_t http_sent_callback(void* arg, struct tcp_pcb* pcb, uint16_t len) {
 	// Sends more unsent response data
 	if (http_respond((struct http_t*)arg)) return ERR_OK;
 
-	DEBUG_HTTP_PRINTF("Closing client %p\n", (void*)pcb);
+	DEBUG_HTTP_PRINTF("Server closed client %p\n", (void*)pcb);
 
 	// Closes connection when response is completely sent
 	err_t err = http_close(pcb);
 	if (err != ERR_OK) return err;
-	tcp_poll(pcb, NULL, 0);
+	mem_free(arg);
 	return ERR_OK;
 }
 
@@ -715,7 +722,6 @@ static err_t http_recv_callback(void* arg, struct tcp_pcb* pcb, struct pbuf* p, 
 		// Closes client connection
 		err_t ret = http_close(pcb);
 		if (ret != ERR_OK) return ret;
-		tcp_err(pcb, NULL);
 
 		// Writes cached configuration to flash and reboots on complete HTTP POST
 		struct http_t* http = (struct http_t*)arg;
@@ -751,7 +757,7 @@ static err_t http_drop_callback(void* arg, struct tcp_pcb* pcb) {
 
 	err_t err = http_close(pcb);
 	if (err != ERR_OK) return err;
-	tcp_poll(pcb, NULL, 0);
+	mem_free(arg);
 	return ERR_OK;
 }
 
