@@ -69,7 +69,7 @@ void http_socket_write(int sock, const char* buf, size_t len) {
 		perror("Failed to send data to server");
 		abort();
 	}
-	assert(sendLen == len);
+	assert(sendLen == (ssize_t)len);
 }
 
 // Sends HTTP string to server
