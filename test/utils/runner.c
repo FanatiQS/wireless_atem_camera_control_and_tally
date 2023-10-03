@@ -3,6 +3,11 @@
 
 #include "./logs.h" // print_debug
 
+#include <setjmp.h> // jmp_buf
+jmp_buf jmpBuf;
+int testsError;
+int testsAll;
+
 void _testrunner_abort(char* fileName, int lineNumber) {
 	print_debug("%s:%d\n", fileName, lineNumber);
 	exit(EXIT_FAILURE);
