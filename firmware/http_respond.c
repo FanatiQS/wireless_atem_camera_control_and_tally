@@ -121,7 +121,7 @@ bool http_respond(struct http_t* http) {
 				"</style>"
 			"<form method=post><table>"
 			"<tr><td>Request time:<td>"
-			"<script>document.scripts[0].parentElement.innerHTML=new Date().toTimeString()</script>"
+			"<script>document.scripts[0].outerHTML=new Date().toTimeString().slice(0,8)</script>"
 			"<tr><td>Time since boot:<td>"
 		)
 		HTTP_RESPONSE_CASE(http_write_uptime(http))
