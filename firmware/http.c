@@ -693,18 +693,25 @@ static inline err_t http_close(struct tcp_pcb* pcb) {
 // Closes HTTP connection when all response data is sent
 static err_t http_sent_callback(void* arg, struct tcp_pcb* pcb, uint16_t len) {
 	LWIP_UNUSED_ARG(len);
+	struct http_t* http = (struct http_t*)arg;
 
 	DEBUG_HTTP_PRINTF("Sent %d bytes of data to client %p\n", len, (void*)pcb);
 
 	// Sends more unsent response data
-	if (http_respond((struct http_t*)arg)) return ERR_OK;
+	if (http_respond(http)) return ERR_OK;
 
 	DEBUG_HTTP_PRINTF("Server closed client %p\n", (void*)pcb);
 
 	// Closes connection when response is completely sent
 	err_t err = http_close(pcb);
 	if (err != ERR_OK) return err;
-	mem_free(arg);
+
+	// Writes cached configuration to flash and reboots on complete HTTP POST
+	if (http->responseState == HTTP_RESPONSE_STATE_POST_ROOT_COMPLETE) {
+		flash_cache_write(&(http->cache));
+	}
+
+	mem_free(http);
 	return ERR_OK;
 }
 
@@ -723,13 +730,7 @@ static err_t http_recv_callback(void* arg, struct tcp_pcb* pcb, struct pbuf* p, 
 		err_t ret = http_close(pcb);
 		if (ret != ERR_OK) return ret;
 
-		// Writes cached configuration to flash and reboots on complete HTTP POST
-		struct http_t* http = (struct http_t*)arg;
-		if (http->responseState == HTTP_RESPONSE_STATE_POST_ROOT_COMPLETE) {
-			flash_cache_write(&(http->cache));
-		}
-
-		mem_free(http);
+		mem_free(arg);
 
 		return ERR_OK;
 	}
