@@ -13,6 +13,8 @@
 #define HTTP_PORT (80)
 #define BUF_LEN (1024)
 
+
+
 // Creates a client socket connected to HTTP server at address from environment variable
 int http_socket_create(void) {
 	// Gets device address from environment variable
