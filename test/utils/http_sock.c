@@ -3,7 +3,7 @@
 #include <assert.h> // assert
 #include <string.h> // strlen, memcmp
 
-#include <sys/socket.h> // socket, AF_INET, SOCK_STREAM, recv, ssize_t, connect, send
+#include <sys/socket.h> // socket, AF_INET, SOCK_STREAM, recv, ssize_t, connect, send, shutdown
 #include <netinet/in.h> // sockaddr_in
 #include <arpa/inet.h> // htons, inet_addr
 #include <unistd.h> // close
@@ -54,11 +54,6 @@ int http_socket_create(void) {
 	}
 
 	return sock;
-}
-
-// Closes HTTP client socket
-void http_socket_close(int sock) {
-	close(sock);
 }
 
 
@@ -175,4 +170,17 @@ void http_socket_recv_flush(int sock) {
 	if (http_socket_recv(sock, buf, sizeof(buf)) > 0) return;
 	fprintf(stderr, "Expected socket to contain data to flush\n\trecved: %s\n", buf);
 	abort();
+}
+
+
+
+// Closes HTTP client socket
+void http_socket_close(int sock) {
+	shutdown(sock, SHUT_WR);
+	char buf[BUF_LEN];
+	if (http_socket_recv(sock, buf, sizeof(buf)) > 0) {
+		fprintf(stderr, "Expected socket to close, but got data\n\t%s\n", buf);
+		abort();
+	}
+	close(sock);
 }

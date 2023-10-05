@@ -1,7 +1,7 @@
 #include <stdio.h> // printf
 #include <stdlib.h> // getenv, atio
 
-#include <sys/socket.h> // recv
+#include <unistd.h> // usleep
 
 #include "../utils/http_sock.h" // http_socket_create, http_socket_send, http_socket_recv_len, http_socket_close, http_socket_recv_flush
 #include "../utils/runner.h" // RUN_TEST
@@ -36,10 +36,10 @@ int main(void) {
 		}
 	);
 
-	// @todo memory leak in arduino esp8266 lwip2 or esp8266 sdk or simething else causing oom (might be in rtos sdk too?)
+	// @todo memory leak in arduino esp8266 lwip2 (not lwip1.4) causing oom (might be in rtos sdk too?)
 #if 0
 	RUN_TEST(
-		printf("Test with write after basic\n");
+		printf("Test write after invalid basic request\n");
 		for (int i = 1; i <= iters; i++) {
 			int sock = http_socket_create();
 			http_socket_send(sock, "GEF / HTTP/1.1\r\n\r\n");
@@ -51,13 +51,12 @@ int main(void) {
 	);
 #endif
 
-	// @todo unable to know if the device segfaulted or not
-#if 0
 	// Ensures there are no memory leaks
 	RUN_TEST(
 		printf("Test close socket right away\n");
 		for (int i = 1; i <= iters; i++) {
 			int sock = http_socket_create();
+			usleep(20000);
 			http_socket_close(sock);
 			if (!(i % 100)) printf("%d\n", i);
 		}
@@ -73,7 +72,6 @@ int main(void) {
 			if (!(i % 100)) printf("%d\n", i);
 		}
 	);
-#endif
 
 	return 0;
 }
