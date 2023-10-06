@@ -30,7 +30,7 @@
 #if !DEBUG
 #define DEBUG_PRINTF(...)
 #elif !defined(DEBUG_PRINTF) // DEBUG
-#define DEBUG_PRINTF(...) LWIP_PLATFORM_DIAG((__VA_ARGS__))
+#define DEBUG_PRINTF(...) printf(__VA_ARGS__)
 #endif // DEBUG
 
 // Prints integer IP address
