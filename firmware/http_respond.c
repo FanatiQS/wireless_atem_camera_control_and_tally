@@ -5,19 +5,34 @@
 #include <stddef.h> // size_t
 #include <stdbool.h> // bool, false, true
 
-#include <lwip/tcp.h> // tcp_write, TCP_WRITE_FLAG_COPY, tcp_sndbuf, tcp_output, tcp_sndqueuelen
+#include <lwip/tcp.h> // struct tcp_pcb, tcp_write, TCP_WRITE_FLAG_COPY, tcp_sndbuf, tcp_output, tcp_sndqueuelen
 #include <lwip/def.h> // LWIP_MIN
 #include <lwip/err.h> // ERR_OK
 #include <lwip/ip_addr.h> // ip_addr_t, IPADDR4_INIT, ipaddr_ntoa
+#include <lwip/err.h> // err_t
+#include <lwip/pbuf.h> // struct pbuf
 
-#include <user_interface.h> // wifi_station_get_connect_status, STATION_GOT_IP, wifi_station_get_rssi
+#ifdef ESP8266
+#include <user_interface.h> // wifi_station_get_connect_status, STATION_GOT_IP, wifi_station_get_rssi, system_restart, wifi_set_event_handler_cb
+#endif // ESP8266
 
 #include "./debug.h" // DEBUG_PRINTF, DEBUG_HTTP_PRINTF
 #include "./http.h" // struct http_t
 #include "./init.h" // FIRMWARE_VERSION_STRING
 #include "./atem_sock.h" // atem_state, atem
 #include "./http_respond.h" // http_respond, http_err, http_post_err
-#include "./flash.h" // CACHE_NAME, CACHE_SSID, CACHE_PSK, CONF_FLAG_STATICIP
+#include "./flash.h" // CACHE_NAME, CACHE_SSID, CACHE_PSK, CONF_FLAG_STATICIP, flash_cache_write
+
+
+
+// Restarts the device after client has responded to HTTP TCP close
+static err_t http_reboot_recv_callback(void* arg, struct tcp_pcb* pcb, struct pbuf* p, err_t err) {
+	DEBUG_HTTP_PRINTF("Rebooting...\n");
+#ifdef ESP8266
+	wifi_set_event_handler_cb(NULL);
+	system_restart();
+#endif // ESP8266
+}
 
 
 
@@ -60,6 +75,7 @@ static inline bool http_write_uptime(struct http_t* http) {
 
 // Writes wifi disconnected status or RSSI if connected to TCP PCB
 static inline bool http_write_wifi(struct http_t* http) {
+#ifdef ESP8266
 	// Writes status when not connected to network
 	if (wifi_station_get_connect_status() != STATION_GOT_IP) {
 		return !HTTP_SEND(http, "Not connected");
@@ -69,6 +85,7 @@ static inline bool http_write_wifi(struct http_t* http) {
 	char buf[sizeof("-128 dBm")];
 	int len = sprintf(buf, "%d dBm", wifi_station_get_rssi());
 	return tcp_write(http->pcb, buf, len, TCP_WRITE_FLAG_COPY) != ERR_OK;
+#endif // ESP8266
 }
 
 // Writes HTML input string value with unknown length up to a maximum value to TCP PCB
@@ -99,7 +116,6 @@ static inline bool http_write_value_addr(struct http_t* http, uint32_t addr) {
 bool http_respond(struct http_t* http) {
 	switch (http->responseState) {
 		// Returns false when all response data has been success transmitted
-		case HTTP_RESPONSE_STATE_POST_ROOT_COMPLETE:
 		case HTTP_RESPONSE_STATE_NONE: {
 			return tcp_sndqueuelen(http->pcb);
 		}
@@ -212,7 +228,11 @@ bool http_respond(struct http_t* http) {
 		// Writes HTTP response to successful POST
 		case HTTP_RESPONSE_STATE_POST_ROOT:
 		HTTP_RESPONSE_CASE_STR(http, "HTTP/1.1 200 OK\r\n\r\nsuccess")
-		http->responseState = HTTP_RESPONSE_STATE_POST_ROOT_COMPLETE;
+		flash_cache_write(&(http->cache));
+#ifdef ESP8266
+		tcp_recv(http->pcb, http_reboot_recv_callback);
+#endif // ESP8266
+		http->responseState = HTTP_RESPONSE_STATE_NONE;
 		break;
 	}
 

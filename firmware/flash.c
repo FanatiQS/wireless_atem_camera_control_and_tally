@@ -1,13 +1,13 @@
 #include <stdbool.h> // bool true, false
 #include <string.h> // memcmp
 
-#include "./debug.h" // DEBUG_PRINTF, DEBUG_HTTP_PRINTF
+#include "./debug.h" // DEBUG_PRINTF
 #include "./flash.h" // struct config_t, struct cache_t
 
 
 
 #ifdef ESP8266
-#include <user_interface.h> // wifi_station_get_config, wifi_softap_get_config, wifi_station_set_config, wifi_softap_set_config, system_restart, wifi_set_event_handler_cb
+#include <user_interface.h> // wifi_station_get_config, wifi_softap_get_config, wifi_station_set_config, wifi_softap_set_config
 #include <spi_flash.h> // spi_flash_erase_sector, spi_flash_write, spi_flash_read, SPI_FLASH_RESULT_OK, spi_flash_get_id, SPI_FLASH_SEC_SIZE
 
 // Sets configuration address to last memory page of flash before system data, same as arduino uses for EEPROM
@@ -80,10 +80,4 @@ void flash_cache_write(struct cache_t* cache) {
 	if (memcmp(&conf, &(cache->config), sizeof(conf))) {
 		if (!flash_config_write(&(cache->config))) return;
 	}
-
-	DEBUG_HTTP_PRINTF("Rebooting...\n");
-#ifdef ESP8266
-	wifi_set_event_handler_cb(NULL);
-	system_restart();
-#endif // ESP8266
 }
