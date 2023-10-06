@@ -1,7 +1,7 @@
 #include <stdbool.h> // bool true, false
 #include <string.h> // memcmp
 
-#include "./debug.h" // DEBUG_PRINTF
+#include "./debug.h" // DEBUG_ERR_PRINTF
 #include "./flash.h" // struct config_t, struct cache_t
 
 
