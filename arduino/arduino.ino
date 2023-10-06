@@ -196,7 +196,7 @@ void setup() {
 	ArduinoOTA.begin();
 
 	// Adds mDNS querying support
-	MDNS.begin(WiFi.softAPSSID());
+	MDNS.begin("esp8266");
 	MDNS.addService("http", "tcp", 80);
 
 	// Initializes wifi, ATEM connection, SDI shield and GPIO LEDs
