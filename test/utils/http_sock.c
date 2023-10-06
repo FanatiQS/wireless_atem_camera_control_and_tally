@@ -78,7 +78,8 @@ void http_socket_send(int sock, const char* str) {
 
 // Reads HTTP data from stream into buffer
 size_t http_socket_recv(int sock, char* buf, size_t size) {
-	ssize_t len = recv(sock, buf, size, 0);
+	assert(size >= 2);
+	ssize_t len = recv(sock, buf, size - 1, 0);
 
 	if (len == -1) {
 		perror("Failed to recv data from server");
@@ -102,7 +103,7 @@ size_t http_socket_recv_len(int sock) {
 void http_socket_recv_cmp(int sock, const char* cmpBuf) {
 	char recvBuf[BUF_LEN];
 	size_t cmpLen = strlen(cmpBuf);
-	size_t recvLen = http_socket_recv(sock, recvBuf, cmpLen);
+	size_t recvLen = http_socket_recv(sock, recvBuf, cmpLen + 1);
 
 	if (recvLen != cmpLen) {
 		fprintf(stderr, "Received data does not have the same length: %zu %zu\n", recvLen, cmpLen);
