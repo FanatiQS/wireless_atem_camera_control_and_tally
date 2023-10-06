@@ -29,7 +29,7 @@
 * Function `http_init` now returns the http server pcb.
 * Error debug messages now has as an `[ ERR ]` prefix.
 * No longer prints wlan channel at boot.
-* HTML uptime now uses 24h clock.
+* HTML request time now uses 24h clock.
 
 ### Source API
 * Now only updates property `readLen` when it is allowed to be used.
