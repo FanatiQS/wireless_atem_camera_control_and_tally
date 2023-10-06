@@ -193,6 +193,7 @@ void setup() {
 	confServer.begin();
 
 	// Sets up OTA update server
+	while (WiFi.waitForConnectResult() != WL_CONNECTED) yield();
 	ArduinoOTA.begin();
 
 	// Adds mDNS querying support
