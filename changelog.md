@@ -26,6 +26,10 @@
 * Added pattern checking for ip address input.
 * Added HTTP GET handling for non-arduino http server.
 * Default HTTP server is now the custom implementation and the old arduino one can be found on port 81.
+* Function `http_init` now returns the http server pcb.
+* Error debug messages now has as an `[ ERR ]` prefix.
+* No longer prints wlan channel at boot.
+* HTML uptime now uses 24h clock.
 
 ### Source API
 * Now only updates property `readLen` when it is allowed to be used.
