@@ -16,7 +16,6 @@ void test_code(const char* req, int code) {
 	http_socket_recv_cmp_status_line(sock, code);
 	while (http_socket_recv_len(sock));
 	http_socket_close(sock);
-	// printf("Test for %d success\n", code);
 }
 
 // Sends HTTP request in two segments expecting specified response code
@@ -27,7 +26,6 @@ void test_code_segment(const char* req1, const char* req2, int code) {
 	http_socket_recv_cmp_status_line(sock, code);
 	while (http_socket_recv_len(sock));
 	http_socket_close(sock);
-	// printf("Test for %d (segmented) success\n", code);
 }
 
 // Sends HTTP request in to segments expecting specified response code and closed by server before send complete
@@ -45,7 +43,6 @@ void test_code_segment_reset(const char* req1, const char* req2, int code) {
 	assert(errno == ECONNRESET);
 
 	http_socket_close(sock);
-	// printf("Test for %d (segmented, resettable) success\n", code);
 }
 
 // Sends HTTP request expecting timeout
@@ -53,7 +50,6 @@ void test_timeout(const char* req) {
 	int sock = http_socket_create();
 	http_socket_send(sock, req);
 	http_socket_recv_close(sock);
-	// printf("Test timed out as expected\n");
 }
 
 
