@@ -5,7 +5,6 @@
 #include <stddef.h> // size_t
 
 int http_socket_create(void);
-void http_socket_close(int sock);
 
 void http_socket_write(int sock, const char* buf, size_t len);
 void http_socket_send(int sock, const char* str);
@@ -22,5 +21,8 @@ void http_socket_recvprint(int sock);
 
 void http_socket_recv_close(int sock);
 void http_socket_recv_flush(int sock);
+void http_socket_recv_error(int sock);
+
+void http_socket_close(int sock);
 
 #endif // HTTP_SOCK_H

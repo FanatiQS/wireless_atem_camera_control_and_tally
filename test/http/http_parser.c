@@ -38,14 +38,10 @@ void test_code_segment_reset(const char* req1, const char* req2, int code) {
 
 	// Flushes data in stream
 	http_socket_recv_cmp_status_line(sock, code);
-	char buf[1024];
-	ssize_t recvLen;
-	do {
-		recvLen = recv(sock, buf, sizeof(buf), 0);
-	} while (recvLen > 0);
 
 	// Expecting last packet to be peer closed error
-	assert(recvLen == -1);
+	http_socket_recv_flush(sock);
+	http_socket_recv_error(sock);
 	assert(errno == ECONNRESET);
 
 	http_socket_close(sock);
