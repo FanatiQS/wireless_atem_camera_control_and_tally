@@ -96,7 +96,6 @@ ESP8266WebServer confServer(81);
 	HTML_INPUT_IP($, "Subnet mask", (uint32_t)WiFi.subnetMask(), KEY_NETMASK)\
 	HTML_INPUT_IP($, "Gateway", (uint32_t)WiFi.gatewayIP(), KEY_GATEWAY)\
 	HTML($, "</table><button style=\"margin:1em 2em\">Submit</button></form>")\
-	HTML($, "<script>document.querySelector('form').action = location.origin + ':8080'</script>")
 
 // Gets ip address from 4 HTML post fields as a single 32 bit int
 #define IP_FROM_HTTP(server, name) ((server.arg(name "1").toInt()) |\
