@@ -21,8 +21,12 @@ void http_socket_recvprint(int sock);
 
 void http_socket_recv_close(int sock);
 void http_socket_recv_flush(int sock);
+void http_socket_recv_flush_headers(int sock);
 void http_socket_recv_error(int sock);
 
 void http_socket_close(int sock);
+
+void http_socket_body_write(int sock, const char* body, size_t bodyLen);
+void http_socket_body_send(int sock, const char* body);
 
 #endif // HTTP_SOCK_H

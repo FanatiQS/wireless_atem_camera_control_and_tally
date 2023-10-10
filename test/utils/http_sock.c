@@ -1,5 +1,5 @@
 #include <stdlib.h> // abort, NULL, getenv
-#include <stdio.h> // perror, fprintf, stderr, printf
+#include <stdio.h> // perror, fprintf, stderr, printf, snprintf
 #include <assert.h> // assert
 #include <string.h> // strlen, memcmp
 
@@ -173,6 +173,16 @@ void http_socket_recv_flush(int sock) {
 	abort();
 }
 
+// Flushes all HTTP headers
+void http_socket_recv_flush_headers(int sock) {
+	size_t index = 0;
+	do {
+		char buf[2];
+		assert(http_socket_recv(sock, buf, 2) == 1);
+		index = (buf[0] == "\r\n\r\n"[index]) ? index + 1 : 0;
+	} while (index < 4);
+}
+
 // Ensures the next recv gets an error
 void http_socket_recv_error(int sock) {
 	char buf[BUF_LEN];
@@ -193,4 +203,19 @@ void http_socket_close(int sock) {
 		abort();
 	}
 	close(sock);
+}
+
+
+
+// Sends HTTP POST buffer body to server
+void http_socket_body_write(int sock, const char* body, size_t bodyLen) {
+	char reqBuf[BUF_LEN];
+	int reqLen = snprintf(reqBuf, sizeof(reqBuf), "POST / HTTP/1.1\r\nContent-Length: %zu\r\n\r\n%s", bodyLen, body);
+	assert((size_t)reqLen < sizeof(reqBuf));
+	http_socket_write(sock, reqBuf, reqLen);
+}
+
+// Sends HTTP POST string body to server
+void http_socket_body_send(int sock, const char* body) {
+	http_socket_body_write(sock, body, strlen(body));
 }

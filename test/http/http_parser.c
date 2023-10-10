@@ -1,10 +1,11 @@
 #include <stdio.h> // printf
 #include <assert.h> // assert
 #include <errno.h> // errno, ECONNRESET
+#include <string.h> // strlen
 
 #include <sys/socket.h> // recv, ssize_t
 
-#include "../utils/http_sock.h" // http_socket_create, http_socket_send, http_socket_recv_cmp_status_line, http_socket_recv_len, http_socket_close, http_socket_recv_close
+#include "../utils/http_sock.h" // http_socket_create, http_socket_send, http_socket_recv_cmp_status_line, http_socket_recv_len, http_socket_close, http_socket_recv_close, http_socket_recv_flush_headers, http_socket_recv_error, http_socket_body_write, http_socket_body_send
 #include "../utils/runner.h" // RUN_TEST
 
 
@@ -50,6 +51,43 @@ void test_timeout(const char* req) {
 	int sock = http_socket_create();
 	http_socket_send(sock, req);
 	http_socket_recv_close(sock);
+}
+
+
+
+// Sends HTTP POST request expecting error message
+void test_body_err(const char* body, const char* errMsg) {
+	int sock = http_socket_create();
+	http_socket_body_send(sock, body);
+	http_socket_recv_cmp_status_line(sock, 400);
+	http_socket_recv_flush_headers(sock);
+	http_socket_recv_cmp(sock, errMsg);
+	http_socket_close(sock);
+}
+
+// Sends segmented HTTP POST request expecting error message without closing
+int test_body_err_segment_helper(const char* body1, const char* body2, const char* errMsg) {
+	int sock = http_socket_create();
+	http_socket_body_write(sock, body1, strlen(body1) + strlen(body2));
+	http_socket_send(sock, body2);
+	http_socket_recv_cmp_status_line(sock, 400);
+	http_socket_recv_flush_headers(sock);
+	http_socket_recv_cmp(sock, errMsg);
+	return sock;
+}
+
+// Sends segmented HTTP POST request expecting error message
+void test_body_err_segment(const char* body1, const char* body2, const char* errMsg) {
+	int sock = test_body_err_segment_helper(body1, body2, errMsg);
+	http_socket_close(sock);
+}
+
+// Sends segmented HTTP POST request expecting error message and closed on first segment causing reset by peer error
+void test_body_err_segment_reset(const char* body1, const char* body2, const char* errMsg) {
+	int sock = test_body_err_segment_helper(body1, body2, errMsg);
+	http_socket_recv_error(sock);
+	assert(errno == ECONNRESET);
+	http_socket_close(sock);
 }
 
 
@@ -180,6 +218,94 @@ int main(void) {
 
 	// Tests segmented no body
 	RUN_TEST(test_code_segment("POST / HTTP/1.1\r\nContent-Length: 0\r\n\r", "\n", 200));
+
+
+
+	// HTTP POST body key invalid
+
+	// Tests invalid body key short
+	RUN_TEST(test_body_err("x", "Invalid POST body key"));
+
+	// Tests invalid body key full
+	RUN_TEST(test_body_err("xyz=123", "Invalid POST body key"));
+
+	// Tests segmented invalid body key full
+	RUN_TEST(test_body_err_segment_reset("x", "yz=123", "Invalid POST body key"));
+
+	// Tests incomplete key
+	RUN_TEST(test_body_err("ssi", "Invalid POST body key"));
+
+	// Tests back comparing body key
+	RUN_TEST(test_body_err("ssik=1", "Invalid POST body key"));
+
+	// Tests segmented back comparing body key
+	RUN_TEST(test_body_err_segment("ss", "ik=1", "Invalid POST body key"));
+
+
+
+	// HTTP POST body invalid value
+
+	// Tests overflowing string length
+	RUN_TEST(test_body_err("name=123456789012345678901234567890123", "String POST body value too long"));
+	RUN_TEST(test_body_err("ssid=123456789012345678901234567890123", "String POST body value too long"));
+	RUN_TEST(test_body_err("psk=12345678901234567890123456789012345678901234567890123456789012345", "String POST body value too long"));
+
+	// Tests invalid characters in uint8
+	RUN_TEST(test_body_err("dest=abc123", "Invalid character in integer POST body value"));
+
+	// Tests segmented invalid characters in uint8
+	RUN_TEST(test_body_err_segment_reset("dest=ab", "c123", "Invalid character in integer POST body value"));
+
+	// Tests overflowing int
+	RUN_TEST(test_body_err("dest=256", "Integer POST body value out of range"));
+
+	// Tests int under min
+	RUN_TEST(test_body_err("dest=0", "Integer POST body value out of range"));
+
+	// Tests int over max
+	RUN_TEST(test_body_err("dest=255", "Integer POST body value out of range"));
+
+	// Tests invalid character in ipv4 short
+	RUN_TEST(test_body_err("atem=19a", "Invalid character in IPV4 POST body value"));
+	RUN_TEST(test_body_err("iplocal=19a", "Invalid character in IPV4 POST body value"));
+	RUN_TEST(test_body_err("ipmask=19a", "Invalid character in IPV4 POST body value"));
+	RUN_TEST(test_body_err("ipgw=19a", "Invalid character in IPV4 POST body value"));
+
+	// Tests invalid character in ipv4 full
+	RUN_TEST(test_body_err("atem=19a.168.1.240", "Invalid character in IPV4 POST body value"));
+	RUN_TEST(test_body_err("iplocal=19a.168.1.240", "Invalid character in IPV4 POST body value"));
+	RUN_TEST(test_body_err("ipmask=19a.168.1.240", "Invalid character in IPV4 POST body value"));
+	RUN_TEST(test_body_err("ipgw=19a.168.1.240", "Invalid character in IPV4 POST body value"));
+
+	// Tests segmented invalid characters in ipv4
+	RUN_TEST(test_body_err_segment_reset("atem=19a", ".168.1.240", "Invalid character in IPV4 POST body value"));
+	RUN_TEST(test_body_err_segment_reset("iplocal=19a", ".168.1.240", "Invalid character in IPV4 POST body value"));
+	RUN_TEST(test_body_err_segment_reset("ipmask=19a", ".168.1.240", "Invalid character in IPV4 POST body value"));
+	RUN_TEST(test_body_err_segment_reset("ipgw=19a", ".168.1.240", "Invalid character in IPV4 POST body value"));
+
+	// Tests invalid character in ipv4 last octet
+	RUN_TEST(test_body_err("atem=192.168.1.24b", "Invalid character in IPV4 POST body value"));
+	RUN_TEST(test_body_err("iplocal=192.168.1.24b", "Invalid character in IPV4 POST body value"));
+	RUN_TEST(test_body_err("ipmask=192.168.1.24b", "Invalid character in IPV4 POST body value"));
+	RUN_TEST(test_body_err("ipgw=192.168.1.24b", "Invalid character in IPV4 POST body value"));
+
+	// Tests overflowing octet
+	RUN_TEST(test_body_err("atem=256.168.1.240", "Invalid IPV4 address"));
+	RUN_TEST(test_body_err("iplocal=256.168.1.240", "Invalid IPV4 address"));
+	RUN_TEST(test_body_err("ipmask=256.168.1.240", "Invalid IPV4 address"));
+	RUN_TEST(test_body_err("ipgw=256.168.1.240", "Invalid IPV4 address"));
+
+	// Tests too many ip segments
+	RUN_TEST(test_body_err("atem=192.168.1.240.1", "Invalid IPV4 address"));
+	RUN_TEST(test_body_err("iplocal=192.168.1.240.1", "Invalid IPV4 address"));
+	RUN_TEST(test_body_err("ipmask=192.168.1.240.1", "Invalid IPV4 address"));
+	RUN_TEST(test_body_err("ipgw=192.168.1.240.1", "Invalid IPV4 address"));
+
+	// Tests invalid character in flag value
+	RUN_TEST(test_body_err("static=2", "Invalid character in boolean POST body value"));
+
+	// Tests too many characters
+	RUN_TEST(test_body_err("static=12", "Invalid character in boolean POST body value"));
 
 
 
