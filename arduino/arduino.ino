@@ -178,15 +178,10 @@ void handleHTTP() {
 
 
 void setup() {
+	// Sets up configuration HTTP server
 #if DEBUG
 	Serial.begin(115200);
-
-	// Prints mac address that is used as psk by soft AP
-	DEBUG_PRINT("Mac address: ");
-	DEBUG_PRINTLN(WiFi.macAddress());
 #endif // DEBUG
-
-	// Sets up configuration HTTP server with soft AP
 	WiFi.persistent(true);
 	EEPROM.begin(sizeof(struct config_t));
 	confServer.onNotFound(handleHTTP);
