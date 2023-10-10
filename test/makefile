@@ -30,7 +30,8 @@ TESTS_ALL += run_http_connect
 # Runs playground
 $(DIST_DIR)/test_playground: playground.c utils/http_sock.c utils/runner.c
 .PHONY: playground
-playground: $(DIST_DIR)/test_playground
+run_playground: $(DIST_DIR)/test_playground
+playground: run_playground
 
 # Runs all tests
 .PHONY: all
