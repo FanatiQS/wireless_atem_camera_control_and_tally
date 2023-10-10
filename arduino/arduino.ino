@@ -178,6 +178,10 @@ void handleHTTP() {
 
 
 void setup() {
+	// Initializes wifi, ATEM connection, SDI shield and GPIO LEDs
+	WiFi.begin(); // call WiFi.begin before waccat_init to not force dhcp or call wifi_station_connect after if waccat_init is called after user_init
+	waccat_init();
+
 	// Sets up configuration HTTP server
 #if DEBUG
 	Serial.begin(115200);
@@ -194,9 +198,6 @@ void setup() {
 	// Adds mDNS querying support
 	MDNS.begin("esp8266");
 	MDNS.addService("http", "tcp", 80);
-
-	// Initializes wifi, ATEM connection, SDI shield and GPIO LEDs
-	waccat_init();
 }
 
 void loop() {
