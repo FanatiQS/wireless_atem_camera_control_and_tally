@@ -10,5 +10,6 @@
 #include "./logs.h"
 #include "./runner.h"
 #include "./timer.h"
+#include "./http_sock.h"
 
 #endif // UTILS_H
