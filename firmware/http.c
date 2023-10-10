@@ -675,8 +675,6 @@ static inline void http_parse(struct http_t* http, struct pbuf* p) {
 
 
 
-static err_t http_recv_callback(void* arg, struct tcp_pcb* pcb, struct pbuf* p, err_t err);
-
 // Closes HTTP connection and prevents dispaching invalid events after close
 static inline err_t http_close(struct tcp_pcb* pcb) {
 	err_t err = tcp_close(pcb);
@@ -686,7 +684,7 @@ static inline err_t http_close(struct tcp_pcb* pcb) {
 	}
 
 	tcp_poll(pcb, NULL, 0);
-	if (pcb->recv == http_recv_callback) tcp_recv(pcb, NULL);
+	tcp_recv(pcb, NULL);
 	tcp_err(pcb, NULL);
 
 	return ERR_OK;
