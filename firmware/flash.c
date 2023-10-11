@@ -48,11 +48,11 @@ static inline bool flash_config_write(struct config_t* conf) {
 // Reads flash configuration and other platform specific configurations for HTTP cache
 bool flash_cache_read(struct cache_t* cache) {
 #ifdef ESP8266
-	if (!wifi_station_get_config(&(cache->wlan_station))) {
+	if (!wifi_station_get_config(&(cache->wlan.station))) {
 		DEBUG_ERR_PRINTF("Failed to read station config\n");
 		return false;
 	}
-	if (!wifi_softap_get_config(&(cache->wlan_softap))) {
+	if (!wifi_softap_get_config(&(cache->wlan.softap))) {
 		DEBUG_ERR_PRINTF("Failed to read softap config\n");
 		return false;
 	}
@@ -63,12 +63,12 @@ bool flash_cache_read(struct cache_t* cache) {
 // Writes flash configuration and other platform specific configurations for HTTP cache
 void flash_cache_write(struct cache_t* cache) {
 #ifdef ESP8266
-	if (!wifi_station_set_config(&cache->wlan_station)) {
+	if (!wifi_station_set_config(&cache->wlan.station)) {
 		DEBUG_ERR_PRINTF("Failed to write station config\n");
 		return;
 	}
-	cache->wlan_softap.ssid_len = 0;
-	if (!wifi_softap_set_config(&cache->wlan_softap)) {
+	cache->wlan.softap.ssid_len = 0;
+	if (!wifi_softap_set_config(&cache->wlan.softap)) {
 		DEBUG_ERR_PRINTF("Failed to write softap config\n");
 		return;
 	}

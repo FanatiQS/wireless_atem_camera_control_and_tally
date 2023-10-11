@@ -8,10 +8,17 @@
 #ifdef ESP8266
 #include <user_interface.h> // struct station_config, struct softap_config
 
+// Cached wifi station and softap configurations for HTTP configuration
+struct cache_wlan {
+	struct station_config station;
+	struct softap_config softap;
+};
+#define CACHE_WLAN struct cache_wlan
+
 // Linkers to ESP8266 specific wlan data structure in cache
-#define CACHE_SSID wlan_station.ssid
-#define CACHE_PSK wlan_station.password
-#define CACHE_NAME wlan_softap.ssid
+#define CACHE_SSID wlan.station.ssid
+#define CACHE_PSK wlan.station.password
+#define CACHE_NAME wlan.softap.ssid
 #endif // ESP8266
 
 // Masks for configuration flags
@@ -39,13 +46,12 @@ struct config_t {
 #endif // CACHE_NAME
 };
 
-// Cached data for HTTP client during HTTP POSt configuration
+// Cached data for HTTP configuration
 struct cache_t {
 	struct config_t config;
-#ifdef ESP8266
-	struct station_config wlan_station;
-	struct softap_config wlan_softap;
-#endif // ESP8266
+#ifdef CACHE_WLAN
+	CACHE_WLAN wlan;
+#endif // CONFIG_WLAN
 };
 
 bool flash_config_read(struct config_t* conf);
