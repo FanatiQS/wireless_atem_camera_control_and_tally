@@ -13,7 +13,7 @@
 #include <lwip/mem.h> // mem_malloc, mem_free
 
 #include "./user_config.h" // DEBUG_HTTP
-#include "./debug.h" // DEBUG_PRINTF, DEBUG_HTTP_PRINTF
+#include "./debug.h" // DEBUG_PRINTF, DEBUG_ERR_PRINTF, DEBUG_HTTP_PRINTF
 #include "./flash.h" // CACHE_SSID, CACHE_PSK, CACHE_NAME, flash_cache_write, flash_cache_read
 #include "./http.h" // enum http_state, struct http_t, http_init
 #include "./http_respond.h" // http_respond, http_err, http_post_err, enum http_response_state, http_post_completed

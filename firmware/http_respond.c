@@ -19,7 +19,7 @@
 #include <user_interface.h> // wifi_station_get_connect_status, STATION_GOT_IP, wifi_station_get_rssi, system_restart, wifi_set_event_handler_cb
 #endif // ESP8266
 
-#include "./debug.h" // DEBUG_PRINTF, DEBUG_HTTP_PRINTF
+#include "./debug.h" // DEBUG_ERR_PRINTF, DEBUG_HTTP_PRINTF
 #include "./http.h" // struct http_t
 #include "./init.h" // FIRMWARE_VERSION_STRING
 #include "./atem_sock.h" // atem_state, atem

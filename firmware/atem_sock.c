@@ -18,7 +18,7 @@
 #include "./user_config.h" // DEBUG_TALLY, DEBUG_CC, DEBUG_ATEM, PIN_CONN, PIN_PGM, PIN_PVW, PIN_SCL, PIN_SDA
 #include "./led.h" // LED_TALLY, LED_CONN, LED_INIT
 #include "./sdi.h" // SDI_ENABLED, sdi_write_tally, sdi_write_cc, sdi_init
-#include "./debug.h" // DEBUG_PRINTF, DEBUG_IP, IP_FMT, IP_VALUE, WRAP
+#include "./debug.h" // DEBUG_PRINTF, DEBUG_ERR_PRINTF, DEBUG_IP, IP_FMT, IP_VALUE, WRAP
 #include "./atem_sock.h"
 
 

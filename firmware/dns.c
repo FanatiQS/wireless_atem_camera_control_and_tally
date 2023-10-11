@@ -8,7 +8,7 @@
 #include <lwip/def.h> // lwip_ntohl, lwip_htons, lwip_htonl
 #include <lwip/ip.h> // ip_current_dest_addr
 
-#include "./debug.h" // DEBUG_PRINTF
+#include "./debug.h" // DEBUG_ERR_PRINTF
 #include "./dns.h" // captive_portal_init
 
 

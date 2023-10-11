@@ -8,7 +8,7 @@
 #include <lwip/sys.h> // sys_now
 
 #include "./user_config.h" // PIN_SCL, PIN_SDA, DEBUG, SDI_INIT_TIMEOUT
-#include "./debug.h" // DEBUG_PRINTF
+#include "./debug.h" // DEBUG_PRINTF, DEBUG_ERR_PRINTF
 #include "./i2c.h" // I2C_INIT, I2C_READ, I2C_WRITE
 
 // Number of milliseconds to wait for SDI shield FPGA to get ready before failing

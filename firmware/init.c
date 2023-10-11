@@ -5,7 +5,7 @@
 #include <lwip/init.h> // LWIP_VERSION_STRING, LWIP_VERSION
 
 #include "./user_config.h" // DEBUG, DEBUG_TALLY, DEBUG_CC, DEBUG_HTTP, VERSIONS_ANY
-#include "./debug.h" // DEBUG_PRINTF, DEBUG_IP, WRAP
+#include "./debug.h" // DEBUG_PRINTF, DEBUG_ERR_PRINTF, DEBUG_IP, WRAP
 #include "./atem_sock.h" // atem_init
 #include "./http.h" // http_init
 #include "./flash.h" // struct config_t, CONF_FLAG_STATICIP, flash_config_read

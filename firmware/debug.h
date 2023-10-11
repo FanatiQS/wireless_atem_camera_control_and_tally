@@ -2,7 +2,7 @@
 #ifndef DEBUG_H
 #define DEBUG_H
 
-#include <lwip/arch.h> // LWIP_PLATFORM_DIAG
+#include <stdio.h> // printf
 
 #include "./user_config.h" // DEBUG, DEBUG_TALLY, DEBUG_CC, DEBUG_ATEM, DEBUG_HTTP
 
