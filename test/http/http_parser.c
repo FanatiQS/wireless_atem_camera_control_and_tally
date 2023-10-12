@@ -217,6 +217,9 @@ int main(void) {
 	// Tests segmented no body
 	RUN_TEST(test_code_segment("POST / HTTP/1.1\r\nContent-Length: 0\r\n\r", "\n", 200));
 
+	// Tests unexpected but valid header key caseness
+	RUN_TEST(test_code("POST / HTTP/1.1\r\ncOnTeNt-leNGth: 0\r\n\r\n", 200));
+
 
 
 	// HTTP POST body key invalid
