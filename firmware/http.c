@@ -676,22 +676,24 @@ static inline void http_parse(struct http_t* http, struct pbuf* p) {
 
 
 // Closes HTTP connection and prevents dispaching invalid events after close
-static inline err_t http_close(struct tcp_pcb* pcb) {
-	err_t err = tcp_close(pcb);
+static inline err_t http_close(struct http_t* http) {
+	err_t err = tcp_close(http->pcb);
 	if (err != ERR_OK) {
-		DEBUG_ERR_PRINTF("Failed to close HTTP TCP pcb %p: %d", (void*)pcb, (int)err);
+		DEBUG_ERR_PRINTF("Failed to close HTTP TCP pcb %p: %d", (void*)http->pcb, (int)err);
 		return err;
 	}
 
-	tcp_poll(pcb, NULL, 0);
-	tcp_recv(pcb, NULL);
-	tcp_err(pcb, NULL);
+	tcp_poll(http->pcb, NULL, 0);
+	tcp_recv(http->pcb, NULL);
+	tcp_err(http->pcb, NULL);
+	mem_free(http);
 
 	return ERR_OK;
 }
 
 // Closes HTTP connection when all response data is sent
 static err_t http_sent_callback(void* arg, struct tcp_pcb* pcb, uint16_t len) {
+	LWIP_UNUSED_ARG(pcb);
 	LWIP_UNUSED_ARG(len);
 	struct http_t* http = (struct http_t*)arg;
 
@@ -703,14 +705,13 @@ static err_t http_sent_callback(void* arg, struct tcp_pcb* pcb, uint16_t len) {
 	DEBUG_HTTP_PRINTF("Closing client %p\n", (void*)pcb);
 
 	// Closes connection when response is completely sent
-	err_t err = http_close(pcb);
-	if (err != ERR_OK) return err;
-	mem_free(http);
-	return ERR_OK;
+	return http_close(http);
 }
 
 // Processes the received TCP packet data
 static err_t http_recv_callback(void* arg, struct tcp_pcb* pcb, struct pbuf* p, err_t err) {
+	struct http_t* http = (struct http_t*)arg;
+
 	if (err != ERR_OK) {
 		DEBUG_ERR_PRINTF("HTTP client %p got recv error: %d\n", (void*)pcb, (int)err);
 		if (p != NULL && err == ERR_MEM) pbuf_free(p);
@@ -720,16 +721,11 @@ static err_t http_recv_callback(void* arg, struct tcp_pcb* pcb, struct pbuf* p, 
 	// Closes the TCP connection on client request
 	if (p == NULL) {
 		DEBUG_HTTP_PRINTF("Closed client %p\n", (void*)pcb);
-
-		// Closes client connection
-		err_t ret = http_close(pcb);
-		if (ret != ERR_OK) return ret;
-		mem_free(arg);
-		return ERR_OK;
+		return http_close(http);
 	}
 
 	// Processes the TCP packet data
-	http_parse((struct http_t*)arg, p);
+	http_parse(http, p);
 	tcp_recved(pcb, p->tot_len);
 	pbuf_free(p);
 
@@ -745,14 +741,11 @@ static void http_err_callback(void* arg, err_t err) {
 
 // Closes TCP connection after timeout
 static err_t http_drop_callback(void* arg, struct tcp_pcb* pcb) {
-	if (http_respond((struct http_t*)arg)) return ERR_OK;
-
+	LWIP_UNUSED_ARG(pcb);
+	struct http_t* http = (struct http_t*)arg;
+	if (http_respond(http)) return ERR_OK;
 	DEBUG_HTTP_PRINTF("Dropping client %p due to inactivity\n", (void*)pcb);
-
-	err_t err = http_close(pcb);
-	if (err != ERR_OK) return err;
-	mem_free(arg);
-	return ERR_OK;
+	return http_close(http);
 }
 
 // Accepts TCP connection for HTTP configuration server
