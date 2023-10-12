@@ -1,7 +1,7 @@
 #include <stdio.h> // printf
 #include <string.h> // strlen
 
-#include "../utils/http_sock.h" // http_socket_create, http_socket_body_send, http_socket_body_write, http_socket_recv_cmp_status, http_socket_recv_cmp, http_socket_close, http_socket_send
+#include "./http_sock.h" // http_socket_create, http_socket_body_send, http_socket_body_write, http_socket_recv_cmp_status, http_socket_recv_cmp, http_socket_close, http_socket_send
 #include "../utils/runner.h" // RUN_TEST
 
 

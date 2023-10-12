@@ -5,7 +5,7 @@
 
 #include <unistd.h> // usleep
 
-#include "../utils/http_sock.h" // http_socket_create, http_socket_send, http_socket_recv_len, http_socket_close, http_socket_recv_flush, http_socket_recv_cmp_status
+#include "./http_sock.h" // http_socket_create, http_socket_send, http_socket_recv_len, http_socket_close, http_socket_recv_flush, http_socket_recv_cmp_status
 #include "../utils/runner.h" // RUN_TEST
 
 int main(void) {
