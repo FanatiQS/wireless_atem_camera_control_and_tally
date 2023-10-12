@@ -71,7 +71,7 @@ int main(void) {
 	);
 #endif
 
-	// Ensures there are no memory leaks
+	// Ensures there are no memory leaks when closing from client
 	RUN_TEST(
 		printf("Test close socket right away\n");
 		for (int i = 1; i <= iters; i++) {
