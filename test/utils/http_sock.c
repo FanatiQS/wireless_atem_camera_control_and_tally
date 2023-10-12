@@ -135,10 +135,18 @@ char* http_status(int code) {
 }
 
 // Ensures data in stream is a valid HTTP 1.1 status line
-void http_socket_recv_cmp_status_line(int sock, int code) {
+void http_socket_recv_cmp_status(int sock, int code) {
+	// Ensures HTTP version and status code
 	http_socket_recv_cmp(sock, "HTTP/1.1 ");
 	http_socket_recv_cmp(sock, http_status(code));
-	http_socket_recv_cmp(sock, "\r\n");
+
+	// Ensures double CRLF after potential headers
+	size_t index = 0;
+	do {
+		char buf[2];
+		assert(http_socket_recv(sock, buf, 2) == 1);
+		index = (buf[0] == "\r\n\r\n"[index]) ? index + 1 : 0;
+	} while (index < 4);
 }
 
 
@@ -171,16 +179,6 @@ void http_socket_recv_flush(int sock) {
 	if (http_socket_recv(sock, buf, sizeof(buf)) > 0) return;
 	fprintf(stderr, "Expected socket to contain data to flush\n\trecved: %s\n", buf);
 	abort();
-}
-
-// Flushes all HTTP headers
-void http_socket_recv_flush_headers(int sock) {
-	size_t index = 0;
-	do {
-		char buf[2];
-		assert(http_socket_recv(sock, buf, 2) == 1);
-		index = (buf[0] == "\r\n\r\n"[index]) ? index + 1 : 0;
-	} while (index < 4);
 }
 
 // Ensures the next recv gets an error

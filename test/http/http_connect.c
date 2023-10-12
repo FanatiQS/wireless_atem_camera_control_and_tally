@@ -1,12 +1,11 @@
 #include <stdio.h> // printf
-#include <stdlib.h> // getenv, atio
+#include <stdlib.h> // getenv, atoi
 #include <errno.h> // errno, ECONNRESET
 #include <assert.h> // assert
 
 #include <unistd.h> // usleep
-#include <sys/socket.h> // recv
 
-#include "../utils/http_sock.h" // http_socket_create, http_socket_send, http_socket_recv_len, http_socket_close, http_socket_recv_flush
+#include "../utils/http_sock.h" // http_socket_create, http_socket_send, http_socket_recv_len, http_socket_close, http_socket_recv_flush, http_socket_recv_cmp_status
 #include "../utils/runner.h" // RUN_TEST
 
 int main(void) {
@@ -20,7 +19,7 @@ int main(void) {
 		for (int i = 1; i <= iters; i++) {
 			int sock = http_socket_create();
 			http_socket_send(sock, "GET / HTTP/1.0\r\n\r\n");
-			http_socket_recv_cmp_status_line(sock, 200);
+			http_socket_recv_cmp_status(sock, 200);
 			while (http_socket_recv_len(sock));
 			http_socket_close(sock);
 			if (!(i % 100)) printf("%d\n", i);
@@ -33,7 +32,7 @@ int main(void) {
 		for (int i = 1; i <= iters; i++) {
 			int sock = http_socket_create();
 			http_socket_send(sock, "GEF / HTTP/1.0\r\n\r\n");
-			http_socket_recv_cmp_status_line(sock, 405);
+			http_socket_recv_cmp_status(sock, 405);
 			while (http_socket_recv_len(sock));
 			http_socket_close(sock);
 			if (!(i % 100)) printf("%d\n", i);
@@ -47,7 +46,7 @@ int main(void) {
 			int sock = http_socket_create();
 			http_socket_send(sock, "GET / HTTP/1.0\r\n\r\n");
 			http_socket_send(sock, "X");
-			http_socket_recv_cmp_status_line(sock, 200);
+			http_socket_recv_cmp_status(sock, 200);
 			while (http_socket_recv_len(sock));
 			http_socket_close(sock);
 			if (!(i % 100)) printf("%d\n", i);
@@ -62,10 +61,9 @@ int main(void) {
 			int sock = http_socket_create();
 			http_socket_send(sock, "GEF / HTTP/1.1\r\n\r\n");
 			http_socket_send(sock, "X");
-			http_socket_recv_cmp_status_line(sock, 405);
+			http_socket_recv_cmp_status(sock, 405);
 			http_socket_recv_flush(sock);
-			char buf[1024];
-			assert(recv(sock, buf, sizeof(buf), 0) == -1);
+			http_socket_recv_error(sock);
 			assert(errno == ECONNRESET);
 			http_socket_close(sock);
 			if (!(i % 100)) printf("%d\n", i);

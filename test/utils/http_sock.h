@@ -14,14 +14,13 @@ size_t http_socket_recv_len(int sock);
 
 void http_socket_recv_cmp(int sock, const char* cmpBuf);
 char* http_status(int code);
-void http_socket_recv_cmp_status_line(int sock, int code);
+void http_socket_recv_cmp_status(int sock, int code);
 
 void http_print(char* str);
 void http_socket_recvprint(int sock);
 
 void http_socket_recv_close(int sock);
 void http_socket_recv_flush(int sock);
-void http_socket_recv_flush_headers(int sock);
 void http_socket_recv_error(int sock);
 
 void http_socket_close(int sock);
