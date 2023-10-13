@@ -235,10 +235,10 @@ int main(void) {
 	RUN_TEST(test_body_err("ssi", "Invalid POST body key"));
 
 	// Tests back comparing body key
-	RUN_TEST(test_body_err("ssik=1", "Invalid POST body key"));
+	RUN_TEST(test_body_err("ssk=1", "Invalid POST body key"));
 
 	// Tests segmented back comparing body key
-	RUN_TEST(test_body_err_segment("ss", "ik=1", "Invalid POST body key"));
+	RUN_TEST(test_body_err_segment("ss", "k=1", "Invalid POST body key"));
 
 
 
