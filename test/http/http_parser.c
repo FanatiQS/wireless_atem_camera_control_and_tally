@@ -306,6 +306,10 @@ int main(void) {
 	// Tests too many characters
 	RUN_TEST(test_body_err("static=12", "Invalid character in boolean POST body value"));
 
+	// Tests out-of-range dest value
+	RUN_TEST(test_body_err("dest=0", "Integer POST body value out of range"));
+	RUN_TEST(test_body_err("dest=255", "Integer POST body value out of range"));
+
 
 
 	printf("All tests successfully completed\n");
