@@ -3,8 +3,6 @@
 #include <errno.h> // errno, ECONNRESET
 #include <string.h> // strlen
 
-#include <sys/socket.h> // recv, ssize_t
-
 #include "./http_sock.h" // http_socket_create, http_socket_send, http_socket_recv_cmp_status, http_socket_recv_len, http_socket_close, http_socket_recv_close, http_socket_recv_error, http_socket_body_write, http_socket_body_send
 #include "../utils/runner.h" // RUN_TEST
 
