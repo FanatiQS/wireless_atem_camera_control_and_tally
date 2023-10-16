@@ -184,8 +184,8 @@ void http_socket_recv_flush(int sock) {
 // Ensures the next recv gets an error
 void http_socket_recv_error(int sock) {
 	char buf[BUF_LEN];
-	ssize_t recvLen;
-	if ((recvLen = recv(sock, buf, sizeof(buf), 0)) == -1) return;
+	ssize_t recvLen = recv(sock, buf, sizeof(buf), 0);
+	if (recvLen == -1) return;
 	fprintf(stderr, "Expected socket to get an error: %zd\n", recvLen);
 	abort();
 }
