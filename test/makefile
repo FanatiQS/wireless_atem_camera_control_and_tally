@@ -20,10 +20,17 @@ run_%: $(DIST_DIR)/test_%
 
 
 $(DIST_DIR)/test_http_parser: http/http_parser.c http/http_sock.c utils/runner.c
-TESTS_ALL += run_http_parser
+TESTS_DEVICE += run_http_parser
 
 $(DIST_DIR)/test_http_connect: http/http_connect.c http/http_sock.c
-TESTS_ALL += run_http_connect
+TESTS_DEVICE += run_http_connect
+
+# Runs all tests for device
+.PHONY: device
+device: $(TESTS_DEVICE)
+ifdef DEVICE_ADDR
+TESTS_ALL += $(TESTS_DEVICE)
+endif
 
 
 
