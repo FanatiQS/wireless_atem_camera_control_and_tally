@@ -10,7 +10,8 @@ $(BUILD_DIR):
 
 # Builds test executable
 $(BUILD_DIR)/%: | $(BUILD_DIR)
-	$(CC) $^ -o $@ -g -Wall -Wextra -Wpedantic
+	$(CC) $(filter %.c,$^) -o $@ -g -Wall -Wextra -Wpedantic
+	$(CC) $(filter %.c,$^) -MM -MT $@ -MF $@.d
 
 # Runs test
 .PHONY: run_%
@@ -34,6 +35,11 @@ endif
 
 
 
+# Includes dependency files for test executables
+DEP_FILES = $(TESTS_ALL:run_%=$(BUILD_DIR)/%.d) $(BUILD_DIR)/playground.d
+.PHONY: $(DEP_FILES)
+-include $(DEP_FILES)
+
 # Runs playground
 $(BUILD_DIR)/playground: playground.c http/http_sock.c
 .PHONY: playground
@@ -45,9 +51,12 @@ playground: run_playground
 all: $(TESTS_ALL)
 
 # Removes all compiled tests
+RMRF = rm -rf
 .PHONY: clean
 clean:
 	$(RM) $(TESTS_ALL:run_%=$(BUILD_DIR)/%) $(BUILD_DIR)/playground
+	$(RM) $(TESTS_ALL:run_%=$(BUILD_DIR)/%.d) $(BUILD_DIR)/playground.d
+	$(RMRF) $(TESTS_ALL:run_%=$(BUILD_DIR)/%.dSYM) $(BUILD_DIR)/playground.dSYM
 
 # Lists all tests except playground
 .PHONY: list
