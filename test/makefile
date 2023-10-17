@@ -2,27 +2,27 @@
 all:
 
 # Output directory for test executables
-DIST_DIR = ../dist
+BUILD_DIR = ../build/test
 
 # Creates dist directory if it does not exist
-$(DIST_DIR):
+$(BUILD_DIR):
 	mkdir $@
 
 # Builds test executable
-$(DIST_DIR)/test_%: | $(DIST_DIR)
+$(BUILD_DIR)/%: | $(BUILD_DIR)
 	$(CC) $^ -o $@ -g -Wall -Wextra -Wpedantic
 
 # Runs test
 .PHONY: run_%
-run_%: $(DIST_DIR)/test_%
+run_%: $(BUILD_DIR)/%
 	$<
 
 
 
-$(DIST_DIR)/test_http_parser: http/http_parser.c http/http_sock.c utils/runner.c
+$(BUILD_DIR)/http_parser: http/http_parser.c http/http_sock.c
 TESTS_DEVICE += run_http_parser
 
-$(DIST_DIR)/test_http_connect: http/http_connect.c http/http_sock.c
+$(BUILD_DIR)/http_connect: http/http_connect.c http/http_sock.c
 TESTS_DEVICE += run_http_connect
 
 # Runs all tests for device
@@ -35,9 +35,9 @@ endif
 
 
 # Runs playground
-$(DIST_DIR)/test_playground: playground.c http/http_sock.c utils/runner.c
+$(BUILD_DIR)/playground: playground.c http/http_sock.c
 .PHONY: playground
-run_playground: $(DIST_DIR)/test_playground
+run_playground: $(BUILD_DIR)/playground
 playground: run_playground
 
 # Runs all tests
@@ -47,7 +47,7 @@ all: $(TESTS_ALL)
 # Removes all compiled tests
 .PHONY: clean
 clean:
-	$(RM) $(TESTS_ALL:run_%=$(DIST_DIR)/test_%) $(DIST_DIR)/test_playground
+	$(RM) $(TESTS_ALL:run_%=$(BUILD_DIR)/%) $(BUILD_DIR)/playground
 
 # Lists all tests except playground
 .PHONY: list
