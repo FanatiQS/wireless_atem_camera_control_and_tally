@@ -1,4 +1,5 @@
 # Defaults to running all tests
+.PHONY: all
 all:
 
 # Output directory for test executables
@@ -29,8 +30,9 @@ TESTS_DEVICE += run_http_connect
 # Runs all tests for device
 .PHONY: device
 device: $(TESTS_DEVICE)
-ifdef DEVICE_ADDR
 TESTS_ALL += $(TESTS_DEVICE)
+ifdef DEVICE_ADDR
+all: $(TESTS_DEVICE)
 endif
 
 
@@ -45,10 +47,6 @@ $(BUILD_DIR)/playground: playground.c http/http_sock.c
 .PHONY: playground
 run_playground: $(BUILD_DIR)/playground
 playground: run_playground
-
-# Runs all tests
-.PHONY: all
-all: $(TESTS_ALL)
 
 # Removes all compiled tests
 RMRF = rm -rf
