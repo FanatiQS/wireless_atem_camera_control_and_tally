@@ -264,7 +264,6 @@ bool http_respond(struct http_t* http) {
 		// Writes HTTP response to successful POST and restarts device
 		case HTTP_RESPONSE_STATE_POST_ROOT:
 		HTTP_RESPONSE_CASE_STR(http, "HTTP/1.1 200 OK\r\n\r\nsuccess")
-		flash_cache_write(&(http->cache));
 		http_reboot(http);
 		break;
 	}
@@ -278,7 +277,16 @@ bool http_respond(struct http_t* http) {
 
 // Sends response HTTP if entire POST body is parsed
 bool http_post_completed(struct http_t* http) {
+	// Keeps parsing body until received expected length
 	if (http->remainingBodyLen > 0) return false;
+
+	// Writes configuration to flash
+	if (!flash_cache_write(&(http->cache))) {
+		http_err(http, "500 Server Error");
+		return true;
+	}
+
+	// Sends HTTP response
 	http->state = HTTP_STATE_DONE;
 	http->responseState = HTTP_RESPONSE_STATE_POST_ROOT;
 	http->offset = 0;
