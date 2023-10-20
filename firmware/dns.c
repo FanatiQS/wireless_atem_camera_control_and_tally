@@ -17,25 +17,26 @@
 #define DNS_PORT 53
 
 // DNS header indexes
-#define DNS_INDEX_FLAGS  2
-#define DNS_INDEX_RCODE  3
-#define DNS_INDEX_COUNTS 4
+#define DNS_INDEX_FLAGS   (2)
+#define DNS_INDEX_RCODE   (3)
+#define DNS_INDEX_QDCOUNT (4)
+#define DNS_INDEX_COUNTS  (DNS_INDEX_QDCOUNT)
 
 // DNS header lengths
-#define DNS_LEN_HEADER 12
-#define DNS_LEN_ANSWER 16
-#define DNS_LEN_MAX    512
+#define DNS_LEN_HEADER (12)
+#define DNS_LEN_ANSWER (16)
+#define DNS_LEN_MAX    (512)
 #define DNS_LEN_COUNTS (DNS_LEN_HEADER - DNS_INDEX_COUNTS)
 
 // DNS flag masks
-#define DNS_FLAGS_MASK_QR     0x80
+#define DNS_FLAGS_MASK_QR     (0x80)
 #define DNS_FLAGS_MASK_OPCODE (0x08 | 0x10 | 0x20 | 0x40)
 
 // DNS rcode response codes
-#define DNS_RCODE_FORMERR  1
-#define DNS_RCODE_SERVFAIL 2
-#define DNS_RCODE_NXDOMAIN 3
-#define DNS_RCODE_NOTIMP   4
+#define DNS_RCODE_FORMERR  (1)
+#define DNS_RCODE_SERVFAIL (2)
+#define DNS_RCODE_NXDOMAIN (3)
+#define DNS_RCODE_NOTIMP   (4)
 
 // DNS query classes
 #define DNS_QCLASS_IN  0x01
@@ -87,8 +88,8 @@ static void dns_recv_callback(void* arg, struct udp_pcb* pcb, struct pbuf* p, co
 		return;
 	}
 
-	// Only supports single question and ANCount, NSCount and ARCount should be clear for non answers
-	if (pbuf_memcmp(p, DNS_INDEX_COUNTS, (uint16_t[]){ lwip_htons(0x0001), 0x0000, 0x0000, 0x0000 }, DNS_LEN_COUNTS)) {
+	// Only supports single question
+	if (pbuf_memcmp(p, DNS_INDEX_QDCOUNT, (uint16_t[]){lwip_htons(0x0001)}, sizeof(uint16_t))) {
 		dns_header_error(p, DNS_RCODE_FORMERR);
 		udp_sendto(pcb, p, addr, port);
 		pbuf_free(p);
