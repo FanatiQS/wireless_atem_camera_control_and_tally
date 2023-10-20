@@ -1,6 +1,5 @@
 #include <stdio.h> // printf
-#include <assert.h> // assert
-#include <errno.h> // errno, ECONNRESET
+#include <errno.h> // ECONNRESET
 #include <string.h> // strlen
 
 #include "./http_sock.h" // http_socket_create, http_socket_send, http_socket_recv_cmp_status, http_socket_recv_len, http_socket_close, http_socket_recv_close, http_socket_recv_error, http_socket_body_write, http_socket_body_send
@@ -38,8 +37,7 @@ void test_code_segment_reset(const char* req1, const char* req2, int code) {
 
 	// Expecting last packet to be peer closed error
 	http_socket_recv_flush(sock);
-	http_socket_recv_error(sock);
-	assert(errno == ECONNRESET);
+	http_socket_recv_error(sock, ECONNRESET);
 
 	http_socket_close(sock);
 }
@@ -81,8 +79,7 @@ void test_body_err_segment(const char* body1, const char* body2, const char* err
 // Sends segmented HTTP POST request expecting error message and closed on first segment causing reset by peer error
 void test_body_err_segment_reset(const char* body1, const char* body2, const char* errMsg) {
 	int sock = test_body_err_segment_helper(body1, body2, errMsg);
-	http_socket_recv_error(sock);
-	assert(errno == ECONNRESET);
+	http_socket_recv_error(sock, ECONNRESET);
 	http_socket_close(sock);
 }
 

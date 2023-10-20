@@ -82,11 +82,7 @@ int main(void) {
 			http_socket_send(sock, "X");
 			http_socket_recv_cmp_status(sock, 405);
 			http_socket_recv_flush(sock);
-			http_socket_recv_error(sock);
-			if (errno != ECONNRESET) {
-				perror("Unexpected error");
-				abort();
-			}
+			http_socket_recv_error(sock, ECONNRESET);
 			http_socket_close(sock);
 			if (!(i % 100)) printf("%d\n", i);
 		}

@@ -1,13 +1,12 @@
 #include <stdlib.h> // abort, NULL, getenv
-#include <stdio.h> // perror, fprintf, stderr, printf, snprintf
+#include <stdio.h> // perror, fprintf, stderr, printf, snprintf, FILE, stdout
 #include <assert.h> // assert
 #include <string.h> // strlen, memcmp
 
-#include <sys/socket.h> // socket, AF_INET, SOCK_STREAM, recv, ssize_t, connect, send, shutdown
-#include <netinet/in.h> // sockaddr_in
-#include <arpa/inet.h> // htons, inet_addr
+#include <sys/socket.h> // SOCK_STREAM, shutdown
 #include <unistd.h> // close
 
+#include "../utils/simple_socket.h" // simple_socket_create, simple_socket_connect, simple_socket_write, simple_socket_recv, simple_socket_recv_error
 #include "./http_sock.h"
 
 #define HTTP_PORT (80)
@@ -17,42 +16,8 @@
 
 // Creates a client socket connected to HTTP server at address from environment variable
 int http_socket_create(void) {
-	// Gets device address from environment variable
-	char* addr = getenv("DEVICE_ADDR");
-	if (addr == NULL) {
-		fprintf(stderr, "Environment variable DEVICE_ADDR not defined\n");
-		abort();
-	}
-
-	// Creates TCP socket
-	int sock = socket(AF_INET, SOCK_STREAM, 0);
-	if (sock == -1) {
-		perror("Failed to create socket");
-		abort();
-	}
-
-	// Connects client socket to server
-	struct sockaddr_in sockAddr = {
-		.sin_family = AF_INET,
-		.sin_port = htons(HTTP_PORT),
-		.sin_addr.s_addr = inet_addr(addr)
-	};
-	if (connect(sock, (struct sockaddr*)&sockAddr, sizeof(sockAddr))) {
-		perror("Failed to connect client socket to server");
-		abort();
-	}
-
-	// Sets socket timeouts for reading and writing on
-	struct timeval tv = { .tv_sec = 20 };
-	if (setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv))) {
-		perror("Failed to set recv timeout");
-		abort();
-	}
-	if (setsockopt(sock, SOL_SOCKET, SO_SNDTIMEO, &tv, sizeof(tv))) {
-		perror("Failed to set send timeout");
-		abort();
-	}
-
+	int sock = simple_socket_create(SOCK_STREAM);
+	simple_socket_connect(sock, HTTP_PORT, "DEVICE_ADDR");
 	return sock;
 }
 
@@ -60,13 +25,7 @@ int http_socket_create(void) {
 
 // Sends HTTP buffer to server
 void http_socket_write(int sock, const char* buf, size_t len) {
-	assert(len > 0);
-	ssize_t sendLen = send(sock, buf, len, 0);
-	if (sendLen == -1) {
-		perror("Failed to send data to server");
-		abort();
-	}
-	assert(sendLen == (ssize_t)len);
+	simple_socket_write(sock, (void*)buf, len);
 }
 
 // Sends HTTP string to server
@@ -79,16 +38,9 @@ void http_socket_send(int sock, const char* str) {
 // Reads HTTP data from stream into buffer
 size_t http_socket_recv(int sock, char* buf, size_t size) {
 	assert(size >= 2);
-	ssize_t len = recv(sock, buf, size - 1, 0);
-
-	if (len == -1) {
-		perror("Failed to recv data from server");
-		abort();
-	}
-	assert(len >= 0);
-
+	size_t len = simple_socket_recv(sock, buf, size - 1);
 	buf[len] = '\0';
-	return (size_t)len;
+	return len;
 }
 
 // Flushes data from stream and returns number of bytes flushed
@@ -152,15 +104,15 @@ void http_socket_recv_cmp_status(int sock, int code) {
 
 
 // Prints multiline string with clear start and stop
-void http_print(char* buf) {
-	printf("====START====\n%s\n====END====\n", buf);
+void http_print(char* buf, FILE* pipe) {
+	fprintf(pipe, "====START====\n%s\n====END====\n", buf);
 }
 
 // Reads HTTP data from stream and prints it with clear start and stop
 void http_socket_recvprint(int sock) {
 	char buf[BUF_LEN];
 	http_socket_recv(sock, buf, sizeof(buf));
-	http_print(buf);
+	http_print(buf, stdout);
 }
 
 
@@ -182,11 +134,17 @@ void http_socket_recv_flush(int sock) {
 }
 
 // Ensures the next recv gets an error
-void http_socket_recv_error(int sock) {
+void http_socket_recv_error(int sock, int err) {
 	char buf[BUF_LEN];
-	ssize_t recvLen = recv(sock, buf, sizeof(buf), 0);
-	if (recvLen == -1) return;
-	fprintf(stderr, "Expected socket to get an error: %zd\n", recvLen);
+	size_t buflen = sizeof(buf);
+	if (simple_socket_recv_error(sock, err, buf, &buflen)) return;
+	if (buflen == 0) {
+		fprintf(stderr, "Socket unexpectedly closed when expecting err: %d\n", err);
+	}
+	else {
+		fprintf(stderr, "Socket unexpectedly got response data: %zd\n", buflen);
+		http_print(buf, stderr);
+	}
 	abort();
 }
 

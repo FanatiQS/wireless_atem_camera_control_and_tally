@@ -1,3 +1,4 @@
+// Include guard
 #ifndef UTILS_H
 #define UTILS_H
 
@@ -10,6 +11,7 @@
 #include "./logs.h"
 #include "./runner.h"
 #include "./timer.h"
+#include "./simple_socket.h"
 #include "../http/http_sock.h"
 
 #endif // UTILS_H
