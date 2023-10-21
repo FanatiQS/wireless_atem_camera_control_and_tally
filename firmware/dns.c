@@ -88,7 +88,7 @@ static void dns_recv_callback(void* arg, struct udp_pcb* pcb, struct pbuf* p, co
 		return;
 	}
 
-	// Only supports single question
+	// Only supports single queries
 	if (pbuf_memcmp(p, DNS_INDEX_QDCOUNT, (uint16_t[]){lwip_htons(0x0001)}, sizeof(uint16_t))) {
 		dns_header_error(p, DNS_RCODE_FORMERR);
 		udp_sendto(pcb, p, addr, port);
@@ -96,23 +96,16 @@ static void dns_recv_callback(void* arg, struct udp_pcb* pcb, struct pbuf* p, co
 		return;
 	}
 
-	// Parses question label to get its type and class
-	uint16_t questionIndex = DNS_LEN_HEADER;
+	// Skips query labels to get to its type and class
+	uint16_t index = DNS_LEN_HEADER;
 	int labelLen;
-	while ((labelLen = pbuf_get_at(p, questionIndex)) != 0) {
-		questionIndex += labelLen + 1;
-		if (questionIndex > p->len) {
-			pbuf_put_at(p, DNS_INDEX_RCODE, DNS_RCODE_FORMERR);
-			dns_prepare_send(p, DNS_LEN_HEADER);
-			udp_sendto(pcb, p, addr, port);
-			pbuf_free(p);
-			return;
-		}
+	while (index < p->tot_len && (labelLen = pbuf_get_at(p, index)) > 0) {
+		index += labelLen + 1;
 	}
-	questionIndex++;
+	index++;
 
-	// Ensures label doesn't extend outside packet
-	if ((questionIndex + 4) > p->len) {
+	// Ensures query doesn't extend outside packet
+	if ((index + 4) > p->tot_len) {
 		pbuf_put_at(p, DNS_INDEX_RCODE, DNS_RCODE_FORMERR);
 		dns_prepare_send(p, DNS_LEN_HEADER);
 		udp_sendto(pcb, p, addr, port);
@@ -120,24 +113,24 @@ static void dns_recv_callback(void* arg, struct udp_pcb* pcb, struct pbuf* p, co
 		return;
 	}
 
-	// Gets questions type and class
-	int qtype = pbuf_get_at(p, questionIndex) << 8 | pbuf_get_at(p, questionIndex + 1);
-	int qclass = pbuf_get_at(p, questionIndex + 2) << 8 | pbuf_get_at(p, questionIndex + 3);
-	questionIndex += 4;
+	// Gets query type and class
+	int qtype = pbuf_get_at(p, index) << 8 | pbuf_get_at(p, index + 1);
+	int qclass = pbuf_get_at(p, index + 2) << 8 | pbuf_get_at(p, index + 3);
+	index += 4;
 
-	// Validates question type
+	// Validates query type
 	if (qtype != DNS_QTYPE_A && qtype != DNS_QTYPE_ANY) {
 		pbuf_put_at(p, DNS_INDEX_RCODE, DNS_RCODE_NXDOMAIN);
-		dns_prepare_send(p, questionIndex);
+		dns_prepare_send(p, index);
 		udp_sendto(pcb, p, addr, port);
 		pbuf_free(p);
 		return;
 	}
 
-	// Validates question class
+	// Validates query class
 	if (qclass != DNS_QCLASS_IN && qclass != DNS_QCLASS_ANY) {
 		pbuf_put_at(p, DNS_INDEX_RCODE, DNS_RCODE_NXDOMAIN);
-		dns_prepare_send(p, questionIndex);
+		dns_prepare_send(p, index);
 		udp_sendto(pcb, p, addr, port);
 		pbuf_free(p);
 		return;
@@ -145,7 +138,7 @@ static void dns_recv_callback(void* arg, struct udp_pcb* pcb, struct pbuf* p, co
 
 	// Use header and query for response with QDCount and ANCount in header set to 1
 	pbuf_take_at(p, (uint16_t[]){ lwip_htons(0x0001), lwip_htons(0x0001), 0x0000, 0x0000 }, DNS_LEN_COUNTS, DNS_INDEX_COUNTS);
-	dns_prepare_send(p, questionIndex);
+	dns_prepare_send(p, index);
 
 	// Creates DNS answer
 	struct pbuf* answer = pbuf_alloc(PBUF_TRANSPORT, DNS_LEN_ANSWER, PBUF_POOL);
@@ -156,21 +149,16 @@ static void dns_recv_callback(void* arg, struct udp_pcb* pcb, struct pbuf* p, co
 		return;
 	}
 	uint16_t answerBuf[] = {
-		// Pointer to the queried name already defined in the packet
-		lwip_htons(0xc000 | DNS_LEN_HEADER),
-		// Defines the response query type
-		lwip_htons(DNS_QTYPE_A),
-		// Defines the response query internet class
-		lwip_htons(DNS_QCLASS_IN),
-		// Defines the TTL
-		0x0000, lwip_htons(60),
-		// Defines the IP length
-		lwip_htons(4)
+		lwip_htons(0xc000 | DNS_LEN_HEADER), // Pointer to the queried name already defined in the packet
+		lwip_htons(DNS_QTYPE_A), // Defines the response type
+		lwip_htons(DNS_QCLASS_IN), // Defines the response internet class
+		0x0000, lwip_htons(60), // Defines the TTL
+		lwip_htons(4) // Defines the IP length
 	};
 	pbuf_take(answer, answerBuf, sizeof(answerBuf));
 	pbuf_take_at(answer, ip_current_dest_addr(), 4, sizeof(answerBuf));
 
-	// Sends DNS response with header, query and answer
+	// Sends DNS response
 	pbuf_cat(p, answer);
 	udp_sendto(pcb, p, addr, port);
 	pbuf_free(p);
