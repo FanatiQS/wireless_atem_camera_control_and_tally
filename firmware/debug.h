@@ -60,6 +60,13 @@
 #define DEBUG_HTTP_PRINTF(...)
 #endif // DEBUG_HTTP
 
+// Only prints DNS captive portal debug info when it is enabled in user_config.h
+#if DEBUG_DNS
+#define DEBUG_DNS_PRINTF(...) DEBUG_PRINTF("[ DNS ] " __VA_ARGS__)
+#else // DEBUG_DNS
+#define DEBUG_DNS_PRINTF(...)
+#endif // DEBUG_DNS
+
 
 
 // Wraps argument into a string

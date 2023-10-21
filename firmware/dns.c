@@ -8,13 +8,13 @@
 #include <lwip/def.h> // lwip_ntohl, lwip_htons, lwip_htonl
 #include <lwip/ip.h> // ip_current_dest_addr
 
-#include "./debug.h" // DEBUG_ERR_PRINTF
+#include "./debug.h" // DEBUG_ERR_PRINTF, DEBUG_DNS_PRINTF
 #include "./dns.h" // captive_portal_init
 
 
 
 // Default DNS port
-#define DNS_PORT 53
+#define DNS_PORT (53)
 
 // DNS header indexes
 #define DNS_INDEX_FLAGS   (2)
@@ -39,12 +39,12 @@
 #define DNS_RCODE_NOTIMP   (4)
 
 // DNS query classes
-#define DNS_QCLASS_IN  0x01
-#define DNS_QCLASS_ANY 0xff
+#define DNS_QCLASS_IN  (0x01)
+#define DNS_QCLASS_ANY (0xff)
 
 // DNS query types
-#define DNS_QTYPE_A    0x01
-#define DNS_QTYPE_ANY  0xff
+#define DNS_QTYPE_A    (0x01)
+#define DNS_QTYPE_ANY  (0xff)
 
 
 
@@ -68,6 +68,7 @@ static void dns_recv_callback(void* arg, struct udp_pcb* pcb, struct pbuf* p, co
 
 	// Ignores packet chunks that are too small or too large
 	if (p->tot_len > DNS_LEN_MAX || p->tot_len < DNS_LEN_HEADER) {
+		DEBUG_DNS_PRINTF("Invalid packet size: %u\n", p->tot_len);
 		pbuf_free(p);
 		return;
 	}
@@ -77,6 +78,7 @@ static void dns_recv_callback(void* arg, struct udp_pcb* pcb, struct pbuf* p, co
 	if (flagsAndOpcode & (DNS_FLAGS_MASK_QR | DNS_FLAGS_MASK_OPCODE)) {
 		// Ignores non query packets
 		if (flagsAndOpcode & DNS_FLAGS_MASK_QR) {
+			DEBUG_DNS_PRINTF("Packet is not a query\n");
 			pbuf_free(p);
 			return;
 		}
@@ -84,6 +86,7 @@ static void dns_recv_callback(void* arg, struct udp_pcb* pcb, struct pbuf* p, co
 		// Responds with error for non query opcode requests
 		dns_header_error(p, DNS_RCODE_NOTIMP);
 		udp_sendto(pcb, p, addr, port);
+		DEBUG_DNS_PRINTF("Unsupported opcode: %d\n", flagsAndOpcode);
 		pbuf_free(p);
 		return;
 	}
@@ -92,6 +95,7 @@ static void dns_recv_callback(void* arg, struct udp_pcb* pcb, struct pbuf* p, co
 	if (pbuf_memcmp(p, DNS_INDEX_QDCOUNT, (uint16_t[]){lwip_htons(0x0001)}, sizeof(uint16_t))) {
 		dns_header_error(p, DNS_RCODE_FORMERR);
 		udp_sendto(pcb, p, addr, port);
+		DEBUG_DNS_PRINTF("Only supports single queries: %d\n", pbuf_get_at(p, DNS_INDEX_QDCOUNT));
 		pbuf_free(p);
 		return;
 	}
@@ -109,6 +113,7 @@ static void dns_recv_callback(void* arg, struct udp_pcb* pcb, struct pbuf* p, co
 		pbuf_put_at(p, DNS_INDEX_RCODE, DNS_RCODE_FORMERR);
 		dns_prepare_send(p, DNS_LEN_HEADER);
 		udp_sendto(pcb, p, addr, port);
+		DEBUG_DNS_PRINTF("Query expands out of packet\n");
 		pbuf_free(p);
 		return;
 	}
@@ -123,6 +128,7 @@ static void dns_recv_callback(void* arg, struct udp_pcb* pcb, struct pbuf* p, co
 		pbuf_put_at(p, DNS_INDEX_RCODE, DNS_RCODE_NXDOMAIN);
 		dns_prepare_send(p, index);
 		udp_sendto(pcb, p, addr, port);
+		DEBUG_DNS_PRINTF("Unsupported query qtype %d\n", qtype);
 		pbuf_free(p);
 		return;
 	}
@@ -132,6 +138,7 @@ static void dns_recv_callback(void* arg, struct udp_pcb* pcb, struct pbuf* p, co
 		pbuf_put_at(p, DNS_INDEX_RCODE, DNS_RCODE_NXDOMAIN);
 		dns_prepare_send(p, index);
 		udp_sendto(pcb, p, addr, port);
+		DEBUG_DNS_PRINTF("Unsupported query qclass: %d\n", qclass);
 		pbuf_free(p);
 		return;
 	}
@@ -145,6 +152,7 @@ static void dns_recv_callback(void* arg, struct udp_pcb* pcb, struct pbuf* p, co
 	if (answer == NULL) {
 		dns_header_error(p, DNS_RCODE_SERVFAIL);
 		udp_sendto(pcb, p, addr, port);
+		DEBUG_DNS_PRINTF("Not enough memory for answer\n");
 		pbuf_free(p);
 		return;
 	}
@@ -161,6 +169,7 @@ static void dns_recv_callback(void* arg, struct udp_pcb* pcb, struct pbuf* p, co
 	// Sends DNS response
 	pbuf_cat(p, answer);
 	udp_sendto(pcb, p, addr, port);
+	DEBUG_DNS_PRINTF("Successfully responded to DNS query\n");
 	pbuf_free(p);
 }
 
