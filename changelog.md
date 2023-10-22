@@ -30,6 +30,11 @@
 * Error debug messages now has as an `[ ERR ]` prefix.
 * No longer prints wlan channel at boot.
 * HTML request time now uses 24h clock.
+* Uses `printf` instead of `LWIP_PLATFORM_DIAG` for debugging since lwip debugging can be disabled on some platforms.
+* Arduino mDNS responder is unreliable.
+* No longer prints MAC address at boot.
+* Default I2C configuration now conforms to default ESP8266 pinout.
+* Added DNS debug flag.
 
 ### Source API
 * Now only updates property `readLen` when it is allowed to be used.
@@ -42,6 +47,8 @@
 
 ### Test Suite
 * Added tests for firmware HTTP parser.
+* Started colleging compilation and running of tests from makefile.
+* Started deprecating test client (requires compiling manually).
 
 ### Tools
 * Added simple configuration bash script.
