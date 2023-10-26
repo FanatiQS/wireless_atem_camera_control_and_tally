@@ -93,9 +93,12 @@ static void dns_recv_callback(void* arg, struct udp_pcb* pcb, struct pbuf* p, co
 
 	// Only supports single queries
 	if (pbuf_memcmp(p, DNS_INDEX_QDCOUNT, (uint16_t[]){lwip_htons(0x0001)}, sizeof(uint16_t))) {
+		DEBUG_DNS_PRINTF(
+			"Only supports single queries: %d\n",
+			pbuf_get_at(p, DNS_INDEX_QDCOUNT) << 8 | pbuf_get_at(p, DNS_INDEX_QDCOUNT + 1)
+		);
 		dns_header_error(p, DNS_RCODE_FORMERR);
 		udp_sendto(pcb, p, addr, port);
-		DEBUG_DNS_PRINTF("Only supports single queries: %d\n", pbuf_get_at(p, DNS_INDEX_QDCOUNT));
 		pbuf_free(p);
 		return;
 	}
