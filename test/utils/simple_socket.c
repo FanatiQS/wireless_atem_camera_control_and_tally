@@ -11,6 +11,11 @@
 
 #include "./simple_socket.h"
 
+// Number of seconds a send or recv call waits before timing out
+#ifndef SOCKET_TIMOEUT
+#define SOCKET_TIMEOUT (20)
+#endif // SOCKET_TIMEOUT
+
 // Creates a network socket
 int simple_socket_create(int type) {
 	// Creates network socket
@@ -21,7 +26,7 @@ int simple_socket_create(int type) {
 	}
 
 	// Sets socket timeouts for reading and writing
-	struct timeval tv = { .tv_sec = 20 };
+	struct timeval tv = { .tv_sec = SOCKET_TIMEOUT };
 	if (setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv))) {
 		perror("Failed to set recv timeout");
 		abort();
