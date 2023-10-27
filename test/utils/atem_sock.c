@@ -1,32 +1,31 @@
 #include <stdint.h> // uint8_t, uint16_t
-#include <stdio.h> // perror
+#include <stddef.h> // size_t
+#include <stdio.h> // printf, fprintf, stderr, perror, stdout
+#include <stdlib.h> // abort
 
 #include <unistd.h> // close
-#include <sys/socket.h> // socket, AF_INET, SOCK_DGRAM, struct timeval, setsockopt, SOL_SOCKET SO_RCVTIMEO, SO_SNDTIMEO, ssize_t, send, recv, bind, connect, struct sockaddr, recvfrom
-#include <arpa/inet.h> // struct sockaddr_in, htons, inet_addr
-#include <sys/select.h> // select, FD_ZERO, FD_SET, fd_set
+#include <sys/socket.h> // AF_INET, SOCK_DGRAM, ssize_t, send, recv, bind, connect, struct sockaddr, socklen_t, recvfrom
+#include <arpa/inet.h> // htons
+#include <netinet/in.h> // struct sockaddr_in
 
+#include "./simple_socket.h" // simple_socket_create, simple_socket_select
 #include "../../src/atem_protocol.h" // ATEM_FLAG_SYN, ATEM_FLAG_RETX
-#include "../../src/atem.h" // ATEM_MAX_PACKET_LEN
-#include "./header.h" // atem_header_len_get, atem_header_flags_get, atem_packet_unknownid_get, atem_header_len_get_verify
-#include "./runner.h" // testrunner_abort
-#include "./logs.h" // print_buffer, print_debug
-
-
+#include "../../src/atem.h" // ATEM_PORT, ATEM_MAX_PACKET_LEN
+#include "./header.h" // atem_header_len_get, atem_header_flags_get, atem_header_unknownid_get, atem_header_len_get_verify, 
+#include "./logs.h" // logs_print_buffer, logs_enable_recv, logs_enable_send
+#include "./atem_sock.h"
 
 #define TIMEOUT_LISTEN 10
 #define TIMEOUT_WAIT 2
 
 
 
-// The ipv4 address to the server to test
-char* atemServerAddr;
-
-
-
 // Verifies ATEM packet length and unknown id
-void atem_packet_verify(uint8_t* packet, ssize_t recvLen) {
-	print_buffer("Received packet", packet, recvLen);
+void atem_packet_verify(uint8_t* packet, size_t recvLen) {
+	if (logs_enable_recv) {
+		printf("Received packet:\n");
+		logs_print_buffer(stdout, packet, recvLen);
+	}
 
 	// Verifies unknown id
 	int checkUnknownId = 0;
@@ -35,20 +34,20 @@ void atem_packet_verify(uint8_t* packet, ssize_t recvLen) {
 		uint8_t unknownId = atem_header_unknownid_get(packet);
 		if (flags == ATEM_FLAG_SYN) {
 			if (unknownId != 0x003a) {
-				print_debug("uknown id 0x3a\n");
-				testrunner_abort();
+				fprintf(stderr, "unknown id 0x3a\n");
+				abort();
 			}
 		}
 		else if (flags == (ATEM_FLAG_SYN | ATEM_FLAG_RETX)) {
 			if (unknownId != 0x00cd) {
-				print_debug("uknown id 0xcd\n");
-				testrunner_abort();
+				fprintf(stderr, "unknown id 0xcd\n");
+				abort();
 			}
 		}
 		else {
 			if (unknownId != 0x0000) {
-				print_debug("uknown id 0x0000\n");
-				testrunner_abort();
+				fprintf(stderr, "unknown id 0x0000\n");
+				abort();
 			}
 		}
 	}
@@ -61,25 +60,7 @@ void atem_packet_verify(uint8_t* packet, ssize_t recvLen) {
 
 // Creates a UDP socket for communicating with an ATEM switcher or client
 int atem_socket_create(void) {
-	// Creates socket
-	int sock = socket(AF_INET, SOCK_DGRAM, 0);
-	if (sock == -1) {
-		perror("Failed to create socket");
-		testrunner_abort();
-	}
-
-	// Sets socket to timeout if failing to transmit or receive data
-	struct timeval timer = { .tv_sec = TIMEOUT_WAIT };
-	if (setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, &timer, sizeof(timer))) {
-		perror("Failed to setsockopt SORCVTIMEO");
-		testrunner_abort();
-	}
-	if (setsockopt(sock, SOL_SOCKET, SO_SNDTIMEO, &timer, sizeof(timer))) {
-		perror("Failed to setsockopt SO_SNDTIMEO");
-		testrunner_abort();
-	}
-
-	return sock;
+	return simple_socket_create(SOCK_DGRAM);
 }
 
 // Closes socket to ATEM switcher or client
@@ -91,15 +72,7 @@ void atem_socket_close(int sock) {
 
 // Connects to the ATEM switcher at atemServerAddr
 void atem_socket_connect(int sock) {
-	struct sockaddr_in addr = {
-		.sin_family = AF_INET,
-		.sin_port = htons(ATEM_PORT),
-		.sin_addr.s_addr = inet_addr(atemServerAddr)
-	};
-	if (connect(sock, (const struct sockaddr*)&addr, sizeof(addr))) {
-		perror("Failed to connect socket");
-		testrunner_abort();
-	}
+	simple_socket_connect(sock, ATEM_PORT, "ATEM_CLIENT_ADDR");
 }
 
 // Listens for an ATEM client to connect
@@ -111,23 +84,14 @@ uint16_t atem_socket_listen(int sock, uint8_t* packet) {
 		.sin_addr.s_addr = INADDR_ANY
 	};
 	if (bind(sock, (const struct sockaddr*)&bindAddr, sizeof(bindAddr))) {
-		perror("Failed to bind socket");
-		testrunner_abort();
+		perror("Failed to bind server socket");
+		abort();
 	}
 
 	// Awaits first packet from ATEM client
-	fd_set fds;
-	FD_ZERO(&fds);
-	FD_SET(sock, &fds);
-	struct timeval timer = { .tv_sec = TIMEOUT_LISTEN };
-	int selectLen = select(sock + 1, &fds, NULL, NULL, NULL);
-	if (selectLen == -1) {
-		perror("Select got an error");
-		testrunner_abort();
-	}
-	if (selectLen != 1) {
-		print_debug("Received unexpected select value: %d\n", selectLen);
-		testrunner_abort();
+	if (simple_socket_select(sock, TIMEOUT_LISTEN) != 1) {
+		fprintf(stderr, "No client connected\n");
+		abort();
 	}
 
 	// Receives first packet
@@ -139,12 +103,12 @@ uint16_t atem_socket_listen(int sock, uint8_t* packet) {
 			perror("Failed to recvfrom packet");
 		}
 		else if (recvLen == 0) {
-			print_debug("Received empty packet from client\n");
+			fprintf(stderr, "Received empty packet from client\n");
 		}
 		else {
-			print_debug("Function call 'recvfrom' failed: %zu\n", recvLen);
+			fprintf(stderr, "Failed to recvfrom: %zu\n", recvLen);
 		}
-		testrunner_abort();
+		abort();
 	}
 
 	// Verifies received ATEM packet
@@ -153,7 +117,7 @@ uint16_t atem_socket_listen(int sock, uint8_t* packet) {
 	// Connects socket to ATEM client
 	if (connect(sock, (struct sockaddr*)&peerAddr, peerAddrLen)) {
 		perror("Failed to connect socket");
-		testrunner_abort();
+		abort();
 	}
 
 	// Returns port of connected client
@@ -167,8 +131,10 @@ void atem_socket_send(int sock, uint8_t* packet) {
 	// Gets packet length from packet
 	uint16_t len = atem_header_len_get(packet);
 
-	// Prints packet
-	print_buffer("Sending packet", packet, len);
+	if (logs_enable_send) {
+		printf("Sending packet:\n");
+		logs_print_buffer(stdout, packet, len);
+	}
 
 	// Sends packet to socket
 	ssize_t sendLen = send(sock, packet, len, 0);
@@ -180,11 +146,11 @@ void atem_socket_send(int sock, uint8_t* packet) {
 	}
 	// Handles unexpected return value
 	else {
-		print_debug("Function call 'send' failed: %zu (expected %d)\n", sendLen, len);
+		fprintf(stderr, "Failed to send: %zu (expected %d)\n", sendLen, len);
 	}
 
 	// Aborts running test
-	testrunner_abort();
+	abort();
 }
 
 // Receives ATEM packet
@@ -196,12 +162,12 @@ void atem_socket_recv(int sock, uint8_t* packet) {
 			perror("Failed to recv packet");
 		}
 		else if (recvLen == 0) {
-			print_debug("Received empty packet from client\n");
+			fprintf(stderr, "Received empty packet from client\n");
 		}
 		else {
-			print_debug("Function call 'recv' failed: %zu\n", recvLen);
+			fprintf(stderr, "Failed to recv: %zu\n", recvLen);
 		}
-		testrunner_abort();
+		abort();
 	}
 
 	// Verifies received ATEM packet
@@ -212,22 +178,10 @@ void atem_socket_recv(int sock, uint8_t* packet) {
 
 // Ensures no more data is written when expecting session to be closed
 void atem_socket_norecv(int sock) {
-	struct fd_set fds;
-	FD_ZERO(&fds);
-	FD_SET(sock, &fds);
-	struct timeval timer = { .tv_sec = ATEM_TIMEOUT };
-	int selectLen = select(sock + 1, &fds, NULL, NULL, &timer);
+	if (simple_socket_select(sock, ATEM_TIMEOUT) == 0) return;
 
-	if (selectLen == 0) return;
-	
-	if (selectLen == -1) {
-		perror("Select got an error");
-	}
-	else {
-		uint8_t packet[ATEM_MAX_PACKET_LEN];
-		atem_socket_recv(sock, packet);
-		print_debug("Received data when expecting not to\n");
-	}
-
-	testrunner_abort();
+	uint8_t packet[ATEM_MAX_PACKET_LEN];
+	atem_socket_recv(sock, packet);
+	fprintf(stderr, "Received data when expecting to time out\n");
+	abort();
 }
