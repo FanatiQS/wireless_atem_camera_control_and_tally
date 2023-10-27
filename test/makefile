@@ -21,11 +21,14 @@ run_%: $(BUILD_DIR)/%
 
 
 
-$(BUILD_DIR)/http_parser: http/http_parser.c http/http_sock.c utils/simple_socket.c
+$(BUILD_DIR)/http_parser: http/http_parser.c http/http_sock.c utils/simple_socket.c utils/logs.c
 TESTS_DEVICE += run_http_parser
 
-$(BUILD_DIR)/http_connect: http/http_connect.c http/http_sock.c utils/simple_socket.c
+$(BUILD_DIR)/http_connect: http/http_connect.c http/http_sock.c utils/simple_socket.c utils/logs.c
 TESTS_DEVICE += run_http_connect
+
+$(BUILD_DIR)/dns_parser: http/dns_parser.c utils/simple_socket.c utils/logs.c
+TESTS_DEVICE += run_dns_parser
 
 # Runs all tests for device
 .PHONY: device
@@ -43,7 +46,7 @@ DEP_FILES = $(TESTS_ALL:run_%=$(BUILD_DIR)/%.d) $(BUILD_DIR)/playground.d
 -include $(DEP_FILES)
 
 # Runs playground
-$(BUILD_DIR)/playground: playground.c http/http_sock.c utils/simple_socket.c
+$(BUILD_DIR)/playground: playground.c http/http_sock.c utils/simple_socket.c utils/logs.c
 .PHONY: playground
 run_playground: $(BUILD_DIR)/playground
 playground: run_playground
