@@ -1,19 +1,17 @@
 #include <stdint.h> // uint8_t, uint16_t
 #include <stddef.h> // size_t
 #include <string.h> // strlen, memcpy, memcmp
-#include <assert.h> // assert
 #include <stdlib.h> // abort
-#include <stdio.h> // fprintf, stderr, perror
+#include <stdio.h> // fprintf, stderr, printf
 
 #include <unistd.h> // close
 #include <sys/socket.h> // SOCK_DGRAM
 #include <arpa/inet.h> // htons, ntohs
-#include <sys/select.h> // fd_set, FD_ZERO, FD_SET, select
-#include <sys/time.h> // struct timeval
 
-#include "../utils/simple_socket.h" // simple_socket_create, simple_socket_connect, simple_socket_write, simple_socket_recv
+#include "../utils/simple_socket.h" // simple_socket_create, simple_socket_connect, simple_socket_write, simple_socket_recv, simple_socket_select
 #include "../utils/logs.h" // logs_print_buffer, logs_enable_send, logs_enable_recv
 #include "../utils/runner.h" // RUN_TEST
+
 
 
 #define DNS_PORT (53)
@@ -201,7 +199,7 @@ int main(void) {
 
 	// Tests above maximum packet length
 	RUN_TEST(
-		uint8_t buf[DNS_LEN_MAX] = {0};
+		uint8_t buf[DNS_LEN_MAX * 2] = {0};
 		size_t bufLen = DNS_LEN_MIN;
 		for (int i = 0; i < 8; i++) {
 			dns_append_label(buf, &bufLen, "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
