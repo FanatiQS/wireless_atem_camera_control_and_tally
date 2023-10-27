@@ -5,6 +5,7 @@
 #include <errno.h> // errno
 
 #include <sys/socket.h> // socket, AF_INET, connect, struct sockaddr, setsockopt, SOL_SOCKET, SO_RCVTIMEO, SO_SNDTIMEO, ssize_t, send, recv
+#include <sys/select.h> // fd_set, FD_ZERO, FD_SET, select
 #include <sys/time.h> // struct timeval tv
 #include <netinet/in.h> // struct sockaddr_in
 #include <arpa/inet.h> // htons, inet_addr
@@ -129,4 +130,22 @@ bool simple_socket_recv_error(int sock, int err, void* buf, size_t* len) {
 	}
 
 	return true;
+}
+
+// Awaits data or timeout for socket
+int simple_socket_select(int sock, int timeout) {
+	fd_set fds;
+	FD_ZERO(&fds);
+	FD_SET(sock, &fds);
+	struct timeval tv = { .tv_sec = timeout };
+	int selectLen = select(sock + 1, &fds, NULL, NULL, &tv);
+	if (selectLen == -1) {
+		perror("Select got an error");
+		abort();
+	}
+	if (selectLen < 0 || selectLen > 1) {
+		fprintf(stderr, "Unexpected return value from select: %d\n", selectLen);
+		abort();
+	}
+	return selectLen;
 }

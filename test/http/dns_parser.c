@@ -127,22 +127,9 @@ void dns_expect_timeout(uint8_t* reqBuf, size_t reqLen) {
 	dns_socket_write(sock, reqBuf, reqLen);
 
 	// Expects timeout
-	fd_set fds;
-	FD_ZERO(&fds);
-	FD_SET(sock, &fds);
-	struct timeval tv = { .tv_sec = 4 };
-	int selectLen = select(sock + 1, &fds, NULL, NULL, &tv);
-	if (selectLen == -1) {
-		perror("Select go an error");
-		abort();
-	}
-	if (selectLen == 1) {
+	if (simple_socket_select(sock, 4) == 1) {
 		fprintf(stderr, "Unexpectedly got data:\n");
 		dns_socket_recv_print(sock);
-		abort();
-	}
-	else if (selectLen != 0) {
-		fprintf(stderr, "Unexpected select value: %d\n", selectLen);
 		abort();
 	}
 	close(sock);
