@@ -5,7 +5,7 @@
 #include "../../src/atem_protocol.h"
 #include "../../src/atem.h"
 #include "./header.h"
-#include "./socket.h"
+#include "./atem_sock.h"
 #include "./payload.h"
 #include "./handshake.h"
 #include "./logs.h"
