@@ -17,8 +17,7 @@ void http_socket_recv_cmp(int sock, const char* cmpBuf);
 char* http_status(int code);
 void http_socket_recv_cmp_status(int sock, int code);
 
-void http_print(char* str, FILE* pipe);
-void http_socket_recvprint(int sock);
+void http_socket_recv_print(int sock);
 
 void http_socket_recv_close(int sock);
 void http_socket_recv_flush(int sock);

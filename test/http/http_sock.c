@@ -1,5 +1,5 @@
 #include <stdlib.h> // abort, NULL, getenv
-#include <stdio.h> // perror, fprintf, stderr, printf, snprintf, FILE, stdout
+#include <stdio.h> // perror, fprintf, stderr, printf, snprintf, stdout
 #include <assert.h> // assert
 #include <string.h> // strlen, memcmp
 
@@ -7,6 +7,7 @@
 #include <unistd.h> // close
 
 #include "../utils/simple_socket.h" // simple_socket_create, simple_socket_connect, simple_socket_write, simple_socket_recv, simple_socket_recv_error
+#include "../utils/logs.h" // logs_print_string
 #include "./http_sock.h"
 
 #define HTTP_PORT (80)
@@ -103,16 +104,11 @@ void http_socket_recv_cmp_status(int sock, int code) {
 
 
 
-// Prints multiline string with clear start and stop
-void http_print(char* buf, FILE* pipe) {
-	fprintf(pipe, "====START====\n%s\n====END====\n", buf);
-}
-
 // Reads HTTP data from stream and prints it with clear start and stop
-void http_socket_recvprint(int sock) {
+void http_socket_recv_print(int sock) {
 	char buf[BUF_LEN];
 	http_socket_recv(sock, buf, sizeof(buf));
-	http_print(buf, stdout);
+	logs_print_string(stdout, buf);
 }
 
 
@@ -143,7 +139,7 @@ void http_socket_recv_error(int sock, int err) {
 	}
 	else {
 		fprintf(stderr, "Socket unexpectedly got response data: %zd\n", buflen);
-		http_print(buf, stderr);
+		logs_print_string(stderr, buf);
 	}
 	abort();
 }
