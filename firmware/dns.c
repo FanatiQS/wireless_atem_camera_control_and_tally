@@ -113,8 +113,7 @@ static void dns_recv_callback(void* arg, struct udp_pcb* pcb, struct pbuf* p, co
 
 	// Ensures query doesn't extend outside packet
 	if ((index + 4) > p->tot_len) {
-		pbuf_put_at(p, DNS_INDEX_RCODE, DNS_RCODE_FORMERR);
-		dns_prepare_send(p, DNS_LEN_HEADER);
+		dns_header_error(p, DNS_RCODE_FORMERR);
 		udp_sendto(pcb, p, addr, port);
 		DEBUG_DNS_PRINTF("Query expands out of packet\n");
 		pbuf_free(p);
@@ -131,7 +130,7 @@ static void dns_recv_callback(void* arg, struct udp_pcb* pcb, struct pbuf* p, co
 		pbuf_put_at(p, DNS_INDEX_RCODE, DNS_RCODE_NXDOMAIN);
 		dns_prepare_send(p, index);
 		udp_sendto(pcb, p, addr, port);
-		DEBUG_DNS_PRINTF("Unsupported query qtype %d\n", qtype);
+		DEBUG_DNS_PRINTF("Unsupported query qtype: %d\n", qtype);
 		pbuf_free(p);
 		return;
 	}
