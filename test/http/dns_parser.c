@@ -241,7 +241,7 @@ int main(void) {
 	// Tests invalid query length
 	RUN_TEST(
 		uint8_t buf[DNS_LEN_MAX] = {0};
-		dns_expect_error_short(buf, dns_append_default(buf, DNS_LEN_MIN) - 1, DNS_RCODE_FORMERR)
+		dns_expect_error_short(buf, dns_append_default(buf, DNS_LEN_MIN) - 1, DNS_RCODE_FORMERR);
 	);
 
 	// Tests label expanding out of packet
