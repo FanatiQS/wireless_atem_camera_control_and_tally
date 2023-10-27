@@ -6,7 +6,7 @@
 #include <sys/socket.h> // SOCK_STREAM, shutdown
 #include <unistd.h> // close
 
-#include "../utils/simple_socket.h" // simple_socket_create, simple_socket_connect, simple_socket_write, simple_socket_recv, simple_socket_recv_error
+#include "../utils/simple_socket.h" // simple_socket_create, simple_socket_connect, simple_socket_send, simple_socket_recv, simple_socket_recv_error
 #include "../utils/logs.h" // logs_print_string
 #include "./http_sock.h"
 
@@ -25,13 +25,13 @@ int http_socket_create(void) {
 
 
 // Sends HTTP buffer to server
-void http_socket_write(int sock, const char* buf, size_t len) {
-	simple_socket_write(sock, (void*)buf, len);
+void http_socket_send_buffer(int sock, const char* buf, size_t len) {
+	simple_socket_send(sock, (void*)buf, len);
 }
 
 // Sends HTTP string to server
-void http_socket_send(int sock, const char* str) {
-	http_socket_write(sock, str, strlen(str));
+void http_socket_send_string(int sock, const char* str) {
+	http_socket_send_buffer(sock, str, strlen(str));
 }
 
 
@@ -160,14 +160,14 @@ void http_socket_close(int sock) {
 
 
 // Sends HTTP POST buffer body to server
-void http_socket_body_write(int sock, const char* body, size_t bodyLen) {
+void http_socket_body_send_buffer(int sock, const char* body, size_t bodyLen) {
 	char reqBuf[BUF_LEN];
 	int reqLen = snprintf(reqBuf, sizeof(reqBuf), "POST / HTTP/1.1\r\nContent-Length: %zu\r\n\r\n%s", bodyLen, body);
 	assert((size_t)reqLen < sizeof(reqBuf));
-	http_socket_write(sock, reqBuf, reqLen);
+	http_socket_send_buffer(sock, reqBuf, reqLen);
 }
 
 // Sends HTTP POST string body to server
-void http_socket_body_send(int sock, const char* body) {
-	http_socket_body_write(sock, body, strlen(body));
+void http_socket_body_send_string(int sock, const char* body) {
+	http_socket_body_send_buffer(sock, body, strlen(body));
 }

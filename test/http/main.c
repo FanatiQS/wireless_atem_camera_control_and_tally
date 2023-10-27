@@ -1,7 +1,7 @@
 #include <stdio.h> // printf
 #include <string.h> // strlen
 
-#include "./http_sock.h" // http_socket_create, http_socket_body_send, http_socket_body_write, http_socket_recv_cmp_status, http_socket_recv_cmp, http_socket_close, http_socket_send
+#include "./http_sock.h" // http_socket_create, http_socket_body_send_string, http_socket_body_send_buffer, http_socket_recv_cmp_status, http_socket_recv_cmp, http_socket_close, http_socket_send_string
 #include "../utils/runner.h" // RUN_TEST
 
 
@@ -9,7 +9,7 @@
 // Sends HTTP POST request expecting success
 void test_post_success(const char* body) {
 	int sock = http_socket_create();
-	http_socket_body_send(sock, body);
+	http_socket_body_send_string(sock, body);
 	http_socket_recv_cmp_status(sock, 200);
 	http_socket_recv_cmp(sock, "success");
 	http_socket_close(sock);
@@ -18,8 +18,8 @@ void test_post_success(const char* body) {
 // Sends segmented HTTP POST request expecting success
 void test_post_success_segment(const char* body1, const char* body2) {
 	int sock = http_socket_create();
-	http_socket_body_write(sock, body1, strlen(body1) + strlen(body2));
-	http_socket_send(sock, body2);
+	http_socket_body_send_buffer(sock, body1, strlen(body1) + strlen(body2));
+	http_socket_send_string(sock, body2);
 	http_socket_recv_cmp_status(sock, 200);
 	http_socket_recv_cmp(sock, "success");
 	http_socket_close(sock);

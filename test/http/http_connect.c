@@ -9,7 +9,7 @@
 #include <sys/select.h> // select, FD_SETSIZE, FD_SET, FD_ZERO, fd_set, FD_ISSET
 #include <sys/time.h> // struct timeval
 
-#include "./http_sock.h" // http_socket_create, http_socket_send, http_socket_recv_len, http_socket_close, http_socket_recv_flush, http_socket_recv_cmp_status, http_socket_recv_close
+#include "./http_sock.h" // http_socket_create, http_socket_send_string, http_socket_recv_len, http_socket_close, http_socket_recv_flush, http_socket_recv_cmp_status, http_socket_recv_close
 #include "../utils/runner.h" // RUN_TEST
 
 // Roughly number of seconds between progress prints
@@ -36,7 +36,7 @@ int main(void) {
 		printf("Test valid requests\n");
 		for (int i = 0; i < iters; i++) {
 			int sock = http_socket_create();
-			http_socket_send(sock, "GET / HTTP/1.0\r\n\r\n");
+			http_socket_send_string(sock, "GET / HTTP/1.0\r\n\r\n");
 			http_socket_recv_cmp_status(sock, 200);
 			while (http_socket_recv_len(sock));
 			http_socket_close(sock);
@@ -49,7 +49,7 @@ int main(void) {
 		printf("Test invalid requests\n");
 		for (int i = 0; i < iters; i++) {
 			int sock = http_socket_create();
-			http_socket_send(sock, "GEF / HTTP/1.0\r\n\r\n");
+			http_socket_send_string(sock, "GEF / HTTP/1.0\r\n\r\n");
 			http_socket_recv_cmp_status(sock, 405);
 			while (http_socket_recv_len(sock));
 			http_socket_close(sock);
@@ -62,8 +62,8 @@ int main(void) {
 		printf("Test write after valid request\n");
 		for (int i = 0; i < iters; i++) {
 			int sock = http_socket_create();
-			http_socket_send(sock, "GET / HTTP/1.0\r\n\r\n");
-			http_socket_send(sock, "X");
+			http_socket_send_string(sock, "GET / HTTP/1.0\r\n\r\n");
+			http_socket_send_string(sock, "X");
 			http_socket_recv_cmp_status(sock, 200);
 			while (http_socket_recv_len(sock));
 			http_socket_close(sock);
@@ -78,8 +78,8 @@ int main(void) {
 		printf("Test write after invalid request\n");
 		for (int i = 1; i <= iters; i++) {
 			int sock = http_socket_create();
-			http_socket_send(sock, "GEF / HTTP/1.1\r\n\r\n");
-			http_socket_send(sock, "X");
+			http_socket_send_string(sock, "GEF / HTTP/1.1\r\n\r\n");
+			http_socket_send_string(sock, "X");
 			http_socket_recv_cmp_status(sock, 405);
 			http_socket_recv_flush(sock);
 			http_socket_recv_error(sock, ECONNRESET);

@@ -8,7 +8,7 @@
 #include <sys/socket.h> // SOCK_DGRAM
 #include <arpa/inet.h> // htons, ntohs
 
-#include "../utils/simple_socket.h" // simple_socket_create, simple_socket_connect, simple_socket_write, simple_socket_recv, simple_socket_select
+#include "../utils/simple_socket.h" // simple_socket_create, simple_socket_connect, simple_socket_send, simple_socket_recv, simple_socket_select
 #include "../utils/logs.h" // logs_print_buffer, logs_enable_send, logs_enable_recv
 #include "../utils/runner.h" // RUN_TEST
 
@@ -50,12 +50,12 @@ int dns_socket_create(void) {
 }
 
 // Sends binary DNS data request to server
-void dns_socket_write(int sock, uint8_t* reqBuf, size_t reqLen) {
+void dns_socket_send(int sock, uint8_t* reqBuf, size_t reqLen) {
 	if (logs_enable_send) {
 		printf("Request packet:\n");
 		logs_print_buffer(stdout, reqBuf, reqLen);
 	}
-	simple_socket_write(sock, reqBuf, reqLen);
+	simple_socket_send(sock, reqBuf, reqLen);
 }
 
 // Receives binary DNS data response from server
@@ -122,7 +122,7 @@ size_t dns_append_default(uint8_t* reqBuf, size_t reqLen) {
 void dns_expect_timeout(uint8_t* reqBuf, size_t reqLen) {
 	// Sends DNS request
 	int sock = dns_socket_create();
-	dns_socket_write(sock, reqBuf, reqLen);
+	dns_socket_send(sock, reqBuf, reqLen);
 
 	// Expects timeout
 	if (simple_socket_select(sock, 4) == 1) {
@@ -159,7 +159,7 @@ void dns_expect_error_validate(int sock, uint8_t* cmpBuf, size_t cmpLen) {
 void dns_expect_error_short(uint8_t* reqBuf, size_t reqLen, int code) {
 	// Sends DNS request
 	int sock = dns_socket_create();
-	dns_socket_write(sock, reqBuf, reqLen);
+	dns_socket_send(sock, reqBuf, reqLen);
 
 	// Creates expected response
 	uint8_t cmpBuf[DNS_LEN_MIN] = {0};
@@ -175,7 +175,7 @@ void dns_expect_error_short(uint8_t* reqBuf, size_t reqLen, int code) {
 void dns_expect_error_long(uint8_t* reqBuf, size_t reqLen, int code) {
 	// Sends DNS request
 	int sock = dns_socket_create();
-	dns_socket_write(sock, reqBuf, reqLen);
+	dns_socket_send(sock, reqBuf, reqLen);
 
 	// Creates expected response
 	uint8_t cmpBuf[DNS_LEN_MAX] = {0};

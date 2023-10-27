@@ -62,7 +62,7 @@ void simple_socket_connect(int sock, int port, const char* envKey) {
 }
 
 // Sends a buffer over the socket
-void simple_socket_write(int sock, void* buf, size_t len) {
+void simple_socket_send(int sock, void* buf, size_t len) {
 	// Ensures there is a buffer to send
 	if (len == 0) {
 		fprintf(stderr, "Unable to send 0 length buffer\n");
