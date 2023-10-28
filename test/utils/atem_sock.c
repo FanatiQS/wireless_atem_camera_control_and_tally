@@ -11,7 +11,7 @@
 #include "./simple_socket.h" // simple_socket_create, simple_socket_select
 #include "../../src/atem_protocol.h" // ATEM_FLAG_SYN, ATEM_FLAG_RETX
 #include "../../src/atem.h" // ATEM_PORT, ATEM_MAX_PACKET_LEN
-#include "./header.h" // atem_header_len_get, atem_header_flags_get, atem_header_unknownid_get, atem_header_len_get_verify, 
+#include "./atem_header.h" // atem_header_len_get, atem_header_flags_get, atem_header_unknownid_get, atem_header_len_get_verify, 
 #include "./logs.h" // logs_print_buffer, logs_enable_recv, logs_enable_send
 #include "./atem_sock.h"
 
