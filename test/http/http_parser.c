@@ -310,4 +310,5 @@ int main(void) {
 
 
 	printf("All tests successfully completed\n");
+	return 0;
 }
