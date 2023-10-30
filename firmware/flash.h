@@ -56,6 +56,6 @@ struct cache_t {
 
 bool flash_config_read(struct config_t* conf);
 bool flash_cache_read(struct cache_t* cache);
-bool flash_cache_write(struct cache_t* cache);
+void flash_cache_write(struct cache_t* cache);
 
 #endif // FLASH_H

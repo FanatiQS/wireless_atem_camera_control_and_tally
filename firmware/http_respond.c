@@ -5,9 +5,8 @@
 #include <stddef.h> // size_t
 #include <stdbool.h> // bool, false, true
 
-#include <lwip/tcp.h> // struct tcp_pcb, tcp_write, TCP_WRITE_FLAG_COPY, tcp_sndbuf, tcp_output, tcp_sndqueuelen, tcp_err, tcp_recv, tcp_poll, tcp_sent, tcp_abort, tcp_shutdown
+#include <lwip/tcp.h> // struct tcp_pcb, tcp_write, TCP_WRITE_FLAG_COPY, tcp_sndbuf, tcp_output, tcp_sndqueuelen, tcp_err, tcp_recv, tcp_poll, tcp_sent, tcp_abort, tcp_shutdown, tcp_recv_fn
 #include <lwip/timeouts.h> // sys_timeout
-#include <lwip/mem.h> // mem_free
 #include <lwip/arch.h> // LWIP_UNUSED_ARG
 #include <lwip/def.h> // LWIP_MIN
 #include <lwip/err.h> // ERR_OK, ERR_ABRT
@@ -16,7 +15,7 @@
 #include <lwip/pbuf.h> // struct pbuf
 
 #ifdef ESP8266
-#include <user_interface.h> // wifi_station_get_connect_status, STATION_GOT_IP, wifi_station_get_rssi, system_restart, wifi_set_event_handler_cb
+#include <user_interface.h> // wifi_station_get_connect_status, STATION_GOT_IP, wifi_station_get_rssi
 #endif // ESP8266
 
 #include "./debug.h" // DEBUG_ERR_PRINTF, DEBUG_HTTP_PRINTF
@@ -28,46 +27,36 @@
 
 
 
-// Restarts device
-static void http_reboot_now(void) {
-	DEBUG_HTTP_PRINTF("Rebooting...\n");
-#ifdef ESP8266
-	wifi_set_event_handler_cb(NULL);
-	system_restart();
-#endif // ESP8266
+// Writes configuration to flash and restarts device
+static void http_reboot_callback(void* arg) {
+	struct http_t* http = (struct http_t*)arg;
+	flash_cache_write(&(http->cache));
 }
 
 // Restarts device if client closes successfully or times out
 static err_t http_reboot_tcp_callback(void* arg, struct tcp_pcb* pcb) {
-	LWIP_UNUSED_ARG(arg);
 	tcp_err(pcb, NULL);
 	tcp_recv(pcb, NULL);
 	tcp_poll(pcb, NULL, 0);
 	tcp_abort(pcb);
-	http_reboot_now();
+	http_reboot_callback(arg);
 	return ERR_ABRT;
 }
 
-// Restarts device async on error to not cause segfault when freeing pcb
-static void http_reboot_timeout_callback(void* arg) {
-	LWIP_UNUSED_ARG(arg);
-	http_reboot_now();
-}
-
-// Restarts device if client gets an error
-static void http_reboot_err_callback(void* arg) {
-	LWIP_UNUSED_ARG(arg);
-	sys_timeout(0, http_reboot_timeout_callback, NULL);
+// Restarts device async on error to not cause segfault when internally freeing pcb
+static void http_reboot_err_callback(void* arg, err_t err) {
+	LWIP_UNUSED_ARG(err);
+	DEBUG_ERR_PRINTF("HTTP client %p got an error after POST: %d\n", (void*)((struct http_t*)arg)->pcb, (int)err);
+	sys_timeout(0, http_reboot_callback, arg);
 }
 
 // Enqueues restarting device after TCP pcb has closed
 static inline void http_reboot(struct http_t* http) {
 	tcp_recv(http->pcb, (tcp_recv_fn)http_reboot_tcp_callback);
 	tcp_poll(http->pcb, http_reboot_tcp_callback, 2);
-	tcp_err(http->pcb, (tcp_err_fn)http_reboot_err_callback);
+	tcp_err(http->pcb, http_reboot_err_callback);
 	tcp_sent(http->pcb, NULL);
 	tcp_shutdown(http->pcb, false, true);
-	mem_free(http);
 }
 
 
@@ -279,12 +268,6 @@ bool http_respond(struct http_t* http) {
 bool http_post_completed(struct http_t* http) {
 	// Keeps parsing body until received expected length
 	if (http->remainingBodyLen > 0) return false;
-
-	// Writes configuration to flash
-	if (!flash_cache_write(&(http->cache))) {
-		http_err(http, "500 Server Error");
-		return true;
-	}
 
 	// Sends HTTP response
 	http->state = HTTP_STATE_DONE;
