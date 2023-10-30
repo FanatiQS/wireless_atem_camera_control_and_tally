@@ -39,7 +39,7 @@ static err_t http_reboot_tcp_callback(void* arg, struct tcp_pcb* pcb) {
 	tcp_recv(pcb, NULL);
 	tcp_poll(pcb, NULL, 0);
 	tcp_abort(pcb);
-	http_reboot_callback(arg);
+	sys_timeout(0, http_reboot_callback, arg);
 	return ERR_ABRT;
 }
 

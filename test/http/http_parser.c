@@ -2,10 +2,18 @@
 #include <errno.h> // ECONNRESET
 #include <string.h> // strlen
 
+#include <unistd.h> // sleep
+
 #include "./http_sock.h" // http_socket_create, http_socket_send_string, http_socket_recv_cmp_status, http_socket_recv_len, http_socket_close, http_socket_recv_close, http_socket_recv_error, http_socket_body_send_buffer, http_socket_body_send_string
 #include "../utils/runner.h" // RUN_TEST
 
 
+
+// Delays next test to let device restart on successful POST
+void test_delay(const char* req, int code) {
+	if (memcmp("POST", req, 4) && code != 200) return;
+	sleep(1);
+}
 
 // Sends HTTP request expecting specified response code
 void test_code(const char* req, int code) {
@@ -14,6 +22,7 @@ void test_code(const char* req, int code) {
 	http_socket_recv_cmp_status(sock, code);
 	while (http_socket_recv_len(sock));
 	http_socket_close(sock);
+	test_delay(req, code);
 }
 
 // Sends HTTP request in two segments expecting specified response code
@@ -24,6 +33,7 @@ void test_code_segment(const char* req1, const char* req2, int code) {
 	http_socket_recv_cmp_status(sock, code);
 	while (http_socket_recv_len(sock));
 	http_socket_close(sock);
+	test_delay(req1, code);
 }
 
 // Sends HTTP request in to segments expecting specified response code and closed by server before send complete
