@@ -11,6 +11,12 @@
 // String representing the current ATEM connection status
 extern const char* atem_state;
 
+// All possible connection states to the ATEM switcher except unconnected
+extern const char* const atem_state_connected;
+extern const char* const atem_state_dropped;
+extern const char* const atem_state_rejected;
+extern const char* const atem_state_disconnected;
+
 // The connection context to the ATEM switcher
 extern struct atem_t atem;
 
