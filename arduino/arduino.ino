@@ -182,6 +182,7 @@ void setup() {
 #endif // DEUBG
 
 	// Initializes wifi, ATEM connection, SDI shield and GPIO LEDs
+	WiFi.begin();
 	waccat_init();
 
 	// Sets up configuration HTTP server
