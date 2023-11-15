@@ -9,6 +9,21 @@
 #define ATEM_BLE_UUID_SERVICE "291D567A-6D75-11E6-8B77-86F30CA893D3"
 #define ATEM_BLE_UUID_CHARACTERISTIC "5DD3465F-1AEE-4299-8493-D2ECA2F8E1BB"
 
+// Gets thread local implementation
+#if !defined(ATEM_THREAD_LOCAL)
+// C23 has native support with keyword
+#if __STDC_VERSION__ >= 202311
+#define ATEM_THREAD_LOCAL thread_local
+// C11 has support with wrapper in <thread.h> header that doesn't have to be supported
+#elif __STDC_VERSION__ >= 201112
+#define ATEM_THREAD_LOCAL _Thread_local
+// No thread safe support
+#else
+#define NO_ATEM_THREAD_LOCAL
+#define ATEM_THREAD_LOCAL
+#endif
+#endif // !defined(ATEM_THREAD_LOCAL)
+
 /**
  * Default port for ATEM
  */
