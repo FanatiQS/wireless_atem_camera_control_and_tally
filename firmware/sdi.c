@@ -48,7 +48,7 @@
 
 // Writes variadic number of bytes to SDI shield register
 #define SDI_WRITE_BUF(buf) I2C_WRITE(buf, sizeof(buf) / sizeof(buf[0]))
-#define SDI_WRITE(reg, ...) SDI_WRITE_BUF(((uint8_t[]){ (reg) & 0xff, (reg) >> 8, __VA_ARGS__ }))
+#define SDI_WRITE(reg, ...) SDI_WRITE_BUF((uint8_t[]){ (reg) & 0xff, (reg) >> 8, __VA_ARGS__ })
 
 // Reads SDI shield data from registers to buffer
 static void sdi_read(uint16_t reg, uint8_t* readBuf, uint8_t readLen) {
