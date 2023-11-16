@@ -34,18 +34,6 @@
 #define kRegCONTROL_COVERIDE_Mask 0x01
 #define kRegCONTROL_TOVERIDE_Mask 0x02
 
-// Prints an SDI version type read from shield
-#if DEBUG
-#define SDI_VERSION_PRINT(label, reg)\
-	do {\
-		uint8_t buf[2];\
-		sdi_read(reg, buf, sizeof(buf));\
-		DEBUG_PRINTF("SDI shield " label " version: %d.%d\n", buf[1], buf[0]);\
-	} while (0)
-#else // DEBUG
-#define SDI_VERSION_PRINT(label, reg)
-#endif // DEBUG
-
 // Writes variadic number of bytes to SDI shield register
 #define SDI_WRITE_BUF(buf) I2C_WRITE(buf, sizeof(buf) / sizeof(buf[0]))
 #define SDI_WRITE(reg, ...) SDI_WRITE_BUF(((uint8_t[]){ (reg) & 0xff, (reg) >> 8, __VA_ARGS__ }))
@@ -55,6 +43,17 @@ static void sdi_read(uint16_t reg, uint8_t* readBuf, uint8_t readLen) {
 	SDI_WRITE_BUF(((uint8_t[]){ reg & 0xff, reg >> 8 }));
 	I2C_READ(readBuf, readLen);
 }
+
+// Prints an SDI version type read from shield
+#if DEBUG
+void sdi_version_print(const char* label, uint16_t reg) {
+	uint8_t buf[2];
+	sdi_read(reg, buf, sizeof(buf));
+	DEBUG_PRINTF("SDI shield %s version: %d.%d\n", label, buf[1], buf[0]);
+}
+#else // DEBUG
+#define sdi_version_print(lable, reg)
+#endif // DEBUG
 
 
 
@@ -85,8 +84,8 @@ bool sdi_init(uint8_t dest) {
 	SDI_WRITE(kRegOTLENGTH, dest, 0);
 
 	// Prints SDI shields internal firmware and protocol version
-	SDI_VERSION_PRINT("firmware", kRegFWVERSION);
-	SDI_VERSION_PRINT("protocol", kRegPVERSION);
+	sdi_version_print("firmware", kRegFWVERSION);
+	sdi_version_print("protocol", kRegPVERSION);
 
 	return true;
 }
