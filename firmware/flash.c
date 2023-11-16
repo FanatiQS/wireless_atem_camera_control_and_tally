@@ -80,11 +80,13 @@ void flash_cache_write(struct cache_t* cache) {
 		DEBUG_ERR_PRINTF("Failed to write softap config\n");
 		return;
 	}
-
-	// Restarts device after flash write
-	wifi_set_event_handler_cb(NULL);
-	system_restart();
 #endif // ESP8266
 
 	DEBUG_HTTP_PRINTF("Rebooting...\n");
+
+	// Restarts device after flash write
+#ifdef ESP8266
+	wifi_set_event_handler_cb(NULL);
+	system_restart();
+#endif // ESP8266
 }
