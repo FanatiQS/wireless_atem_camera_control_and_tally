@@ -10,7 +10,15 @@
 #include <user_interface.h> // wifi_station_get_config, wifi_softap_get_config, wifi_station_set_config, wifi_softap_set_config
 #include <spi_flash.h> // spi_flash_erase_sector, spi_flash_write, spi_flash_read, SPI_FLASH_RESULT_OK, spi_flash_get_id, SPI_FLASH_SEC_SIZE, wifi_set_event_handler_cb, system_restart
 
-// Sets configuration address to last memory page of flash before system data, same as arduino uses for EEPROM
+/*
+ * Sets configuration address for storing custom configurations.
+ * Uses last page before "User Data" in flash (same as arduino uses for EEPROM).
+ * User data page is only followed by 3 statically sized areas:
+ * 		"RF_CAL Parameter Area" (4KB)
+ * 		"Default RF Parameter Area" (4KB),
+ * 		"System Parameter Area" (12KB),
+ * Flash maps are documented in chapter 4 of https://www.espressif.com/sites/default/files/documentation/2a-esp8266-sdk_getting_started_guide_en.pdf
+ */
 #define FLASH_SIZE (1 << ((spi_flash_get_id() >> 16) & 0xff))
 #define CONFIG_START (FLASH_SIZE - (12 + 4 + 4) * 1024)
 #endif // ESP8266
