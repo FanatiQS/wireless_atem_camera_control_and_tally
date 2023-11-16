@@ -140,7 +140,8 @@ static inline bool http_write_value_addr(struct http_t* http, uint32_t addr) {
 
 
 // Creates state machine without having to specify case number for each state
-#define HTTP_RESPONSE_CASE(condition) case __LINE__: if (condition) { http->responseState = __LINE__; break; }
+#define HTTP_RESPONSE_CASE_BODY(condition) if (condition) { http->responseState = __LINE__; break; }
+#define HTTP_RESPONSE_CASE(condition) /* FALLTHROUGH */ case __LINE__: HTTP_RESPONSE_CASE_BODY(condition)
 #define HTTP_RESPONSE_CASE_STR(http, str) HTTP_RESPONSE_CASE(!HTTP_SEND(http, str))
 
 // Resumable HTTP write state machine handling all responses

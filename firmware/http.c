@@ -368,6 +368,7 @@ static inline void http_parse(struct http_t* http, struct pbuf* p) {
 			DEBUG_HTTP_PRINTF("Got a GET request from %p\n", (void*)http->pcb);
 		}
 		// Responds with root HTML to all HTTP GET requests
+		/* FALLTHROUGH */
 		case HTTP_STATE_GET_ROOT: {
 			if (!flash_cache_read(&http->cache)) {
 				http_err(http, "500 Internal Server Error");
@@ -399,6 +400,7 @@ static inline void http_parse(struct http_t* http, struct pbuf* p) {
 			DEBUG_HTTP_PRINTF("Got a POST request from %p\n", (void*)http->pcb);
 		}
 		// Flushes start line up to beginning of next header field
+		/* FALLTHROUGH */
 		case HTTP_STATE_POST_ROOT_HEADER_NEXT: {
 			if (!http_find(http, "\r\n")) {
 				http->state = HTTP_STATE_POST_ROOT_HEADER_NEXT;
@@ -406,6 +408,7 @@ static inline void http_parse(struct http_t* http, struct pbuf* p) {
 			}
 		}
 		// Rejects client if content length header is missing from POST request
+		/* FALLTHROUGH */
 		case HTTP_STATE_POST_ROOT_HEADER_CONTENT_LENGTH_MISSING: {
 			if (http_cmp(http, "\r\n")) {
 				http_err(http, "411 Length Required");
@@ -418,6 +421,7 @@ static inline void http_parse(struct http_t* http, struct pbuf* p) {
 			}
 		}
 		// Searches stream for HTTP content length header
+		/* FALLTHROUGH */
 		case HTTP_STATE_POST_ROOT_HEADER_CONTENT_LENGTH_KEY: {
 			if (!http_cmp_case_insensitive(http, "content-length:")) {
 				// Continues parsing here when getting more streamed HTTP data
@@ -433,6 +437,7 @@ static inline void http_parse(struct http_t* http, struct pbuf* p) {
 			http->remainingBodyLen = 0;
 		}
 		// Gets content length value from HTTP stream
+		/* FALLTHROUGH */
 		case HTTP_STATE_POST_ROOT_HEADER_CONTENT_LENGTH_VALUE: {
 			while (true) {
 				if (!http_char_available(http)) {
@@ -457,6 +462,7 @@ static inline void http_parse(struct http_t* http, struct pbuf* p) {
 			}
 		}
 		// Rejects client if content length value has non numeric characers before line termination
+		/* FALLTHROUGH */
 		case HTTP_STATE_POST_ROOT_HEADER_CONTENT_LENGTH_CRLF: {
 			if (!http_cmp(http, "\r\n")) {
 				if (http_cmp_incomplete(http)) {
@@ -470,6 +476,7 @@ static inline void http_parse(struct http_t* http, struct pbuf* p) {
 			http->offset = 2; // Just encountered a CRLF, next scans for 2 in a row
 		}
 		// Flushes remaining headers to parse body
+		/* FALLTHROUGH */
 		case HTTP_STATE_POST_ROOT_HEADER_FLUSH: {
 			if (!http_find(http, "\r\n\r\n")) {
 				http->state = HTTP_STATE_POST_ROOT_HEADER_FLUSH;
@@ -481,6 +488,7 @@ static inline void http_parse(struct http_t* http, struct pbuf* p) {
 			);
 		}
 		// Reads current configuration into clients cache
+		/* FALLTHROUGH */
 		case HTTP_STATE_POST_ROOT_BODY_PREPARE: {
 			if (!flash_cache_read(&http->cache)) {
 				http_err(http, "500 Internal Server Error");
@@ -488,8 +496,10 @@ static inline void http_parse(struct http_t* http, struct pbuf* p) {
 			}
 		}
 		// Parses next HTTP body key
+		/* FALLTHROUGH */
 		case HTTP_STATE_POST_ROOT_BODY_KEYS:
 		// Checks if the next POST body key is for wlan ssid
+		/* FALLTHROUGH */
 		case HTTP_STATE_POST_ROOT_BODY_SSID_KEY: {
 			if (http_post_key_string(http, "ssid=")) {
 				http->state = HTTP_STATE_POST_ROOT_BODY_SSID_VALUE;
@@ -501,6 +511,7 @@ static inline void http_parse(struct http_t* http, struct pbuf* p) {
 			}
 		}
 		// Checks if the next POST body key is for wlan psk
+		/* FALLTHROUGH */
 		case HTTP_STATE_POST_ROOT_BODY_PSK_KEY: {
 			if (http_post_key_string(http, "psk=")) {
 				http->state = HTTP_STATE_POST_ROOT_BODY_PSK_VALUE;
@@ -512,6 +523,7 @@ static inline void http_parse(struct http_t* http, struct pbuf* p) {
 			}
 		}
 		// Checks if the next POST body key is for device name
+		/* FALLTHROUGH */
 		case HTTP_STATE_POST_ROOT_BODY_NAME_KEY: {
 			if (http_post_key_string(http, "name=")) {
 				http->state = HTTP_STATE_POST_ROOT_BODY_NAME_VALUE;
@@ -523,6 +535,7 @@ static inline void http_parse(struct http_t* http, struct pbuf* p) {
 			}
 		}
 		// Checks if the next POST body key is for ATEM camera id (dest)
+		/* FALLTHROUGH */
 		case HTTP_STATE_POST_ROOT_BODY_DEST_KEY: {
 			if (http_post_key(http, "dest=")) {
 				http->cache.config.dest = 0;
@@ -535,6 +548,7 @@ static inline void http_parse(struct http_t* http, struct pbuf* p) {
 			}
 		}
 		// Checks if the next POST body key is for ATEM ip address
+		/* FALLTHROUGH */
 		case HTTP_STATE_POST_ROOT_BODY_ATEM_KEY: {
 			if (http_post_key(http, "atem=")) {
 				http->cache.config.atemAddr = 0;
@@ -547,6 +561,7 @@ static inline void http_parse(struct http_t* http, struct pbuf* p) {
 			}
 		}
 		// Checks if the next POST body key is for static ip or DHCP
+		/* FALLTHROUGH */
 		case HTTP_STATE_POST_ROOT_BODY_IPSTATIC_KEY: {
 			if (http_post_key(http, "static=")) {
 				http->state = HTTP_STATE_POST_ROOT_BODY_IPSTATIC_VALUE;
@@ -558,6 +573,7 @@ static inline void http_parse(struct http_t* http, struct pbuf* p) {
 			}
 		}
 		// Checks if the next POST body key is for static ip local address
+		/* FALLTHROUGH */
 		case HTTP_STATE_POST_ROOT_BODY_IPLOCAL_KEY: {
 			if (http_post_key(http, "iplocal=")) {
 				http->cache.config.localAddr = 0;
@@ -570,6 +586,7 @@ static inline void http_parse(struct http_t* http, struct pbuf* p) {
 			}
 		}
 		// Checks if the next POST body key is for static ip netmask
+		/* FALLTHROUGH */
 		case HTTP_STATE_POST_ROOT_BODY_IPMASK_KEY: {
 			if (http_post_key(http, "ipmask=")) {
 				http->cache.config.netmask = 0;
@@ -582,6 +599,7 @@ static inline void http_parse(struct http_t* http, struct pbuf* p) {
 			}
 		}
 		// Checks if the next POST body key is for static ip gateway
+		/* FALLTHROUGH */
 		case HTTP_STATE_POST_ROOT_BODY_IPGATEWAY_KEY: {
 			if (http_post_key(http, "ipgw=")) {
 				http->cache.config.gateway = 0;
@@ -594,6 +612,7 @@ static inline void http_parse(struct http_t* http, struct pbuf* p) {
 			}
 		}
 		// Rejects client on invalid POST body key
+		/* FALLTHROUGH */
 		case HTTP_STATE_POST_ROOT_BODY_FLUSH: {
 			if (!http_post_completed(http)) {
 				http_post_err(http, "Invalid POST body key");
