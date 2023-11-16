@@ -212,7 +212,7 @@ static void atem_timeout_callback(void* arg) {
 
 	// Sends handshake to ATEM
 	atem_connection_reset(&atem);
-	atem_send((struct udp_pcb*)arg);
+	atem_send(arg);
 
 	// Indicates connection lost with LEDs, SDI, HTML and serial
 	if (atem_state == atem_state_connected) {
@@ -270,7 +270,7 @@ static void atem_netif_poll(void* arg) {
 	DEBUG_PRINTF("Connecting to ATEM\n");
 
 	// Sends ATEM handshake
-	atem_send((struct udp_pcb*)arg);
+	atem_send(arg);
 
 	// Enables ATEM timeout callback function
 	sys_timeout(ATEM_TIMEOUT_MS, atem_timeout_callback, arg);

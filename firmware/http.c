@@ -369,7 +369,7 @@ static inline void http_parse(struct http_t* http, struct pbuf* p) {
 		}
 		// Responds with root HTML to all HTTP GET requests
 		case HTTP_STATE_GET_ROOT: {
-			if (!flash_cache_read(&(http->cache))) {
+			if (!flash_cache_read(&http->cache)) {
 				http_err(http, "500 Internal Server Error");
 				return;
 			}
@@ -482,7 +482,7 @@ static inline void http_parse(struct http_t* http, struct pbuf* p) {
 		}
 		// Reads current configuration into clients cache
 		case HTTP_STATE_POST_ROOT_BODY_PREPARE: {
-			if (!flash_cache_read(&(http->cache))) {
+			if (!flash_cache_read(&http->cache)) {
 				http_err(http, "500 Internal Server Error");
 				return;
 			}
@@ -628,42 +628,42 @@ static inline void http_parse(struct http_t* http, struct pbuf* p) {
 		}
 		// Transfers camera id (dest) from POST body to client cache
 		case HTTP_STATE_POST_ROOT_BODY_DEST_VALUE: {
-			if (http_post_value_uint8(http, &(http->cache.config.dest), DEST_MIN, DEST_MAX)) {
+			if (http_post_value_uint8(http, &http->cache.config.dest, DEST_MIN, DEST_MAX)) {
 				continue;
 			}
 			return;
 		}
 		// Transfers ATEM address from POST body to client cache
 		case HTTP_STATE_POST_ROOT_BODY_ATEM_VALUE: {
-			if (http_post_value_ip(http, &(http->cache.config.atemAddr))) {
+			if (http_post_value_ip(http, &http->cache.config.atemAddr)) {
 				continue;
 			}
 			return;
 		}
 		// Transfers static ip flag from POST body to client cache
 		case HTTP_STATE_POST_ROOT_BODY_IPSTATIC_VALUE: {
-			if (http_post_value_flag(http, &(http->cache.config.flags), CONF_FLAG_STATICIP)) {
+			if (http_post_value_flag(http, &http->cache.config.flags, CONF_FLAG_STATICIP)) {
 				continue;
 			}
 			return;
 		}
 		// Transfers static ip local address from POST body to client cache
 		case HTTP_STATE_POST_ROOT_BODY_IPLOCAL_VALUE: {
-			if (http_post_value_ip(http, &(http->cache.config.localAddr))) {
+			if (http_post_value_ip(http, &http->cache.config.localAddr)) {
 				continue;
 			}
 			return;
 		}
 		// Transfers static ip netmask from POST body to client cache
 		case HTTP_STATE_POST_ROOT_BODY_IPMASK_VALUE: {
-			if (http_post_value_ip(http, &(http->cache.config.netmask))) {
+			if (http_post_value_ip(http, &http->cache.config.netmask)) {
 				continue;
 			}
 			return;
 		}
 		// Transfers static ip gateway from POST body to client cache
 		case HTTP_STATE_POST_ROOT_BODY_IPGATEWAY_VALUE: {
-			if (http_post_value_ip(http, &(http->cache.config.gateway))) {
+			if (http_post_value_ip(http, &http->cache.config.gateway)) {
 				continue;
 			}
 			return;
@@ -758,7 +758,7 @@ static err_t http_accept_callback(void* arg, struct tcp_pcb* newpcb, err_t err) 
 	}
 
 	// Creates context to use when parsing HTTP data stream
-	struct http_t* http = (struct http_t*)mem_malloc(sizeof(struct http_t));
+	struct http_t* http = mem_malloc(sizeof(struct http_t));
 	if (http == NULL) {
 		DEBUG_ERR_PRINTF("Failed to allocate HTTP struct for new client\n");
 		return ERR_MEM;
