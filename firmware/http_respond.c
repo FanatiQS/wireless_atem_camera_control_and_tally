@@ -28,32 +28,38 @@
 
 
 // Writes configuration to flash and restarts device
-static void http_reboot_callback(void* arg) {
-	struct http_t* http = (struct http_t*)arg;
-	flash_cache_write(&(http->cache));
+static void http_reboot_callback_defer(void* arg) {
+	flash_cache_write(&((struct http_t*)arg)->cache);
 }
 
-// Restarts device if client closes successfully or times out
-static err_t http_reboot_tcp_callback(void* arg, struct tcp_pcb* pcb) {
+// Restarts device on client timeout or successfull close
+static err_t http_reboot_callback(void* arg, struct tcp_pcb* pcb) {
 	tcp_err(pcb, NULL);
 	tcp_recv(pcb, NULL);
 	tcp_poll(pcb, NULL, 0);
 	tcp_abort(pcb);
-	sys_timeout(0, http_reboot_callback, arg);
+	sys_timeout(0, http_reboot_callback_defer, arg);
 	return ERR_ABRT;
+}
+
+// Restarts device if client closes successfully
+static err_t http_reboot_recv_callback(void* arg, struct tcp_pcb* pcb, struct pbuf* p, err_t err) {
+	LWIP_UNUSED_ARG(p);
+	LWIP_UNUSED_ARG(err);
+	return http_reboot_callback(arg, pcb);
 }
 
 // Restarts device async on error to not cause segfault when internally freeing pcb
 static void http_reboot_err_callback(void* arg, err_t err) {
 	LWIP_UNUSED_ARG(err);
 	DEBUG_ERR_PRINTF("HTTP client %p got an error after POST: %d\n", (void*)((struct http_t*)arg)->pcb, (int)err);
-	sys_timeout(0, http_reboot_callback, arg);
+	sys_timeout(0, http_reboot_callback_defer, arg);
 }
 
 // Enqueues restarting device after TCP pcb has closed
 static inline void http_reboot(struct http_t* http) {
-	tcp_recv(http->pcb, (tcp_recv_fn)http_reboot_tcp_callback);
-	tcp_poll(http->pcb, http_reboot_tcp_callback, 2);
+	tcp_recv(http->pcb, http_reboot_recv_callback);
+	tcp_poll(http->pcb, http_reboot_callback, 2);
 	tcp_err(http->pcb, http_reboot_err_callback);
 	tcp_sent(http->pcb, NULL);
 	tcp_shutdown(http->pcb, false, true);
