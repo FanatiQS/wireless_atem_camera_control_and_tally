@@ -68,7 +68,7 @@ static inline void http_reboot(struct http_t* http) {
 
 
 // Writes as much as TCP PCB can handle of a constant string with known length
-static bool http_write(struct http_t* http, char* buf, size_t len) {
+static bool http_write(struct http_t* http, const char* buf, size_t len) {
 	// Shifts buffer pointer if previously partly written
 	buf += http->offset;
 	len -= http->offset;
@@ -182,7 +182,7 @@ bool http_respond(struct http_t* http) {
 		HTTP_RESPONSE_CASE_STR(http,
 			"<tr><td>ATEM connection status:<td>"
 		)
-		HTTP_RESPONSE_CASE_STR(http, (char*)atem_state)
+		HTTP_RESPONSE_CASE_STR(http, atem_state)
 		HTTP_RESPONSE_CASE_STR(http,
 			"<tr>"
 			"<tr><td>Name:<td>"
@@ -251,9 +251,9 @@ bool http_respond(struct http_t* http) {
 		// Writes HTTP error response
 		case HTTP_RESPONSE_STATE_ERR:
 		HTTP_RESPONSE_CASE_STR(http, "HTTP/1.1 ")
-		HTTP_RESPONSE_CASE_STR(http, (char*)http->errCode)
+		HTTP_RESPONSE_CASE_STR(http, http->errCode)
 		HTTP_RESPONSE_CASE_STR(http, "\r\nContent-Type: text/plain\r\n\r\n")
-		HTTP_RESPONSE_CASE_STR(http, (char*)http->errBody)
+		HTTP_RESPONSE_CASE_STR(http, http->errBody)
 		http->responseState = HTTP_RESPONSE_STATE_NONE;
 		break;
 
