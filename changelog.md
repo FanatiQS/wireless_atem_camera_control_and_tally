@@ -33,7 +33,7 @@
 * Uses `printf` instead of `LWIP_PLATFORM_DIAG` for debugging since lwip debugging can be disabled on some platforms.
 * Arduino mDNS responder is unreliable.
 * No longer prints MAC address at boot.
-* Default I2C configuration now conforms to default ESP8266 pinout.
+* **BREAKING** Default I2C configuration now conforms to default ESP8266 pinout.
 * Added DNS debug flag.
 
 ### Source API
@@ -44,11 +44,13 @@
 * Predefined ATEM command names is now in an enum instead of being macros.
 * Replaced `atem_cc_dest` function with `atem_cc_updated` to do similar thing.
 * Atem struct changed `dest` parameter to a uint8_t type to match other code.
+* Source API should now be thread safe.
 
 ### Test Suite
 * Added tests for firmware HTTP parser.
-* Started colleging compilation and running of tests from makefile.
+* Started collecting compilation and running of tests from makefile.
 * Started deprecating test client (requires compiling manually).
+* Added tests for firmware DNS captive portal.
 
 ### Tools
 * Added simple configuration bash script.
