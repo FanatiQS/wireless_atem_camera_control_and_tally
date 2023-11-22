@@ -1,7 +1,78 @@
 # Changelog
 
-## Version 0.5.0
-No changelog available.
+## Version 0.7.0 (development)
+
+### Firmware
+* Ported Arduinos DNS captive portal to C.
+* Renamed file `/firmware/udp.c` to `/firmware/atem_sock.c`.
+* Renamed file `/firmware/udp.h` to `/firmware/atem_sock.h`.
+* Renamed `atem_init` to `waccat_init`.
+* Renamed `atem_udp_init` to `atem_init`.
+* Improved debug logs.
+* Added debug flag to print acknowledged ATEM packets.
+* Added optional single source include file
+* Moved HTTP POST parser to custom streaming parser (available on port 8080 until GET parser is moved as well).
+* Changed HTTP POST keys.
+* HTML input fileds for IP addresses are now a single text box rather than 4 individual ones.
+* Configuration properties are only updated if available in HTTP POST (static ip is switched to '1' or '0' instead of 'on' or undefined).
+* Validates HTTP POST data before updating.
+* Added HTTP debug flag.
+* Fixed crash when configuring device over softap.
+* Uses devices name as hostname.
+* Prints compiler version used to build.
+* Checks libraries/sdk versions at compile-time with user_config macro to disable strict version checking (VERSIONS_ANY = 1).
+* Default configuration for DEBUG_CC is now to be disabled for performance issues.
+* Does not disable wlan station when connecting to wlan softap if station has a working connection.
+* Added pattern checking for ip address input.
+* Added HTTP GET handling for non-arduino http server.
+* Default HTTP server is now the custom implementation and the old arduino one can be found on port 81.
+* Function `http_init` now returns the http server pcb.
+* Error debug messages now has as an `[ ERR ]` prefix.
+* No longer prints wlan channel at boot.
+* HTML request time now uses 24h clock.
+* Uses `printf` instead of `LWIP_PLATFORM_DIAG` for debugging since lwip debugging can be disabled on some platforms.
+* Arduino mDNS responder is unreliable.
+* No longer prints MAC address at boot.
+* **BREAKING** Default I2C configuration now conforms to default ESP8266 pinout.
+* Added DNS debug flag.
+
+### Source API
+* Now only updates property `readLen` when it is allowed to be used.
+* Fixed warnings after bit shift type promotion.
+* Huge improvement to source API documentation.
+* Deprecated unused and broken `atem_tally_translate` function.
+* Predefined ATEM command names is now in an enum instead of being macros.
+* Replaced `atem_cc_dest` function with `atem_cc_updated` to do similar thing.
+* Atem struct changed `dest` parameter to a uint8_t type to match other code.
+* Source API should now be thread safe.
+
+### Test Suite
+* Added tests for firmware HTTP parser.
+* Started collecting compilation and running of tests from makefile.
+* Started deprecating test client (requires compiling manually).
+* Added tests for firmware DNS captive portal.
+
+### Tools
+* Added simple configuration bash script.
+
+
+## Version 0.6.2
+
+### Firmware
+* Fixed platforms not implementing LED driver not having LED macro function defined.
+* Enabled fix for unstabile configuration access point when debug is not enabled.
+* Fixed compiler failure for ESP8266 Arduino framework version 3.0.0 and newer.
+
+
+
+## Version 0.6.1
+
+### Firmware
+* Fixed unstable configuration access point.
+* Fixed `arduino/arduino_install` not working on linux.
+
+### Proxy server
+* Proxy server now works with the 0.6.0 reworked source api.
 
 
 
@@ -49,18 +120,5 @@ Proxy server currently broken.
 
 
 
-## Version 0.6.1
-
-### Firmware
-* Fixed unstable configuration access point.
-* Fixed `arduino/arduino_install` not working on linux.
-
-### Proxy server
-* Proxy server now works with the 0.6.0 reworked source api.
-
-## Version 0.6.2
-
-### Firmware
-* Fixed platforms not implementing LED driver not having LED macro function defined.
-* Enabled fix for unstabile configuration access point when debug is not enabled.
-* Fixed compiler failure for ESP8266 Arduino framework version 3.0.0 and newer.
+## Version 0.5.0
+No changelog available.

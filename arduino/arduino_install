@@ -28,15 +28,21 @@ echo '#include "../user_config.h"' > $PWD/arduino/src/user_config.h
 cpy src/atem.c            src/atem.c
 cpy src/atem.h            src/atem.h
 cpy src/atem_protocol.h   src/atem_protocol.h
+cpy src/atem_sock.c       firmware/atem_sock.c
+cpy src/atem_sock.h       firmware/atem_sock.h
 cpy src/debug.h           firmware/debug.h
+cpy src/dns.c             firmware/dns.c
+cpy src/dns.h             firmware/dns.h
+cpy src/flash.c           firmware/flash.c
+cpy src/flash.h           firmware/flash.h
 cpy src/http.c            firmware/http.c
 cpy src/http.h            firmware/http.h
+cpy src/http_respond.c    firmware/http_respond.c
+cpy src/http_respond.h    firmware/http_respond.h
 cpy src/i2c.h             firmware/i2c.h
 cpy src/init.c            firmware/init.c
 cpy src/init.h            firmware/init.h
 cpy src/led.h             firmware/led.h
 cpy src/sdi.c             firmware/sdi.c
 cpy src/sdi.h             firmware/sdi.h
-cpy src/udp.c             firmware/udp.c
-cpy src/udp.h             firmware/udp.h
 echo "Installed"

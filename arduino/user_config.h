@@ -18,7 +18,9 @@
  */
 #define DEBUG             1
 #define DEBUG_TALLY       DEBUG
-#define DEBUG_CC          DEBUG
+#define DEBUG_CC          0
+#define DEBUG_HTTP        DEBUG
+#define DEBUG_ATEM        0
 
 /**
  * The pins to use for PGM tally, PVW tally and/or ATEM connection indicator LEDs.
@@ -37,8 +39,8 @@
  *
  * 3.3v microcontroller requires a logic level converter to be able to communicate with the SDI shield.
  */
-// #define PIN_SCL           D2
-// #define PIN_SDA           D1
+// #define PIN_SCL           SCL // D1
+// #define PIN_SDA           SDA // D2
 
 /**
  * The analog pin use for battery level reading.

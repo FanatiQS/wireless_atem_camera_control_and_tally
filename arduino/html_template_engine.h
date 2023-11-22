@@ -57,25 +57,23 @@
 	HTML($, ">")
 
 // Creates an HTML ip address input row
-#define _HTML_INPUT_OCTET($, value, name)\
-	HTML($, "<input required type=number min=0 max=" INT_TO_STR2(UINT8_MAX) " name=" name " value=")\
-	TEMPLATE($, "%u", value, STRLEN(INT_TO_STR2(UINT8_MAX)))\
-	HTML($, ">")
 #define HTML_INPUT_IP($, label, value, name)\
 	HTML_ROW($, label)\
-	_HTML_INPUT_OCTET($, value & 0xff, name "1")\
+	HTML($, "<input type=string pattern=^((25[0-5]|(2[0-4]|1\\d|[1-9]|)\\d)(\\.(?!$)|$)){4}$ name=" name " value=")\
+	TEMPLATE($, "%u", (value & 0xff), STRLEN(INT_TO_STR2(UINT8_MAX)))\
 	HTML($, ".")\
-	_HTML_INPUT_OCTET($, (value >> 8) & 0xff, name "2")\
+	TEMPLATE($, "%u", (value >> 8) & 0xff, STRLEN(INT_TO_STR2(UINT8_MAX)))\
 	HTML($, ".")\
-	_HTML_INPUT_OCTET($, (value >> 16) & 0xff, name "3")\
+	TEMPLATE($, "%u", (value >> 16) & 0xff, STRLEN(INT_TO_STR2(UINT8_MAX)))\
 	HTML($, ".")\
-	_HTML_INPUT_OCTET($, value >> 24, name "4")\
+	TEMPLATE($, "%u", value >> 24, STRLEN(INT_TO_STR2(UINT8_MAX)))\
+	HTML($, ">")
 
 // Creates an HTML checkbox input row
 #define _CHECKBOX_ATTRIBUTE " checked"
 #define HTML_INPUT_CHECKBOX($, label, value, name)\
 	HTML_ROW($, label)\
-	HTML($, "<input type=checkbox name=" name)\
+	HTML($, "<input type=hidden value=0 name=" name "><input type=checkbox value=1 name=" name)\
 	TEMPLATE($, "%s", (value) ? _CHECKBOX_ATTRIBUTE : "", STRLEN(_CHECKBOX_ATTRIBUTE))\
 	HTML($, ">")
 

@@ -1,11 +1,11 @@
 #include <stdint.h> // uint8_t, uint16_t
 #include <string.h> // memset
 #include <assert.h> // assert
+#include <stdio.h> // fprintf, stderr
+#include <stdlib.h> // abort
 
 #include "../../src/atem.h" // ATEM_MAX_PACKET_LEN
 #include "../../src/atem_protocol.h" // ATEM_MASK_LEN_HIGH, ATEM_INDEX_FLAGS, ATEM_INDEX_LEN_HIGH, ATEM_INDEX_LEN_LOW, ATEM_INDEX_SESSIONID_HIGH, ATEM_INDEX_SESSIONID_LOW, ATEM_INDEX_ACKID_HIGH, ATEM_INDEX_ACKID_LOW, ATEM_INDEX_LOCALID_HIGH, ATEM_INDEX_LOCALID_LOW, ATEM_INDEX_REMOTEID_HIGH, ATEM_INDEX_REMOTEID_LOW
-#include "./logs.h" // print_debug
-#include "./runner.h" // testrunner_abort
 
 
 
@@ -45,15 +45,15 @@ void atem_header_flags_get_verify(uint8_t* packet, uint8_t requiredFlags, uint8_
 
 	// Verifies required flags are all set
 	if (requiredFlags && !((flags & requiredFlags) == requiredFlags)) {
-		print_debug("Missing required flag(s) 0x%02x from 0x%02x\n", requiredFlags, flags);
-		testrunner_abort();
+		fprintf(stderr, "Missing required flag(s) 0x%02x from 0x%02x\n", requiredFlags, flags);
+		abort();
 	}
 
 	// Verifies only required or optional flags are set
 	uint8_t illegalFlags = ~(requiredFlags | optionalFlags);
 	if (flags & illegalFlags) {
-		print_debug("Unexpected illegal flag(s) 0x%02x\n", illegalFlags & flags);
-		testrunner_abort();
+		fprintf(stderr, "Unexpected illegal flag(s) 0x%02x\n", illegalFlags & flags);
+		abort();
 	}
 }
 
@@ -87,8 +87,8 @@ uint16_t atem_header_len_get(uint8_t* packet) {
 void atem_header_len_get_verify(uint8_t* packet, uint16_t expectedLen) {
 	uint16_t len = atem_header_len_get(packet);
 	if (len == expectedLen) return;
-	print_debug("Expected packet length %d, but got %d\n", expectedLen, len);
-	testrunner_abort();
+	fprintf(stderr, "Expected packet length %d, but got %d\n", expectedLen, len);
+	abort();
 }
 
 
@@ -107,8 +107,8 @@ uint16_t atem_header_sessionid_get(uint8_t* packet) {
 void atem_header_sessionid_get_verify(uint8_t* packet, uint16_t expectedSessionId) {
 	uint16_t sessionId = atem_header_sessionid_get(packet);
 	if (sessionId == expectedSessionId) return;
-	print_debug("Expected session id 0x%04x, but got 0x%04x\n", expectedSessionId, sessionId);
-	testrunner_abort();
+	fprintf(stderr, "Expected session id 0x%04x, but got 0x%04x\n", expectedSessionId, sessionId);
+	abort();
 }
 
 
@@ -127,8 +127,8 @@ uint16_t atem_header_ackid_get(uint8_t* packet) {
 void atem_header_ackid_get_verify(uint8_t* packet, uint16_t expectedAckId) {
 	uint16_t ackId = atem_header_ackid_get(packet);
 	if (ackId == expectedAckId) return;
-	print_debug("Expected ack id 0x%04x, but got 0x%04x\n", expectedAckId, ackId);
-	testrunner_abort();
+	fprintf(stderr, "Expected ack id 0x%04x, but got 0x%04x\n", expectedAckId, ackId);
+	abort();
 }
 
 
@@ -147,8 +147,8 @@ uint16_t atem_header_localid_get(uint8_t* packet) {
 void atem_header_localid_get_verify(uint8_t* packet, uint16_t expectedLocalId) {
 	uint16_t localId = atem_header_localid_get(packet);
 	if (localId == expectedLocalId) return;
-	print_debug("Expected local id 0x%04x, but got 0x%04x\n", expectedLocalId, localId);
-	testrunner_abort();
+	fprintf(stderr, "Expected local id 0x%04x, but got 0x%04x\n", expectedLocalId, localId);
+	abort();
 }
 
 
@@ -167,8 +167,8 @@ uint16_t atem_header_unknownid_get(uint8_t* packet) {
 void atem_header_unknownid_get_verify(uint8_t* packet, uint16_t expectedUnknownId) {
 	uint16_t unknownId = atem_header_unknownid_get(packet);
 	if (unknownId == expectedUnknownId) return;
-	print_debug("Expected unknown id 0x%04x, but got 0x%04x\n", expectedUnknownId, unknownId);
-	testrunner_abort();
+	fprintf(stderr, "Expected unknown id 0x%04x, but got 0x%04x\n", expectedUnknownId, unknownId);
+	abort();
 }
 
 
@@ -187,8 +187,8 @@ uint16_t atem_header_remoteid_get(uint8_t* packet) {
 void atem_header_remoteid_get_verify(uint8_t* packet, uint16_t expectedRemoteId) {
 	uint16_t remoteId = atem_header_remoteid_get(packet);
 	if (remoteId == expectedRemoteId) return;
-	print_debug("Expected remote id between 0x%04x, but got 0x%04x\n", expectedRemoteId, remoteId);
-	testrunner_abort();
+	fprintf(stderr, "Expected remote id 0x%04x, but got 0x%04x\n", expectedRemoteId, remoteId);
+	abort();
 }
 
 

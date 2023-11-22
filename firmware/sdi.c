@@ -2,24 +2,19 @@
 #include "./sdi.h" // SDI_ENABLED
 #ifdef SDI_ENABLED
 
-#include <stdint.h> // uint8_t, uint16_t
+#include <stdint.h> // uint8_t, uint16_t, uint32_t
 #include <stdbool.h> // bool, true, false
 
-#include <lwip/arch.h> // sys_now
+#include <lwip/sys.h> // sys_now
 
-#include "./user_config.h" // PIN_SCL, PIN_SDA, DEBUG
-#include "./debug.h" // DEBUG_PRINTF
+#include "./user_config.h" // PIN_SCL, PIN_SDA, DEBUG, SDI_INIT_TIMEOUT
+#include "./debug.h" // DEBUG_PRINTF, DEBUG_ERR_PRINTF
 #include "./i2c.h" // I2C_INIT, I2C_READ, I2C_WRITE
 
-// Number of milliseconds to wait for SDI shield FPGA to get ready
+// Number of milliseconds to wait for SDI shield FPGA to get ready before failing
 #ifndef SDI_INIT_TIMEOUT
 #define SDI_INIT_TIMEOUT 2000
 #endif // SDI_INIT_TIMEOUT
-
-// I2C address the SDI shield uses by default
-#ifndef SDI_I2C_ADDR
-#define SDI_I2C_ADDR 0x6E
-#endif // SDI_I2C_ADDR
 
 
 
@@ -39,35 +34,34 @@
 #define kRegCONTROL_COVERIDE_Mask 0x01
 #define kRegCONTROL_TOVERIDE_Mask 0x02
 
-// Prints an SDI version type read from shield
-#if DEBUG
-#define SDI_VERSION_PRINT(label, reg)\
-	do {\
-		uint8_t buf[2];\
-		sdi_read(reg, buf, sizeof(buf));\
-		DEBUG_PRINTF("SDI shield " label " version: %d.%d\n", buf[1], buf[0]);\
-	} while (0)
-#else // DEBUG
-#define SDI_VERSION_PRINT(label, reg)
-#endif // DEBUG
-
 // Writes variadic number of bytes to SDI shield register
-#define _SDI_WRITE(buf) I2C_WRITE(buf, sizeof(buf) / sizeof(buf[0]))
-#define SDI_WRITE(reg, ...) _SDI_WRITE(((uint8_t[]){ reg & 0xff, reg >> 8, __VA_ARGS__ }))
+#define SDI_WRITE_BUF(buf) I2C_WRITE(buf, sizeof(buf) / sizeof(buf[0]))
+#define SDI_WRITE(reg, ...) SDI_WRITE_BUF(((uint8_t[]){ (reg) & 0xff, (reg) >> 8, __VA_ARGS__ }))
 
 // Reads SDI shield data from registers to buffer
 static void sdi_read(uint16_t reg, uint8_t* readBuf, uint8_t readLen) {
-	SDI_WRITE(reg);
+	SDI_WRITE_BUF(((uint8_t[]){ reg & 0xff, reg >> 8 }));
 	I2C_READ(readBuf, readLen);
 }
+
+// Prints an SDI version type read from shield
+#if DEBUG
+void sdi_version_print(const char* label, uint16_t reg) {
+	uint8_t buf[2];
+	sdi_read(reg, buf, sizeof(buf));
+	DEBUG_PRINTF("SDI shield %s version: %d.%d\n", label, buf[1], buf[0]);
+}
+#else // DEBUG
+#define sdi_version_print(lable, reg)
+#endif // DEBUG
 
 
 
 // Checks if SDI shield FPGA has booted
-static bool sdi_connect() {
-	uint8_t buf[4];
-	sdi_read(kRegIDENTIFIER, buf, 4);
-	return (buf[0] == 'S') && (buf[1] == 'D') && (buf[2] == 'I') && (buf[3] == 'C');
+static bool sdi_connect(void) {
+	uint32_t buf;
+	sdi_read(kRegIDENTIFIER, (uint8_t*)&buf, sizeof(buf));
+	return buf == *(uint32_t*)"SDIC";
 }
 
 // Tries to connect to the SDI shield
@@ -78,7 +72,7 @@ bool sdi_init(uint8_t dest) {
 	// Awaits SDI shields FPGA booting up
 	while (!sdi_connect()) {
 		if (sys_now() > SDI_INIT_TIMEOUT) {
-			DEBUG_PRINTF("Failed to connect to SDI shield\n");
+			DEBUG_ERR_PRINTF("Failed to connect to SDI shield\n");
 			return false;
 		}
 	}
@@ -90,8 +84,8 @@ bool sdi_init(uint8_t dest) {
 	SDI_WRITE(kRegOTLENGTH, dest, 0);
 
 	// Prints SDI shields internal firmware and protocol version
-	SDI_VERSION_PRINT("firmware", kRegFWVERSION);
-	SDI_VERSION_PRINT("protocol", kRegPVERSION);
+	sdi_version_print("firmware", kRegFWVERSION);
+	sdi_version_print("protocol", kRegPVERSION);
 
 	return true;
 }
@@ -102,21 +96,21 @@ bool sdi_init(uint8_t dest) {
 static void sdi_flush(uint16_t reg) {
 	uint8_t busy;
 	do {
-		sdi_read(reg, &busy, 1);
+		sdi_read(reg, &busy, sizeof(busy));
 	} while (busy);
 }
 
 // Writes tally data to the SDI shield
 void sdi_write_tally(uint8_t dest, bool pgm, bool pvw) {
 	sdi_flush(kRegOTARM);
-	SDI_WRITE(kRegOTDATA + dest - 1, pgm | (pvw << 1));
+	SDI_WRITE(kRegOTDATA + dest - 1, pgm | (uint8_t)(pvw << 1));
 	SDI_WRITE(kRegOTARM, true);
 }
 
 // Writes camera control data to the SDI shield, requires 2 header bytes for register address
 void sdi_write_cc(uint8_t* buf, uint16_t len) {
 	sdi_flush(kRegOCARM);
-	SDI_WRITE(kRegOCLENGTH, len, 0);
+	SDI_WRITE(kRegOCLENGTH, len & 0xff, len >> 8);
 	buf[0] = kRegOCDATA & 0xff;
 	buf[1] = kRegOCDATA >> 8;
 	I2C_WRITE(buf, len + 2);

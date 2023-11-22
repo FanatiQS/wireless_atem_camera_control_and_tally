@@ -42,7 +42,7 @@
 #define RTC_PIN 16
 
 // Initializes GPIO or RTC pin
-inline void led_init(uint32_t pin) {
+static inline void led_init(uint32_t pin) {
 	if (pin < GPIO_PIN_COUNT) {
 		GPIO_REG_WRITE(GPIO_PIN0_ADDRESS + pin * 4, 0);
 		GPIO_REG_WRITE(GPIO_ENABLE_W1TS_ADDRESS, 1 << pin);

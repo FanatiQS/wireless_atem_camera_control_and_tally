@@ -3,7 +3,7 @@
 #define INIT_H
 
 // Firmware version
-#define FIRMWARE_VERSION_STRING "0.6.2"
+#define FIRMWARE_VERSION_STRING "0.7.0"
 
 // Makes it work with C++ (Arduino)
 #ifdef __cplusplus
@@ -22,7 +22,7 @@ extern "C" {
  * It connects directly to LwIP and therefore does not
  * require any ATEM specific polling.
  */
-void atem_init(void);
+void waccat_init(void);
 
 // Ends extern C block
 #ifdef __cplusplus

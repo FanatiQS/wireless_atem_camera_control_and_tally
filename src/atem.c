@@ -1,12 +1,32 @@
-#include <stdint.h> // uint8_t
+#include <stdint.h> // uint8_t, uint16_t, uint32_t
+#include <stdbool.h> // bool, false
 
-#include "./atem_protocol.h"
-#include "./atem.h"
+#include "./atem_protocol.h" // ATEM_LEN_SYN, ATEM_INDEX_FLAGS, ATEM_INDEX_LEN_HIGH, ATEM_INDEX_LEN_LOW, ATEM_INDEX_SESSIONID_HIGH, ATEM_INDEX_SESSIONID_LOW, ATEM_FLAG_SYN, ATEM_INDEX_OPCODE, ATEM_OPCODE_OPEN, ATEM_LEN_ACK, ATEM_FLAG_ACK, ATEM_FLAG_RETX, ATEM_OPCODE_CLOSING, ATEM_OPCODE_CLOSED, ATEM_FLAG_ACKREQ, ATEM_INDEX_REMOTEID_HIGH, ATEM_INDEX_REMOTEID_LOW, ATEM_LIMIT_REMOTEID, ATEM_INDEX_ACKID_HIGH, ATEM_INDEX_ACKID_LOW, ATEM_MASK_LEN_HIGH, ATEM_LEN_HEADER, ATEM_OPCODE_ACCEPT, ATEM_OPCODE_REJECT, ATEM_LEN_CMDHEADER, ATEM_OFFSET_CMDNAME
+#include "./atem.h" // struct atem_t, enum atem_status_t, ATEM_STATUS_CLOSED, ATEM_STATUS_WRITE_ONLY, ATEM_STATUS_WRITE, ATEM_STATUS_NONE, ATEM_STATUS_ACCEPTED, ATEM_STATUS_CLOSING, ATEM_STATUS_REJECTED, ATEM_STATUS_ERROR
+
+
+
+// Tally flags indicating the status
+#define TALLY_FLAG_PGM 0x01
+#define TALLY_FLAG_PVW 0x02
+
+// Indexes of length for number of tally values
+#define TALLY_INDEX_LEN_HIGH 0
+#define TALLY_INDEX_LEN_LOW 1
+
+// Offset for when using tally index as command index
+#define TALLY_OFFSET 1
+
+// Atem and camera control protocol lengths and offsets
+#define CC_HEADER_LEN 4
+#define CC_CMD_HEADER_LEN 4
+#define CC_HEADER_OFFSET -3
+#define CC_ATEM_DATA_OFFSET 16
 
 
 
 // Buffer to send to ATEM when establishing connection
-static uint8_t openBuf[ATEM_LEN_SYN] = {
+static ATEM_THREAD_LOCAL uint8_t openBuf[ATEM_LEN_SYN] = {
 	[ATEM_INDEX_FLAGS] = ATEM_FLAG_SYN,
 	[ATEM_INDEX_LEN_LOW] = ATEM_LEN_SYN,
 	[ATEM_INDEX_SESSIONID_HIGH] = 0x13,
@@ -15,14 +35,14 @@ static uint8_t openBuf[ATEM_LEN_SYN] = {
 };
 
 // Buffer to modify and send to ATEM when acknowledging a received packet
-static uint8_t ackBuf[ATEM_LEN_ACK] = {
+static ATEM_THREAD_LOCAL uint8_t ackBuf[ATEM_LEN_ACK] = {
 	[ATEM_INDEX_FLAGS] = ATEM_FLAG_ACK,
 	[ATEM_INDEX_LEN_LOW] = ATEM_LEN_ACK
 };
 
 // Buffer to modify and send to ATEM to close the connection or respond to closing request
-static uint8_t closeBuf[ATEM_LEN_SYN] = {
-	[ATEM_INDEX_LEN_LOW] = ATEM_LEN_SYN,
+static ATEM_THREAD_LOCAL uint8_t closeBuf[ATEM_LEN_SYN] = {
+	[ATEM_INDEX_LEN_LOW] = ATEM_LEN_SYN
 };
 
 
@@ -46,10 +66,6 @@ void atem_connection_close(struct atem_t *atem) {
 
 // Parses a received ATEM UDP packet
 enum atem_status_t atem_parse(struct atem_t *atem) {
-	// Sets length of read buffer
-	atem->readLen = (atem->readBuf[ATEM_INDEX_LEN_HIGH] & ATEM_MASK_LEN_HIGH) << 8 |
-		atem->readBuf[ATEM_INDEX_LEN_LOW];
-
 	// Resends close packet without processing potential payload
 	if (atem->writeBuf == closeBuf) {
 		// Sets default branch to resend closing request
@@ -80,7 +96,7 @@ enum atem_status_t atem_parse(struct atem_t *atem) {
 	// Responds with ACK packet to packet requesting it
 	if (atem->readBuf[ATEM_INDEX_FLAGS] & ATEM_FLAG_ACKREQ) {
 		// Gets remote id of this packet
-		const uint16_t remoteId = atem->readBuf[ATEM_INDEX_REMOTEID_HIGH] << 8 |
+		const uint16_t remoteId = (uint16_t)(atem->readBuf[ATEM_INDEX_REMOTEID_HIGH] << 8) |
 			atem->readBuf[ATEM_INDEX_REMOTEID_LOW];
 
 		// Copies over session id from incomming packet to ACK response
@@ -95,6 +111,10 @@ enum atem_status_t atem_parse(struct atem_t *atem) {
 
 			// Updates last acknolwedged remote id
 			atem->lastRemoteId = remoteId;
+
+			// Sets length of read buffer
+			atem->readLen = (uint16_t)((atem->readBuf[ATEM_INDEX_LEN_HIGH] & ATEM_MASK_LEN_HIGH) << 8) |
+				atem->readBuf[ATEM_INDEX_LEN_LOW];
 
 			// Sets up for parsing ATEM commands in payload
 			atem->cmdIndex = ATEM_LEN_HEADER;
@@ -155,37 +175,18 @@ uint32_t atem_cmd_next(struct atem_t *atem) {
 	const uint16_t index = atem->cmdIndex;
 
 	// Increment start index of command with command length to get start index for next command
-	atem->cmdLen = (atem->readBuf[index] << 8) | atem->readBuf[index + 1];
+	atem->cmdLen = (uint16_t)(atem->readBuf[index] << 8) | atem->readBuf[index + 1];
 	atem->cmdIndex += atem->cmdLen;
 
 	// Sets pointer to command to start of command data
 	atem->cmdBuf = atem->readBuf + index + ATEM_LEN_CMDHEADER;
 
 	// Converts command name to a 32 bit integer for easy comparison
-	return (atem->readBuf[index + ATEM_OFFSET_CMDNAME + 0] << 24) |
+	return (uint32_t)((atem->readBuf[index + ATEM_OFFSET_CMDNAME + 0] << 24) |
 		(atem->readBuf[index + ATEM_OFFSET_CMDNAME + 1] << 16) |
 		(atem->readBuf[index + ATEM_OFFSET_CMDNAME + 2] << 8) |
-		atem->readBuf[index + ATEM_OFFSET_CMDNAME + 3];
+		atem->readBuf[index + ATEM_OFFSET_CMDNAME + 3]);
 }
-
-
-
-// Tally flags indicating the status
-#define TALLY_FLAG_PGM 0x01
-#define TALLY_FLAG_PVW 0x02
-
-// Indexes of length for number of tally values
-#define TALLY_INDEX_LEN_HIGH 0
-#define TALLY_INDEX_LEN_LOW 1
-
-// Offset for when using tally index as command index
-#define TALLY_OFFSET 1
-
-// Atem and camera control protocol lengths and offsets
-#define CC_HEADER_LEN 4
-#define CC_CMD_HEADER_LEN 4
-#define CC_HEADER_OFFSET -3
-#define CC_ATEM_DATA_OFFSET 16
 
 
 
@@ -197,7 +198,7 @@ bool atem_tally_updated(struct atem_t *atem) {
 	}
 
 	// Stores old states for PGM and PVW tally
-	const uint8_t oldTally = atem->pgmTally | atem->pvwTally << 1;
+	const uint8_t oldTally = (uint8_t)(atem->pgmTally | atem->pvwTally << 1);
 
 	// Updates states for PGM and PVW tally
 	atem->pgmTally = atem->cmdBuf[TALLY_OFFSET + atem->dest] & TALLY_FLAG_PGM;
@@ -205,23 +206,6 @@ bool atem_tally_updated(struct atem_t *atem) {
 
 	// Returns boolean indicating if tally was updated or not
  	return oldTally != (atem->pgmTally | atem->pvwTally << 1);
-}
-
-// Translates tally data from ATEMs protocol to Blackmagic Embedded Tally Control Protocol
-void atem_tally_translate(struct atem_t *atem) {
-	// Gets the number of items in the tally index array
-	const uint16_t len = atem->cmdBuf[TALLY_INDEX_LEN_HIGH] << 8 |
-		atem->cmdBuf[TALLY_INDEX_LEN_LOW];
-
-	// Remaps indexes to Blackmagic Embedded Tally Control Protocol
-	for (uint16_t i = 2; i <= len; i += 2) {
-		atem->cmdBuf[i / 2 + 1] = atem->cmdBuf[i] | atem->cmdBuf[i + 1] << 4;
-	}
-
-	// Updates translated pointer, length and sets first byte in translation
-	atem->cmdBuf += 1;
-	atem->cmdLen = len / 2 + 1;
-	atem->cmdBuf[0] = 0x00;
 }
 
 // Translates camera control data from ATEMs protocol to Blackmagis SDI camera control protocol

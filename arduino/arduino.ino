@@ -2,7 +2,6 @@
 #include <ESP8266WebServer.h>
 #include <ESP8266mDNS.h>
 #include <EEPROM.h>
-#include <DNSServer.h>
 #include <ArduinoOTA.h>
 
 #include <lwip/init.h>
@@ -11,16 +10,11 @@
 #include "user_config.h"
 
 #define LWIP_HDR_TCP_H // Fixes arduino and lwip collision
-#include "./src/udp.h" // atem_state
-#include "./src/http.h" // struct config_t, CONF_FLAG_STATICIP
-#include "./src/init.h" // atem_init, FIRMWARE_VERSION_STRING
+#undef FLASH_H
+#include "./src/atem_sock.h" // atem_state
+#include "./src/flash.h" // struct config_t, CONF_FLAG_STATICIP
+#include "./src/init.h" // waccat_init, FIRMWARE_VERSION_STRING
 #include "./src/debug.h" // WRAP, DEBUG_PRINTF
-
-
-
-// Expected versions of libraries and SDKs
-#define EXPECTED_LWIP_VERSION "2.1.2"
-#define EXPECTED_ESP_VERSION "2.7.0"
 
 
 
@@ -41,18 +35,17 @@
 
 
 // Configuration HTTP server and redirection DNS
-ESP8266WebServer confServer(80);
-DNSServer dnsServer;
+ESP8266WebServer confServer(81);
 
 // Names for all HTTP POST keys
 #define KEY_SSID "ssid"
 #define KEY_PSK "psk"
 #define KEY_DEST "dest"
-#define KEY_ATEMADDR "atemAddr"
-#define KEY_USESTATICIP "useStaticIP"
-#define KEY_LOCALIP "localIP"
-#define KEY_NETMASK "netmask"
-#define KEY_GATEWAY "gateway"
+#define KEY_ATEMADDR "atem"
+#define KEY_USESTATICIP "static"
+#define KEY_LOCALIP "iplocal"
+#define KEY_NETMASK "ipmask"
+#define KEY_GATEWAY "ipgw"
 #define KEY_NAME "name"
 
 // Gets the analog voltage level calculated from voltage divider
@@ -70,6 +63,7 @@ DNSServer dnsServer;
 // HTML configuration page template for use with html templating engine
 #define HTML_CONFIG($, conf)\
 	HTML($, "<!DOCTYPEhtml>"\
+		"<meta charset=utf-8>"\
 		"<meta content=\"width=device-width\"name=viewport>"\
 		"<title>Configure Device</title>"\
 		"<style>"\
@@ -97,11 +91,11 @@ DNSServer dnsServer;
 	HTML_INPUT_NUMBER($, "Camera number", conf.dest, 254, 1, KEY_DEST)\
 	HTML_INPUT_IP($, "ATEM IP", (uint32_t)conf.atemAddr, KEY_ATEMADDR)\
 	HTML_SPACER($)\
-	HTML_INPUT_CHECKBOX($, "Use Static IP", conf.flags, KEY_USESTATICIP)\
+	HTML_INPUT_CHECKBOX($, "Use Static IP", conf.flags & CONF_FLAG_STATICIP, KEY_USESTATICIP)\
 	HTML_INPUT_IP($, "Local IP", (uint32_t)WiFi.localIP(), KEY_LOCALIP)\
 	HTML_INPUT_IP($, "Subnet mask", (uint32_t)WiFi.subnetMask(), KEY_NETMASK)\
 	HTML_INPUT_IP($, "Gateway", (uint32_t)WiFi.gatewayIP(), KEY_GATEWAY)\
-	HTML($, "</table><button style=\"margin:1em 2em\">Submit</button></form>")
+	HTML($, "</table><button style=\"margin:1em 2em\">Submit</button></form>")\
 
 // Gets ip address from 4 HTML post fields as a single 32 bit int
 #define IP_FROM_HTTP(server, name) ((server.arg(name "1").toInt()) |\
@@ -185,39 +179,28 @@ void handleHTTP() {
 void setup() {
 #if DEBUG
 	Serial.begin(115200);
+#endif // DEUBG
 
-	// Prints mac address that is used as psk by soft AP
-	DEBUG_PRINT("Mac address: ");
-	DEBUG_PRINTLN(WiFi.macAddress());
+	// Initializes wifi, ATEM connection, SDI shield and GPIO LEDs
+	WiFi.begin();
+	waccat_init();
 
-	if (strcmp(LWIP_VERSION_STRING, EXPECTED_LWIP_VERSION)) {
-		DEBUG_PRINT("WARNING: Expected LwIP version for this firmware: " EXPECTED_LWIP_VERSION "\n");
-	}
-	if (strcmp(WRAP(ARDUINO_ESP8266_GIT_DESC), EXPECTED_ESP_VERSION)) {
-		DEBUG_PRINT("WARNING: Expected Arduino version for this firmware: " EXPECTED_ESP_VERSION "\n");
-	}
-#endif // DEBUG
-
-	// Sets up configuration HTTP server with soft AP
+	// Sets up configuration HTTP server
 	WiFi.persistent(true);
 	EEPROM.begin(sizeof(struct config_t));
-	dnsServer.start(53, "*", WiFi.softAPIP());
 	confServer.onNotFound(handleHTTP);
 	confServer.begin();
 
 	// Sets up OTA update server
+	while (WiFi.waitForConnectResult() != WL_CONNECTED) yield();
 	ArduinoOTA.begin();
 
 	// Adds mDNS querying support
-	MDNS.begin(WiFi.softAPSSID());
+	MDNS.begin("esp8266");
 	MDNS.addService("http", "tcp", 80);
-
-	// Initializes wifi, ATEM connection, SDI shield and GPIO LEDs
-	atem_init();
 }
 
 void loop() {
-	dnsServer.processNextRequest();
 	MDNS.update();
 	confServer.handleClient();
 	ArduinoOTA.handle();
