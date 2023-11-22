@@ -9,6 +9,25 @@
 
 
 
+// Checks HTTP response
+void test_recv_cmp_response(int sock, int code) {
+	// Checks status line and flushes headers
+	http_socket_recv_cmp_status(sock, code);
+
+	// Does not check HTTP GET response
+	if (code == 200) {
+		while (http_socket_recv_len(sock));
+	}
+	// Checks body for errors
+	else {
+		http_socket_recv_cmp(sock, http_status(code));
+	}
+
+	// Closes socket
+	http_socket_recv_close(sock);
+	http_socket_close(sock);
+}
+
 // Delays next test to let device restart on successful POST
 void test_delay(const char* req, int code) {
 	if (memcmp("POST", req, 4) && code != 200) return;
@@ -19,9 +38,7 @@ void test_delay(const char* req, int code) {
 void test_code(const char* req, int code) {
 	int sock = http_socket_create();
 	http_socket_send_string(sock, req);
-	http_socket_recv_cmp_status(sock, code);
-	while (http_socket_recv_len(sock));
-	http_socket_close(sock);
+	test_recv_cmp_response(sock, code);
 	test_delay(req, code);
 }
 
@@ -30,9 +47,7 @@ void test_code_segment(const char* req1, const char* req2, int code) {
 	int sock = http_socket_create();
 	http_socket_send_string(sock, req1);
 	http_socket_send_string(sock, req2);
-	http_socket_recv_cmp_status(sock, code);
-	while (http_socket_recv_len(sock));
-	http_socket_close(sock);
+	test_recv_cmp_response(sock, code);
 	test_delay(req1, code);
 }
 
