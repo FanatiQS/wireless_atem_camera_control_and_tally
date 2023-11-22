@@ -1,6 +1,6 @@
 # Changelog
 
-## Version 0.7.0 (development)
+## Version 0.7.0
 
 ### Firmware
 * Ported Arduinos DNS captive portal to C.
