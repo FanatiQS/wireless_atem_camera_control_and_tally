@@ -102,6 +102,7 @@ static inline void atem_process(struct udp_pcb* pcb) {
 		case ATEM_STATUS_CLOSED:
 		case ATEM_STATUS_NONE: return;
 		case ATEM_STATUS_REJECTED: {
+			atem.writeBuf = NULL;
 			atem_state = atem_state_rejected;
 			DEBUG_PRINTF("ATEM connection rejected\n");
 			return;
