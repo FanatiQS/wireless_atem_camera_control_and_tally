@@ -52,7 +52,7 @@ void sdi_version_print(const char* label, uint16_t reg) {
 	DEBUG_PRINTF("SDI shield %s version: %d.%d\n", label, buf[1], buf[0]);
 }
 #else // DEBUG
-#define sdi_version_print(lable, reg)
+#define sdi_version_print(label, reg)
 #endif // DEBUG
 
 
