@@ -4,11 +4,11 @@
 #include <stdlib.h> // abort
 
 #include <unistd.h> // close
-#include <sys/socket.h> // AF_INET, SOCK_DGRAM, ssize_t, send, recv, bind, connect, struct sockaddr, socklen_t, recvfrom
+#include <sys/socket.h> // AF_INET, SOCK_DGRAM, ssize_t, bind, connect, struct sockaddr, socklen_t, recvfrom
 #include <arpa/inet.h> // htons
 #include <netinet/in.h> // struct sockaddr_in
 
-#include "./simple_socket.h" // simple_socket_create, simple_socket_poll
+#include "./simple_socket.h" // simple_socket_create, simple_socket_poll, simple_socket_send, simple_socket_recv, simple_socket_connect
 #include "../../src/atem_protocol.h" // ATEM_FLAG_SYN, ATEM_FLAG_RETX
 #include "../../src/atem.h" // ATEM_PORT, ATEM_MAX_PACKET_LEN
 #include "./atem_header.h" // atem_header_len_get, atem_header_flags_get, atem_header_unknownid_get, atem_header_len_get_verify, 
@@ -137,36 +137,15 @@ void atem_socket_send(int sock, uint8_t* packet) {
 	}
 
 	// Sends packet to socket
-	ssize_t sendLen = send(sock, packet, len, 0);
-	if (sendLen == len) return;
-
-	// Handles send failure
-	if (sendLen == -1) {
-		perror("Failed to send packet");
-	}
-	// Handles unexpected return value
-	else {
-		fprintf(stderr, "Failed to send: %zu (expected %d)\n", sendLen, len);
-	}
-
-	// Aborts running test
-	abort();
+	simple_socket_send(sock, packet, len);
 }
 
 // Receives ATEM packet
 void atem_socket_recv(int sock, uint8_t* packet) {
 	// Receives packet
-	ssize_t recvLen = recv(sock, packet, ATEM_MAX_PACKET_LEN, 0);
-	if (recvLen <= 0) {
-		if (recvLen == -1) {
-			perror("Failed to recv packet");
-		}
-		else if (recvLen == 0) {
-			fprintf(stderr, "Received empty packet from client\n");
-		}
-		else {
-			fprintf(stderr, "Failed to recv: %zu\n", recvLen);
-		}
+	size_t recvLen = simple_socket_recv(sock, packet, ATEM_MAX_PACKET_LEN);
+	if (recvLen == 0) {
+		fprintf(stderr, "Received empty packet from client\n");
 		abort();
 	}
 
