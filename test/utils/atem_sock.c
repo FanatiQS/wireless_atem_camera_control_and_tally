@@ -153,6 +153,13 @@ void atem_socket_recv(int sock, uint8_t* packet) {
 	atem_packet_verify(packet, recvLen);
 }
 
+// Receives and prints ATEM packet
+void atem_socket_recv_print(int sock) {
+	uint8_t buf[ATEM_MAX_PACKET_LEN];
+	atem_socket_recv(sock, buf);
+	logs_print_buffer(stdout, buf, atem_header_len_get(buf));
+}
+
 
 
 // Ensures no more data is written when expecting session to be closed

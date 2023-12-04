@@ -16,6 +16,7 @@ uint16_t atem_socket_listen(int sock, uint8_t* packet);
 
 void atem_socket_send(int sock, uint8_t* packet);
 void atem_socket_recv(int sock, uint8_t* packet);
+void atem_socket_recv_print(int sock);
 
 void atem_socket_norecv(int sock);
 
