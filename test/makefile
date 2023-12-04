@@ -10,7 +10,7 @@ $(BUILD_DIR):
 
 # Builds test executable
 $(BUILD_DIR)/%: | $(BUILD_DIR)
-	$(CC) $(filter %.c,$^) -o $@ -g -Wall -Wextra -Wpedantic
+	$(CC) $(filter %.c,$^) -o $@ -g -Wall -Wextra -Wpedantic $(CFLAGS) $(LDFLAGS)
 	$(CC) $(filter %.c,$^) -MM -MT $@ -MF $@.d
 
 # Runs test
