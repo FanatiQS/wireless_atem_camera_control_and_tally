@@ -8,7 +8,7 @@
 #include <sys/socket.h> // SOCK_DGRAM
 #include <arpa/inet.h> // htons, ntohs
 
-#include "../utils/simple_socket.h" // simple_socket_create, simple_socket_connect, simple_socket_send, simple_socket_recv, simple_socket_select
+#include "../utils/simple_socket.h" // simple_socket_create, simple_socket_connect, simple_socket_send, simple_socket_recv, simple_socket_poll
 #include "../utils/logs.h" // logs_print_buffer, logs_enable_send, logs_enable_recv
 #include "../utils/runner.h" // RUN_TEST
 
@@ -125,7 +125,7 @@ void dns_expect_timeout(uint8_t* reqBuf, size_t reqLen) {
 	dns_socket_send(sock, reqBuf, reqLen);
 
 	// Expects timeout
-	if (simple_socket_select(sock, 4) == 1) {
+	if (simple_socket_poll(sock, 4000) == 1) {
 		fprintf(stderr, "Unexpectedly got data:\n");
 		dns_socket_recv_print(sock);
 		abort();

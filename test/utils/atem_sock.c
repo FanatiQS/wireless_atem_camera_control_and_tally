@@ -8,14 +8,14 @@
 #include <arpa/inet.h> // htons
 #include <netinet/in.h> // struct sockaddr_in
 
-#include "./simple_socket.h" // simple_socket_create, simple_socket_select
+#include "./simple_socket.h" // simple_socket_create, simple_socket_poll
 #include "../../src/atem_protocol.h" // ATEM_FLAG_SYN, ATEM_FLAG_RETX
 #include "../../src/atem.h" // ATEM_PORT, ATEM_MAX_PACKET_LEN
 #include "./atem_header.h" // atem_header_len_get, atem_header_flags_get, atem_header_unknownid_get, atem_header_len_get_verify, 
 #include "./logs.h" // logs_print_buffer, logs_enable_recv, logs_enable_send
 #include "./atem_sock.h"
 
-#define TIMEOUT_LISTEN 10
+#define TIMEOUT_LISTEN 10000
 #define TIMEOUT_WAIT 2
 
 
@@ -89,7 +89,7 @@ uint16_t atem_socket_listen(int sock, uint8_t* packet) {
 	}
 
 	// Awaits first packet from ATEM client
-	if (simple_socket_select(sock, TIMEOUT_LISTEN) != 1) {
+	if (simple_socket_poll(sock, TIMEOUT_LISTEN) != 1) {
 		fprintf(stderr, "No client connected\n");
 		abort();
 	}
@@ -178,7 +178,7 @@ void atem_socket_recv(int sock, uint8_t* packet) {
 
 // Ensures no more data is written when expecting session to be closed
 void atem_socket_norecv(int sock) {
-	if (simple_socket_select(sock, ATEM_TIMEOUT) == 0) return;
+	if (simple_socket_poll(sock, ATEM_TIMEOUT_MS) == 0) return;
 
 	uint8_t packet[ATEM_MAX_PACKET_LEN];
 	atem_socket_recv(sock, packet);
