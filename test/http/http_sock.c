@@ -1,4 +1,4 @@
-#include <stdlib.h> // abort, NULL, getenv
+#include <stdlib.h> // abort, NULL
 #include <stdio.h> // perror, fprintf, stderr, printf, snprintf, stdout
 #include <assert.h> // assert
 #include <string.h> // strlen, memcmp
@@ -7,7 +7,7 @@
 #include <unistd.h> // close
 
 #include "../utils/simple_socket.h" // simple_socket_create, simple_socket_connect, simple_socket_send, simple_socket_recv, simple_socket_recv_error
-#include "../utils/logs.h" // logs_print_string
+#include "../utils/logs.h" // logs_print_string, logs_find
 #include "./http_sock.h"
 
 #define HTTP_PORT (80)
@@ -26,11 +26,17 @@ int http_socket_create(void) {
 
 // Sends HTTP buffer to server
 void http_socket_send_buffer(int sock, const char* buf, size_t len) {
+	if (logs_find("http_send")) {
+		logs_print_string(stdout, buf);
+	}
 	simple_socket_send(sock, (void*)buf, len);
 }
 
 // Sends HTTP string to server
 void http_socket_send_string(int sock, const char* str) {
+	if (logs_find("http_send")) {
+		logs_print_string(stdout, str);
+	}
 	http_socket_send_buffer(sock, str, strlen(str));
 }
 
@@ -41,6 +47,11 @@ size_t http_socket_recv(int sock, char* buf, size_t size) {
 	assert(size >= 2);
 	size_t len = simple_socket_recv(sock, buf, size - 1);
 	buf[len] = '\0';
+
+	if (logs_find("http_recv")) {
+		logs_print_string(stdout, buf);
+	}
+
 	return len;
 }
 

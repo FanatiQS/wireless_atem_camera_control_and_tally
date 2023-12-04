@@ -11,8 +11,8 @@
 #include "./simple_socket.h" // simple_socket_create, simple_socket_poll, simple_socket_send, simple_socket_recv, simple_socket_connect
 #include "../../src/atem_protocol.h" // ATEM_FLAG_SYN, ATEM_FLAG_RETX
 #include "../../src/atem.h" // ATEM_PORT, ATEM_MAX_PACKET_LEN
-#include "./atem_header.h" // atem_header_len_get, atem_header_flags_get, atem_header_unknownid_get, atem_header_len_get_verify, 
-#include "./logs.h" // logs_print_buffer, logs_enable_recv, logs_enable_send
+#include "./atem_header.h" // atem_header_len_get, atem_header_flags_get, atem_header_unknownid_get, atem_header_len_get_verify
+#include "./logs.h" // logs_print_buffer, logs_find
 #include "./atem_sock.h"
 
 #define TIMEOUT_LISTEN 10000
@@ -22,7 +22,7 @@
 
 // Verifies ATEM packet length and unknown id
 void atem_packet_verify(uint8_t* packet, size_t recvLen) {
-	if (logs_enable_recv) {
+	if (logs_find("atem_recv")) {
 		printf("Received packet:\n");
 		logs_print_buffer(stdout, packet, recvLen);
 	}
@@ -131,7 +131,7 @@ void atem_socket_send(int sock, uint8_t* packet) {
 	// Gets packet length from packet
 	uint16_t len = atem_header_len_get(packet);
 
-	if (logs_enable_send) {
+	if (logs_find("atem_send")) {
 		printf("Sending packet:\n");
 		logs_print_buffer(stdout, packet, len);
 	}

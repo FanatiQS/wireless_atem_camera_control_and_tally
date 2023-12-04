@@ -7,10 +7,8 @@
 #include <stdio.h> // FILE
 #include <stdbool.h> // bool
 
-extern bool logs_enable_send;
-extern bool logs_enable_recv;
-
+bool logs_find(const char* match);
 void logs_print_buffer(FILE* pipe, uint8_t* buf, size_t bufLen);
-void logs_print_string(FILE* pipe, char* str);
+void logs_print_string(FILE* pipe, const char* str);
 
 #endif // LOGS_H

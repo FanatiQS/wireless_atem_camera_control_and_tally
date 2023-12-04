@@ -9,7 +9,7 @@
 #include <arpa/inet.h> // htons, ntohs
 
 #include "../utils/simple_socket.h" // simple_socket_create, simple_socket_connect, simple_socket_send, simple_socket_recv, simple_socket_poll
-#include "../utils/logs.h" // logs_print_buffer, logs_enable_send, logs_enable_recv
+#include "../utils/logs.h" // logs_print_buffer, logs_find
 #include "../utils/runner.h" // RUN_TEST
 
 
@@ -51,7 +51,7 @@ int dns_socket_create(void) {
 
 // Sends binary DNS data request to server
 void dns_socket_send(int sock, uint8_t* reqBuf, size_t reqLen) {
-	if (logs_enable_send) {
+	if (logs_find("dns_send")) {
 		printf("Request packet:\n");
 		logs_print_buffer(stdout, reqBuf, reqLen);
 	}
@@ -61,7 +61,7 @@ void dns_socket_send(int sock, uint8_t* reqBuf, size_t reqLen) {
 // Receives binary DNS data response from server
 size_t dns_socket_recv(int sock, uint8_t* resBuf, size_t resSize) {
 	size_t resLen = simple_socket_recv(sock, resBuf, resSize);
-	if (logs_enable_recv) {
+	if (logs_find("dns_recv")) {
 		printf("Response packet:\n");
 		logs_print_buffer(stdout, resBuf, resLen);
 	}
