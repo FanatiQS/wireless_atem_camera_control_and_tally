@@ -24,13 +24,13 @@ void atem_handshake_newsessionid_send(int sock, uint8_t opcode, bool retx, uint1
 uint16_t atem_handshake_newsessionid_recv(int sock, uint8_t opcode, bool retx, uint16_t sessionId);
 void atem_handshake_newsessionid_recv_verify(int sock, uint8_t opcode, bool retx, uint16_t sessionId, uint16_t expectedNewSessionId);
 
+void atem_handshake_resetpeer();
+
+uint16_t atem_handshake_start_client(int sock, uint16_t sessionId);
+uint16_t atem_handshake_start_server(int sock);
+
 uint16_t atem_handshake_connect(int sock, uint16_t sessionId);
 uint16_t atem_handshake_listen(int sock, uint16_t newSessionId);
 void atem_handshake_close(int sock, uint16_t sessionId);
-
-void atem_handshake_resetpeer();
-
-uint16_t atem_handshake_start_server(int sock);
-uint16_t atem_handshake_start_client(int sock, uint16_t sessionId);
 
 #endif // HANDSHAKE_H
