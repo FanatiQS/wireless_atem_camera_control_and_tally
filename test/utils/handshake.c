@@ -231,5 +231,9 @@ uint16_t atem_handshake_listen(int sock, uint16_t newSessionId) {
 // Closes connection to ATEM switcher or client by completing entire closing handshake
 void atem_handshake_close(int sock, uint16_t sessionId) {
 	atem_handshake_sessionid_send(sock, ATEM_OPCODE_CLOSING, false, sessionId);
-	atem_handshake_sessionid_recv_verify(sock, ATEM_OPCODE_CLOSED, false, sessionId);
+	uint8_t packet[ATEM_MAX_PACKET_LEN];
+	do {
+		atem_socket_recv(sock, packet);
+	} while (atem_header_flags_get(packet) != ATEM_FLAG_SYN);
+	atem_handshake_sessionid_get_verify(packet, ATEM_OPCODE_CLOSED, false, sessionId);
 }
