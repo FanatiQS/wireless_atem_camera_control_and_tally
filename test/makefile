@@ -4,30 +4,10 @@ all:
 # Output directory for test executables
 BUILD_DIR = ../build/test
 
-# Creates dist directory if it does not exist
-$(BUILD_DIR):
-	mkdir $@
-
-# Builds test executable
-$(BUILD_DIR)/%: | $(BUILD_DIR)
-	$(CC) $(filter %.c,$^) -o $@ -g -Wall -Wextra -Wpedantic $(CFLAGS) $(LDFLAGS)
-	$(CC) $(filter %.c,$^) -MM -MT $@ -MF $@.d
-
-# Runs test
-.PHONY: run_%
-run_%: $(BUILD_DIR)/%
-	$<
+# Shared source files
+UTILS_SOURCE = utils/simple_socket.c utils/atem_sock.c utils/atem_header.c utils/handshake.c utils/simple_socket.c utils/logs.c utils/payload.c utils/timer.c
 
 
-
-$(BUILD_DIR)/http_parser: http/http_parser.c http/http_sock.c utils/simple_socket.c utils/logs.c
-TESTS_DEVICE += run_http_parser
-
-$(BUILD_DIR)/http_connect: http/http_connect.c http/http_sock.c utils/simple_socket.c utils/logs.c
-TESTS_DEVICE += run_http_connect
-
-$(BUILD_DIR)/dns_parser: http/dns_parser.c utils/simple_socket.c utils/logs.c
-TESTS_DEVICE += run_dns_parser
 
 # Tests normal DNS lookups
 run_dns_lookup:
@@ -47,37 +27,54 @@ run_dns_lookup:
 
 # Ensures longest name supported by nslookup works correctly
 	nslookup aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb.ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc $(DEVICE_ADDR) > /dev/null
-TESTS_DEVICE += run_dns_lookup
+device: run_dns_lookup
+all: run_dns_lookup
 
-# Runs all tests for device
+# All tests specific to device configuration
+TESTS_DEVICE = http_parser http_connect dns_parser
+$(TESTS_DEVICE:%=$(BUILD_DIR)/%): $(BUILD_DIR)/%: http/%.c http/http_sock.c $(UTILS_SOURCE)
 .PHONY: device
-device: $(TESTS_DEVICE)
+device: $(TESTS_DEVICE:%=run_%)
 TESTS_ALL += $(TESTS_DEVICE)
 
 
 
-# Includes dependency files for test executables
-DEP_FILES = $(TESTS_ALL:run_%=$(BUILD_DIR)/%.d) $(BUILD_DIR)/playground.d
-.PHONY: $(DEP_FILES)
--include $(DEP_FILES)
 
-# Runs playground
-$(BUILD_DIR)/playground: playground.c http/http_sock.c utils/simple_socket.c utils/logs.c
+# Playground for messing around in
+$(BUILD_DIR)/playground: playground.c http/http_sock.c $(UTILS_SOURCE)
 .PHONY: playground
 run_playground: $(BUILD_DIR)/playground
 playground: run_playground
 
+# Creates dist directory if it does not exist
+$(BUILD_DIR):
+	mkdir $@
+
+# Includes dependency files for test executables
+-include $(TESTS_ALL:%=$(BUILD_DIR)/%.d)
+-include $(BUILD_DIR)/playground.d
+
+# Builds test executable
+$(TESTS_ALL:%=$(BUILD_DIR)/%) $(BUILD_DIR)/playground: | $(BUILD_DIR)
+	$(CC) $(filter %.c,$^) -o $@ -g -Wall -Wextra -Wpedantic $(CFLAGS) $(LDFLAGS)
+	$(CC) $(filter %.c,$^) -MM -MT $@ > $@.d
+
+# Runs test
+.PHONY: run_%
+run_%: $(BUILD_DIR)/%
+	$<
+
 # Runs all tests
 .PHONY: all
-all: $(TESTS_ALL)
+all: $(TESTS_ALL:%=run_%)
 
 # Removes all compiled tests
 RMRF = rm -rf
 .PHONY: clean
 clean:
-	$(RM) $(TESTS_ALL:run_%=$(BUILD_DIR)/%) $(BUILD_DIR)/playground
-	$(RM) $(TESTS_ALL:run_%=$(BUILD_DIR)/%.d) $(BUILD_DIR)/playground.d
-	$(RMRF) $(TESTS_ALL:run_%=$(BUILD_DIR)/%.dSYM) $(BUILD_DIR)/playground.dSYM
+	$(RM) $(TESTS_ALL:%=$(BUILD_DIR)/%) $(BUILD_DIR)/playground
+	$(RM) $(TESTS_ALL:%=$(BUILD_DIR)/%.d) $(BUILD_DIR)/playground.d
+	$(RMRF) $(TESTS_ALL:%=$(BUILD_DIR)/%.dSYM) $(BUILD_DIR)/playground.dSYM
 
 # Lists all tests except playground
 .PHONY: list
