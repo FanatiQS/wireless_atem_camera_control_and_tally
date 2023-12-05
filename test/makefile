@@ -52,7 +52,7 @@ playground: run_playground
 
 # Creates dist directory if it does not exist
 $(BUILD_DIR):
-	mkdir $@
+	mkdir -p $@
 
 # Includes dependency files for test executables
 -include $(TESTS_ALL:%=$(BUILD_DIR)/%.d)
