@@ -206,7 +206,6 @@ uint16_t atem_handshake_start_client(int sock, uint16_t sessionId) {
 // Receives an opening handshake SYN packet from an ATEM client
 uint16_t atem_handshake_start_server(int sock) {
 	uint8_t packet[ATEM_MAX_PACKET_LEN];
-	atem_handshake_resetpeer();
 	atem_socket_listen(sock, packet);
 	return atem_handshake_sessionid_get(packet, ATEM_OPCODE_OPEN, false);
 }
