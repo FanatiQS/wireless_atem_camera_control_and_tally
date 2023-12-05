@@ -20,19 +20,19 @@ void atem_handshake_newsessionid_set(uint8_t* packet, uint16_t newSessionId) {
 // Gets new session id from handshake packet
 uint16_t atem_handshake_newsessionid_get(uint8_t* packet) {
 	uint16_t sessionId = atem_packet_word_get(packet, ATEM_INDEX_NEWSESSIONID_HIGH, ATEM_INDEX_NEWSESSIONID_LOW);
-	if (sessionId & 0x8000) {
-		print_debug("Expected new session id 0x%04x to not have MSB set\n", sessionId);
-		testrunner_abort();
+	if (!(sessionId & 0x8000)) {
+		return sessionId;
 	}
-	return sessionId;
+	fprintf(stderr, "Expected new session id 0x%04x to not have MSB set\n", sessionId);
+	abort();
 }
 
 // Verifies new session id in handshake packet
 void atem_handshake_newsessionid_get_verify(uint8_t* packet, uint16_t expectedNewSessionId) {
 	uint16_t newSessionId = atem_handshake_newsessionid_get(packet);
 	if (newSessionId == expectedNewSessionId) return;
-	print_debug("Expected new session id 0x%04x, but got 0x%04x\n", expectedNewSessionId, newSessionId);
-	testrunner_abort();
+	fprintf(stderr, "Expected new session id 0x%04x, but got 0x%04x\n", expectedNewSessionId, newSessionId);
+	abort();
 }
 
 
@@ -60,8 +60,11 @@ uint8_t atem_handshake_opcode_get(uint8_t* packet) {
 	for (size_t i = 0; i < (sizeof(expectClear) / sizeof(expectClear[0])); i++) {
 		uint8_t byte = packet[expectClear[i]];
 		if (byte == 0x00) continue;
-		print_debug("Expected packet[%d] to be clear but it had the value 0x%02x\n", expectClear[i], packet[expectClear[i]]);
-		testrunner_abort();
+		fprintf(stderr,
+			"Expected packet[%d] to be clear but it had the value 0x%02x\n",
+			expectClear[i], packet[expectClear[i]]
+		);
+		abort();
 	}
 
 	uint8_t opcode = packet[ATEM_INDEX_OPCODE];
@@ -82,18 +85,18 @@ uint8_t atem_handshake_opcode_get(uint8_t* packet) {
 		case ATEM_OPCODE_ACCEPT:
 		case ATEM_OPCODE_REJECT: {
 			if (!(sessionId & 0x8000)) break;
-			print_debug("Expected session id MSB to be clear: 0x%04x\n", sessionId);
-			testrunner_abort();
+			fprintf(stderr, "Expected session id MSB to be clear: 0x%04x\n", sessionId);
+			abort();
 		}
 		case ATEM_OPCODE_CLOSING:
 		case ATEM_OPCODE_CLOSED: {
 			if (sessionId & 0x8000) break;
-			print_debug("Expected session id MSB to be set: 0x%04x\n", sessionId);
-			testrunner_abort();
+			fprintf(stderr, "Expected session id MSB to be set: 0x%04x\n", sessionId);
+			abort();
 		}
 		default: {
-			print_debug("Unexpected opcode: %02x\n", opcode);
-			testrunner_abort();
+			fprintf(stderr, "Unexpected opcode: %02x\n", opcode);
+			abort();
 		}
 	}
 
@@ -104,8 +107,8 @@ uint8_t atem_handshake_opcode_get(uint8_t* packet) {
 void atem_handshake_opcode_get_verify(uint8_t* packet, uint8_t expectedOpcode) {
 	uint8_t opcode = atem_handshake_opcode_get(packet);
 	if (opcode == expectedOpcode) return;
-	print_debug("Expected opcode 0x%02x, but got 0x%02x\n", expectedOpcode, opcode);
-	testrunner_abort();
+	fprintf(stderr, "Expected opcode 0x%02x, but got 0x%02x\n", expectedOpcode, opcode);
+	abort();
 }
 
 
