@@ -72,7 +72,7 @@ void atem_socket_close(int sock) {
 
 // Connects to the ATEM switcher at atemServerAddr
 void atem_socket_connect(int sock) {
-	simple_socket_connect(sock, ATEM_PORT, "ATEM_CLIENT_ADDR");
+	simple_socket_connect(sock, ATEM_PORT, "ATEM_SERVER_ADDR");
 }
 
 // Listens for an ATEM client to connect
