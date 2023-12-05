@@ -225,7 +225,7 @@ uint16_t atem_handshake_start_server(int sock) {
 uint16_t atem_handshake_connect(int sock, uint16_t sessionId) {
 	uint16_t newSessionId = atem_handshake_start_client(sock, sessionId);
 	atem_ack_send(sock, sessionId, 0x0000);
-	return newSessionId;
+	return newSessionId | 0x8000;
 }
 
 // Gets ATEM client connection by completing entire opening handshake
