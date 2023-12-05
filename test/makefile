@@ -37,6 +37,10 @@ $(TESTS_DEVICE:%=$(BUILD_DIR)/%): $(BUILD_DIR)/%: http/%.c http/http_sock.c $(UT
 device: $(TESTS_DEVICE:%=run_%)
 TESTS_ALL += $(TESTS_DEVICE)
 
+# Ensures everything is ready for release
+$(BUILD_DIR)/release: release/main.c ../firmware/init.h
+.PHONY: release
+TESTS_ALL += release
 
 
 
