@@ -1,5 +1,24 @@
 # Changelog
 
+## Version 0.7.1
+
+### Firmware
+* Correctly resets retransmit flag after opening handshake rejection.
+
+### Test Suite
+* Replaced `simple_socket_select` with `simple_socket_poll`.
+* Uses environment variables to enable different log types.
+* Added function to receive and print ATEM packet.
+* Added test to ensure everything is ready for release.
+* Environment variables `CFLAGS` and `LDFLAGS` are not used when compiling tests.
+* Fixed dependency file issues.
+* Renamed enviroment variable specifying address of ATEM switcher to connect to.
+* Deprecate `atem_handshake_common_*` family of functions and replaces them by extending `atem_handshake_sessionid_*`.
+* Function `atem_handshake_connect` now returns server assigned session id for use as session id.
+* Renamed `/test/handshake.c` to `/test/atem_handshake.c`.
+* Renamed `/test/handshake.h` to `/test/atem_handshake.h`.
+* Deprecated `print_debug` and `print_info`.
+
 ## Version 0.7.0
 
 ### Firmware
