@@ -1,6 +1,6 @@
 // Include guard
-#ifndef HANDSHAKE_H
-#define HANDSHAKE_H
+#ifndef ATEM_HANDSHAKE_H
+#define ATEM_HANDSHAKE_H
 
 #include <stdint.h> // uint8_t, uint16_t
 #include <stdbool.h> // bool
@@ -33,4 +33,4 @@ uint16_t atem_handshake_connect(int sock, uint16_t sessionId);
 uint16_t atem_handshake_listen(int sock, uint16_t newSessionId);
 void atem_handshake_close(int sock, uint16_t sessionId);
 
-#endif // HANDSHAKE_H
+#endif // ATEM_HANDSHAKE_H

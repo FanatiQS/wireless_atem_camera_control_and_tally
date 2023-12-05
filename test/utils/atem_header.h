@@ -1,6 +1,6 @@
 // Include guard
-#ifndef HEADER_H
-#define HEADER_H
+#ifndef ATEM_HEADER_H
+#define ATEM_HEADER_H
 
 #include <stdint.h> // uint8_t, uint16_t
 
@@ -42,4 +42,4 @@ void atem_header_remoteid_get_verify(uint8_t* packet, uint16_t expectedRemoteId)
 
 void atem_header_init(void);
 
-#endif // HEADER_H
+#endif // ATEM_HEADER_H
