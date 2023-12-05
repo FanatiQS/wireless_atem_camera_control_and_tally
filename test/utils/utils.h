@@ -7,7 +7,7 @@
 #include "./atem_header.h"
 #include "./atem_sock.h"
 #include "./payload.h"
-#include "./handshake.h"
+#include "./atem_handshake.h"
 #include "./logs.h"
 #include "./runner.h"
 #include "./timer.h"
