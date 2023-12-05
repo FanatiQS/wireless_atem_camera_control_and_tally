@@ -1,3 +1,4 @@
+// Include guard
 #ifndef HANDSHAKE_H
 #define HANDSHAKE_H
 
@@ -12,10 +13,9 @@ void atem_handshake_opcode_set(uint8_t* packet, uint8_t opcode);
 uint8_t atem_handshake_opcode_get(uint8_t* packet);
 void atem_handshake_opcode_get_verify(uint8_t* packet, uint8_t expectedOpcode);
 
-void atem_handshake_common_set(uint8_t* packet, uint8_t opcode, bool retx, uint16_t sessionId);
-uint8_t atem_handshake_common_get(uint8_t* packet, bool retx, uint16_t sessionId);
-void atem_handshake_common_get_verify(uint8_t* packet, uint8_t opcode, bool retx, uint16_t sessionId);
-
+void atem_handshake_sessionid_set(uint8_t* packet, uint8_t opcode, bool retx, uint16_t sessionId);
+uint16_t atem_handshake_sessionid_get(uint8_t* packet, uint8_t opcode, bool retx);
+void atem_handshake_sessionid_get_verify(uint8_t* packet, uint8_t opcode, bool retx, uint16_t sessionId);
 void atem_handshake_sessionid_send(int sock, uint8_t opcode, bool retx, uint16_t sessionId);
 uint16_t atem_handshake_sessionid_recv(int sock, uint8_t opcode, bool retx);
 void atem_handshake_sessionid_recv_verify(int sock, uint8_t opcode, bool retx, uint16_t expectedSessionId);
