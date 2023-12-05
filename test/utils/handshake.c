@@ -3,11 +3,12 @@
 
 #include "../../src/atem_protocol.h" // ATEM_INDEX_NEWSESSIONID_HIGH, ATEM_INDEX_NEWSESSIONID_LOW, ATEM_FLAG_SYN, ATEM_LEN_SYN, ATEM_INDEX_OPCODE, ATEM_FLAG_RETX, ATEM_OPCODE_OPEN, ATEM_OPCODE_ACCEPT, ATEM_OPCODE_REJECT, ATEM_OPCODE_CLOSING, ATEM_OPCODE_CLOSED
 #include "../../src/atem.h" // ATEM_MAX_PACKET_LEN
-#include "./header.h" // atem_packet_clear, atem_packet_word_set, atem_packet_word_get, atem_header_flags_set, atem_header_flags_get_verify, atem_header_len_set, atem_header_len_get_verify, atem_header_sessionid_get, atem_header_ackid_get_verify, atem_header_localid_get_verify, atem_header_remoteid_get_verify, atem_header_sessionid_set, atem_header_sessionid_get_verify, atem_header_flags_isnotset
+#include "./atem_header.h" // atem_packet_clear, atem_packet_word_set, atem_packet_word_get, atem_header_flags_set, atem_header_flags_get_verify, atem_header_len_set, atem_header_len_get_verify, atem_header_sessionid_get, atem_header_ackid_get_verify, atem_header_localid_get_verify, atem_header_remoteid_get_verify, atem_header_sessionid_set, atem_header_sessionid_get_verify, atem_header_flags_isnotset
 #include "./payload.h" // atem_ack_send, atem_ack_recv_verify
 #include "./runner.h" // testrunner_abort
-#include "./socket.h" // atem_socket_recv, atem_socket_send, atem_socket_connect, atem_socket_listen, atem_socket_create, atem_socket_close
+#include "./atem_sock.h" // atem_socket_recv, atem_socket_send, atem_socket_connect, atem_socket_listen, atem_socket_create, atem_socket_close
 #include "./logs.h" // print_debug
+#include "./handshake.h"
 
 
 
@@ -56,24 +57,22 @@ uint8_t atem_handshake_opcode_get(uint8_t* packet) {
 
 	// Only sections for server assigned session ID and opcode can have data
 	int expectClear[] = { 13, 16, 17, 18, 19 };
-	for (int i = 0; i < (sizeof(expectClear) / sizeof(expectClear[0])); i++) {
+	for (size_t i = 0; i < (sizeof(expectClear) / sizeof(expectClear[0])); i++) {
 		uint8_t byte = packet[expectClear[i]];
 		if (byte == 0x00) continue;
 		print_debug("Expected packet[%d] to be clear but it had the value 0x%02x\n", expectClear[i], packet[expectClear[i]]);
 		testrunner_abort();
 	}
 
-	// Server assigned session ID should only be defined for successful responses
 	uint8_t opcode = packet[ATEM_INDEX_OPCODE];
-	if (opcode != ATEM_OPCODE_ACCEPT) {
-		atem_handshake_newsessionid_get_verify(packet, 0x0000);
+
+	// Server assigned session id should not have its MSB set when received in SYN/ACK
+	if (opcode == ATEM_OPCODE_ACCEPT) {
+		atem_handshake_newsessionid_get(packet);
 	}
+	// Server assigned session id should only be defined for successful opening handshake responses
 	else {
-		uint16_t newSessionId = atem_handshake_newsessionid_get(packet);
-		if (newSessionId & 0x8000) {
-			print_debug("Expected new session id MSB to always be clear: 0x%04x\n", newSessionId);
-			testrunner_abort();
-		}
+		atem_handshake_newsessionid_get_verify(packet, 0x0000);
 	}
 
 	// Opening handshake uses client assigned session IDs while closing handshake uses server assigned
