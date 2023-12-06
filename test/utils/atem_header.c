@@ -6,6 +6,7 @@
 
 #include "../../src/atem.h" // ATEM_MAX_PACKET_LEN
 #include "../../src/atem_protocol.h" // ATEM_MASK_LEN_HIGH, ATEM_INDEX_FLAGS, ATEM_INDEX_LEN_HIGH, ATEM_INDEX_LEN_LOW, ATEM_INDEX_SESSIONID_HIGH, ATEM_INDEX_SESSIONID_LOW, ATEM_INDEX_ACKID_HIGH, ATEM_INDEX_ACKID_LOW, ATEM_INDEX_LOCALID_HIGH, ATEM_INDEX_LOCALID_LOW, ATEM_INDEX_REMOTEID_HIGH, ATEM_INDEX_REMOTEID_LOW
+#include "./atem_header.h"
 
 
 
@@ -194,7 +195,7 @@ void atem_header_remoteid_get_verify(uint8_t* packet, uint16_t expectedRemoteId)
 
 
 // Tests functions in this file
-void atem_header_init() {
+void atem_header_init(void) {
 	uint8_t packet[ATEM_MAX_PACKET_LEN];
 
 	// Tests atem_packet_word_set and atem_packet_word_get
