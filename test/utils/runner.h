@@ -1,19 +1,23 @@
+// Include guard
 #ifndef RUNNER_H
 #define RUNNER_H
 
-void _testrunner_abort(char* fileName, int lineNumber);
-#define testrunner_abort() _testrunner_abort(__FILE__, __LINE__)
+#include <setjmp.h> // setjmp, jmp_buf
+#include <stdio.h> // printf
+#include <stdbool.h> // bool
 
-void _testrunner_run(char* name, void(*callback)(void));
-#define TESTRUNNER(fn) _testrunner_run(#fn, fn)
+extern jmp_buf _runner_abort_jmp;
+bool _runner_mode_abort(const char* file, int line);
 
-#include <stdio.h> // printf, fprintf, stderr
-
-#define RUN_TEST(codeBlock)\
+// Runs a block of test code
+#define RUN_TEST(...)\
 	do {\
-		printf("Test started %s:%d\n", __FILE__, __LINE__);\
-		codeBlock;\
-		printf("Test completed\n\n");\
-	} while(0)
+		if (_runner_mode_abort(__FILE__, __LINE__) || !setjmp(_runner_abort_jmp)) {\
+			__VA_ARGS__;\
+			printf("Test successful\n\n");\
+		}\
+	} while (0)
+
+int runner_exit(void);
 
 #endif // RUNNER_H

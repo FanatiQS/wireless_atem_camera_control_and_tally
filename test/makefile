@@ -5,7 +5,7 @@ all:
 BUILD_DIR = ../build/test
 
 # Shared source files
-UTILS_SOURCE = utils/simple_socket.c utils/atem_sock.c utils/atem_header.c utils/atem_handshake.c utils/simple_socket.c utils/logs.c utils/payload.c utils/timer.c
+UTILS_SOURCE = utils/simple_socket.c utils/atem_sock.c utils/atem_header.c utils/atem_handshake.c utils/simple_socket.c utils/logs.c utils/payload.c utils/timer.c utils/runner.c
 
 
 

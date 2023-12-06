@@ -9,8 +9,9 @@
 #include <sys/time.h> // struct timeval tv
 #include <netinet/in.h> // struct sockaddr_in
 #include <arpa/inet.h> // htons, inet_addr
+#include <unistd.h> // close
 
-#include "./simple_socket.h"
+#include "./simple_socket.h" // SIMPLE_SOCKET_MAX_FD
 
 // Number of seconds a send or recv call waits before timing out
 #ifndef SOCKET_TIMOEUT
@@ -23,6 +24,13 @@ int simple_socket_create(int type) {
 	int sock = socket(AF_INET, type, 0);
 	if (sock == -1) {
 		perror("Failed to create socket");
+		abort();
+	}
+
+	// Ensures socket is within SIMPLE_SOCKET_MAX_FD so it will be closed on caught abort for runner mode all
+	if (sock >= SIMPLE_SOCKET_MAX_FD) {
+		fprintf(stderr, "Socket was assigned too high: %d\n", sock);
+		close(sock);
 		abort();
 	}
 

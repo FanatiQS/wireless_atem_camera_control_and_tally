@@ -5,6 +5,8 @@
 #include <stddef.h> // size_t
 #include <stdbool.h> // bool
 
+#define SIMPLE_SOCKET_MAX_FD (65535)
+
 int simple_socket_create(int sockType);
 void simple_socket_connect(int sock, int port, const char* envKey);
 
