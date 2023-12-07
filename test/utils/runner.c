@@ -7,7 +7,6 @@
 #include <stdbool.h> // bool, true, false
 #include <limits.h> // INT_MAX
 
-#include <fcntl.h> // fcntl, F_GETFD
 #include <unistd.h> // close
 
 #include "./simple_socket.h" // SIMPLE_SOCKET_MAX_FD
@@ -29,10 +28,8 @@ static void runner_abort_trap(int signal) {
 	runner_fails++;
 
 	// Cleans up ALL open file descriptors other than stdin/stdout/stderr
-	for (int fd = 2; fd < SIMPLE_SOCKET_MAX_FD; fd++) {
-		if (fcntl(fd, F_GETFD) != -1) {
-			close(fd);
-		}
+	for (int fd = 3; fd < SIMPLE_SOCKET_MAX_FD; fd++) {
+		close(fd);
 	}
 	sleep(ATEM_TIMEOUT);
 
