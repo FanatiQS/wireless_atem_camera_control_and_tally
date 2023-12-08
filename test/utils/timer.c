@@ -1,38 +1,42 @@
-#include <stdint.h> // uint32_t
-#include <time.h> // struct timespec, timespec_get
-#include <stdio.h> // perror
+#include <time.h> // struct timespec, timespec_get, TIME_UTC
+#include <stdio.h> // perror, printf, fprintf, stderr
+#include <stdlib.h> // abort
 
-#include "./runner.h" // testrunner_abort
-
-
-
-// Shim timespec_get for MacOS 10.14 and older
-#ifndef TIME_UTC
-#define TIME_UTC 0
-#define timespec_get(ts, base) clock_gettime(CLOCK_REALTIME, ts)
-#endif
+#include "./logs.h" // logs_find
+#include "./timer.h"
 
 
 
-// Gets current time
-struct timespec timer_current_get() {
-	struct timespec timerStart;
-	if (timespec_get(&timerStart, TIME_UTC) != TIME_UTC) {
-		perror("Failed to start timer");
-		testrunner_abort();
+// Creates a timestamp to measure time delta from
+struct timespec timer_create(void) {
+	struct timespec timer;
+	if (timespec_get(&timer, TIME_UTC) != TIME_UTC) {
+		perror("Faield to create timer");
+		abort();
 	}
-	return timerStart;
+	return timer;
 }
 
-// Gets start time for timer
-struct timespec timer_start() {
-	return timer_current_get();
+// Gets time delta from a previous timestamp
+long timer_get(struct timespec t1) {
+	struct timespec t2 = timer_create();
+	long diff = ((t2.tv_sec - t1.tv_sec) * 1000) + ((t2.tv_nsec - t1.tv_nsec) / 1000000);
+
+	if (logs_find("timer")) {
+		printf("Timer difference: %zu\n", diff);
+	}
+
+	return diff;
 }
 
-// Gets time diff from start time in milliseconds
-uint32_t timer_end(struct timespec timerStart) {
-	struct timespec timerEnd = timer_current_get();
-	uint32_t timeDiff = (timerEnd.tv_sec - timerStart.tv_sec) * 1000;
-	timeDiff += (timerEnd.tv_nsec - timerStart.tv_nsec) / 1000000;
-	return timeDiff;
+// Ensures time delta from a previous timestamp is baseDiff ms and not more than lateAllowed ms late
+void timer_get_verify(struct timespec t1, long baseDiff, long lateAllowed) {
+	long diff = timer_get(t1);
+	if ((diff < baseDiff) || (diff > (baseDiff + lateAllowed))) {
+		fprintf(stderr,
+			"Expected timer delta between %zu and %zu, but got %zu\n",
+			baseDiff, baseDiff + lateAllowed, diff
+		);
+		abort();
+	}
 }
