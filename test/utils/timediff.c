@@ -3,7 +3,7 @@
 #include <stdlib.h> // abort
 
 #include "./logs.h" // logs_find
-#include "./timer.h"
+#include "./timediff.h"
 
 
 
