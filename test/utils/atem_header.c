@@ -81,7 +81,12 @@ void atem_header_len_set(uint8_t* packet, uint16_t len) {
 // Gets length of packet
 uint16_t atem_header_len_get(uint8_t* packet) {
 	uint16_t word = atem_packet_word_get(packet, ATEM_INDEX_LEN_HIGH, ATEM_INDEX_LEN_LOW);
-	return word & ATEM_MAX_PACKET_LEN;
+	uint16_t len = word & ATEM_MAX_PACKET_LEN;
+	if (len < ATEM_LEN_HEADER) {
+		fprintf(stderr, "Packet is smaller than minimum size: %d\n", len);
+		abort();
+	}
+	return len;
 }
 
 // Verifies length of packet
