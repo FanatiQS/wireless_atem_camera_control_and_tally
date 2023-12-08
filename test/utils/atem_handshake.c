@@ -6,7 +6,7 @@
 #include "../../src/atem_protocol.h" // ATEM_INDEX_NEWSESSIONID_HIGH, ATEM_INDEX_NEWSESSIONID_LOW, ATEM_FLAG_SYN, ATEM_LEN_SYN, ATEM_INDEX_OPCODE, ATEM_FLAG_RETX, ATEM_OPCODE_OPEN, ATEM_OPCODE_ACCEPT, ATEM_OPCODE_REJECT, ATEM_OPCODE_CLOSING, ATEM_OPCODE_CLOSED
 #include "../../src/atem.h" // ATEM_MAX_PACKET_LEN
 #include "./atem_header.h" // atem_packet_clear, atem_packet_word_set, atem_packet_word_get, atem_header_flags_set, atem_header_flags_get_verify, atem_header_len_set, atem_header_len_get_verify, atem_header_sessionid_get, atem_header_ackid_get_verify, atem_header_localid_get_verify, atem_header_remoteid_get_verify, atem_header_sessionid_set, atem_header_sessionid_get_verify, atem_header_flags_isnotset
-#include "./payload.h" // atem_ack_send, atem_ack_recv_verify
+#include "./payload.h" // atem_acknowledge_response_send, atem_acknowledge_response_recv_verify
 #include "./atem_sock.h" // atem_socket_recv, atem_socket_send, atem_socket_connect, atem_socket_listen, atem_socket_create, atem_socket_close
 #include "./logs.h" // logs_find
 #include "./atem_handshake.h"
@@ -225,7 +225,7 @@ uint16_t atem_handshake_start_server(int sock) {
 // Connects to the ATEM switcher by completing entire opening handshake
 uint16_t atem_handshake_connect(int sock, uint16_t sessionId) {
 	uint16_t newSessionId = atem_handshake_start_client(sock, sessionId);
-	atem_ack_send(sock, sessionId, 0x0000);
+	atem_acknowledge_response_send(sock, sessionId, 0x0000);
 	return newSessionId | 0x8000;
 }
 
@@ -233,7 +233,7 @@ uint16_t atem_handshake_connect(int sock, uint16_t sessionId) {
 uint16_t atem_handshake_listen(int sock, uint16_t newSessionId) {
 	uint16_t sessionId = atem_handshake_start_server(sock);
 	atem_handshake_newsessionid_send(sock, ATEM_OPCODE_ACCEPT, false, sessionId, newSessionId);
-	atem_ack_recv_verify(sock, sessionId, 0x0000);
+	atem_acknowledge_response_recv_verify(sock, sessionId, 0x0000);
 	return newSessionId | 0x8000;
 }
 
