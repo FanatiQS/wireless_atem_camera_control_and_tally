@@ -23,7 +23,7 @@ long timer_get(struct timespec t1) {
 	long diff = ((t2.tv_sec - t1.tv_sec) * 1000) + ((t2.tv_nsec - t1.tv_nsec) / 1000000);
 
 	if (logs_find("timer")) {
-		printf("Timer difference: %zu\n", diff);
+		printf("Timer difference: %lu\n", diff);
 	}
 
 	return diff;
@@ -34,7 +34,7 @@ void timer_get_verify(struct timespec t1, long baseDiff, long lateAllowed) {
 	long diff = timer_get(t1);
 	if ((diff < baseDiff) || (diff > (baseDiff + lateAllowed))) {
 		fprintf(stderr,
-			"Expected timer delta between %zu and %zu, but got %zu\n",
+			"Expected timer delta between %lu and %lu, but got %lu\n",
 			baseDiff, baseDiff + lateAllowed, diff
 		);
 		abort();
