@@ -236,6 +236,12 @@ void atem_header_init(void) {
 	atem_header_flags_clear(packet);
 	assert(atem_header_flags_get(packet) == 0x00);
 
+	// Tests atem_header_flags_get with max length
+	atem_packet_clear(packet);
+	atem_header_len_set(packet, ATEM_MAX_PACKET_LEN);
+	assert(atem_header_len_get(packet) == ATEM_MAX_PACKET_LEN);
+	assert(atem_header_flags_get(packet) == 0);
+
 	// Tests atem_header_len_get and atem_header_len_set
 	atem_packet_clear(packet);
 	atem_header_len_set(packet, ATEM_LEN_HEADER);
