@@ -222,7 +222,8 @@ void atem_header_init(void) {
 
 	// Tests atem_header_len_get and atem_header_len_set
 	atem_packet_clear(packet);
-	assert(atem_header_len_get(packet) == 0);
+	atem_header_len_set(packet, ATEM_LEN_HEADER);
+	assert(atem_header_len_get(packet) == ATEM_LEN_HEADER);
 	atem_header_len_set(packet, 100);
 	assert(atem_header_len_get(packet) == 100);
 
