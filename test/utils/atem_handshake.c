@@ -2,6 +2,7 @@
 #include <stdbool.h> // bool
 #include <stdio.h> // fprintf, stderr, printf
 #include <stdlib.h> // abort
+#include <assert.h> // assert
 
 #include "../../src/atem_protocol.h" // ATEM_INDEX_NEWSESSIONID_HIGH, ATEM_INDEX_NEWSESSIONID_LOW, ATEM_FLAG_SYN, ATEM_LEN_SYN, ATEM_INDEX_OPCODE, ATEM_FLAG_RETX, ATEM_OPCODE_OPEN, ATEM_OPCODE_ACCEPT, ATEM_OPCODE_REJECT, ATEM_OPCODE_CLOSING, ATEM_OPCODE_CLOSED
 #include "../../src/atem.h" // ATEM_MAX_PACKET_LEN
@@ -21,11 +22,11 @@ void atem_handshake_newsessionid_set(uint8_t* packet, uint16_t newSessionId) {
 // Gets new session id from handshake packet
 uint16_t atem_handshake_newsessionid_get(uint8_t* packet) {
 	uint16_t sessionId = atem_packet_word_get(packet, ATEM_INDEX_NEWSESSIONID_HIGH, ATEM_INDEX_NEWSESSIONID_LOW);
-	if (!(sessionId & 0x8000)) {
-		return sessionId;
+	if (sessionId & 0x8000) {
+		fprintf(stderr, "Expected new session id 0x%04x to not have MSB set\n", sessionId);
+		abort();
 	}
-	fprintf(stderr, "Expected new session id 0x%04x to not have MSB set\n", sessionId);
-	abort();
+	return sessionId;
 }
 
 // Verifies new session id in handshake packet
@@ -245,4 +246,20 @@ void atem_handshake_close(int sock, uint16_t sessionId) {
 		atem_socket_recv(sock, packet);
 	} while (atem_header_flags_get(packet) != ATEM_FLAG_SYN);
 	atem_handshake_sessionid_get_verify(packet, ATEM_OPCODE_CLOSED, false, sessionId);
+}
+
+
+
+void atem_handshake_init(void) {
+	uint8_t packet[ATEM_MAX_PACKET_LEN];
+
+	// Tests getter/setter for new session id
+	atem_packet_clear(packet);
+	atem_handshake_newsessionid_set(packet, 0x7fff);
+	assert(atem_handshake_newsessionid_get(packet) == 0x7fff);
+
+	// Tests getter/setter for opcode
+	atem_packet_clear(packet);
+	atem_handshake_opcode_set(packet, ATEM_OPCODE_OPEN);
+	assert(atem_handshake_opcode_get(packet) == ATEM_OPCODE_OPEN);
 }
