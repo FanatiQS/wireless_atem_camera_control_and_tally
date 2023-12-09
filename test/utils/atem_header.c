@@ -131,7 +131,12 @@ void atem_header_ackid_set(uint8_t* packet, uint16_t ackId) {
 
 // Gets ack id from packet
 uint16_t atem_header_ackid_get(uint8_t* packet) {
-	return atem_packet_word_get(packet, ATEM_INDEX_ACKID_HIGH, ATEM_INDEX_ACKID_LOW);
+	uint16_t ackId = atem_packet_word_get(packet, ATEM_INDEX_ACKID_HIGH, ATEM_INDEX_ACKID_LOW);
+	if (ackId & 0x8000) {
+		fprintf(stderr, "Expected ack id to never have MSB set: %04x\n", ackId);
+		abort();
+	}
+	return ackId;
 }
 
 // Verifies ack id in packet
@@ -151,7 +156,12 @@ void atem_header_localid_set(uint8_t* packet, uint16_t localId) {
 
 // Gets local id from packet
 uint16_t atem_header_localid_get(uint8_t* packet) {
-	return atem_packet_word_get(packet, ATEM_INDEX_LOCALID_HIGH, ATEM_INDEX_LOCALID_LOW);
+	uint16_t localId = atem_packet_word_get(packet, ATEM_INDEX_LOCALID_HIGH, ATEM_INDEX_LOCALID_LOW);
+	if (localId & 0x8000) {
+		fprintf(stderr, "Expected local id to never have MSB set: %04x\n", localId);
+		abort();
+	}
+	return localId;
 }
 
 // Verifies local id in packet
@@ -191,7 +201,12 @@ void atem_header_remoteid_set(uint8_t* packet, uint16_t remoteId) {
 
 // Gets remote id from packet
 uint16_t atem_header_remoteid_get(uint8_t* packet) {
-	return atem_packet_word_get(packet, ATEM_INDEX_REMOTEID_HIGH, ATEM_INDEX_REMOTEID_LOW);
+	uint16_t remoteId = atem_packet_word_get(packet, ATEM_INDEX_REMOTEID_HIGH, ATEM_INDEX_REMOTEID_LOW);
+	if (remoteId & 0x8000) {
+		fprintf(stderr, "Expected remote id to never have MSB set: %04x\n", remoteId);
+		abort();
+	}
+	return remoteId;
 }
 
 // Verifies remote id in packet
@@ -252,24 +267,24 @@ void atem_header_init(void) {
 	// Tests atem_header_sessionid_get and atem_header_sessionid_set
 	atem_packet_clear(packet);
 	assert(atem_header_sessionid_get(packet) == 0);
-	atem_header_sessionid_set(packet, 0xeeee);
-	assert(atem_header_sessionid_get(packet) == 0xeeee);
+	atem_header_sessionid_set(packet, 0x1eee);
+	assert(atem_header_sessionid_get(packet) == 0x1eee);
 
 	// Tests atem_header_ackid_get and atem_header_ackid_set
 	atem_packet_clear(packet);
 	assert(atem_header_ackid_get(packet) == 0);
-	atem_header_ackid_set(packet, 0xeeee);
-	assert(atem_header_ackid_get(packet) == 0xeeee);
+	atem_header_ackid_set(packet, 0x1eee);
+	assert(atem_header_ackid_get(packet) == 0x1eee);
 
 	// Tests atem_header_localid_get and atem_header_localid_set
 	atem_packet_clear(packet);
 	assert(atem_header_localid_get(packet) == 0);
-	atem_header_localid_set(packet, 0xeeee);
-	assert(atem_header_localid_get(packet) == 0xeeee);
+	atem_header_localid_set(packet, 0x1eee);
+	assert(atem_header_localid_get(packet) == 0x1eee);
 
 	// Tests atem_header_remoteid_get and atem_header_remoteid_set
 	atem_packet_clear(packet);
 	assert(atem_header_remoteid_get(packet) == 0);
-	atem_header_remoteid_set(packet, 0xeeee);
-	assert(atem_header_remoteid_get(packet) == 0xeeee);
+	atem_header_remoteid_set(packet, 0x1eee);
+	assert(atem_header_remoteid_get(packet) == 0x1eee);
 }
