@@ -30,6 +30,11 @@ uint16_t atem_packet_word_get(uint8_t* packet, uint8_t high, uint8_t low) {
 
 
 
+// Clears ATEM flags in packet
+void atem_header_flags_clear(uint8_t* packet) {
+	packet[ATEM_INDEX_FLAGS] &= ATEM_MASK_LEN_HIGH;
+}
+
 // Sets ATEM flags in packet
 void atem_header_flags_set(uint8_t* packet, uint8_t flags) {
 	packet[ATEM_INDEX_FLAGS] |= flags;
@@ -219,6 +224,17 @@ void atem_header_init(void) {
 	assert(atem_header_flags_get(packet) == 0);
 	atem_header_flags_set(packet, allFlags);
 	assert(atem_header_flags_get(packet) == allFlags);
+	atem_header_len_set(packet, ATEM_LEN_HEADER);
+	assert(atem_header_len_get(packet) == ATEM_LEN_HEADER);
+
+	// Tests atem_header_flags_clear
+	atem_packet_clear(packet);
+	atem_header_flags_set(packet, allFlags);
+	atem_header_len_set(packet, ATEM_LEN_HEADER);
+	assert(atem_header_flags_get(packet) == allFlags);
+	assert(atem_header_len_get(packet) == ATEM_LEN_HEADER);
+	atem_header_flags_clear(packet);
+	assert(atem_header_flags_get(packet) == 0x00);
 
 	// Tests atem_header_len_get and atem_header_len_set
 	atem_packet_clear(packet);
