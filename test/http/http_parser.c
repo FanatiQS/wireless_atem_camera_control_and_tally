@@ -5,7 +5,7 @@
 #include <unistd.h> // sleep
 
 #include "./http_sock.h" // http_socket_create, http_socket_send_string, http_socket_recv_cmp_status, http_socket_recv_len, http_socket_close, http_socket_recv_close, http_socket_recv_error, http_socket_body_send_buffer, http_socket_body_send_string
-#include "../utils/runner.h" // RUN_TEST
+#include "../utils/runner.h" // RUN_TEST, runner_exit
 
 
 
@@ -332,8 +332,5 @@ int main(void) {
 	RUN_TEST(test_body_err("dest=0", "Integer POST body value out of range"));
 	RUN_TEST(test_body_err("dest=255", "Integer POST body value out of range"));
 
-
-
-	printf("All tests successfully completed\n");
-	return 0;
+	return runner_exit();
 }

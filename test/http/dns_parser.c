@@ -10,7 +10,7 @@
 
 #include "../utils/simple_socket.h" // simple_socket_create, simple_socket_connect, simple_socket_send, simple_socket_recv, simple_socket_poll
 #include "../utils/logs.h" // logs_print_buffer, logs_find
-#include "../utils/runner.h" // RUN_TEST
+#include "../utils/runner.h" // RUN_TEST, runner_exit
 
 
 
@@ -265,4 +265,6 @@ int main(void) {
 		dns_append_complete(buf, &bufLen, DNS_QTYPE_A, 2);
 		dns_expect_error_long(buf, bufLen, DNS_RCODE_NXDOMAIN);
 	);
+
+	return runner_exit();
 }

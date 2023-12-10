@@ -101,4 +101,6 @@ int main(void) {
 			abort();
 		}
 	);
+
+	return runner_exit();
 }
