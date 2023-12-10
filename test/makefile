@@ -36,6 +36,22 @@ $(TESTS_DEVICE:%=$(BUILD_DIR)/%): $(BUILD_DIR)/%: http/%.c http/http_sock.c $(UT
 device: $(TESTS_DEVICE:%=run_%)
 TESTS_ALL += $(TESTS_DEVICE)
 
+
+
+# All ATEM client tests applying for both device and official clients
+TESTS_ATEM_CLIENT_DEVICE = atem_client_open
+TESTS_ATEM_CLIENT += $(TESTS_ATEM_CLIENT_DEVICE)
+device: $(TESTS_ATEM_CLIENT_DEVICE:%=run_%)
+
+# All ATEM client tests
+TESTS_ATEM_CLIENT += atem_client_open_extended
+$(TESTS_ATEM_CLIENT:%=$(BUILD_DIR)/%): $(BUILD_DIR)/%: atem_client/%.c $(UTILS_SOURCE)
+TESTS_ALL += $(TESTS_ATEM_CLIENT)
+.PHONY: atem_client
+atem_client: $(TESTS_ATEM_CLIENT:%=run_%)
+
+
+
 # Ensures everything is ready for release
 $(BUILD_DIR)/release: release/main.c ../firmware/init.h
 .PHONY: release
