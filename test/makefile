@@ -82,6 +82,11 @@ $(TESTS_ALL:%=$(BUILD_DIR)/%) $(BUILD_DIR)/playground: | $(BUILD_DIR)
 run_%: $(BUILD_DIR)/%
 	$<
 
+# Launches LLDB with test
+.PHONY: lldb_%
+lldb_%: $(BUILD_DIR)/%
+	lldb $<
+
 # Runs all tests
 .PHONY: all
 all: $(TESTS_ALL:%=run_%)
