@@ -62,7 +62,6 @@ TESTS_ALL += release
 # Playground for messing around in
 $(BUILD_DIR)/playground: playground.c http/http_sock.c $(UTILS_SOURCE)
 .PHONY: playground
-run_playground: $(BUILD_DIR)/playground
 playground: run_playground
 
 # Creates dist directory if it does not exist
