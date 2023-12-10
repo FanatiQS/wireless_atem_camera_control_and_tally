@@ -67,6 +67,6 @@ int runner_exit(void) {
 		return EXIT_SUCCESS;
 	}
 
-	printf("Test fails: %d/%d\n", runner_fails, runner_all);
+	printf("Tests failed: %d/%d\n", runner_fails, runner_all);
 	return runner_fails;
 }
