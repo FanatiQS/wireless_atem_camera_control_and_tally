@@ -75,7 +75,7 @@ $(BUILD_DIR):
 
 # Builds test executable
 $(TESTS_ALL:%=$(BUILD_DIR)/%) $(BUILD_DIR)/playground: | $(BUILD_DIR)
-	$(CC) $(filter %.c,$^) -o $@ -g -Wall -Wextra -Wpedantic $(CFLAGS) $(LDFLAGS)
+	$(CC) $(filter %.c,$^) -o $@ -g -Wall -Wextra -Wpedantic $(CFLAGS) $(CPPFLAGS) $(LDFLAGS)
 	$(CC) $(filter %.c,$^) -MM -MT $@ > $@.d
 
 # Runs test
