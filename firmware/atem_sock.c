@@ -203,6 +203,10 @@ static inline void atem_process(struct udp_pcb* pcb) {
 			break;
 		}
 #endif // SDI_ENABLED || DEBUG_CC
+		// Lets compiler know not all command names should be expected
+		default: {
+			break;
+		}
 	}
 }
 
