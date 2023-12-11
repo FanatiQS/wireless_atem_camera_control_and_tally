@@ -7,7 +7,6 @@ BUILD_DIR = ../build/test
 # Shared source files
 UTILS_SOURCE = utils/simple_socket.c utils/atem_sock.c utils/atem_header.c utils/atem_handshake.c utils/simple_socket.c utils/logs.c utils/atem_acknowledge.c utils/timediff.c utils/runner.c
 
-
 # Tests normal DNS lookups
 run_dns_lookup:
 # Ensures unsupported qtype and qclass rejects
@@ -52,9 +51,13 @@ atem_client: $(TESTS_ATEM_CLIENT:%=run_%)
 
 
 
+# Builds all tests and runs unit tests
+$(BUILD_DIR)/build: utils/main.c $(UTILS_SOURCE)
+run_build: $(TESTS_ALL:%=$(BUILD_DIR)/%)
+TESTS_ALL += build
+
 # Ensures everything is ready for release
-$(BUILD_DIR)/release: release/main.c ../firmware/init.h
-.PHONY: release
+$(BUILD_DIR)/release: release/main.c ../firmware/init.h run_build
 TESTS_ALL += release
 
 
