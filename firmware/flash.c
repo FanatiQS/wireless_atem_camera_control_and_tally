@@ -74,7 +74,7 @@ void flash_cache_write(struct cache_t* cache) {
 	// Only updates flash if required
 	struct config_t conf;
 	if (!flash_config_read(&conf)) return;
-	if (memcmp(&conf, &cache->config, sizeof(conf))) {
+	if (memcmp(&conf, &cache->config, sizeof(conf)) != 0) {
 		if (!flash_config_write(&cache->config)) return;
 	}
 
