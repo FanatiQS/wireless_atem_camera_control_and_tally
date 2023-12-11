@@ -32,7 +32,7 @@ int main(void) {
 	int iters = (itersEnvStr) ? atoi(itersEnvStr) : 1000;
 
 	// Ensure there are no memory leaks for normal HTTP requests
-	RUN_TEST(
+	RUN_TEST() {
 		printf("Test valid requests\n");
 		for (int i = 0; i < iters; i++) {
 			int sock = http_socket_create();
@@ -42,10 +42,10 @@ int main(void) {
 			http_socket_close(sock);
 			progressprint(i, iters);
 		}
-	);
+	}
 
 	// Ensures there are no memory leaks for invalid HTTP request
-	RUN_TEST(
+	RUN_TEST() {
 		printf("Test invalid requests\n");
 		for (int i = 0; i < iters; i++) {
 			int sock = http_socket_create();
@@ -55,10 +55,10 @@ int main(void) {
 			http_socket_close(sock);
 			progressprint(i, iters);
 		}
-	);
+	}
 
 	// Ensures there are no memory leaks when sending after server close
-	RUN_TEST(
+	RUN_TEST() {
 		printf("Test write after valid request\n");
 		for (int i = 0; i < iters; i++) {
 			int sock = http_socket_create();
@@ -69,12 +69,12 @@ int main(void) {
 			http_socket_close(sock);
 			progressprint(i, iters);
 		}
-	);
+	}
 
 	// @todo memory leak in arduino esp8266 lwip2 (not lwip1.4) causing oom (might be in rtos sdk too?)
 #if 0
 	// Ensures there are no memory leaks when sending after server close on invalid request
-	RUN_TEST(
+	RUN_TEST() {
 		printf("Test write after invalid request\n");
 		for (int i = 1; i <= iters; i++) {
 			int sock = http_socket_create();
@@ -86,11 +86,11 @@ int main(void) {
 			http_socket_close(sock);
 			if (!(i % 100)) printf("%d\n", i);
 		}
-	);
+	}
 #endif
 
 	// Ensures there are no memory leaks when closing from client
-	RUN_TEST(
+	RUN_TEST() {
 		printf("Test close socket right away\n");
 		for (int i = 0; i < iters; i++) {
 			int sock = http_socket_create();
@@ -98,12 +98,12 @@ int main(void) {
 			http_socket_close(sock);
 			progressprint(i, iters);
 		}
-	);
+	}
 
 	// @todo memory issue in arduino esp8266 lwip2 (not arduino lwip1.4 or esp8266 rtos sdk)
 #if 1
 	// Ensures max number of simultanious connections does not cause memory segfaults
-	RUN_TEST(
+	RUN_TEST() {
 		printf("Test simultanious sockets\n");
 		int socks[iters];
 		int nfds = 0;
@@ -130,11 +130,11 @@ int main(void) {
 		for (int i = 0; i < iters; i++) {
 			http_socket_close(socks[i]);
 		}
-	);
+	}
 #endif
 
 	// Ensure there are no memory leaks for timeouts
-	RUN_TEST(
+	RUN_TEST() {
 		printf("Test socket timeout\n");
 		for (int i = 1; i <= iters; i++) {
 			int sock = http_socket_create();
@@ -142,7 +142,7 @@ int main(void) {
 			http_socket_close(sock);
 			progressprint(i, iters);
 		}
-	);
+	}
 
 	return runner_exit();
 }

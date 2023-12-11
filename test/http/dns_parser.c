@@ -192,13 +192,13 @@ void dns_expect_error_long(uint8_t* reqBuf, size_t reqLen, int code) {
 // Runs all DNS tests
 int main(void) {
 	// Tests under minimum packet length
-	RUN_TEST(
+	RUN_TEST() {
 		uint8_t buf[DNS_LEN_MAX] = {0};
 		dns_expect_timeout(buf, DNS_LEN_MIN - 1);
-	);
+	}
 
 	// Tests above maximum packet length
-	RUN_TEST(
+	RUN_TEST() {
 		uint8_t buf[DNS_LEN_MAX * 2] = {0};
 		size_t bufLen = DNS_LEN_MIN;
 		for (int i = 0; i < 8; i++) {
@@ -206,65 +206,65 @@ int main(void) {
 		}
 		dns_append_complete(buf, &bufLen, DNS_QTYPE_A, DNS_QCLASS_IN);
 		dns_expect_timeout(buf, bufLen);
-	);
+	}
 
 	// Tests QR flag being set for request
-	RUN_TEST(
+	RUN_TEST() {
 		uint8_t buf[DNS_LEN_MAX] = { [DNS_INDEX_FLAGS_HIGH] = 0x80 };
 		dns_expect_timeout(buf, DNS_LEN_MIN);
-	);
+	}
 
 	// Tests unsupported opcodes
-	RUN_TEST(
+	RUN_TEST() {
 		for (int i = 1; i < 16; i++) {
 			uint8_t buf[DNS_LEN_MAX] = { [DNS_INDEX_FLAGS_HIGH] = i << 3 };
 			dns_expect_error_short(buf, dns_append_default(buf, DNS_LEN_MIN), DNS_RCODE_NOTIMP);
 		}
-	);
+	}
 
 	// Tests unsupported zero queries
-	RUN_TEST(
+	RUN_TEST() {
 		uint8_t buf[DNS_LEN_MAX] = {0};
 		dns_expect_error_short(buf, DNS_LEN_MIN, DNS_RCODE_FORMERR);
-	);
+	}
 
 	// Tests unsupported more than 1 query
-	RUN_TEST(
+	RUN_TEST() {
 		uint8_t buf[DNS_LEN_MAX] = {0};
 		size_t reqLen = dns_append_default(buf, DNS_LEN_MIN);
 		reqLen = dns_append_default(buf, reqLen);
 		dns_expect_error_short(buf, reqLen, DNS_RCODE_FORMERR);
-	);
+	}
 
 	// Tests invalid query length
-	RUN_TEST(
+	RUN_TEST() {
 		uint8_t buf[DNS_LEN_MAX] = {0};
 		dns_expect_error_short(buf, dns_append_default(buf, DNS_LEN_MIN) - 1, DNS_RCODE_FORMERR);
-	);
+	}
 
 	// Tests label expanding out of packet
-	RUN_TEST(
+	RUN_TEST() {
 		uint8_t buf[DNS_LEN_MAX] = {0};
 		size_t bufLen = dns_append_default(buf, DNS_LEN_MIN);
 		buf[bufLen - sizeof(uint16_t) * 2 - 2 - strlen("com")] += 20;
 		dns_expect_error_short(buf, bufLen, DNS_RCODE_FORMERR);
-	);
+	}
 
 	// Ensures unsupported qtype is rejected
-	RUN_TEST(
+	RUN_TEST() {
 		uint8_t buf[DNS_LEN_MAX] = {0,0,1};
 		size_t bufLen = dns_append_default_name(buf, DNS_LEN_MIN);
 		dns_append_complete(buf, &bufLen, 2, DNS_QCLASS_IN);
 		dns_expect_error_long(buf, bufLen, DNS_RCODE_NXDOMAIN);
-	);
+	}
 
 	// Ensures unsupported qtype is rejected
-	RUN_TEST(
+	RUN_TEST() {
 		uint8_t buf[DNS_LEN_MAX] = {0};
 		size_t bufLen = dns_append_default_name(buf, DNS_LEN_MIN);
 		dns_append_complete(buf, &bufLen, DNS_QTYPE_A, 2);
 		dns_expect_error_long(buf, bufLen, DNS_RCODE_NXDOMAIN);
-	);
+	}
 
 	return runner_exit();
 }

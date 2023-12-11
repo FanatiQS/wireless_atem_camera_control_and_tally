@@ -19,7 +19,7 @@ uint16_t atem_port(int sock) {
 
 int main(void) {
 	// Ensures client resends opening handshake exactly ATEM_RESENDS times on an interval of ATEM_RESEND_TIME seconds
-	RUN_TEST(
+	RUN_TEST() {
 		atem_handshake_resetpeer();
 
 		int sock = atem_socket_create();
@@ -33,10 +33,10 @@ int main(void) {
 
 		atem_socket_norecv(sock);
 		atem_socket_close(sock);
-	);
+	}
 
 	// Ensures opening handshake restarts correctly after ATEM_RESENDS failed retries with new session id and port
-	RUN_TEST(
+	RUN_TEST() {
 		atem_handshake_resetpeer();
 
 		// Gets client assigned session id and peer port on first connection attempt
@@ -69,10 +69,10 @@ int main(void) {
 			fprintf(stderr, "Expected UDP client port to change: %d, %d\n", port1, port2);
 			abort();
 		}
-	);
+	}
 
 	// Ensures restarting opening handshake after reject changes session id and port 
-	RUN_TEST(
+	RUN_TEST() {
 		atem_handshake_resetpeer();
 
 		int sock = atem_socket_create();
@@ -100,7 +100,7 @@ int main(void) {
 			fprintf(stderr, "Expected UDP client port to change: %d, %d", port1, port2);
 			abort();
 		}
-	);
+	}
 
 	return runner_exit();
 }
