@@ -222,6 +222,7 @@ void atem_header_remoteid_get_verify(uint8_t* packet, uint16_t expectedRemoteId)
 // Tests functions in this file
 void atem_header_init(void) {
 	uint8_t packet[ATEM_MAX_PACKET_LEN];
+	const uint8_t allFlags = 0xff & ~(ATEM_MAX_PACKET_LEN >> 8);
 
 	// Tests atem_packet_word_set and atem_packet_word_get
 	atem_packet_clear(packet);
@@ -235,12 +236,19 @@ void atem_header_init(void) {
 
 	// Tests atem_header_flags_get and atem_header_flags_set
 	atem_packet_clear(packet);
-	uint8_t allFlags = 0xff & ~(ATEM_MAX_PACKET_LEN >> 8);
 	assert(atem_header_flags_get(packet) == 0);
 	atem_header_flags_set(packet, allFlags);
 	assert(atem_header_flags_get(packet) == allFlags);
 	atem_header_len_set(packet, ATEM_LEN_HEADER);
 	assert(atem_header_len_get(packet) == ATEM_LEN_HEADER);
+
+	// Tests atem_header_flags_get_verify
+	atem_packet_clear(packet);
+	atem_header_flags_set(packet, allFlags);
+	atem_header_flags_get_verify(packet, allFlags, 0);
+	atem_header_flags_get_verify(packet, 0, allFlags);
+	atem_packet_clear(packet);
+	atem_header_flags_get_verify(packet, 0, 0);
 
 	// Tests atem_header_flags_clear
 	atem_packet_clear(packet);
