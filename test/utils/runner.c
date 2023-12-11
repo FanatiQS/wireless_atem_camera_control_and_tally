@@ -16,10 +16,10 @@
 static int runner_all = 0;
 static int runner_fails = 0;
 
-jmp_buf _runner_abort_jmp;
+jmp_buf _runner_jmp;
 
 // Trap callback to exit test failing test and continue with next
-static void runner_abort_trap(int signal) {
+static void runner_fail(int signal) {
 	// Prevents unused argument compiler warning
 	(void)signal;
 
@@ -34,11 +34,11 @@ static void runner_abort_trap(int signal) {
 	sleep(ATEM_TIMEOUT);
 
 	// Jumps back out and escapes RUN_TEST call
-	longjmp(_runner_abort_jmp, 0);
+	longjmp(_runner_jmp, 0);
 }
 
-// Sets up for test and allows RUN_TEST to setjmp by returning false
-bool _runner_mode_abort(const char* file, int line) {
+// Sets up for a new test to run
+bool _runner_init(const char* file, int line) {
 	// Document test started
 	printf("Test started: %s:%d\n", file, line);
 	runner_all++;
@@ -46,18 +46,20 @@ bool _runner_mode_abort(const char* file, int line) {
 	// Allows continuing with remaining when test fails
 	char* mode = getenv("RUNNER_MODE");
 	if (mode == NULL || !strcmp(mode, "all")) {
-		signal(SIGABRT, runner_abort_trap);
-		return false;
+		signal(SIGABRT, runner_fail);
 	}
-
-	// Aborts on test failure
-	if (!strcmp(mode, "abort")) {
-		return true;
-	}
-
 	// Invalid test mode value
-	fprintf(stderr, "Invalid RUNNER_MODE value: %s\n", mode);
-	abort();
+	else if (strcmp(mode, "abort")) {
+		fprintf(stderr, "Invalid RUNNER_MODE value: %s\n", mode);
+		abort();
+	}
+
+	return true;
+}
+
+// Runs when a test runs successfully without any errors
+void _runner_success(void) {
+	printf("Test successful\n\n");
 }
 
 // Prints and returns number of failed tests if not running in abort mode

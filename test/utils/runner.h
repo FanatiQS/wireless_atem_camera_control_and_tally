@@ -3,21 +3,22 @@
 #define RUNNER_H
 
 #include <setjmp.h> // setjmp, jmp_buf
-#include <stdio.h> // printf
 #include <stdbool.h> // bool
 
-extern jmp_buf _runner_abort_jmp;
-bool _runner_mode_abort(const char* file, int line);
+extern jmp_buf _runner_jmp;
+bool _runner_init(const char* file, int line);
+void _runner_success(void);
+int runner_exit(void);
+
+// Sets up to running test
+#define _RUN_TEST() for (\
+		bool run = _runner_init(__FILE__, __LINE__);\
+		run && !setjmp(_runner_jmp);\
+		run = false, _runner_success()\
+	)
 
 // Runs a block of test code
-#define RUN_TEST(...)\
-	do {\
-		if (_runner_mode_abort(__FILE__, __LINE__) || !setjmp(_runner_abort_jmp)) {\
-			__VA_ARGS__;\
-			printf("Test successful\n\n");\
-		}\
-	} while (0)
+#define RUN_TEST(...) _RUN_TEST() {__VA_ARGS__}
 
-int runner_exit(void);
 
 #endif // RUNNER_H
