@@ -76,7 +76,7 @@ static bool http_write(struct http_t* http, const char* buf, size_t len) {
 	// Writes as much of the buffer as PCB has room for
 	size_t size = LWIP_MIN(len, tcp_sndbuf(http->pcb));
 	if (tcp_write(http->pcb, buf, size, 0) != ERR_OK) {
-		DEBUG_ERR_PRINTF("Failed to write TCP data\n");
+		DEBUG_ERR_PRINTF("Failed to write HTTP data for %p\n", (void*)http->pcb);
 		return false;
 	}
 
@@ -266,7 +266,7 @@ bool http_respond(struct http_t* http) {
 
 	// Transmits all buffered data in TCP PCB from all the writes
 	if (tcp_output(http->pcb) != ERR_OK) {
-		DEBUG_ERR_PRINTF("Failed to output TCP data for %p\n", (void*)http->pcb);
+		DEBUG_ERR_PRINTF("Failed to output HTTP data for %p\n", (void*)http->pcb);
 	}
 	return true;
 }
