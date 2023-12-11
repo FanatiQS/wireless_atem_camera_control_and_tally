@@ -57,7 +57,8 @@ run_build: $(TESTS_ALL:%=$(BUILD_DIR)/%)
 TESTS_ALL += build
 
 # Ensures everything is ready for release
-$(BUILD_DIR)/release: release/main.c ../firmware/init.h run_build
+$(BUILD_DIR)/release: release/main.c ../firmware/init.h
+run_release: run_build
 TESTS_ALL += release
 
 
