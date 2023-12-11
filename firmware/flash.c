@@ -7,6 +7,7 @@
 
 
 #ifdef ESP8266
+#include <stdint.h> // uint16_t, uint32_t
 #include <user_interface.h> // wifi_station_get_config, wifi_softap_get_config, wifi_station_set_config, wifi_softap_set_config
 #include <spi_flash.h> // spi_flash_erase_sector, spi_flash_write, spi_flash_read, SPI_FLASH_RESULT_OK, spi_flash_get_id, SPI_FLASH_SEC_SIZE, wifi_set_event_handler_cb, system_restart
 
