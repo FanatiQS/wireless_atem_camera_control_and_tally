@@ -63,10 +63,9 @@ TESTS_ALL += release
 
 
 
-# Playground for messing around in
-$(BUILD_DIR)/playground: playground.c http/http_sock.c $(UTILS_SOURCE)
-.PHONY: playground
-playground: run_playground
+# Playgrounds for messing around in
+PLAYGROUNDS = $(patsubst playground/%.c,$(BUILD_DIR)/playground_%,$(wildcard playground/*.c))
+$(PLAYGROUNDS): $(BUILD_DIR)/playground_%: playground/%.c http/http_sock.c $(UTILS_SOURCE)
 
 # Creates dist directory if it does not exist
 $(BUILD_DIR):
@@ -74,10 +73,10 @@ $(BUILD_DIR):
 
 # Includes dependency files for test executables
 -include $(TESTS_ALL:%=$(BUILD_DIR)/%.d)
--include $(BUILD_DIR)/playground.d
+-include $(PLAYGROUNDS:%=%.d)
 
 # Builds test executable
-$(TESTS_ALL:%=$(BUILD_DIR)/%) $(BUILD_DIR)/playground: | $(BUILD_DIR)
+$(TESTS_ALL:%=$(BUILD_DIR)/%) $(PLAYGROUNDS): | $(BUILD_DIR)
 	$(CC) $(filter %.c,$^) -o $@ -g -Wall -Wextra -Wpedantic $(CFLAGS) $(CPPFLAGS) $(LDFLAGS)
 	$(CC) $(filter %.c,$^) -MM -MT $@ > $@.d
 
@@ -99,11 +98,11 @@ all: $(TESTS_ALL:%=run_%)
 RMRF = rm -rf
 .PHONY: clean
 clean:
-	$(RM) $(TESTS_ALL:%=$(BUILD_DIR)/%) $(BUILD_DIR)/playground
-	$(RM) $(TESTS_ALL:%=$(BUILD_DIR)/%.d) $(BUILD_DIR)/playground.d
-	$(RMRF) $(TESTS_ALL:%=$(BUILD_DIR)/%.dSYM) $(BUILD_DIR)/playground.dSYM
+	$(RM) $(TESTS_ALL:%=$(BUILD_DIR)/%) $(PLAYGROUNDS)
+	$(RM) $(TESTS_ALL:%=$(BUILD_DIR)/%.d) $(PLAYGROUNDS:%=%.d)
+	$(RMRF) $(TESTS_ALL:%=$(BUILD_DIR)/%.dSYM) $(PLAYGROUNDS:%=%.dSYM)
 
-# Lists all tests except playground
+# Lists all tests except playgrounds
 .PHONY: list
 list:
 	echo $(TESTS_ALL)
