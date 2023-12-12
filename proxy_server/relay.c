@@ -6,7 +6,7 @@
 
 #include "./relay.h"
 #include "./udp.h"
-#include "../src/atem.h"
+#include "../core/atem.h"
 #include "./atem_extra.h"
 #include "./server.h"
 #include "./timer.h"

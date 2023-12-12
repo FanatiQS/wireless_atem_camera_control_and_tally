@@ -9,8 +9,8 @@
 #include <netinet/in.h> // struct sockaddr_in
 
 #include "./simple_socket.h" // simple_socket_create, simple_socket_poll, simple_socket_send, simple_socket_recv, simple_socket_connect
-#include "../../src/atem_protocol.h" // ATEM_FLAG_SYN, ATEM_FLAG_RETX
-#include "../../src/atem.h" // ATEM_PORT, ATEM_MAX_PACKET_LEN
+#include "../../core/atem_protocol.h" // ATEM_FLAG_SYN, ATEM_FLAG_RETX
+#include "../../core/atem.h" // ATEM_PORT, ATEM_MAX_PACKET_LEN
 #include "./atem_header.h" // atem_header_len_get, atem_header_flags_get, atem_header_unknownid_get, atem_header_len_get_verify
 #include "./logs.h" // logs_print_buffer, logs_find
 #include "./atem_sock.h"

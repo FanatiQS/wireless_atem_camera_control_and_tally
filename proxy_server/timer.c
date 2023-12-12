@@ -7,7 +7,7 @@
 #include "./timer.h"
 #include "./udp.h"
 #include "./server.h"
-#include "../src/atem.h"
+#include "../core/atem.h"
 #include "./atem_extra.h"
 #include "./relay.h"
 #include "./debug.h"

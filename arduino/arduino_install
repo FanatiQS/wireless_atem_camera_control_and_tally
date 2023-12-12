@@ -8,41 +8,41 @@ echo --% >/dev/null;: ' | out-null
 cd ..
 $PSDefaultParameterValues = @{"Out-File:Encoding" = "ASCII"}
 
-function cpy([String]$dest, [String]$src) {
+function cpy([String]$1) {
 <#' # Terminates Bash string and starts Powershell multi-line comment
 
 cd "$(dirname $0)/.."
 
 cpy() {
-	dest=$1
-	src=$2
 #> # Terminates Powershell multi-line comment
-	echo "Copying $PWD/$src to $PWD/arduino/$dest"
-	cp $PWD/$src $PWD/arduino/$dest
+	echo "Copying $PWD/$1 to $PWD/arduino/src/$1"
+	cp $PWD/$1 $PWD/arduino/src/$1
 }
 
 echo "Creating directory $PWD/arduino/src"
 mkdir $PWD/arduino/src
-echo "Generating $PWD/src/user_config.h"
-echo '#include "../user_config.h"' > $PWD/arduino/src/user_config.h
-cpy src/atem.c            src/atem.c
-cpy src/atem.h            src/atem.h
-cpy src/atem_protocol.h   src/atem_protocol.h
-cpy src/atem_sock.c       firmware/atem_sock.c
-cpy src/atem_sock.h       firmware/atem_sock.h
-cpy src/debug.h           firmware/debug.h
-cpy src/dns.c             firmware/dns.c
-cpy src/dns.h             firmware/dns.h
-cpy src/flash.c           firmware/flash.c
-cpy src/flash.h           firmware/flash.h
-cpy src/http.c            firmware/http.c
-cpy src/http.h            firmware/http.h
-cpy src/http_respond.c    firmware/http_respond.c
-cpy src/http_respond.h    firmware/http_respond.h
-cpy src/i2c.h             firmware/i2c.h
-cpy src/init.c            firmware/init.c
-cpy src/init.h            firmware/init.h
-cpy src/led.h             firmware/led.h
-cpy src/sdi.c             firmware/sdi.c
-cpy src/sdi.h             firmware/sdi.h
+mkdir $PWD/arduino/src/core
+mkdir $PWD/arduino/src/firmware
+echo "Generating $PWD/arduino/src/firmware/user_config.h"
+echo '#include "../../user_config.h"' > $PWD/arduino/src/firmware/user_config.h
+cpy core/atem.c
+cpy core/atem.h
+cpy core/atem_protocol.h
+cpy firmware/atem_sock.c
+cpy firmware/atem_sock.h
+cpy firmware/debug.h
+cpy firmware/dns.c
+cpy firmware/dns.h
+cpy firmware/flash.c
+cpy firmware/flash.h
+cpy firmware/http.c
+cpy firmware/http.h
+cpy firmware/http_respond.c
+cpy firmware/http_respond.h
+cpy firmware/i2c.h
+cpy firmware/init.c
+cpy firmware/init.h
+cpy firmware/led.h
+cpy firmware/sdi.c
+cpy firmware/sdi.h
 echo "Installed"

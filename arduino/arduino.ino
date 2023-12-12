@@ -11,10 +11,10 @@
 
 #define LWIP_HDR_TCP_H // Fixes arduino and lwip collision
 #undef FLASH_H
-#include "./src/atem_sock.h" // atem_state
-#include "./src/flash.h" // struct config_t, CONF_FLAG_STATICIP
-#include "./src/init.h" // waccat_init, FIRMWARE_VERSION_STRING
-#include "./src/debug.h" // WRAP, DEBUG_PRINTF
+#include "./src/firmware/atem_sock.h" // atem_state
+#include "./src/firmware/flash.h" // struct config_t, CONF_FLAG_STATICIP
+#include "./src/firmware/init.h" // waccat_init, FIRMWARE_VERSION_STRING
+#include "./src/firmware/debug.h" // WRAP, DEBUG_PRINTF
 
 
 

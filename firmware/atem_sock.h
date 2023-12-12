@@ -6,7 +6,7 @@
 
 #include <lwip/udp.h> // struct udp_pcb
 
-#include "../src/atem.h" // struct atem_t
+#include "../core/atem.h" // struct atem_t
 
 // String representing the current ATEM connection status
 extern const char* atem_state;

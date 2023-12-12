@@ -28,8 +28,8 @@ lib_cf: $(NAME_LIB_CF).a
 
 
 
-FILES_SOURCE = server.c timer.c cache.c relay.c ../src/atem.c
-FILES_HEADER = server.h udp.h timer.h cache.h relay.h ../src/atem.h atem_extra.h debug.h udp_unix.h udp_win.h
+FILES_SOURCE = server.c timer.c cache.c relay.c ../core/atem.c
+FILES_HEADER = server.h udp.h timer.h cache.h relay.h ../core/atem.h atem_extra.h debug.h udp_unix.h udp_win.h
 FILES_ALL = makefile $(FILES_SOURCE) $(FILES_HEADER)
 
 FILES_EXEC = main.c $(FILES_SOURCE)

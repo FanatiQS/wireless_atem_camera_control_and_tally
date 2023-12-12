@@ -4,8 +4,8 @@
 #include <stdlib.h> // abort
 #include <assert.h> // assert
 
-#include "../../src/atem_protocol.h" // ATEM_INDEX_NEWSESSIONID_HIGH, ATEM_INDEX_NEWSESSIONID_LOW, ATEM_FLAG_SYN, ATEM_LEN_SYN, ATEM_INDEX_OPCODE, ATEM_FLAG_RETX, ATEM_OPCODE_OPEN, ATEM_OPCODE_ACCEPT, ATEM_OPCODE_REJECT, ATEM_OPCODE_CLOSING, ATEM_OPCODE_CLOSED
-#include "../../src/atem.h" // ATEM_MAX_PACKET_LEN
+#include "../../core/atem_protocol.h" // ATEM_INDEX_NEWSESSIONID_HIGH, ATEM_INDEX_NEWSESSIONID_LOW, ATEM_FLAG_SYN, ATEM_LEN_SYN, ATEM_INDEX_OPCODE, ATEM_FLAG_RETX, ATEM_OPCODE_OPEN, ATEM_OPCODE_ACCEPT, ATEM_OPCODE_REJECT, ATEM_OPCODE_CLOSING, ATEM_OPCODE_CLOSED
+#include "../../core/atem.h" // ATEM_MAX_PACKET_LEN
 #include "./atem_header.h" // atem_packet_clear, atem_packet_word_set, atem_packet_word_get, atem_header_flags_set, atem_header_flags_get_verify, atem_header_len_set, atem_header_len_get_verify, atem_header_sessionid_get, atem_header_ackid_get_verify, atem_header_localid_get_verify, atem_header_remoteid_get_verify, atem_header_sessionid_set, atem_header_sessionid_get_verify, atem_header_flags_isnotset
 #include "./atem_acknowledge.h" // atem_acknowledge_response_send, atem_acknowledge_response_recv_verify
 #include "./atem_sock.h" // atem_socket_recv, atem_socket_send, atem_socket_connect, atem_socket_listen, atem_socket_create, atem_socket_close

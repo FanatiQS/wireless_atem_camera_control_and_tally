@@ -10,7 +10,7 @@
 #include <unistd.h> // close
 
 #include "./simple_socket.h" // SIMPLE_SOCKET_MAX_FD
-#include "../../src/atem.h" // ATEM_TIMEOUT
+#include "../../core/atem.h" // ATEM_TIMEOUT
 #include "./runner.h"
 
 static int runner_all = 0;

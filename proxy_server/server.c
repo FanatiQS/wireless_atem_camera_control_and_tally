@@ -4,8 +4,8 @@
 #include <stdio.h> // printf, fprintf, stderr, perror
 #include <string.h> // memset, memcpy
 
-#include "../src/atem_protocol.h"
-#include "../src/atem.h"
+#include "../core/atem_protocol.h"
+#include "../core/atem.h"
 #include "./udp.h"
 #include "./server.h"
 #include "./atem_extra.h"

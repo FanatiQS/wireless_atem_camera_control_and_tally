@@ -2,8 +2,8 @@
 #ifndef UTILS_H
 #define UTILS_H
 
-#include "../../src/atem_protocol.h"
-#include "../../src/atem.h"
+#include "../../core/atem_protocol.h"
+#include "../../core/atem.h"
 #include "./atem_header.h"
 #include "./atem_sock.h"
 #include "./atem_acknowledge.h"
