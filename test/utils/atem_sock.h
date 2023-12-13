@@ -3,8 +3,7 @@
 #define ATEM_SOCKET_H
 
 #include <stdint.h> // uint8_t, uint16_t
-
-#include <sys/socket.h> // ssize_t
+#include <stddef.h> // size_t
 
 void atem_packet_verify(uint8_t* packet, size_t recvLen);
 
