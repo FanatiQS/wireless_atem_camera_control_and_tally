@@ -33,4 +33,6 @@ uint16_t atem_handshake_connect(int sock, uint16_t sessionId);
 uint16_t atem_handshake_listen(int sock, uint16_t newSessionId);
 void atem_handshake_close(int sock, uint16_t sessionId);
 
+void atem_handshake_init(void);
+
 #endif // ATEM_HANDSHAKE_H
