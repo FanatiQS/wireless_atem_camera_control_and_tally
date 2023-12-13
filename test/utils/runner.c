@@ -18,9 +18,9 @@ static int runner_fails = 0;
 jmp_buf _runner_jmp;
 
 // Trap callback to exit test failing test and continue with next
-static void runner_fail(int signal) {
+static void runner_fail(int sig) {
 	// Prevents unused argument compiler warning
-	(void)signal;
+	(void)sig;
 
 	// Document failure
 	printf("Test failed\n\n");
