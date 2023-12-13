@@ -250,7 +250,7 @@ int main(void) {
 		dns_expect_error_short(buf, bufLen, DNS_RCODE_FORMERR);
 	}
 
-	// Ensures unsupported qtype is rejected
+	// Ensures unsupported qclass is rejected
 	RUN_TEST() {
 		uint8_t buf[DNS_LEN_MAX] = {0,0,1};
 		size_t bufLen = dns_append_default_name(buf, DNS_LEN_MIN);
