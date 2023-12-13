@@ -6,17 +6,6 @@
 
 #include "../utils/utils.h"
 
-// Gets port of ATEM servers client
-uint16_t atem_port(int sock) {
-	struct sockaddr_in sockAddr;
-	socklen_t len = sizeof(sockAddr);
-	if (getpeername(sock, (struct sockaddr *)&sockAddr, &len) == -1) {
-		perror("Failed to call getsockname");
-		abort();
-	}
-	return ntohs(sockAddr.sin_port);
-}
-
 int main(void) {
 	// Ensures client resends opening handshake exactly ATEM_RESENDS times on an interval of ATEM_RESEND_TIME seconds
 	RUN_TEST() {
@@ -37,12 +26,13 @@ int main(void) {
 
 	// Ensures opening handshake restarts correctly after ATEM_RESENDS failed retries with new session id and port
 	RUN_TEST() {
+		uint8_t packet[ATEM_MAX_PACKET_LEN];
 		atem_handshake_resetpeer();
 
 		// Gets client assigned session id and peer port on first connection attempt
 		int sock = atem_socket_create();
-		uint16_t sessionId1 = atem_handshake_start_server(sock);
-		uint16_t port1 = atem_port(sock);
+		uint16_t port1 = atem_socket_listen(sock, packet);
+		uint16_t sessionId1 = atem_handshake_sessionid_get(packet, ATEM_OPCODE_OPEN, false);
 		for (int i = 0; i < ATEM_RESENDS; i++) {
 			atem_handshake_sessionid_recv_verify(sock, ATEM_OPCODE_OPEN, true, sessionId1);
 		}
@@ -51,9 +41,9 @@ int main(void) {
 		// Opening handshake client assigned session id should have changed
 		sock = atem_socket_create();
 		struct timespec marker = timediff_mark();
-		uint16_t sessionId2 = atem_handshake_start_server(sock);
+		uint16_t port2 = atem_socket_listen(sock, packet);
 		timediff_get_verify(marker, 450, 50);
-		uint16_t port2 = atem_port(sock);
+		uint16_t sessionId2 = atem_handshake_sessionid_get(packet, ATEM_OPCODE_OPEN, false);
 		atem_socket_close(sock);
 
 		// Ensures session id and port change between connections
@@ -73,20 +63,21 @@ int main(void) {
 
 	// Ensures restarting opening handshake after reject changes session id and port 
 	RUN_TEST() {
+		uint8_t packet[ATEM_MAX_PACKET_LEN];
 		atem_handshake_resetpeer();
 
 		int sock = atem_socket_create();
-		uint16_t sessionId1 = atem_handshake_start_server(sock);
-		uint16_t port1 = atem_port(sock);
+		uint16_t port1 = atem_socket_listen(sock, packet);
+		uint16_t sessionId1 = atem_handshake_sessionid_get(packet, ATEM_OPCODE_OPEN, false);
 		atem_handshake_sessionid_send(sock, ATEM_OPCODE_REJECT, false, sessionId1);
 		atem_socket_close(sock);
 
 		sock = atem_socket_create();
 		struct timespec marker = timediff_mark();
-		uint16_t sessionId2 = atem_handshake_start_server(sock);
+		uint16_t port2 = atem_socket_listen(sock, packet);
 		timediff_get_verify(marker, 270, 10);
+		uint16_t sessionId2 = atem_handshake_sessionid_get(packet, ATEM_OPCODE_OPEN, false);
 		atem_handshake_sessionid_send(sock, ATEM_OPCODE_REJECT, false, sessionId1);
-		uint16_t port2 = atem_port(sock);
 		atem_socket_close(sock);
 
 		if (sessionId1 == sessionId2) {
