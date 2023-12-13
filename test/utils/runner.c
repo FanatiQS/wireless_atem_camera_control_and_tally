@@ -4,8 +4,7 @@
 #include <stdlib.h> // abort, getenv, EXIT_SUCCESS
 #include <string.h> // strcmp
 #include <stddef.h> // NULL
-#include <stdbool.h> // bool, true, false
-#include <limits.h> // INT_MAX
+#include <stdbool.h> // bool, true
 
 #include <unistd.h> // close
 
