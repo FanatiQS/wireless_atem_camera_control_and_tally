@@ -197,17 +197,6 @@ int main(void) {
 		dns_expect_timeout(buf, DNS_LEN_MIN - 1);
 	}
 
-	// Tests above maximum packet length
-	RUN_TEST() {
-		uint8_t buf[DNS_LEN_MAX * 2] = {0};
-		size_t bufLen = DNS_LEN_MIN;
-		for (int i = 0; i < 8; i++) {
-			dns_append_label(buf, &bufLen, "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
-		}
-		dns_append_complete(buf, &bufLen, DNS_QTYPE_A, DNS_QCLASS_IN);
-		dns_expect_timeout(buf, bufLen);
-	}
-
 	// Tests QR flag being set for request
 	RUN_TEST() {
 		uint8_t buf[DNS_LEN_MAX] = { [DNS_INDEX_FLAGS_HIGH] = 0x80 };

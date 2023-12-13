@@ -25,7 +25,6 @@
 // DNS header lengths
 #define DNS_LEN_HEADER (12)
 #define DNS_LEN_ANSWER (16)
-#define DNS_LEN_MAX    (512)
 #define DNS_LEN_COUNTS (DNS_LEN_HEADER - DNS_INDEX_COUNTS)
 
 // DNS flag masks
@@ -67,7 +66,7 @@ static void dns_recv_callback(void* arg, struct udp_pcb* pcb, struct pbuf* p, co
 	LWIP_UNUSED_ARG(arg);
 
 	// Ignores packet chunks that are too small or too large
-	if (p->tot_len > DNS_LEN_MAX || p->tot_len < DNS_LEN_HEADER) {
+	if (p->tot_len < DNS_LEN_HEADER) {
 		DEBUG_DNS_PRINTF("Invalid packet size: %u\n", p->tot_len);
 		pbuf_free(p);
 		return;
