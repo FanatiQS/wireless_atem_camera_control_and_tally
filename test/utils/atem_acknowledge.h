@@ -18,6 +18,6 @@ void atem_acknowledge_response_send(int sock, uint16_t sessionId, uint16_t ackId
 uint16_t atem_acknowledge_response_recv(int sock, uint16_t sessionId);
 void atem_acknowledge_response_recv_verify(int sock, uint16_t sessionId, uint16_t ackId);
 
-void atem_handshake_init(void);
+void atem_acknowledge_init(void);
 
 #endif // ATEM_ACKNOWLEDGE_H

@@ -1,10 +1,10 @@
 #include <stdint.h> // uint8_t, uint16_t
+#include <assert.h> // assert
 
 #include "../../core/atem.h" // ATEM_MAX_PACKET_LEN
 #include "../../core/atem_protocol.h" // ATEM_FLAG_ACK, ATEM_FLAG_ACKREQ, ATEM_LEN_ACK
 #include "./atem_header.h" // atem_header_flags_set, atem_header_len_set, atem_header_sessionid_set, atem_header_remoteid_set, atem_header_flags_get_verify, atem_header_sessionid_get_verify, atem_header_localid_get_verify, atem_header_ackid_get_verify, atem_header_remoteid_get, atem_header_flags_remoteid_get_verify, atem_header_len_get_verify, atem_header_ackid_set, atem_header_ackid_get, atem_packet_clear
 #include "./atem_sock.h" // atem_socket_send, atem_socket_recv
-#include "./runner.h" // RUN_TEST
 #include "./atem_acknowledge.h"
 
 
@@ -118,4 +118,21 @@ bool atem_keepalive(int sock, uint8_t* packet, uint16_t sessionId) {
 	atem_header_sessionid_get_verify(packet, sessionId);
 	atem_acknowledge_request_send(sock, sessionId, atem_header_remoteid_get(packet));
 	return true;
+}
+
+
+
+// Tests functions in this file
+void atem_acknowledge_init(void) {
+	uint8_t packet[ATEM_MAX_PACKET_LEN] = {0};
+
+	// Tests getter/setter for acknowledgement request
+	atem_packet_clear(packet);
+	atem_acknowledge_request_set(packet, 0x1111, 0x2222);
+	assert(atem_acknowledge_request_get(packet, 0x1111) == 0x2222);
+
+	// Tests getter/setter for acknowledgement response
+	atem_packet_clear(packet);
+	atem_acknowledge_response_set(packet, 0x3333, 0x4444);
+	assert(atem_acknowledge_response_get(packet, 0x3333) == 0x4444);
 }
