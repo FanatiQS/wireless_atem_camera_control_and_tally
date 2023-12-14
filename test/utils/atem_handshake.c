@@ -250,6 +250,7 @@ void atem_handshake_close(int sock, uint16_t sessionId) {
 
 
 
+// Tests functions in this file
 void atem_handshake_init(void) {
 	uint8_t packet[ATEM_MAX_PACKET_LEN];
 
