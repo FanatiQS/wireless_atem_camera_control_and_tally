@@ -236,7 +236,7 @@ int main(void) {
 	RUN_TEST() {
 		uint8_t buf[DNS_LEN_MAX] = {0};
 		size_t bufLen = dns_append_default(buf, DNS_LEN_MIN);
-		buf[bufLen - sizeof(uint16_t) * 2 - 2 - strlen("com")] += 20;
+		buf[bufLen - sizeof(uint16_t) * 2 - 2 - strlen("com")] += 1;
 		dns_expect_error_short(buf, bufLen, DNS_RCODE_FORMERR);
 	}
 
