@@ -33,7 +33,7 @@ int main(void) {
 		printf("Test valid requests\n");
 		for (int i = 0; i < iters; i++) {
 			int sock = http_socket_create();
-			http_socket_send_string(sock, "GET / HTTP/1.0\r\n\r\n");
+			http_socket_send_string(sock, "GET / HTTP/1.1\r\n\r\n");
 			http_socket_recv_cmp_status(sock, 200);
 			while (http_socket_recv_len(sock));
 			http_socket_close(sock);
@@ -46,7 +46,7 @@ int main(void) {
 		printf("Test invalid requests\n");
 		for (int i = 0; i < iters; i++) {
 			int sock = http_socket_create();
-			http_socket_send_string(sock, "GEF / HTTP/1.0\r\n\r\n");
+			http_socket_send_string(sock, "GEF / HTTP/1.1\r\n\r\n");
 			http_socket_recv_cmp_status(sock, 405);
 			while (http_socket_recv_len(sock));
 			http_socket_close(sock);
@@ -59,7 +59,7 @@ int main(void) {
 		printf("Test write after valid request\n");
 		for (int i = 0; i < iters; i++) {
 			int sock = http_socket_create();
-			http_socket_send_string(sock, "GET / HTTP/1.0\r\n\r\n");
+			http_socket_send_string(sock, "GET / HTTP/1.1\r\n\r\n");
 			http_socket_send_string(sock, "X");
 			http_socket_recv_cmp_status(sock, 200);
 			while (http_socket_recv_len(sock));
