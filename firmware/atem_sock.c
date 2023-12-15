@@ -16,7 +16,7 @@
 #include "../core/atem.h" // struct atem_t atem_connection_reset, atem_parse, ATEM_STATUS_WRITE, ATEM_STATUS_CLOSING, ATEM_STATUS_REJECTED, ATEM_STATUS_WRITE_ONLY, ATEM_STATUS_CLOSED, ATEM_STATUS_ACCEPTED, ATEM_STATUS_ERROR, ATEM_STATUS_NONE, ATEM_TIMEOUT, ATEM_PORT, atem_cmd_available, atem_cmd_next, ATEM_CMDNAME_VERSION, ATEM_CMDNAME_TALLY, ATEM_CMDNAME_CAMERACONTROL, atem_protocol_major, atem_protocol_minor, ATEM_TIMEOUT_MS
 #include "../core/atem_protocol.h" // ATEM_INDEX_FLAGS, ATEM_INDEX_REMOTEID_HIGH, ATEM_INDEX_REMOTEID_LOW, ATEM_FLAG_ACK
 #include "./user_config.h" // DEBUG_TALLY, DEBUG_CC, DEBUG_ATEM, PIN_CONN, PIN_PGM, PIN_PVW, PIN_SCL, PIN_SDA
-#include "./led.h" // LED_TALLY, LED_CONN, LED_INIT
+#include "./led.h" // LED_TALLY, LED_CONN, led_init
 #include "./sdi.h" // SDI_ENABLED, sdi_write_tally, sdi_write_cc, sdi_init
 #include "./debug.h" // DEBUG_PRINTF, DEBUG_ERR_PRINTF, DEBUG_IP, IP_FMT, IP_VALUE, WRAP
 #include "./atem_sock.h"
@@ -315,13 +315,13 @@ struct udp_pcb* atem_init(uint32_t addr, uint8_t dest) {
 
 	// Starts all status LEDs off
 #ifdef PIN_CONN
-	LED_INIT(PIN_CONN);
+	led_init(PIN_CONN);
 #endif // PIN_CONN
 #ifdef PIN_PGM
-	LED_INIT(PIN_PGM);
+	led_init(PIN_PGM);
 #endif // PIN_PGM
 #ifdef PIN_PVW
-	LED_INIT(PIN_PVW);
+	led_init(PIN_PVW);
 #endif // PIN_PVW
 	LED_TALLY(false, false);
 	LED_CONN(false);

@@ -49,7 +49,6 @@ static inline void led_init(uint32_t pin) {
 		WRITE_PERI_REG(RTC_GPIO_ENABLE, 1);
 	}
 }
-#define LED_INIT(pin) led_init(pin)
 
 // Separates RTC pin from normal GPIO pins
 #define GPIO_MASK(mask) ((mask) & GPIO_OUT_W1TC_DATA_MASK)
