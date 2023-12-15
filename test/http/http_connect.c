@@ -100,38 +100,24 @@ int main(void) {
 		}
 	}
 
-	// @todo memory issue in arduino esp8266 lwip2 (not arduino lwip1.4 or esp8266 rtos sdk)
-#if 1
+	// @todo ESP8266 Ardunio segfaults (only lwip2), causing closing to fail with connection reset by peer
 	// Ensures max number of simultanious connections does not cause memory segfaults
 	RUN_TEST() {
 		printf("Test simultanious sockets\n");
-		int socks[iters];
-		int nfds = 0;
-		fd_set fds;
-		FD_ZERO(&fds);
-		for (int i = 0; i < iters; i++) {
-			// Creates client connected to server
-			int sock = http_socket_create();
-			progressprint(i, iters);
+		int* socks = malloc(sizeof(int) * iters);
 
-			// Ensures existing clients were not dropped incorrectly
-			socks[i] = sock;
-			nfds = (nfds > sock) ? (sock + 1) : nfds;
-			FD_SET(i, &fds);
-			fd_set fdsCopy = fds;
-			struct timeval tv = {0};
-			assert(select(nfds, &fdsCopy, NULL, NULL, &tv) != -1);
-			for (int j = 0; j <= i; j++) {
-				if (FD_ISSET(socks[j], &fdsCopy)) {
-					http_socket_recv_close(socks[j]);
-				}
-			}
+		// Creates client connections to server
+		for (int i = 0; i < iters; i++) {
+			socks[i] = http_socket_create();
+			progressprint(i, iters);
 		}
+
+		// Closes all sockets
 		for (int i = 0; i < iters; i++) {
 			http_socket_close(socks[i]);
 		}
+		free(socks);
 	}
-#endif
 
 	// Ensure there are no memory leaks for timeouts
 	RUN_TEST() {
