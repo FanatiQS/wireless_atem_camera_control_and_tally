@@ -84,7 +84,7 @@ int main(void) {
 			http_socket_recv_flush(sock);
 			http_socket_recv_error(sock, ECONNRESET);
 			http_socket_close(sock);
-			if (!(i % 100)) printf("%d\n", i);
+			progressprint(i, iters);
 		}
 	}
 #endif
