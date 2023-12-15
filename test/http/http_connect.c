@@ -1,15 +1,12 @@
-#include <stdio.h> // printf, perror
-#include <stdlib.h> // getenv, atoi, abort
-#include <errno.h> // errno, ECONNRESET
-#include <assert.h> // assert
+#include <stdio.h> // printf
+#include <stdlib.h> // getenv, atoi, malloc, free
+#include <errno.h> // ECONNRESET
 #include <stdbool.h> // bool
 #include <time.h> // time, NULL
 
 #include <unistd.h> // usleep
-#include <sys/select.h> // select, FD_SETSIZE, FD_SET, FD_ZERO, fd_set, FD_ISSET
-#include <sys/time.h> // struct timeval
 
-#include "./http_sock.h" // http_socket_create, http_socket_send_string, http_socket_recv_len, http_socket_close, http_socket_recv_flush, http_socket_recv_cmp_status, http_socket_recv_close
+#include "./http_sock.h" // http_socket_create, http_socket_send_string, http_socket_recv_len, http_socket_close, http_socket_recv_flush, http_socket_recv_cmp_status, http_socket_recv_error
 #include "../utils/runner.h" // RUN_TEST, runner_exit
 
 // Roughly number of seconds between progress prints
