@@ -20,14 +20,19 @@ int main(void) {
 	RUN_TEST() {
 		atem_handshake_resetpeer();
 		int sock = atem_socket_create();
-		uint16_t sessionId = atem_handshake_listen(sock, 0x0001);
+		uint16_t clientSessionId = atem_handshake_start_server(sock);
+
+		uint16_t newSessionId = 0x0001;
+		atem_handshake_newsessionid_send(sock, ATEM_OPCODE_ACCEPT, false, clientSessionId, newSessionId);
+		atem_acknowledge_response_recv_verify(sock, clientSessionId, 0x0000);
 
 		// Ensures connected by sending ping
+		uint16_t serverSessionId = newSessionId | 0x8000;
 		uint16_t remoteId = 0x0001;
-		atem_acknowledge_request_send(sock, sessionId, remoteId);
-		atem_acknowledge_response_recv_verify(sock, sessionId, remoteId);
+		atem_acknowledge_request_send(sock, serverSessionId, remoteId);
+		atem_acknowledge_response_recv_verify(sock, serverSessionId, remoteId);
 
-		atem_handshake_close(sock, sessionId);
+		atem_handshake_close(sock, serverSessionId);
 		atem_socket_close(sock);
 	}
 

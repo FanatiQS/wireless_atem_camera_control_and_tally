@@ -230,9 +230,12 @@ uint16_t atem_handshake_connect(int sock, uint16_t sessionId) {
 	return newSessionId | 0x8000;
 }
 
-// Gets ATEM client connection by completing entire opening handshake
+// Gets ATEM client connection by completing entire opening handshake, does not enforce no retransmit flag in request
 uint16_t atem_handshake_listen(int sock, uint16_t newSessionId) {
-	uint16_t sessionId = atem_handshake_start_server(sock);
+	uint8_t packet[ATEM_MAX_PACKET_LEN];
+	atem_socket_listen(sock, packet);
+	atem_handshake_opcode_get_verify(packet, ATEM_OPCODE_OPEN);
+	uint16_t sessionId = atem_header_sessionid_get(packet);
 	atem_handshake_newsessionid_send(sock, ATEM_OPCODE_ACCEPT, false, sessionId, newSessionId);
 	atem_acknowledge_response_recv_verify(sock, sessionId, 0x0000);
 	return newSessionId | 0x8000;
