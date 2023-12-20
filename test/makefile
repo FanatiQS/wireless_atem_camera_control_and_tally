@@ -7,24 +7,11 @@ BUILD_DIR = ../build/test
 # Shared source files
 UTILS_SOURCE = utils/simple_socket.c utils/atem_sock.c utils/atem_header.c utils/atem_handshake.c utils/simple_socket.c utils/logs.c utils/atem_acknowledge.c utils/timediff.c utils/runner.c
 
+
+
 # Tests normal DNS lookups
 run_dns_lookup:
-# Ensures unsupported qtype and qclass rejects
-	! nslookup -class=ch google.com $(DEVICE_ADDR) > /dev/null
-	! nslookup -type=ns google.com $(DEVICE_ADDR) > /dev/null
-
-# Ensures requests work with or without recursive flag
-	nslookup -recurse google.com $(DEVICE_ADDR) > /dev/null
-	nslookup -norecuse google.com $(DEVICE_ADDR) > /dev/null
-
-# Ensures supported qtype and qclass work
-	nslookup -class=IN google.com $(DEVICE_ADDR) > /dev/null
-	nslookup -class=ANY google.com $(DEVICE_ADDR) > /dev/null
-	nslookup -type=A google.com $(DEVICE_ADDR) > /dev/null
-	nslookup -type=ANY google.com $(DEVICE_ADDR) > /dev/null
-
-# Ensures longest name supported by nslookup works correctly
-	nslookup aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb.ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc $(DEVICE_ADDR) > /dev/null
+	./http/dns_lookup.sh
 device: run_dns_lookup
 all: run_dns_lookup
 
