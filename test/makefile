@@ -52,7 +52,7 @@ TESTS_ALL += release
 
 # Playgrounds for messing around in
 PLAYGROUNDS = $(patsubst playground/%.c,$(BUILD_DIR)/playground_%,$(wildcard playground/*.c))
-$(PLAYGROUNDS): $(BUILD_DIR)/playground_%: playground/%.c http/http_sock.c $(UTILS_SOURCE)
+$(PLAYGROUNDS): $(BUILD_DIR)/playground_%: playground/%.c ../core/atem.c http/http_sock.c $(UTILS_SOURCE)
 
 # Creates dist directory if it does not exist
 $(BUILD_DIR):
