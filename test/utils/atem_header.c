@@ -227,7 +227,7 @@ void atem_header_init(void) {
 	// Tests atem_packet_word_set and atem_packet_word_get
 	atem_packet_clear(packet);
 	assert(atem_packet_word_get(packet, 0, 1) == 0x0000);
-	atem_packet_word_set(packet, 0, 1, ~0);
+	atem_packet_word_set(packet, 0, 1, 0xffff);
 	assert(atem_packet_word_get(packet, 0, 1) == 0xffff);
 	assert(atem_packet_word_get(packet, 1, 2) == 0xff00);
 	assert(atem_packet_word_get(packet, 2, 3) == 0x0000);
@@ -244,14 +244,14 @@ void atem_header_init(void) {
 
 	// Tests atem_header_flags_get_verify
 	atem_packet_clear(packet);
+	atem_header_flags_get_verify(packet, 0, 0);
 	atem_header_flags_set(packet, allFlags);
 	atem_header_flags_get_verify(packet, allFlags, 0);
 	atem_header_flags_get_verify(packet, 0, allFlags);
-	atem_packet_clear(packet);
-	atem_header_flags_get_verify(packet, 0, 0);
 
 	// Tests atem_header_flags_clear
 	atem_packet_clear(packet);
+	assert(atem_header_flags_get(packet) == 0);
 	atem_header_flags_set(packet, allFlags);
 	atem_header_len_set(packet, ATEM_LEN_HEADER);
 	assert(atem_header_flags_get(packet) == allFlags);
@@ -261,6 +261,7 @@ void atem_header_init(void) {
 
 	// Tests atem_header_flags_get with max length
 	atem_packet_clear(packet);
+	assert(atem_packet_word_get(packet, ATEM_INDEX_LEN_HIGH, ATEM_INDEX_LEN_LOW) == 0);
 	atem_header_len_set(packet, ATEM_MAX_PACKET_LEN);
 	assert(atem_header_len_get(packet) == ATEM_MAX_PACKET_LEN);
 	assert(atem_header_flags_get(packet) == 0);
