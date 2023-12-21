@@ -1,9 +1,10 @@
 #include <stdint.h> // uint8_t, uint16_t
 #include <assert.h> // assert
+#include <stdbool.h> // bool, true, false
 
 #include "../../core/atem.h" // ATEM_MAX_PACKET_LEN
 #include "../../core/atem_protocol.h" // ATEM_FLAG_ACK, ATEM_FLAG_ACKREQ, ATEM_LEN_ACK
-#include "./atem_header.h" // atem_header_flags_set, atem_header_len_set, atem_header_sessionid_set, atem_header_remoteid_set, atem_header_flags_get_verify, atem_header_sessionid_get_verify, atem_header_localid_get_verify, atem_header_ackid_get_verify, atem_header_remoteid_get, atem_header_flags_remoteid_get_verify, atem_header_len_get_verify, atem_header_ackid_set, atem_header_ackid_get, atem_packet_clear
+#include "./atem_header.h" // atem_header_flags_set, atem_header_len_set, atem_header_sessionid_set, atem_header_remoteid_set, atem_header_flags_get_verify, atem_header_sessionid_get_verify, atem_header_localid_get_verify, atem_header_ackid_get_verify, atem_header_remoteid_get, atem_header_flags_remoteid_get_verify, atem_header_len_get_verify, atem_header_ackid_set, atem_header_ackid_get, atem_packet_clear, atem_header_flags_get, ATEM_FLAG_RETX, atem_header_sessionid_get
 #include "./atem_sock.h" // atem_socket_send, atem_socket_recv
 #include "./atem_acknowledge.h"
 
@@ -112,11 +113,15 @@ void atem_acknowledge_response_recv_verify(int sock, uint16_t sessionId, uint16_
 
 
 // Receives data and responds to pings
-bool atem_keepalive(int sock, uint8_t* packet, uint16_t sessionId) {
+bool atem_acknowledge_keepalive(int sock, uint8_t* packet) {
 	atem_socket_recv(sock, packet);
-	if (!(atem_header_flags_get(packet) & ATEM_FLAG_ACKREQ)) return false;
-	atem_header_sessionid_get_verify(packet, sessionId);
-	atem_acknowledge_request_send(sock, sessionId, atem_header_remoteid_get(packet));
+	if (!(atem_header_flags_get(packet) & ATEM_FLAG_ACKREQ)) {
+		return false;
+	}
+	atem_header_flags_get_verify(packet, ATEM_FLAG_ACKREQ, ATEM_FLAG_ACK | ATEM_FLAG_RETX);
+	uint16_t sessionId = atem_header_sessionid_get(packet);
+	uint16_t remoteId = atem_header_remoteid_get(packet);
+	atem_acknowledge_response_send(sock, sessionId, remoteId);
 	return true;
 }
 
