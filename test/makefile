@@ -25,7 +25,7 @@ TESTS_ALL += $(TESTS_DEVICE)
 
 
 # All ATEM client tests applying for both device and official clients
-TESTS_ATEM_CLIENT_DEVICE = atem_client_open
+TESTS_ATEM_CLIENT_DEVICE = atem_client_open atem_client_close
 TESTS_ATEM_CLIENT += $(TESTS_ATEM_CLIENT_DEVICE)
 device: $(TESTS_ATEM_CLIENT_DEVICE:%=run_%)
 
