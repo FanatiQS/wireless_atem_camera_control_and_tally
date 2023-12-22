@@ -6,7 +6,7 @@
 
 #include <sys/socket.h> // socket, AF_INET, connect, struct sockaddr, setsockopt, SOL_SOCKET, SO_RCVTIMEO, SO_SNDTIMEO, ssize_t, send, recv
 #include <poll.h> // struct pollfd, poll, nfds_t
-#include <sys/time.h> // struct timeval tv
+#include <sys/time.h> // struct timeval
 #include <netinet/in.h> // struct sockaddr_in
 #include <arpa/inet.h> // htons, inet_addr
 #include <unistd.h> // close
