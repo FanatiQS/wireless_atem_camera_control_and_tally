@@ -39,22 +39,22 @@ The protocol uses a 12 byte header with an optional variable length payload.
 ```
 
 ### Flags
+The first 5 bits of the ATEM protocol are flags that play a vital role in identifying what parts of the header contain meaningful information and how the payload should be parsed if available.
 
-#### Ack request flag 0x08
+#### Acknowledge request flag: *0x08*
 Undocumented
 
-#### SYN flag 0x10
-The SYN flag is set for SYN packets, used in the [opening handshake](#opening-handshake) and [closing handshake](#closing-handshake).
-It can only be combined with the [retransmit flag](#retransmit-flag-0x20).
+#### SYN flag: *0x10*
+The SYN flag is set for SYN packets used in the [opening handshake](#opening-handshake) and [closing handshake](#closing-handshake) and can only be combined with the [retransmit flag](#retransmit-flag-0x20).
 A SYN packet has an 8 byte payload, giving it a total [length](#length) of 20 bytes including the header, where the first byte of the payload is the [opcode](#opcode).
 
-#### Retransmit flag 0x20
+#### Retransmit flag: *0x20*
 If a packet requires an acknowledgement but the sender does not get one in a timely manner, the packet should/will be resent, this time with the retransmit flag set.
 
-#### Retransmit request flag 0x40
+#### Retransmit request flag: *0x40*
 Undocumented
 
-#### Ack flag 0x80
+#### Acknowledge flag: *0x80*
 Undocumented
 
 ### Length
