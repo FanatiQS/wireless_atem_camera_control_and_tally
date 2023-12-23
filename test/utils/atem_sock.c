@@ -76,7 +76,7 @@ void atem_socket_connect(int sock) {
 }
 
 // Listens for an ATEM client to connect
-uint16_t atem_socket_listen(int sock, uint8_t* packet) {
+struct sockaddr_in atem_socket_listen(int sock, uint8_t* packet) {
 	// Binds socket for receiving ATEM client packets
 	struct sockaddr_in bindAddr = {
 		.sin_family = AF_INET,
@@ -120,8 +120,8 @@ uint16_t atem_socket_listen(int sock, uint8_t* packet) {
 		abort();
 	}
 
-	// Returns port of connected client
-	return htons(peerAddr.sin_port);
+	// Returns connection information for connected client
+	return peerAddr;
 }
 
 
