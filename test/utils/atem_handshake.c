@@ -186,7 +186,7 @@ void atem_handshake_newsessionid_recv_verify(int sock, uint8_t opcode, bool retx
 
 
 // Forces the ATEM client trying to connect to restart the connection
-void atem_handshake_resetpeer() {
+void atem_handshake_resetpeer(void) {
 	bool logsEnabled = logs_find("atem_recv") || logs_find("atem_send");
 	if (logsEnabled) {
 		printf("Resetting client handshake\n");
