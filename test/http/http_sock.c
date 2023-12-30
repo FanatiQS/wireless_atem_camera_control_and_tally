@@ -29,7 +29,7 @@ void http_socket_send_buffer(int sock, const char* buf, size_t len) {
 	if (logs_find("http_send")) {
 		logs_print_string(stdout, buf);
 	}
-	simple_socket_send(sock, (void*)buf, len);
+	simple_socket_send(sock, buf, len);
 }
 
 // Sends HTTP string to server
