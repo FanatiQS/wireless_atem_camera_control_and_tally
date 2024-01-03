@@ -175,7 +175,8 @@ void http_socket_body_send_buffer(int sock, const char* body, size_t bodyLen) {
 	char reqBuf[BUF_LEN];
 	int reqLen = snprintf(reqBuf, sizeof(reqBuf), "POST / HTTP/1.1\r\nContent-Length: %zu\r\n\r\n%s", bodyLen, body);
 	assert((size_t)reqLen < sizeof(reqBuf));
-	http_socket_send_buffer(sock, reqBuf, reqLen);
+	assert(reqLen > 0);
+	http_socket_send_buffer(sock, reqBuf, (size_t)reqLen);
 }
 
 // Sends HTTP POST string body to server
