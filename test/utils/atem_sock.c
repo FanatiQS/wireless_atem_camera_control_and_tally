@@ -112,7 +112,7 @@ struct sockaddr_in atem_socket_listen(int sock, uint8_t* packet) {
 	}
 
 	// Verifies received ATEM packet
-	atem_packet_verify(packet, recvLen);
+	atem_packet_verify(packet, (size_t)recvLen);
 
 	// Connects socket to ATEM client
 	if (connect(sock, (struct sockaddr*)&peerAddr, peerAddrLen)) {
