@@ -156,7 +156,7 @@ void dns_expect_error_validate(int sock, uint8_t* cmpBuf, size_t cmpLen) {
 }
 
 // Sends DNS request expecting specific rcode error not including query
-void dns_expect_error_short(uint8_t* reqBuf, size_t reqLen, int code) {
+void dns_expect_error_short(uint8_t* reqBuf, size_t reqLen, uint8_t code) {
 	// Sends DNS request
 	int sock = dns_socket_create();
 	dns_socket_send(sock, reqBuf, reqLen);
@@ -172,7 +172,7 @@ void dns_expect_error_short(uint8_t* reqBuf, size_t reqLen, int code) {
 }
 
 // Sends DNS request expecting specific rcode error including query
-void dns_expect_error_long(uint8_t* reqBuf, size_t reqLen, int code) {
+void dns_expect_error_long(uint8_t* reqBuf, size_t reqLen, uint8_t code) {
 	// Sends DNS request
 	int sock = dns_socket_create();
 	dns_socket_send(sock, reqBuf, reqLen);
