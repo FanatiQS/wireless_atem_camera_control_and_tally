@@ -4,10 +4,10 @@
 #include <stdbool.h> // bool, true, false
 #include <errno.h> // errno
 
-#include <sys/socket.h> // socket, AF_INET, connect, struct sockaddr, setsockopt, SOL_SOCKET, SO_RCVTIMEO, SO_SNDTIMEO, ssize_t, send, recv
+#include <sys/socket.h> // socket, AF_INET, connect, struct sockaddr, setsockopt, SOL_SOCKET, SO_RCVTIMEO, SO_SNDTIMEO, ssize_t, send, recv, bind
 #include <poll.h> // struct pollfd, poll, nfds_t
 #include <sys/time.h> // struct timeval
-#include <netinet/in.h> // struct sockaddr_in
+#include <netinet/in.h> // struct sockaddr_in, INADDR_ANY, in_addr_t
 #include <arpa/inet.h> // htons, inet_addr
 #include <unistd.h> // close
 
@@ -48,8 +48,21 @@ int simple_socket_create(int type) {
 	return sock;
 }
 
+// Connects client socket to server address and port
+void simple_socket_connect(int sock, int port, in_addr_t addr) {
+	struct sockaddr_in sockAddr = {
+		.sin_family = AF_INET,
+		.sin_port = htons(port),
+		.sin_addr.s_addr = addr
+	};
+	if (connect(sock, (struct sockaddr*)&sockAddr, sizeof(sockAddr))) {
+		perror("Failed to connect client socket to server");
+		abort();
+	}
+}
+
 // Connects socket to device address from environment variable
-void simple_socket_connect(int sock, int port, const char* envKey) {
+void simple_socket_connect_env(int sock, int port, const char* envKey) {
 	// Gets ip address from environment variable
 	char* addr = getenv(envKey);
 	if (addr == NULL) {
@@ -57,14 +70,18 @@ void simple_socket_connect(int sock, int port, const char* envKey) {
 		abort();
 	}
 
-	// Connects client socket to server address and port
+	simple_socket_connect(sock, port, inet_addr(addr));
+}
+
+// Binds server socket for listening to clients
+void simple_socket_listen(int sock, int port) {
 	struct sockaddr_in sockAddr = {
 		.sin_family = AF_INET,
 		.sin_port = htons(port),
-		.sin_addr.s_addr = inet_addr(addr)
+		.sin_addr.s_addr = INADDR_ANY
 	};
-	if (connect(sock, (struct sockaddr*)&sockAddr, sizeof(sockAddr))) {
-		perror("Failed to connect client socket to server");
+	if (bind(sock, (struct sockaddr*)&sockAddr, sizeof(sockAddr))) {
+		perror("Failed to bind server socket");
 		abort();
 	}
 }

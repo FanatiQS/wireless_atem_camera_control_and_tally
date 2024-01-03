@@ -8,7 +8,7 @@
 #include <sys/socket.h> // SOCK_DGRAM
 #include <arpa/inet.h> // htons, ntohs
 
-#include "../utils/simple_socket.h" // simple_socket_create, simple_socket_connect, simple_socket_send, simple_socket_recv, simple_socket_poll
+#include "../utils/simple_socket.h" // simple_socket_create, simple_socket_connect_env, simple_socket_send, simple_socket_recv, simple_socket_poll
 #include "../utils/logs.h" // logs_print_buffer, logs_find
 #include "../utils/runner.h" // RUN_TEST, runner_exit
 
@@ -45,7 +45,7 @@
 // Creates a UDP socket connected to DNS server at address from environment variable
 int dns_socket_create(void) {
 	int sock = simple_socket_create(SOCK_DGRAM);
-	simple_socket_connect(sock, DNS_PORT, "DEVICE_ADDR");
+	simple_socket_connect_env(sock, DNS_PORT, "DEVICE_ADDR");
 	return sock;
 }
 

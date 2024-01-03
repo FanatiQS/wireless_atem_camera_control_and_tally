@@ -4,11 +4,10 @@
 #include <stdlib.h> // abort
 
 #include <unistd.h> // close
-#include <sys/socket.h> // AF_INET, SOCK_DGRAM, ssize_t, bind, connect, struct sockaddr, socklen_t, recvfrom
-#include <arpa/inet.h> // htons
+#include <sys/socket.h> // SOCK_DGRAM, ssize_t, connect, struct sockaddr, socklen_t, recvfrom
 #include <netinet/in.h> // struct sockaddr_in
 
-#include "./simple_socket.h" // simple_socket_create, simple_socket_poll, simple_socket_send, simple_socket_recv, simple_socket_connect
+#include "./simple_socket.h" // simple_socket_create, simple_socket_poll, simple_socket_send, simple_socket_recv, simple_socket_connect_env, simple_socket_listen
 #include "../../core/atem_protocol.h" // ATEM_FLAG_SYN, ATEM_FLAG_RETX
 #include "../../core/atem.h" // ATEM_PORT, ATEM_MAX_PACKET_LEN
 #include "./atem_header.h" // atem_header_len_get, atem_header_flags_get, atem_header_unknownid_get, atem_header_len_get_verify
@@ -72,21 +71,13 @@ void atem_socket_close(int sock) {
 
 // Connects to the ATEM switcher at ATEM_SERVER_ADDR
 void atem_socket_connect(int sock) {
-	simple_socket_connect(sock, ATEM_PORT, "ATEM_SERVER_ADDR");
+	simple_socket_connect_env(sock, ATEM_PORT, "ATEM_SERVER_ADDR");
 }
 
 // Listens for an ATEM client to connect
 struct sockaddr_in atem_socket_listen(int sock, uint8_t* packet) {
 	// Binds socket for receiving ATEM client packets
-	struct sockaddr_in bindAddr = {
-		.sin_family = AF_INET,
-		.sin_port = htons(ATEM_PORT),
-		.sin_addr.s_addr = INADDR_ANY
-	};
-	if (bind(sock, (const struct sockaddr*)&bindAddr, sizeof(bindAddr))) {
-		perror("Failed to bind server socket");
-		abort();
-	}
+	simple_socket_listen(sock, ATEM_PORT);
 
 	// Awaits first packet from ATEM client
 	if (simple_socket_poll(sock, TIMEOUT_LISTEN) != 1) {

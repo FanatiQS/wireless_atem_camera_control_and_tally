@@ -6,7 +6,7 @@
 #include <sys/socket.h> // SOCK_STREAM, shutdown
 #include <unistd.h> // close
 
-#include "../utils/simple_socket.h" // simple_socket_create, simple_socket_connect, simple_socket_send, simple_socket_recv, simple_socket_recv_error
+#include "../utils/simple_socket.h" // simple_socket_create, simple_socket_connect_env, simple_socket_send, simple_socket_recv, simple_socket_recv_error
 #include "../utils/logs.h" // logs_print_string, logs_find
 #include "./http_sock.h"
 
@@ -18,7 +18,7 @@
 // Creates a client socket connected to HTTP server at address from environment variable
 int http_socket_create(void) {
 	int sock = simple_socket_create(SOCK_STREAM);
-	simple_socket_connect(sock, HTTP_PORT, "DEVICE_ADDR");
+	simple_socket_connect_env(sock, HTTP_PORT, "DEVICE_ADDR");
 	return sock;
 }
 
