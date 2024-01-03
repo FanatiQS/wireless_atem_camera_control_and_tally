@@ -31,7 +31,7 @@ void atem_packet_verify(uint8_t* packet, size_t recvLen) {
 	int checkUnknownId = 0;
 	if (checkUnknownId) {
 		uint8_t flags = atem_header_flags_get(packet);
-		uint8_t unknownId = atem_header_unknownid_get(packet);
+		uint16_t unknownId = atem_header_unknownid_get(packet);
 		if (flags == ATEM_FLAG_SYN) {
 			if (unknownId != 0x003a) {
 				fprintf(stderr, "unknown id 0x3a\n");
