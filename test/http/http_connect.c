@@ -3,6 +3,7 @@
 #include <errno.h> // ECONNRESET
 #include <stdbool.h> // bool
 #include <time.h> // time, NULL
+#include <assert.h> // assert
 
 #include <unistd.h> // usleep
 
@@ -27,6 +28,7 @@ int main(void) {
 	// Number of iterations to trigger memory leak if available
 	char* itersEnvStr = getenv("HTTP_CONNECTION_ITERS");
 	int iters = (itersEnvStr) ? atoi(itersEnvStr) : 1000;
+	assert(iters > 0);
 
 	// Ensure there are no memory leaks for normal HTTP requests
 	RUN_TEST() {
@@ -101,7 +103,7 @@ int main(void) {
 	// Ensures max number of simultanious connections does not cause memory segfaults
 	RUN_TEST() {
 		printf("Test simultanious sockets\n");
-		int* socks = malloc(sizeof(int) * iters);
+		int* socks = malloc(sizeof(int) * (unsigned int)iters);
 
 		// Creates client connections to server
 		for (int i = 0; i < iters; i++) {
