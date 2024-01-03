@@ -3,6 +3,7 @@
 #include <assert.h> // assert
 #include <stdio.h> // fprintf, stderr
 #include <stdlib.h> // abort
+#include <stddef.h> // size_t
 
 #include "../../core/atem.h" // ATEM_MAX_PACKET_LEN
 #include "../../core/atem_protocol.h" // ATEM_MASK_LEN_HIGH, ATEM_INDEX_FLAGS, ATEM_INDEX_LEN_HIGH, ATEM_INDEX_LEN_LOW, ATEM_INDEX_SESSIONID_HIGH, ATEM_INDEX_SESSIONID_LOW, ATEM_INDEX_ACKID_HIGH, ATEM_INDEX_ACKID_LOW, ATEM_INDEX_LOCALID_HIGH, ATEM_INDEX_LOCALID_LOW, ATEM_INDEX_REMOTEID_HIGH, ATEM_INDEX_REMOTEID_LOW
@@ -95,10 +96,10 @@ uint16_t atem_header_len_get(uint8_t* packet) {
 }
 
 // Verifies length of packet
-void atem_header_len_get_verify(uint8_t* packet, uint16_t expectedLen) {
+void atem_header_len_get_verify(uint8_t* packet, size_t expectedLen) {
 	uint16_t len = atem_header_len_get(packet);
 	if (len == expectedLen) return;
-	fprintf(stderr, "Expected packet length %d, but got %d\n", expectedLen, len);
+	fprintf(stderr, "Expected packet length %zu, but got %d\n", expectedLen, len);
 	abort();
 }
 
