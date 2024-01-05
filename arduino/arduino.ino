@@ -12,7 +12,7 @@
 #define LWIP_HDR_TCP_H // Fixes arduino and lwip collision
 #undef FLASH_H
 #include "./src/firmware/atem_sock.h" // atem_state
-#include "./src/firmware/flash.h" // struct config_t, CONF_FLAG_STATICIP
+#include "./src/firmware/flash.h" // struct config_t, CONF_FLAG_DHCP
 #include "./src/firmware/init.h" // waccat_init, FIRMWARE_VERSION_STRING
 #include "./src/firmware/debug.h" // WRAP, DEBUG_PRINTF
 
@@ -42,10 +42,10 @@ ESP8266WebServer confServer(81);
 #define KEY_PSK "psk"
 #define KEY_DEST "dest"
 #define KEY_ATEMADDR "atem"
-#define KEY_USESTATICIP "static"
-#define KEY_LOCALIP "iplocal"
-#define KEY_NETMASK "ipmask"
-#define KEY_GATEWAY "ipgw"
+#define KEY_USEDHCP "dhcp"
+#define KEY_LOCALIP "localip"
+#define KEY_NETMASK "netmask"
+#define KEY_GATEWAY "gateway"
 #define KEY_NAME "name"
 
 // Gets the analog voltage level calculated from voltage divider
@@ -91,7 +91,7 @@ ESP8266WebServer confServer(81);
 	HTML_INPUT_NUMBER($, "Camera number", conf.dest, 254, 1, KEY_DEST)\
 	HTML_INPUT_IP($, "ATEM IP", (uint32_t)conf.atemAddr, KEY_ATEMADDR)\
 	HTML_SPACER($)\
-	HTML_INPUT_CHECKBOX($, "Use Static IP", conf.flags & CONF_FLAG_STATICIP, KEY_USESTATICIP)\
+	HTML_INPUT_CHECKBOX($, "Use Static IP", conf.flags & CONF_FLAG_DHCP, KEY_USEDHCP)\
 	HTML_INPUT_IP($, "Local IP", (uint32_t)WiFi.localIP(), KEY_LOCALIP)\
 	HTML_INPUT_IP($, "Subnet mask", (uint32_t)WiFi.subnetMask(), KEY_NETMASK)\
 	HTML_INPUT_IP($, "Gateway", (uint32_t)WiFi.gatewayIP(), KEY_GATEWAY)\
@@ -137,7 +137,7 @@ void handleHTTP() {
 		DEBUG_PRINTLN(IPAddress(confData.atemAddr));
 
 		// Sets static IP data
-		confData.flags = confServer.arg(KEY_USESTATICIP).equals("on");
+		confData.flags = confServer.arg(KEY_USEDHCP).equals("on");
 		confData.localAddr = IP_FROM_HTTP(confServer, KEY_LOCALIP);
 		confData.netmask = IP_FROM_HTTP(confServer, KEY_NETMASK);
 		confData.gateway = IP_FROM_HTTP(confServer, KEY_GATEWAY);

@@ -23,7 +23,7 @@
 #include "./init.h" // FIRMWARE_VERSION_STRING
 #include "./atem_sock.h" // atem_state, atem
 #include "./http_respond.h" // http_respond, http_err, http_post_err
-#include "./flash.h" // CACHE_NAME, CACHE_SSID, CACHE_PSK, CONF_FLAG_STATICIP, flash_cache_write
+#include "./flash.h" // CACHE_NAME, CACHE_SSID, CACHE_PSK, CONF_FLAG_DHCP, flash_cache_write
 
 
 
@@ -218,27 +218,27 @@ bool http_respond(struct http_t* http) {
 		HTTP_RESPONSE_CASE_STR(http,
 			">"
 			"<tr>"
-			"<tr><td>Use Static IP:<td>"
-			"<input type=hidden value=0 name=" "static" ">"
-			"<input type=checkbox value=1 name=" "static"
+			"<tr><td>Use DHCP:<td>"
+			"<input type=hidden value=0 name=" "dhcp" ">"
+			"<input type=checkbox value=1 name=" "dhcp"
 		)
-		if (http->cache.config.flags & CONF_FLAG_STATICIP) HTTP_RESPONSE_CASE_STR(http, " checked")
+		if (http->cache.config.flags & CONF_FLAG_DHCP) HTTP_RESPONSE_CASE_STR(http, " checked")
 		HTTP_RESPONSE_CASE_STR(http,
 			">"
 			"<tr><td>Local IP:<td>"
-			"<input pattern=^((25[0-5]|(2[0-4]|1\\d|[1-9]|)\\d)(\\.(?!$)|$)){4}$ name=" "iplocal" " value="
+			"<input pattern=^((25[0-5]|(2[0-4]|1\\d|[1-9]|)\\d)(\\.(?!$)|$)){4}$ name=" "localip" " value="
 		)
 		HTTP_RESPONSE_CASE(http_write_value_addr(http, http->cache.config.localAddr))
 		HTTP_RESPONSE_CASE_STR(http,
 			">"
 			"<tr><td>Subnet mask:<td>"
-			"<input pattern=^((25[0-5]|(2[0-4]|1\\d|[1-9]|)\\d)(\\.(?!$)|$)){4}$ name=" "ipmask" " value="
+			"<input pattern=^((25[0-5]|(2[0-4]|1\\d|[1-9]|)\\d)(\\.(?!$)|$)){4}$ name=" "netmask" " value="
 		)
 		HTTP_RESPONSE_CASE(http_write_value_addr(http, http->cache.config.netmask))
 		HTTP_RESPONSE_CASE_STR(http,
 			">"
 			"<tr><td>Gateway:<td>"
-			"<input pattern=^((25[0-5]|(2[0-4]|1\\d|[1-9]|)\\d)(\\.(?!$)|$)){4}$ name=" "ipgw" " value="
+			"<input pattern=^((25[0-5]|(2[0-4]|1\\d|[1-9]|)\\d)(\\.(?!$)|$)){4}$ name=" "gateway" " value="
 		)
 		HTTP_RESPONSE_CASE(http_write_value_addr(http, http->cache.config.gateway))
 		HTTP_RESPONSE_CASE_STR(http,

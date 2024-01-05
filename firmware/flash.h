@@ -22,7 +22,7 @@ struct cache_wlan {
 #endif // ESP8266
 
 // Masks for configuration flags
-#define CONF_FLAG_STATICIP 0x01
+#define CONF_FLAG_DHCP 0x01
 
 // Persistent storage structure for configuration
 struct config_t {

@@ -560,54 +560,54 @@ static inline void http_parse(struct http_t* http, struct pbuf* p) {
 				return;
 			}
 		}
-		// Checks if the next POST body key is for static ip or DHCP
+		// Checks if the next POST body key is for DHCP or static ip
 		/* FALLTHROUGH */
-		case HTTP_STATE_POST_ROOT_BODY_IPSTATIC_KEY: {
-			if (http_post_key(http, "static=")) {
-				http->state = HTTP_STATE_POST_ROOT_BODY_IPSTATIC_VALUE;
+		case HTTP_STATE_POST_ROOT_BODY_DHCP_KEY: {
+			if (http_post_key(http, "dhcp=")) {
+				http->state = HTTP_STATE_POST_ROOT_BODY_DHCP_VALUE;
 				continue;
 			}
 			if (http_post_key_incomplete(http)) {
-				http->state = HTTP_STATE_POST_ROOT_BODY_IPSTATIC_KEY;
+				http->state = HTTP_STATE_POST_ROOT_BODY_DHCP_KEY;
 				return;
 			}
 		}
 		// Checks if the next POST body key is for static ip local address
 		/* FALLTHROUGH */
-		case HTTP_STATE_POST_ROOT_BODY_IPLOCAL_KEY: {
-			if (http_post_key(http, "iplocal=")) {
+		case HTTP_STATE_POST_ROOT_BODY_LOCALIP_KEY: {
+			if (http_post_key(http, "localip=")) {
 				http->cache.config.localAddr = 0;
-				http->state = HTTP_STATE_POST_ROOT_BODY_IPLOCAL_VALUE;
+				http->state = HTTP_STATE_POST_ROOT_BODY_LOCALIP_VALUE;
 				continue;
 			}
 			if (http_post_key_incomplete(http)) {
-				http->state = HTTP_STATE_POST_ROOT_BODY_IPLOCAL_KEY;
+				http->state = HTTP_STATE_POST_ROOT_BODY_LOCALIP_KEY;
 				return;
 			}
 		}
 		// Checks if the next POST body key is for static ip netmask
 		/* FALLTHROUGH */
-		case HTTP_STATE_POST_ROOT_BODY_IPMASK_KEY: {
-			if (http_post_key(http, "ipmask=")) {
+		case HTTP_STATE_POST_ROOT_BODY_NETMASK_KEY: {
+			if (http_post_key(http, "netmask=")) {
 				http->cache.config.netmask = 0;
-				http->state = HTTP_STATE_POST_ROOT_BODY_IPMASK_VALUE;
+				http->state = HTTP_STATE_POST_ROOT_BODY_NETMASK_VALUE;
 				continue;
 			}
 			if (http_post_key_incomplete(http)) {
-				http->state = HTTP_STATE_POST_ROOT_BODY_IPMASK_KEY;
+				http->state = HTTP_STATE_POST_ROOT_BODY_NETMASK_KEY;
 				return;
 			}
 		}
 		// Checks if the next POST body key is for static ip gateway
 		/* FALLTHROUGH */
-		case HTTP_STATE_POST_ROOT_BODY_IPGATEWAY_KEY: {
-			if (http_post_key(http, "ipgw=")) {
+		case HTTP_STATE_POST_ROOT_BODY_GATEWAY_KEY: {
+			if (http_post_key(http, "gateway=")) {
 				http->cache.config.gateway = 0;
-				http->state = HTTP_STATE_POST_ROOT_BODY_IPGATEWAY_VALUE;
+				http->state = HTTP_STATE_POST_ROOT_BODY_GATEWAY_VALUE;
 				continue;
 			}
 			if (http_post_key_incomplete(http)) {
-				http->state = HTTP_STATE_POST_ROOT_BODY_IPGATEWAY_KEY;
+				http->state = HTTP_STATE_POST_ROOT_BODY_GATEWAY_KEY;
 				return;
 			}
 		}
@@ -660,28 +660,28 @@ static inline void http_parse(struct http_t* http, struct pbuf* p) {
 			return;
 		}
 		// Transfers static ip flag from POST body to client cache
-		case HTTP_STATE_POST_ROOT_BODY_IPSTATIC_VALUE: {
-			if (http_post_value_flag(http, &http->cache.config.flags, CONF_FLAG_STATICIP)) {
+		case HTTP_STATE_POST_ROOT_BODY_DHCP_VALUE: {
+			if (http_post_value_flag(http, &http->cache.config.flags, CONF_FLAG_DHCP)) {
 				continue;
 			}
 			return;
 		}
 		// Transfers static ip local address from POST body to client cache
-		case HTTP_STATE_POST_ROOT_BODY_IPLOCAL_VALUE: {
+		case HTTP_STATE_POST_ROOT_BODY_LOCALIP_VALUE: {
 			if (http_post_value_ip(http, &http->cache.config.localAddr)) {
 				continue;
 			}
 			return;
 		}
 		// Transfers static ip netmask from POST body to client cache
-		case HTTP_STATE_POST_ROOT_BODY_IPMASK_VALUE: {
+		case HTTP_STATE_POST_ROOT_BODY_NETMASK_VALUE: {
 			if (http_post_value_ip(http, &http->cache.config.netmask)) {
 				continue;
 			}
 			return;
 		}
 		// Transfers static ip gateway from POST body to client cache
-		case HTTP_STATE_POST_ROOT_BODY_IPGATEWAY_VALUE: {
+		case HTTP_STATE_POST_ROOT_BODY_GATEWAY_VALUE: {
 			if (http_post_value_ip(http, &http->cache.config.gateway)) {
 				continue;
 			}

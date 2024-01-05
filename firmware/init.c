@@ -8,7 +8,7 @@
 #include "./debug.h" // DEBUG_PRINTF, DEBUG_ERR_PRINTF, DEBUG_IP, WRAP
 #include "./atem_sock.h" // atem_init
 #include "./http.h" // http_init
-#include "./flash.h" // struct config_t, CONF_FLAG_STATICIP, flash_config_read
+#include "./flash.h" // struct config_t, CONF_FLAG_DHCP, flash_config_read
 #include "./init.h" // FIRMWARE_VERSION_STRING
 #include "./dns.h" // captive_portal_init
 
@@ -240,7 +240,10 @@ static void _waccat_init(void) {
 #endif // ESP8266
 
 	// Uses static IP if configured to do so
-	if (conf.flags & CONF_FLAG_STATICIP) {
+	if (conf.flags & CONF_FLAG_DHCP) {
+		DEBUG_PRINTF("Using DHCP\n");
+	}
+	else {
 		DEBUG_IP("Using static IP", conf.localAddr, conf.netmask, conf.gateway);
 
 		// Sets static ip
@@ -259,9 +262,6 @@ static void _waccat_init(void) {
 			return;
 		}
 #endif // ESP8266
-	}
-	else {
-		DEBUG_PRINTF("Using DHCP\n");
 	}
 
 	// Initializes connection to ATEM
