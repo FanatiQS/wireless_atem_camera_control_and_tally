@@ -22,7 +22,7 @@ tests=0
 fails=0
 
 # Runs all combinations of dig flags for DNS request
-for query in "google.com" "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb.ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc" ""; do
+for query in "google.com" "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb.ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"; do
 	for class in "IN" "ANY"; do
 		for type in "A" "ANY"; do
 			for rd in "recurse" "norecurse"; do
@@ -30,7 +30,7 @@ for query in "google.com" "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
 					for cd in "cdflag" "nocdflag"; do
 						for aa in "aaflag" "noaaflag"; do
 							echo "Test started: $aa $cd $ad $rd $type $class '$query'"
-							ret=$(dig @$DEVICE_ADDR +short -c $class -t $type -q $query +$rd +time=1)
+							ret=$(dig @$DEVICE_ADDR +short +time=1 +$aa +$cd +$ad +$rd -t $type -c $class -q $query)
 							if [[ $ret != $DEVICE_ADDR ]]; then
 								echo "ERROR: Received unexpected response"
 								echo "	Response: '$ret'"
