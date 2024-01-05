@@ -26,7 +26,8 @@ void atem_packet_word_set(uint8_t* packet, uint8_t high, uint8_t low, uint16_t w
 
 // Gets 16bit word from packet
 uint16_t atem_packet_word_get(uint8_t* packet, uint8_t high, uint8_t low) {
-	return (uint16_t)(packet[high] << 8) | packet[low];
+	assert(high + 1 == low);
+	return (uint16_t)((packet[high] << 8) | packet[low]);
 }
 
 
