@@ -42,17 +42,20 @@ bool _runner_init(const char* file, int line) {
 	printf("Test started: %s:%d\n", file, line);
 	runner_all++;
 
-	// Allows continuing with remaining when test fails
+	// Sets test to abort on failure
 	char* mode = getenv("RUNNER_MODE");
-	if (mode == NULL || !strcmp(mode, "all")) {
-		signal(SIGABRT, runner_fail);
+	if (mode == NULL || !strcmp(mode, "abort")) {
+		return true;
 	}
+
 	// Invalid test mode value
-	else if (strcmp(mode, "abort")) {
+	if (strcmp(mode, "all")) {
 		fprintf(stderr, "Invalid RUNNER_MODE value: %s\n", mode);
 		abort();
 	}
 
+	// Sets test to continue with remaining tests one failure
+	signal(SIGABRT, runner_fail);
 	return true;
 }
 
