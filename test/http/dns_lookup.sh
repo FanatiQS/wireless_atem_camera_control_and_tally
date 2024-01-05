@@ -6,18 +6,17 @@ if [[ $DEVICE_ADDR == "" ]]; then
 	exit 1
 fi
 
-# Configures script to exit on error if runner mode is abort
+# Validates RUNNER_MODE value
 case $RUNNER_MODE in
-	"abort")
-		set -e
-		;;
-	"" | "all")
-		;;
+	"abort" | "all" | "") ;;
 	*)
 		echo "Invalid RUNNER_MODE value: $RUNNER_MODE"
 		exit 1
 		;;
 esac
+
+# Aborts on script error
+set -e
 
 tests=0
 fails=0
@@ -37,6 +36,9 @@ for query in "google.com" "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
 								echo "	Response: '$ret'"
 								echo "	Expected: '$DEVICE_ADDR'"
 								((fails++))
+								if [[ $RUNNER_MODE == "" || $RUNNER_MODE == "abort" ]]; then
+									exit 1
+								fi
 							fi
 							((tests++))
 						done
