@@ -1,7 +1,5 @@
 #include <stdio.h> // perror
 #include <stdlib.h> // abort
-#include <sys/socket.h> // getpeername, socklen_t, struct sockaddr
-#include <netinet/in.h> // struct sockaddr_in
 #include <arpa/inet.h> // ntohs
 
 #include "../utils/utils.h"
