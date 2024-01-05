@@ -18,7 +18,7 @@ bool logs_find(const char* match) {
 	// Searches through string array for match
     const char* end;
     while ((end = strchr(start, ','))) {
-        if (!strncmp(start, match, end - start)) {
+        if (!strncmp(start, match, (size_t)(end - start))) {
             return true;
         }
         start = end + 1;
