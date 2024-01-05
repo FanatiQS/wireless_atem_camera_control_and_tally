@@ -6,7 +6,7 @@
 #include <stddef.h> // NULL
 #include <stdbool.h> // bool, true
 
-#include <unistd.h> // close
+#include <unistd.h> // close, sleep
 
 #include "./simple_socket.h" // SIMPLE_SOCKET_MAX_FD
 #include "../../core/atem.h" // ATEM_TIMEOUT
