@@ -275,14 +275,21 @@ static bool http_post_value_ip(struct http_t* http, uint32_t* addr) {
 			http->remainingBodyLen--;
 		}
 		else {
-			if (http_post_int_complete(http, c)) {
+			if (http_post_int_complete(http, c) && http->offset == 3) {
 				http->offset = 0;
 				return true;
 			}
-			http_post_err(http, "Invalid character in IPV4 POST body value");
+			http_post_err(http, "Invalid IPV4 address");
 			return false;
 		}
 	}
+
+	// Rejects IP address with less than 4 segments
+	if (http->offset < 3) {
+		http_post_err(http, "Invalid IPV4 address");
+		return false;
+	}
+
 	http_post_completed(http);
 	return false;
 }

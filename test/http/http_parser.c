@@ -392,58 +392,58 @@ int main(void) {
 
 	// Tests invalid character in ipv4 short
 	RUN_TEST() {
-		test_body_err("atem=19a", "Invalid character in IPV4 POST body value");
+		test_body_err("atem=19a", "Invalid IPV4 address");
 	}
 	RUN_TEST() {
-		test_body_err("localip=19a", "Invalid character in IPV4 POST body value");
+		test_body_err("localip=19a", "Invalid IPV4 address");
 	}
 	RUN_TEST() {
-		test_body_err("netmask=19a", "Invalid character in IPV4 POST body value");
+		test_body_err("netmask=19a", "Invalid IPV4 address");
 	}
 	RUN_TEST() {
-		test_body_err("gateway=19a", "Invalid character in IPV4 POST body value");
+		test_body_err("gateway=19a", "Invalid IPV4 address");
 	}
 
 	// Tests invalid character in ipv4 full
 	RUN_TEST() {
-		test_body_err("atem=19a.168.1.240", "Invalid character in IPV4 POST body value");
+		test_body_err("atem=19a.168.1.240", "Invalid IPV4 address");
 	}
 	RUN_TEST() {
-		test_body_err("localip=19a.168.1.240", "Invalid character in IPV4 POST body value");
+		test_body_err("localip=19a.168.1.240", "Invalid IPV4 address");
 	}
 	RUN_TEST() {
-		test_body_err("netmask=19a.168.1.240", "Invalid character in IPV4 POST body value");
+		test_body_err("netmask=19a.168.1.240", "Invalid IPV4 address");
 	}
 	RUN_TEST() {
-		test_body_err("gateway=19a.168.1.240", "Invalid character in IPV4 POST body value");
+		test_body_err("gateway=19a.168.1.240", "Invalid IPV4 address");
 	}
 
 	// Tests segmented invalid characters in ipv4
 	RUN_TEST() {
-		test_body_err_segment_reset("atem=19a", ".168.1.240", "Invalid character in IPV4 POST body value");
+		test_body_err_segment_reset("atem=19a", ".168.1.240", "Invalid IPV4 address");
 	}
 	RUN_TEST() {
-		test_body_err_segment_reset("localip=19a", ".168.1.240", "Invalid character in IPV4 POST body value");
+		test_body_err_segment_reset("localip=19a", ".168.1.240", "Invalid IPV4 address");
 	}
 	RUN_TEST() {
-		test_body_err_segment_reset("netmask=19a", ".168.1.240", "Invalid character in IPV4 POST body value");
+		test_body_err_segment_reset("netmask=19a", ".168.1.240", "Invalid IPV4 address");
 	}
 	RUN_TEST() {
-		test_body_err_segment_reset("gateway=19a", ".168.1.240", "Invalid character in IPV4 POST body value");
+		test_body_err_segment_reset("gateway=19a", ".168.1.240", "Invalid IPV4 address");
 	}
 
 	// Tests invalid character in ipv4 last octet
 	RUN_TEST() {
-		test_body_err("atem=192.168.1.24b", "Invalid character in IPV4 POST body value");
+		test_body_err("atem=192.168.1.24b", "Invalid IPV4 address");
 	}
 	RUN_TEST() {
-		test_body_err("localip=192.168.1.24b", "Invalid character in IPV4 POST body value");
+		test_body_err("localip=192.168.1.24b", "Invalid IPV4 address");
 	}
 	RUN_TEST() {
-		test_body_err("netmask=192.168.1.24b", "Invalid character in IPV4 POST body value");
+		test_body_err("netmask=192.168.1.24b", "Invalid IPV4 address");
 	}
 	RUN_TEST() {
-		test_body_err("gateway=192.168.1.24b", "Invalid character in IPV4 POST body value");
+		test_body_err("gateway=192.168.1.24b", "Invalid IPV4 address");
 	}
 
 	// Tests overflowing octet
@@ -472,6 +472,20 @@ int main(void) {
 	}
 	RUN_TEST() {
 		test_body_err("gateway=192.168.1.240.1", "Invalid IPV4 address");
+	}
+
+	// Tests too few ip segments
+	RUN_TEST() {
+		test_body_err("atem=192.168.1", "Invalid IPV4 address");
+	}
+	RUN_TEST() {
+		test_body_err("localip=192.168.1", "Invalid IPV4 address");
+	}
+	RUN_TEST() {
+		test_body_err("netmask=192.168.1", "Invalid IPV4 address");
+	}
+	RUN_TEST() {
+		test_body_err("gateway=192.168.1", "Invalid IPV4 address");
 	}
 
 	// Tests invalid character in flag value
