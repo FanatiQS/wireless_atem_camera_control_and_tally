@@ -67,7 +67,7 @@ void _runner_success(void) {
 // Prints and returns number of failed tests if not running in abort mode
 int runner_exit(void) {
 	char* mode = getenv("RUNNER_MODE");
-	if (mode != NULL && !strcmp(mode, "abort")) {
+	if (mode == NULL || !strcmp(mode, "abort")) {
 		return EXIT_SUCCESS;
 	}
 
