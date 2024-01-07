@@ -220,7 +220,7 @@ static bool http_post_value_string(struct http_t* http, char* addr, size_t addrS
 
 		// Rejects values longer than cache length
 		if (http->offset >= addrSize) {
-			http_post_err(http, "String POST body value too long");
+			http_post_err(http, "String value too long");
 			return false;
 		}
 
@@ -241,11 +241,11 @@ static bool http_post_value_uint8(struct http_t* http, uint8_t* addr, size_t min
 		char c = http_char_consume(http);
 		if (!http_post_int_isnum(c)) {
 			if (http_post_int_complete(http, c)) return true;
-			http_post_err(http, "Invalid character in integer POST body value");
+			http_post_err(http, "Invalid character in integer");
 			return false;
 		}
 		if (!http_post_octet(http, c, addr) || *addr < min || *addr > max) {
-			http_post_err(http, "Integer POST body value out of range");
+			http_post_err(http, "Integer value out of range");
 			return false;
 		}
 	}
@@ -329,7 +329,7 @@ static bool http_post_value_flag(struct http_t* http, uint8_t* flags, int mask) 
 
 	http->remainingBodyLen--;
 	if (http_post_int_complete(http, http_char_consume(http))) return true;
-	http_post_err(http, "Invalid character in boolean POST body value");
+	http_post_err(http, "Invalid character in boolean");
 	return false;
 }
 

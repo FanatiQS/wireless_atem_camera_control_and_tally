@@ -356,38 +356,51 @@ int main(void) {
 
 	// Tests overflowing string length
 	RUN_TEST() {
-		test_body_err("name=123456789012345678901234567890123", "String POST body value too long");
+		test_body_err("name=123456789012345678901234567890123", "String value too long");
 	}
 	RUN_TEST() {
-		test_body_err("ssid=123456789012345678901234567890123", "String POST body value too long");
+		test_body_err("ssid=123456789012345678901234567890123", "String value too long");
 	}
 	RUN_TEST() {
-		test_body_err("psk=12345678901234567890123456789012345678901234567890123456789012345", "String POST body value too long");
+		test_body_err("psk=12345678901234567890123456789012345678901234567890123456789012345", "String value too long");
 	}
 
 	// Tests invalid characters in uint8
 	RUN_TEST() {
-		test_body_err("dest=abc123", "Invalid character in integer POST body value");
+		test_body_err("dest=abc123", "Invalid character in integer");
 	}
 
 	// Tests segmented invalid characters in uint8
 	RUN_TEST() {
-		test_body_err_segment_reset("dest=ab", "c123", "Invalid character in integer POST body value");
+		test_body_err_segment_reset("dest=ab", "c123", "Invalid character in integer");
 	}
 
 	// Tests overflowing int
 	RUN_TEST() {
-		test_body_err("dest=256", "Integer POST body value out of range");
+		test_body_err("dest=256", "Integer value out of range");
 	}
 
 	// Tests int under min
 	RUN_TEST() {
-		test_body_err("dest=0", "Integer POST body value out of range");
+		test_body_err("dest=0", "Integer value out of range");
 	}
 
 	// Tests int over max
 	RUN_TEST() {
-		test_body_err("dest=255", "Integer POST body value out of range");
+		test_body_err("dest=255", "Integer value out of range");
+	}
+
+	// Tests out-of-range dest value
+	RUN_TEST() {
+		test_body_err("dest=0", "Integer value out of range");
+	}
+	RUN_TEST() {
+		test_body_err("dest=255", "Integer value out of range");
+	}
+
+	// Tests empty dest value
+	RUN_TEST() {
+		test_body_err("dest=", "Invalid empty integer");
 	}
 
 	// Tests invalid character in ipv4 short
@@ -504,25 +517,12 @@ int main(void) {
 
 	// Tests invalid character in flag value
 	RUN_TEST() {
-		test_body_err("dhcp=2", "Invalid character in boolean POST body value");
+		test_body_err("dhcp=2", "Invalid character in boolean");
 	}
 
 	// Tests too many characters
 	RUN_TEST() {
-		test_body_err("dhcp=12", "Invalid character in boolean POST body value");
-	}
-
-	// Tests out-of-range dest value
-	RUN_TEST() {
-		test_body_err("dest=0", "Integer POST body value out of range");
-	}
-	RUN_TEST() {
-		test_body_err("dest=255", "Integer POST body value out of range");
-	}
-
-	// Tests empty dest value
-	RUN_TEST() {
-		test_body_err("dest=", "Invalid empty integer");
+		test_body_err("dhcp=12", "Invalid character in boolean");
 	}
 
 	return runner_exit();
