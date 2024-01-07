@@ -488,6 +488,20 @@ int main(void) {
 		test_body_err("gateway=192.168.1", "Invalid IPV4 address");
 	}
 
+	// Tests empty ipv4 value
+	RUN_TEST() {
+		test_body_err("atem=", "Invalid IPV4 address");
+	}
+	RUN_TEST() {
+		test_body_err("localip=", "Invalid IPV4 address");
+	}
+	RUN_TEST() {
+		test_body_err("netmask=", "Invalid IPV4 address");
+	}
+	RUN_TEST() {
+		test_body_err("gateway=", "Invalid IPV4 address");
+	}
+
 	// Tests invalid character in flag value
 	RUN_TEST() {
 		test_body_err("dhcp=2", "Invalid character in boolean POST body value");
@@ -504,6 +518,11 @@ int main(void) {
 	}
 	RUN_TEST() {
 		test_body_err("dest=255", "Integer POST body value out of range");
+	}
+
+	// Tests empty dest value
+	RUN_TEST() {
+		test_body_err("dest=", "Invalid empty integer");
 	}
 
 	return runner_exit();
