@@ -15,7 +15,6 @@
 #include "./atem_sock.h"
 
 #define TIMEOUT_LISTEN 10000
-#define TIMEOUT_WAIT 2
 
 
 
