@@ -3,6 +3,7 @@
 #include <string.h> // strlen, memcpy, memcmp
 #include <stdlib.h> // abort
 #include <stdio.h> // fprintf, stderr, printf
+#include <assert.h> // assert
 
 #include <unistd.h> // close
 #include <sys/socket.h> // SOCK_DGRAM
@@ -80,7 +81,8 @@ void dns_socket_recv_print(int sock) {
 // Appends query name label to DNS request buffer
 void dns_append_label(uint8_t* buf, size_t* bufLen, const char* label) {
 	size_t labelLen = strlen(label);
-	buf[*bufLen] = labelLen;
+	assert(labelLen < UINT8_MAX);
+	buf[*bufLen] = (uint8_t)labelLen;
 	*bufLen += 1;
 	memcpy(&buf[*bufLen], label, labelLen);
 	*bufLen += labelLen;
@@ -206,7 +208,7 @@ int main(void) {
 	// Tests unsupported opcodes
 	RUN_TEST() {
 		for (int i = 1; i < 16; i++) {
-			uint8_t buf[DNS_LEN_MAX] = { [DNS_INDEX_FLAGS_HIGH] = i << 3 };
+			uint8_t buf[DNS_LEN_MAX] = { [DNS_INDEX_FLAGS_HIGH] = (uint8_t)(i << 3) };
 			dns_expect_error_short(buf, dns_append_default(buf, DNS_LEN_MIN), DNS_RCODE_NOTIMP);
 		}
 	}
