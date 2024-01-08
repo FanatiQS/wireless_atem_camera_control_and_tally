@@ -327,7 +327,6 @@ static bool http_post_value_flag(struct http_t* http, uint8_t* flags, int mask) 
 		}
 	}
 
-	http->remainingBodyLen--;
 	if (http_post_int_complete(http, http_char_consume(http))) return true;
 	http_post_err(http, "Invalid character in boolean");
 	return false;
