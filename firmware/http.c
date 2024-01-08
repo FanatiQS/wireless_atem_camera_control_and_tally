@@ -545,7 +545,7 @@ static inline void http_parse(struct http_t* http, struct pbuf* p) {
 		/* FALLTHROUGH */
 		case HTTP_STATE_POST_ROOT_BODY_DEST_KEY: {
 			if (http_post_key(http, "dest=")) {
-				if (http->remainingBodyLen <= http->offset) {
+				if (http->remainingBodyLen == 0) {
 					http_post_err(http, "Invalid empty integer");
 					return;
 				}
