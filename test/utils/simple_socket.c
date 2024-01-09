@@ -64,13 +64,21 @@ void simple_socket_connect(int sock, int port, in_addr_t addr) {
 // Connects socket to device address from environment variable
 void simple_socket_connect_env(int sock, int port, const char* envKey) {
 	// Gets ip address from environment variable
-	char* addr = getenv(envKey);
-	if (addr == NULL) {
+	char* addrStr = getenv(envKey);
+	if (addrStr == NULL) {
 		fprintf(stderr, "Environment variable %s not defined\n", envKey);
 		abort();
 	}
 
-	simple_socket_connect(sock, port, inet_addr(addr));
+	// Gets ip address type from environment variable value
+	in_addr_t addr = inet_addr(addrStr);
+	if (addr == (in_addr_t)(-1)) {
+		fprintf(stderr, "Invalid IP address '%s' from %s\n", addrStr, envKey);
+		abort();
+	}
+
+	// Connects to address parsed from environment variable
+	simple_socket_connect(sock, port, addr);
 }
 
 // Binds server socket for listening to clients
