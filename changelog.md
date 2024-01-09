@@ -1,23 +1,40 @@
 # Changelog
 
-## Version 0.7.1
+## Version 0.7.1 (development)
 
 ### Firmware
+* DNS parser no longer has a maximum packet length it can handle.
+* Simplified LED control.
+* Added compiler error if I2C is not implemented but SDI is configured to be used.
+* Renamed static ip related HTTP fields.
+* **BREAKING CONFIG** Replaced static ip flag with DHCP.
+* Arduino mDNS resolver uses device name again.
+* HTTP POST body parser rejects IP address with less than 4 segments.
+* Rephrased HTTP POST body error messages.
+* HTTP POST body parser rejects integer without value.
+* Fixed incorrectly calculating remaining length in HTTP POST body parser using flags.
+
+### Core
+* Renamed directory `/src/` to `/core/`.
 * Correctly resets retransmit flag after opening handshake rejection.
 
+### Documentation
+* Updated flag styling.
+
 ### Test Suite
-* Replaced `simple_socket_select` with `simple_socket_poll`.
+* Huge rewrite of multiple parts of the test suite.
+* Added and updated tests for atem open, atem close, http and dns.
 * Uses environment variables to enable different log types.
-* Added function to receive and print ATEM packet.
 * Added test to ensure everything is ready for release.
-* Environment variables `CFLAGS` and `LDFLAGS` are not used when compiling tests.
-* Fixed dependency file issues.
+* Environment variables `CFLAGS`, `CPPFLAGS` and `LDFLAGS` are now used when compiling tests.
 * Renamed enviroment variable specifying address of ATEM switcher to connect to.
-* Deprecate `atem_handshake_common_*` family of functions and replaces them by extending `atem_handshake_sessionid_*`.
-* Function `atem_handshake_connect` now returns server assigned session id for use as session id.
-* Renamed `/test/handshake.c` to `/test/atem_handshake.c`.
-* Renamed `/test/handshake.h` to `/test/atem_handshake.h`.
-* Deprecated `print_debug` and `print_info`.
+* Added rule to run test in LLDB.
+* Added rule to build all tests.
+* Reworked playground structure to handle multiple playground files.
+* Include `/core/atem.c` in playgrounds.
+
+### Tools
+* Added shim for `timespec_get` function for use with systems not supporting C11.
 
 ## Version 0.7.0
 
