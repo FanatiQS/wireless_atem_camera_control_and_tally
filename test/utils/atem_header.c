@@ -52,7 +52,7 @@ void atem_header_flags_get_verify(uint8_t* packet, uint8_t requiredFlags, uint8_
 	uint8_t flags = atem_header_flags_get(packet);
 
 	// Verifies required flags are all set
-	if (requiredFlags && !((flags & requiredFlags) == requiredFlags)) {
+	if ((flags & requiredFlags) != requiredFlags) {
 		fprintf(stderr, "Missing required flag(s) 0x%02x from 0x%02x\n", requiredFlags, flags);
 		abort();
 	}
