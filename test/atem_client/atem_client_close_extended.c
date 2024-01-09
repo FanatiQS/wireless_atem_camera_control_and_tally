@@ -7,12 +7,12 @@
 #include "../utils/utils.h"
 
 // Ensures the peer socket is closed and does not send any data
-void atem_client_close_extended_closed(int sock) {
+void atem_client_closed(int sock) {
 	uint8_t packet[ATEM_MAX_PACKET_LEN];
 	size_t packetLen = sizeof(packet);
 
 	if (!simple_socket_recv_error(sock, ECONNREFUSED, packet, &packetLen)) {
-		fprintf(stderr, "Expected no response to ping: %zu\n", packetLen);
+		fprintf(stderr, "Expected no more data on socket: %zu\n", packetLen);
 		logs_print_buffer(stderr, packet, packetLen);
 		abort();
 	}
@@ -57,7 +57,7 @@ int main(void) {
 		atem_handshake_sessionid_recv_verify(sock, ATEM_OPCODE_CLOSED, false, sessionId);
 		atem_handshake_sessionid_send(sock, ATEM_OPCODE_CLOSING, true, sessionId);
 
-		atem_client_close_extended_closed(sock);
+		atem_client_closed(sock);
 	}
 
 	// Ensures data sent after closing handshake is not processed
@@ -68,7 +68,7 @@ int main(void) {
 		atem_handshake_close(sock, sessionId);
 		atem_acknowledge_request_send(sock, sessionId, 0x0001);
 
-		atem_client_close_extended_closed(sock);
+		atem_client_closed(sock);
 	}
 
 	return runner_exit();
