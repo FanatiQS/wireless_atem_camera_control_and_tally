@@ -41,7 +41,7 @@ You can find my contact information in the [contact section](#contact).
 Before building your own device.
 Read the [license](#license) section as that states how you are allowed to use this project in an easy to understand format.
 
-This project is fairly modular. Multiple components can be enabled/disabled through the `arduino/user_config.h` file. Note that some also need additional hardware added to work. They are described in more detain below.
+This project is fairly modular. Multiple components can be enabled/disabled through the `arduino/user_config.h` file. Note that some also need additional hardware added to work. They are described in more detail below.
 
 ### Microcontroller
 This project is based around the ESP8266 microcontroller.
