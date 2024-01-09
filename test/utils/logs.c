@@ -34,7 +34,9 @@ bool logs_find(const char* match) {
 void logs_print_buffer(FILE* pipe, uint8_t* buf, size_t bufLen) {
 	fprintf(pipe, "\t");
 	for (size_t i = 0; i < bufLen; i++) {
-		if (i != 0 && !(i % PRINT_BYTE_LEN)) fprintf(pipe, "\n\t");
+		if (i != 0 && !(i % PRINT_BYTE_LEN)) {
+			fprintf(pipe, "\n\t");
+		}
 		fprintf(pipe, "%02x ", buf[i]);
 	}
 	fprintf(pipe, "\n");
