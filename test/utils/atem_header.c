@@ -47,7 +47,7 @@ uint8_t atem_header_flags_get(uint8_t* packet) {
 	return packet[ATEM_INDEX_FLAGS] & ~ATEM_MASK_LEN_HIGH;
 }
 
-// Verifies all ATEM flags in packet
+// Ensures ATEM packet has all required flags set without any illegal flag
 void atem_header_flags_get_verify(uint8_t* packet, uint8_t requiredFlags, uint8_t optionalFlags) {
 	uint8_t flags = atem_header_flags_get(packet);
 
@@ -67,12 +67,12 @@ void atem_header_flags_get_verify(uint8_t* packet, uint8_t requiredFlags, uint8_
 
 
 
-// Verifies that specified ATEM flags are set
+// Ensures specified ATEM flags are set
 void atem_header_flags_isset(uint8_t* packet, uint8_t flags) {
 	atem_header_flags_get_verify(packet, flags, ~flags);
 }
 
-// Verifies that specified ATEM flags are clear
+// Ensures specified ATEM flags are clear
 void atem_header_flags_isnotset(uint8_t* packet, uint8_t flags) {
 	atem_header_flags_get_verify(packet, 0, ~flags);
 }
@@ -96,7 +96,7 @@ uint16_t atem_header_len_get(uint8_t* packet) {
 	return len;
 }
 
-// Verifies length of packet
+// Ensures length of packet matches expected length
 void atem_header_len_get_verify(uint8_t* packet, size_t expectedLen) {
 	uint16_t len = atem_header_len_get(packet);
 	if (len == expectedLen) return;
@@ -116,7 +116,7 @@ uint16_t atem_header_sessionid_get(uint8_t* packet) {
 	return atem_packet_word_get(packet, ATEM_INDEX_SESSIONID_HIGH, ATEM_INDEX_SESSIONID_LOW);
 }
 
-// Verifies session id in packet
+// Ensures session id in packet matches expected session id
 void atem_header_sessionid_get_verify(uint8_t* packet, uint16_t expectedSessionId) {
 	uint16_t sessionId = atem_header_sessionid_get(packet);
 	if (sessionId == expectedSessionId) return;
@@ -141,7 +141,7 @@ uint16_t atem_header_ackid_get(uint8_t* packet) {
 	return ackId;
 }
 
-// Verifies ack id in packet
+// Ensures ack id in packet matches expected ack id
 void atem_header_ackid_get_verify(uint8_t* packet, uint16_t expectedAckId) {
 	uint16_t ackId = atem_header_ackid_get(packet);
 	if (ackId == expectedAckId) return;
@@ -166,7 +166,7 @@ uint16_t atem_header_localid_get(uint8_t* packet) {
 	return localId;
 }
 
-// Verifies local id in packet
+// Ensures local id in packet matches expected local id
 void atem_header_localid_get_verify(uint8_t* packet, uint16_t expectedLocalId) {
 	uint16_t localId = atem_header_localid_get(packet);
 	if (localId == expectedLocalId) return;
@@ -186,7 +186,7 @@ uint16_t atem_header_unknownid_get(uint8_t* packet) {
 	return atem_packet_word_get(packet, ATEM_INDEX_UNKNOWNID_HIGH, ATEM_INDEX_UNKNOWNID_LOW);
 }
 
-// Verifies unknown id in packet
+// Ensures unknown id in packet matches expected unknown id
 void atem_header_unknownid_get_verify(uint8_t* packet, uint16_t expectedUnknownId) {
 	uint16_t unknownId = atem_header_unknownid_get(packet);
 	if (unknownId == expectedUnknownId) return;
@@ -211,7 +211,7 @@ uint16_t atem_header_remoteid_get(uint8_t* packet) {
 	return remoteId;
 }
 
-// Verifies remote id in packet
+// Ensures remote id in packet matches expected unknown id
 void atem_header_remoteid_get_verify(uint8_t* packet, uint16_t expectedRemoteId) {
 	uint16_t remoteId = atem_header_remoteid_get(packet);
 	if (remoteId == expectedRemoteId) return;

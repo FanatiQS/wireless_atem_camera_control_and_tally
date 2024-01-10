@@ -29,7 +29,7 @@ uint16_t atem_handshake_newsessionid_get(uint8_t* packet) {
 	return sessionId;
 }
 
-// Verifies new session id in handshake packet
+// Ensures new session id in handshake packet matches expected new session id
 void atem_handshake_newsessionid_get_verify(uint8_t* packet, uint16_t expectedNewSessionId) {
 	uint16_t newSessionId = atem_handshake_newsessionid_get(packet);
 	if (newSessionId == expectedNewSessionId) return;
@@ -105,7 +105,7 @@ uint8_t atem_handshake_opcode_get(uint8_t* packet) {
 	return opcode;
 }
 
-// Verifies opcode in handshake packet
+// Ensures opcode in handshake packet matches expected opcode
 void atem_handshake_opcode_get_verify(uint8_t* packet, uint8_t expectedOpcode) {
 	uint8_t opcode = atem_handshake_opcode_get(packet);
 	if (opcode == expectedOpcode) return;
@@ -129,7 +129,7 @@ uint16_t atem_handshake_sessionid_get(uint8_t* packet, uint8_t opcode, bool retx
 	return atem_header_sessionid_get(packet);
 }
 
-// Verifies opcode, retransmit flag and session id for handshake packet
+// Ensures opcode, retransmit flag and session id for handshake packet matches expected values
 void atem_handshake_sessionid_get_verify(uint8_t* packet, uint8_t opcode, bool retx, uint16_t sessionId) {
 	atem_handshake_opcode_get_verify(packet, opcode);
 	atem_header_flags_get_verify(packet, ATEM_FLAG_RETX * retx, 0xff);
@@ -150,7 +150,7 @@ uint16_t atem_handshake_sessionid_recv(int sock, uint8_t opcode, bool retx) {
 	return atem_handshake_sessionid_get(packet, opcode, retx);
 }
 
-// Verifies opcode, retransmit flag and session id in received handshake packet
+// Ensures opcode, retransmit flag and session id in received handshake packet matches expected values
 void atem_handshake_sessionid_recv_verify(int sock, uint8_t opcode, bool retx, uint16_t expectedSessionId) {
 	uint8_t packet[ATEM_MAX_PACKET_LEN];
 	atem_socket_recv(sock, packet);
@@ -175,7 +175,7 @@ uint16_t atem_handshake_newsessionid_recv(int sock, uint8_t opcode, bool retx, u
 	return atem_handshake_newsessionid_get(packet);
 }
 
-// Verifies opcode, retransmit flag, session id and new session id in received handshake packet
+// Ensures opcode, retransmit flag, session id and new session id in received handshake packet matches expected values
 void atem_handshake_newsessionid_recv_verify(int sock, uint8_t opcode, bool retx, uint16_t sessionId, uint16_t expectedNewSessionId) {
 	uint8_t packet[ATEM_MAX_PACKET_LEN];
 	atem_socket_recv(sock, packet);
