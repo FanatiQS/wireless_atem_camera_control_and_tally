@@ -134,8 +134,8 @@ void atem_socket_send(int sock, uint8_t* packet) {
 void atem_socket_recv(int sock, uint8_t* packet) {
 	// Receives packet
 	size_t recvLen = simple_socket_recv(sock, packet, ATEM_MAX_PACKET_LEN);
-	if (recvLen == 0) {
-		fprintf(stderr, "Received empty packet from client\n");
+	if (recvLen < ATEM_LEN_HEADER) {
+		fprintf(stderr, "Received packet from client smaller than ATEM header\n");
 		abort();
 	}
 
