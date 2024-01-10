@@ -38,6 +38,20 @@ atem_client: $(TESTS_ATEM_CLIENT:%=run_%)
 
 
 
+# All ATEM server tests applying to both proxy server and official switchers
+TESTS_ATEM_SERVER_PROXY = atem_server_open
+TESTS_ATEM_SERVER += $(TESTS_ATEM_SERVER_PROXY)
+.PHONY: atem_server_proxy
+atem_server_proxy: $(TESTS_ATEM_SERVER_PROXY:%=run_%)
+
+# All tests for testing ATEM server
+$(TESTS_ATEM_SERVER:%=$(BUILD_DIR)/%): $(BUILD_DIR)/%: atem_server/%.c $(UTILS_SOURCE)
+TESTS_ALL += $(TESTS_ATEM_SERVER)
+.PHONY: atem_server
+atem_server: $(TESTS_ATEM_SERVER:%=run_%)
+
+
+
 # Builds all tests and runs unit tests
 $(BUILD_DIR)/build: utils/main.c $(UTILS_SOURCE)
 run_build: $(TESTS_ALL:%=$(BUILD_DIR)/%)
