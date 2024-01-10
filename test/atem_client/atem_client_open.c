@@ -58,7 +58,7 @@ int main(void) {
 		atem_socket_close(sock);
 	}
 
-	// Ensures a resent accept is also responded to
+	// Ensures a resent accept is responded to without retransmit flag
 	RUN_TEST() {
 		atem_handshake_resetpeer();
 		int sock = atem_socket_create();
