@@ -81,6 +81,25 @@ int main(void) {
 		atem_socket_close(sock);
 	}
 
+	// Ensures delayed opening handshake response acknowledgement arriving after closing request is sent is ignored
+	RUN_TEST() {
+		uint16_t clientSessionId = 0x1337;
+		int sock = atem_socket_create();
+		uint16_t newSessionId = atem_handshake_start_client(sock, clientSessionId);
+
+		for (int i = 0; i < ATEM_RESENDS; i++) {
+			atem_handshake_newsessionid_recv_verify(sock, ATEM_OPCODE_ACCEPT, true, clientSessionId, newSessionId);
+		}
+
+		uint16_t serverSessionId = newSessionId | 0x8000;
+		atem_handshake_sessionid_recv_verify(sock, ATEM_OPCODE_CLOSING, false, serverSessionId);
+		atem_acknowledge_response_send(sock, serverSessionId, 0x0000);
+		atem_handshake_sessionid_recv_verify(sock, ATEM_OPCODE_CLOSING, true, serverSessionId);
+
+		atem_socket_norecv(sock);
+		atem_socket_close(sock);
+	}
+
 
 
 	// Ensures rejected opening handshake works as expected
