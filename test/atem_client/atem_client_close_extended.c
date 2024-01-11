@@ -53,7 +53,7 @@ int main(void) {
 		int sock = atem_socket_create();
 		uint16_t sessionId = atem_handshake_listen(sock, 0x0001);
 
-		uint8_t packet[ATEM_LEN_MAX];
+		uint8_t packet[ATEM_MAX_PACKET_LEN];
 		while (atem_acknowledge_keepalive(sock, packet));
 		atem_handshake_sessionid_get_verify(packet, ATEM_OPCODE_CLOSING, false, sessionId);
 		atem_acknowledge_request_send(sock, sessionId, 0x0001);
