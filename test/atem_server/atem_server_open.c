@@ -139,5 +139,27 @@ int main(void) {
 		atem_socket_close(fillSock);
 	}
 
+
+
+	// Ensures session id can not be hijacked from another socket
+	RUN_TEST() {
+		uint16_t clientSessionId = 0x1234;
+
+		int sock1 = atem_socket_create();
+		atem_socket_connect(sock1);
+
+		int sock2 = atem_socket_create();
+		atem_socket_connect(sock2);
+
+		atem_handshake_sessionid_send(sock1, ATEM_OPCODE_OPEN, false, clientSessionId);
+		atem_handshake_newsessionid_recv(sock1, ATEM_OPCODE_ACCEPT, false, clientSessionId);
+		atem_acknowledge_response_send(sock2, clientSessionId, 0x0000);
+		atem_handshake_newsessionid_recv(sock1, ATEM_OPCODE_ACCEPT, true, clientSessionId);
+
+		atem_socket_norecv(sock2);
+		atem_socket_close(sock1);
+		atem_socket_close(sock2);
+	}
+
 	return runner_exit();
 }
