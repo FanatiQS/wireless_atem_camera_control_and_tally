@@ -105,7 +105,7 @@ int main(void) {
 	// Ensures rejected opening handshake works as expected
 	RUN_TEST() {
 		int fillSock = atem_socket_create();
-		for (int i = 0; atem_handshake_tryconnect(fillSock, i); i++);
+		for (uint16_t i = 0; atem_handshake_tryconnect(fillSock, i); i++);
 
 		uint16_t sessionId = 0x1337;
 		int sock = atem_socket_create();
@@ -122,7 +122,7 @@ int main(void) {
 	// Ensures a dropped opening handshake reject response is resent without retransmit flag
 	RUN_TEST() {
 		int fillSock = atem_socket_create();
-		for (int i = 0; atem_handshake_tryconnect(fillSock, i); i++);
+		for (uint16_t i = 0; atem_handshake_tryconnect(fillSock, i); i++);
 
 		uint16_t sessionId = 0x1337;
 		int sock = atem_socket_create();
