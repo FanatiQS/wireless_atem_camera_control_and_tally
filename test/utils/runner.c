@@ -38,6 +38,12 @@ static void runner_fail(int sig) {
 
 // Sets up for a new test to run
 bool _runner_init(const char* file, int line) {
+	// Ignores all tests not matching line number if environment variable is defined
+	char* singleTest = getenv("RUNNER_SINGLE");
+	if (singleTest && atoi(singleTest) != line) {
+		return false;
+	}
+
 	// Document test started
 	printf("Test started: %s:%d\n", file, line);
 	runner_all++;
