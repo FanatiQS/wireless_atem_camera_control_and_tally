@@ -39,7 +39,7 @@ atem_client: $(TESTS_ATEM_CLIENT:%=run_%)
 
 
 # All ATEM server tests applying to both proxy server and official switchers
-TESTS_ATEM_SERVER_PROXY = atem_server_open
+TESTS_ATEM_SERVER_PROXY = atem_server_open atem_server_close
 TESTS_ATEM_SERVER += $(TESTS_ATEM_SERVER_PROXY)
 .PHONY: atem_server_proxy
 atem_server_proxy: $(TESTS_ATEM_SERVER_PROXY:%=run_%)
