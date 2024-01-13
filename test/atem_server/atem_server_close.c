@@ -84,5 +84,25 @@ int main(void) {
 		atem_socket_close(sock);
 	}
 
+
+
+	// Ensures client closing session before acknowledging opening handshake response closes session correctly
+	RUN_TEST() {
+		uint16_t clientSessionId = 0x1234;
+		int sock = atem_socket_create();
+		uint16_t newSessionId = atem_handshake_start_client(sock, clientSessionId);
+		uint16_t serverSessionId = newSessionId | 0x8000;
+
+		atem_handshake_sessionid_send(sock, ATEM_OPCODE_CLOSING, false, serverSessionId);
+		uint8_t packet[ATEM_MAX_PACKET_LEN];
+		do {
+			atem_socket_recv(sock, packet);
+		} while (atem_handshake_opcode_get(packet) != ATEM_OPCODE_CLOSED);
+		atem_handshake_sessionid_get_verify(packet, ATEM_OPCODE_CLOSED, false, serverSessionId);
+
+		atem_socket_norecv(sock);
+		atem_socket_close(sock);
+	}
+
 	return runner_exit();
 }
