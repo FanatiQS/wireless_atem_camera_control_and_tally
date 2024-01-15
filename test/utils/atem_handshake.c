@@ -209,14 +209,14 @@ void atem_handshake_resetpeer(void) {
 
 
 
-// Sending an opening handshake SYN packet to the ATEM switcher
+// Sends opening handshake request, receives response and returns server assigned session id without MSB set (newSessionId)
 uint16_t atem_handshake_start_client(int sock, uint16_t sessionId) {
 	atem_socket_connect(sock);
 	atem_handshake_sessionid_send(sock, ATEM_OPCODE_OPEN, false, sessionId);
 	return atem_handshake_newsessionid_recv(sock, ATEM_OPCODE_ACCEPT, false, sessionId);
 }
 
-// Receives an opening handshake SYN packet from an ATEM client
+// Receives an opening handshake request from an ATEM client and returns client assigned session id
 uint16_t atem_handshake_start_server(int sock) {
 	uint8_t packet[ATEM_MAX_PACKET_LEN];
 	atem_socket_listen(sock, packet);
