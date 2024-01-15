@@ -240,6 +240,8 @@ uint16_t atem_handshake_tryconnect(int sock, uint16_t clientSessionId) {
 	// Reads ATEM packets until receiving non acknowledge requests
 	uint8_t packet[ATEM_MAX_PACKET_LEN];
 	while (atem_acknowledge_keepalive(sock, packet));
+	atem_header_sessionid_get_verify(packet, clientSessionId);
+	atem_header_flags_isnotset(packet, ATEM_FLAG_RETX);
 
 	// Returns falsey on rejected since all valid server assigned session ids have MSB set
 	if (atem_handshake_opcode_get(packet) == ATEM_OPCODE_REJECT) {
@@ -247,7 +249,7 @@ uint16_t atem_handshake_tryconnect(int sock, uint16_t clientSessionId) {
 	}
 
 	// Completes opening handshake and returns server assigned session id
-	atem_handshake_sessionid_get_verify(packet, ATEM_OPCODE_ACCEPT, false, clientSessionId);
+	atem_handshake_opcode_get_verify(packet, ATEM_OPCODE_ACCEPT);
 	uint16_t newSessionId = atem_handshake_newsessionid_get(packet);
 	uint16_t serverSessionId = newSessionId | 0x8000;
 	atem_acknowledge_response_send(sock, clientSessionId, 0x0000);
