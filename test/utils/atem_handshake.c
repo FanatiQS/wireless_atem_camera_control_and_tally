@@ -279,6 +279,22 @@ void atem_handshake_close(int sock, uint16_t sessionId) {
 
 
 
+// Connects sessions until ATEM server is full
+void atem_handshake_fill(int sock) {
+	bool logsEnabled = logs_find("atem_recv") || logs_find("atem_send");
+	if (logsEnabled) {
+		printf("Filling up server\n");
+	}
+
+	for (uint16_t i = 0; atem_handshake_tryconnect(sock, i); i++);
+
+	if (logsEnabled) {
+		printf("Server filled\n");
+	}
+}
+
+
+
 // Tests functions in this file
 void atem_handshake_init(void) {
 	uint8_t packet[ATEM_MAX_PACKET_LEN];
