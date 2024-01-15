@@ -5,7 +5,7 @@
 #include "../utils/utils.h"
 
 int main(void) {
-	// Ensures client resends opening handshake exactly ATEM_RESENDS times on an interval of ATEM_RESEND_TIME seconds
+	// Ensures client resends opening handshake exactly ATEM_RESENDS times on an interval of ATEM_RESEND_TIME ms
 	RUN_TEST() {
 		atem_handshake_resetpeer();
 
