@@ -45,6 +45,7 @@ TESTS_ATEM_SERVER += $(TESTS_ATEM_SERVER_PROXY)
 atem_server_proxy: $(TESTS_ATEM_SERVER_PROXY:%=run_%)
 
 # All tests for testing ATEM server
+TESTS_ATEM_SERVER += atem_server_open_extended
 $(TESTS_ATEM_SERVER:%=$(BUILD_DIR)/%): $(BUILD_DIR)/%: atem_server/%.c $(UTILS_SOURCE)
 TESTS_ALL += $(TESTS_ATEM_SERVER)
 .PHONY: atem_server
