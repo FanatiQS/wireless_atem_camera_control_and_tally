@@ -1,6 +1,6 @@
 # Changelog
 
-## Version 0.7.1 (development)
+## Version 0.7.1
 
 ### Firmware
 * DNS parser no longer has a maximum packet length it can handle.
