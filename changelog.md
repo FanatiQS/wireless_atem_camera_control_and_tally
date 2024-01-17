@@ -1,5 +1,7 @@
 # Changelog
 
+## Version 0.7.2 (development)
+
 ## Version 0.7.1
 
 ### Firmware
