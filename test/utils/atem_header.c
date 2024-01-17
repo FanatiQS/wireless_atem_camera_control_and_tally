@@ -5,7 +5,7 @@
 #include <stdlib.h> // abort
 #include <stddef.h> // size_t
 
-#include "../../core/atem.h" // ATEM_MAX_PACKET_LEN
+#include "../../core/atem.h" // ATEM_PACKET_LEN_MAX
 #include "../../core/atem_protocol.h" // ATEM_MASK_LEN_HIGH, ATEM_INDEX_FLAGS, ATEM_INDEX_LEN_HIGH, ATEM_INDEX_LEN_LOW, ATEM_INDEX_SESSIONID_HIGH, ATEM_INDEX_SESSIONID_LOW, ATEM_INDEX_ACKID_HIGH, ATEM_INDEX_ACKID_LOW, ATEM_INDEX_LOCALID_HIGH, ATEM_INDEX_LOCALID_LOW, ATEM_INDEX_REMOTEID_HIGH, ATEM_INDEX_REMOTEID_LOW
 #include "./atem_header.h"
 
@@ -13,7 +13,7 @@
 
 // Zeroes out packet memory
 void atem_packet_clear(uint8_t* packet) {
-	memset(packet, 0, ATEM_MAX_PACKET_LEN);
+	memset(packet, 0, ATEM_PACKET_LEN_MAX);
 }
 
 
@@ -88,7 +88,7 @@ void atem_header_len_set(uint8_t* packet, uint16_t len) {
 // Gets length of packet
 uint16_t atem_header_len_get(uint8_t* packet) {
 	uint16_t word = atem_packet_word_get(packet, ATEM_INDEX_LEN_HIGH, ATEM_INDEX_LEN_LOW);
-	uint16_t len = word & ATEM_MAX_PACKET_LEN;
+	uint16_t len = word & ATEM_PACKET_LEN_MAX;
 	if (len < ATEM_LEN_HEADER) {
 		fprintf(stderr, "Packet is smaller than minimum size: %d\n", len);
 		abort();
@@ -223,8 +223,8 @@ void atem_header_remoteid_get_verify(uint8_t* packet, uint16_t expectedRemoteId)
 
 // Tests functions in this file
 void atem_header_init(void) {
-	uint8_t packet[ATEM_MAX_PACKET_LEN];
-	const uint8_t allFlags = 0xff & ~(ATEM_MAX_PACKET_LEN >> 8);
+	uint8_t packet[ATEM_PACKET_LEN_MAX];
+	const uint8_t allFlags = 0xff & ~(ATEM_PACKET_LEN_MAX >> 8);
 
 	// Tests atem_packet_word_set and atem_packet_word_get
 	atem_packet_clear(packet);
@@ -264,8 +264,8 @@ void atem_header_init(void) {
 	// Tests atem_header_flags_get with max length
 	atem_packet_clear(packet);
 	assert(atem_packet_word_get(packet, ATEM_INDEX_LEN_HIGH, ATEM_INDEX_LEN_LOW) == 0);
-	atem_header_len_set(packet, ATEM_MAX_PACKET_LEN);
-	assert(atem_header_len_get(packet) == ATEM_MAX_PACKET_LEN);
+	atem_header_len_set(packet, ATEM_PACKET_LEN_MAX);
+	assert(atem_header_len_get(packet) == ATEM_PACKET_LEN_MAX);
 	assert(atem_header_flags_get(packet) == 0);
 
 	// Tests atem_header_len_get and atem_header_len_set

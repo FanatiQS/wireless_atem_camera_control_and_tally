@@ -9,7 +9,7 @@
 
 #include "./simple_socket.h" // simple_socket_create, simple_socket_poll, simple_socket_send, simple_socket_recv, simple_socket_connect_env, simple_socket_listen
 #include "../../core/atem_protocol.h" // ATEM_FLAG_SYN, ATEM_FLAG_RETX
-#include "../../core/atem.h" // ATEM_PORT, ATEM_MAX_PACKET_LEN
+#include "../../core/atem.h" // ATEM_PORT, ATEM_PACKET_LEN_MAX
 #include "./atem_header.h" // atem_header_len_get, atem_header_flags_get, atem_header_unknownid_get, atem_header_len_get_verify
 #include "./logs.h" // logs_print_buffer, logs_find
 #include "./atem_sock.h"
@@ -87,7 +87,7 @@ struct sockaddr_in atem_socket_listen(int sock, uint8_t* packet) {
 	// Receives first packet
 	struct sockaddr_in peerAddr;
 	socklen_t peerAddrLen = sizeof(peerAddr);
-	ssize_t recvLen = recvfrom(sock, packet, ATEM_MAX_PACKET_LEN, 0, (struct sockaddr*)&peerAddr, &peerAddrLen);
+	ssize_t recvLen = recvfrom(sock, packet, ATEM_PACKET_LEN_MAX, 0, (struct sockaddr*)&peerAddr, &peerAddrLen);
 	if (recvLen <= 0) {
 		if (recvLen == -1) {
 			perror("Failed to recvfrom packet");
@@ -133,7 +133,7 @@ void atem_socket_send(int sock, uint8_t* packet) {
 // Receives ATEM packet
 void atem_socket_recv(int sock, uint8_t* packet) {
 	// Receives packet
-	size_t recvLen = simple_socket_recv(sock, packet, ATEM_MAX_PACKET_LEN);
+	size_t recvLen = simple_socket_recv(sock, packet, ATEM_PACKET_LEN_MAX);
 	if (recvLen < ATEM_LEN_HEADER) {
 		fprintf(stderr, "Received packet from client smaller than ATEM header\n");
 		abort();
@@ -145,7 +145,7 @@ void atem_socket_recv(int sock, uint8_t* packet) {
 
 // Receives and prints ATEM packet
 void atem_socket_recv_print(int sock) {
-	uint8_t buf[ATEM_MAX_PACKET_LEN];
+	uint8_t buf[ATEM_PACKET_LEN_MAX];
 	atem_socket_recv(sock, buf);
 	logs_print_buffer(stdout, buf, atem_header_len_get(buf));
 }
@@ -156,7 +156,7 @@ void atem_socket_recv_print(int sock) {
 void atem_socket_norecv(int sock) {
 	if (simple_socket_poll(sock, ATEM_TIMEOUT_MS) == 0) return;
 
-	uint8_t packet[ATEM_MAX_PACKET_LEN];
+	uint8_t packet[ATEM_PACKET_LEN_MAX];
 	atem_socket_recv(sock, packet);
 	fprintf(stderr, "Received data when expecting to time out\n");
 	abort();

@@ -2,7 +2,7 @@
 
 // Connects to ATEM server and waits for server to start closing handshake
 uint16_t test_connect_and_drop(int sock) {
-	uint8_t packet[ATEM_MAX_PACKET_LEN];
+	uint8_t packet[ATEM_PACKET_LEN_MAX];
 
 	// Connects to ATEM server
 	uint16_t sessionId = atem_handshake_connect(sock, 0x1234);
@@ -129,7 +129,7 @@ int main(void) {
 		uint16_t sessionId = atem_handshake_connect(sock, 0x1234);
 
 		atem_handshake_sessionid_send(sock, ATEM_OPCODE_CLOSING, false, sessionId);
-		uint8_t packet[ATEM_MAX_PACKET_LEN];
+		uint8_t packet[ATEM_PACKET_LEN_MAX];
 		while (atem_acknowledge_keepalive(sock, packet));
 		atem_handshake_sessionid_get_verify(packet, ATEM_OPCODE_CLOSED, false, sessionId);
 
@@ -143,7 +143,7 @@ int main(void) {
 		uint16_t sessionId = atem_handshake_connect(sock, 0x1234);
 
 		atem_handshake_sessionid_send(sock, ATEM_OPCODE_CLOSING, true, sessionId);
-		uint8_t packet[ATEM_MAX_PACKET_LEN];
+		uint8_t packet[ATEM_PACKET_LEN_MAX];
 		while (atem_acknowledge_keepalive(sock, packet));
 		atem_handshake_sessionid_get_verify(packet, ATEM_OPCODE_CLOSED, false, sessionId);
 
@@ -161,7 +161,7 @@ int main(void) {
 		uint16_t serverSessionId = newSessionId | 0x8000;
 
 		atem_handshake_sessionid_send(sock, ATEM_OPCODE_CLOSING, false, serverSessionId);
-		uint8_t packet[ATEM_MAX_PACKET_LEN];
+		uint8_t packet[ATEM_PACKET_LEN_MAX];
 		do {
 			atem_socket_recv(sock, packet);
 		} while (atem_handshake_opcode_get(packet) != ATEM_OPCODE_CLOSED);

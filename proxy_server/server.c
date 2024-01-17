@@ -623,10 +623,10 @@ void processProxyData() {
 	DEBUG_PRINTF("started receiving data from proxy socket\n");
 
 	// Reads UDP data proxy socket
-	uint8_t buf[ATEM_MAX_PACKET_LEN];
+	uint8_t buf[ATEM_PACKET_LEN_MAX];
 	struct sockaddr sockAddr;
 	socklen_t sockLen = sizeof(sockAddr);
-	ssize_t recvLen = recvfrom(sockProxy, buf, ATEM_MAX_PACKET_LEN, 0, &sockAddr, &sockLen);
+	ssize_t recvLen = recvfrom(sockProxy, buf, ATEM_PACKET_LEN_MAX, 0, &sockAddr, &sockLen);
 	if (recvLen == -1) {
 		perror("Failed to read proxy data");
 		return;

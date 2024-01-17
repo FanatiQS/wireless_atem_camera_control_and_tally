@@ -70,7 +70,7 @@ void relayDisable() {
 // Relays and caches ATEM commands
 void processRelayData() {
 	// Reads data from the ATEM switcher
-	ssize_t recvLen = recv(sockRelay, atem.readBuf, ATEM_MAX_PACKET_LEN, 0);
+	ssize_t recvLen = recv(sockRelay, atem.readBuf, ATEM_PACKET_LEN_MAX, 0);
 	if (recvLen == -1) {
 		perror("Failed to read data from relay server");
 		return;
@@ -87,7 +87,7 @@ void processRelayData() {
 		case ATEM_STATUS_ACCEPTED:
 		case ATEM_STATUS_CLOSING:
 		case ATEM_STATUS_WRITE_ONLY: {
-			atem.cmdIndex = ATEM_MAX_PACKET_LEN;
+			atem.cmdIndex = ATEM_PACKET_LEN_MAX;
 			break;
 		}
 		case ATEM_STATUS_WRITE: break;

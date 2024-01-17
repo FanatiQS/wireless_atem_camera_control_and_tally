@@ -44,7 +44,7 @@
 /**
  * Maximum size of an ATEM packet, used by \ref atem_t.readBuf.
  */
-#define ATEM_MAX_PACKET_LEN 2047
+#define ATEM_PACKET_LEN_MAX 2047
 
 /**
  * Converts a command name from 4 characters to a 32bit integer
@@ -136,7 +136,7 @@ typedef struct atem_t {
 	uint16_t cmdIndex;
 	uint16_t lastRemoteId;
 	uint8_t dest;
-	uint8_t readBuf[ATEM_MAX_PACKET_LEN];
+	uint8_t readBuf[ATEM_PACKET_LEN_MAX];
 	bool pvwTally;
 	bool pgmTally;
 } atem_t;
@@ -194,7 +194,7 @@ void atem_connection_close(struct atem_t *atem);
  * even.
  * 
  * @attention Copy ATEM UDP packet to \ref atem_t.readBuf array manually before
- * calling this function with a max length of \ref ATEM_MAX_PACKET_LEN.
+ * calling this function with a max length of \ref ATEM_PACKET_LEN_MAX.
  *
  * @param[in,out] atem The atem connection context containing the data to parse.
  * @returns Describes the basic purpous of the received ATEM packet.

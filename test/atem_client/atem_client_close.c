@@ -13,7 +13,7 @@ int main(void) {
 		// Ensures client is connected by sending a ping
 		uint16_t remoteId = 0x0001;
 		atem_acknowledge_request_send(sock, sessionId, remoteId);
-		uint8_t packet[ATEM_MAX_PACKET_LEN];
+		uint8_t packet[ATEM_PACKET_LEN_MAX];
 		while (atem_acknowledge_keepalive(sock, packet));
 		atem_acknowledge_response_get_verify(packet, sessionId, remoteId);
 
@@ -31,7 +31,7 @@ int main(void) {
 		// Ensures client is connected by sending a ping
 		uint16_t remoteId = 0x0001;
 		atem_acknowledge_request_send(sock, sessionId, remoteId);
-		uint8_t packet[ATEM_MAX_PACKET_LEN];
+		uint8_t packet[ATEM_PACKET_LEN_MAX];
 		while (atem_acknowledge_keepalive(sock, packet));
 		atem_acknowledge_response_get_verify(packet, sessionId, remoteId);
 

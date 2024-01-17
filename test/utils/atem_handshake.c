@@ -5,7 +5,7 @@
 #include <assert.h> // assert
 
 #include "../../core/atem_protocol.h" // ATEM_INDEX_NEWSESSIONID_HIGH, ATEM_INDEX_NEWSESSIONID_LOW, ATEM_FLAG_SYN, ATEM_LEN_SYN, ATEM_INDEX_OPCODE, ATEM_FLAG_RETX, ATEM_OPCODE_OPEN, ATEM_OPCODE_ACCEPT, ATEM_OPCODE_REJECT, ATEM_OPCODE_CLOSING, ATEM_OPCODE_CLOSED
-#include "../../core/atem.h" // ATEM_MAX_PACKET_LEN
+#include "../../core/atem.h" // ATEM_PACKET_LEN_MAX
 #include "./atem_header.h" // atem_packet_clear, atem_packet_word_set, atem_packet_word_get, atem_header_flags_set, atem_header_flags_get_verify, atem_header_len_set, atem_header_len_get_verify, atem_header_sessionid_get, atem_header_ackid_get_verify, atem_header_localid_get_verify, atem_header_remoteid_get_verify, atem_header_sessionid_set, atem_header_sessionid_get_verify, atem_header_flags_isnotset
 #include "./atem_acknowledge.h" // atem_acknowledge_response_send, atem_acknowledge_response_recv_verify, atem_acknowledge_keepalive
 #include "./atem_sock.h" // atem_socket_recv, atem_socket_send, atem_socket_connect, atem_socket_listen, atem_socket_create, atem_socket_close
@@ -140,21 +140,21 @@ void atem_handshake_sessionid_get_verify(uint8_t* packet, uint8_t opcode, bool r
 
 // Sends handshake packet with opcode, retransmit flag and session id
 void atem_handshake_sessionid_send(int sock, uint8_t opcode, bool retx, uint16_t sessionId) {
-	uint8_t packet[ATEM_MAX_PACKET_LEN] = {0};
+	uint8_t packet[ATEM_PACKET_LEN_MAX] = {0};
 	atem_handshake_sessionid_set(packet, opcode, retx, sessionId);
 	atem_socket_send(sock, packet);
 }
 
 // Gets session id from handshake packet and verifies opcode and retransmit flag
 uint16_t atem_handshake_sessionid_recv(int sock, uint8_t opcode, bool retx) {
-	uint8_t packet[ATEM_MAX_PACKET_LEN];
+	uint8_t packet[ATEM_PACKET_LEN_MAX];
 	atem_socket_recv(sock, packet);
 	return atem_handshake_sessionid_get(packet, opcode, retx);
 }
 
 // Ensures opcode, retransmit flag and session id in received handshake packet matches expected values
 void atem_handshake_sessionid_recv_verify(int sock, uint8_t opcode, bool retx, uint16_t expectedSessionId) {
-	uint8_t packet[ATEM_MAX_PACKET_LEN];
+	uint8_t packet[ATEM_PACKET_LEN_MAX];
 	atem_socket_recv(sock, packet);
 	atem_handshake_sessionid_get_verify(packet, opcode, retx, expectedSessionId);
 }
@@ -163,7 +163,7 @@ void atem_handshake_sessionid_recv_verify(int sock, uint8_t opcode, bool retx, u
 
 // Sends handshake packet with opcode, retransmit flag, session id and new session id
 void atem_handshake_newsessionid_send(int sock, uint8_t opcode, bool retx, uint16_t sessionId, uint16_t newSessionId) {
-	uint8_t packet[ATEM_MAX_PACKET_LEN] = {0};
+	uint8_t packet[ATEM_PACKET_LEN_MAX] = {0};
 	atem_handshake_sessionid_set(packet, opcode, retx, sessionId);
 	atem_handshake_newsessionid_set(packet, newSessionId);
 	atem_socket_send(sock, packet);
@@ -171,7 +171,7 @@ void atem_handshake_newsessionid_send(int sock, uint8_t opcode, bool retx, uint1
 
 // Gets new session id from received handshake packet and verifies opcode, retransmit flag and session id
 uint16_t atem_handshake_newsessionid_recv(int sock, uint8_t opcode, bool retx, uint16_t sessionId) {
-	uint8_t packet[ATEM_MAX_PACKET_LEN];
+	uint8_t packet[ATEM_PACKET_LEN_MAX];
 	atem_socket_recv(sock, packet);
 	atem_handshake_sessionid_get_verify(packet, opcode, retx, sessionId);
 	return atem_handshake_newsessionid_get(packet);
@@ -179,7 +179,7 @@ uint16_t atem_handshake_newsessionid_recv(int sock, uint8_t opcode, bool retx, u
 
 // Ensures opcode, retransmit flag, session id and new session id in received handshake packet matches expected values
 void atem_handshake_newsessionid_recv_verify(int sock, uint8_t opcode, bool retx, uint16_t sessionId, uint16_t expectedNewSessionId) {
-	uint8_t packet[ATEM_MAX_PACKET_LEN];
+	uint8_t packet[ATEM_PACKET_LEN_MAX];
 	atem_socket_recv(sock, packet);
 	atem_handshake_sessionid_get_verify(packet, opcode, retx, sessionId);
 	atem_handshake_newsessionid_get_verify(packet, expectedNewSessionId);
@@ -194,7 +194,7 @@ void atem_handshake_resetpeer(void) {
 		printf("Resetting client handshake\n");
 	}
 
-	uint8_t packet[ATEM_MAX_PACKET_LEN];
+	uint8_t packet[ATEM_PACKET_LEN_MAX];
 	int sock = atem_socket_create();
 	atem_socket_listen(sock, packet);
 	atem_handshake_opcode_get_verify(packet, ATEM_OPCODE_OPEN);
@@ -218,7 +218,7 @@ uint16_t atem_handshake_start_client(int sock, uint16_t sessionId) {
 
 // Receives an opening handshake request from an ATEM client and returns client assigned session id
 uint16_t atem_handshake_start_server(int sock) {
-	uint8_t packet[ATEM_MAX_PACKET_LEN];
+	uint8_t packet[ATEM_LEN_MAX];
 	atem_socket_listen(sock, packet);
 	return atem_handshake_sessionid_get(packet, ATEM_OPCODE_OPEN, false);
 }
@@ -238,7 +238,7 @@ uint16_t atem_handshake_tryconnect(int sock, uint16_t clientSessionId) {
 	atem_handshake_sessionid_send(sock, ATEM_OPCODE_OPEN, false, clientSessionId);
 
 	// Reads ATEM packets until receiving non acknowledge requests
-	uint8_t packet[ATEM_MAX_PACKET_LEN];
+	uint8_t packet[ATEM_LEN_MAX];
 	while (atem_acknowledge_keepalive(sock, packet));
 	atem_header_sessionid_get_verify(packet, clientSessionId);
 	atem_header_flags_isnotset(packet, ATEM_FLAG_RETX);
@@ -258,7 +258,7 @@ uint16_t atem_handshake_tryconnect(int sock, uint16_t clientSessionId) {
 
 // Gets ATEM client connection by completing entire opening handshake, does not enforce no retransmit flag in request
 uint16_t atem_handshake_listen(int sock, uint16_t newSessionId) {
-	uint8_t packet[ATEM_MAX_PACKET_LEN];
+	uint8_t packet[ATEM_LEN_MAX];
 	atem_socket_listen(sock, packet);
 	atem_handshake_opcode_get_verify(packet, ATEM_OPCODE_OPEN);
 	uint16_t sessionId = atem_header_sessionid_get(packet);
@@ -270,7 +270,7 @@ uint16_t atem_handshake_listen(int sock, uint16_t newSessionId) {
 // Closes connection to ATEM switcher or client by completing entire closing handshake
 void atem_handshake_close(int sock, uint16_t sessionId) {
 	atem_handshake_sessionid_send(sock, ATEM_OPCODE_CLOSING, false, sessionId);
-	uint8_t packet[ATEM_MAX_PACKET_LEN];
+	uint8_t packet[ATEM_LEN_MAX];
 	do {
 		atem_socket_recv(sock, packet);
 	} while (atem_header_flags_get(packet) != ATEM_FLAG_SYN);
@@ -297,7 +297,7 @@ void atem_handshake_fill(int sock) {
 
 // Tests functions in this file
 void atem_handshake_init(void) {
-	uint8_t packet[ATEM_MAX_PACKET_LEN];
+	uint8_t packet[ATEM_LEN_MAX];
 
 	// Tests getter/setter for new session id
 	atem_packet_clear(packet);

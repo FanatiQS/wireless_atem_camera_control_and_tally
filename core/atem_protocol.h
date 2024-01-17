@@ -1,10 +1,10 @@
 #ifndef ATEM_PROTOCOL_H
 #define ATEM_PROTOCOL_H
 
-#include "./atem.h" // ATEM_MAX_PACKET_LEN
+#include "./atem.h" // ATEM_PACKET_LEN_MAX
 
 // Mask to use when filtering out flags
-#define ATEM_MASK_LEN_HIGH (ATEM_MAX_PACKET_LEN >> 8)
+#define ATEM_MASK_LEN_HIGH (ATEM_PACKET_LEN_MAX >> 8)
 
 // ATEM protocol flags
 #define ATEM_FLAG_ACKREQ  0x08

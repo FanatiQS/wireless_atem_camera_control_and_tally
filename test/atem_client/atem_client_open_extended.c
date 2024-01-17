@@ -24,7 +24,7 @@ int main(void) {
 
 	// Ensures opening handshake restarts correctly after ATEM_RESENDS failed retries with new session id and port
 	RUN_TEST() {
-		uint8_t packet[ATEM_MAX_PACKET_LEN];
+		uint8_t packet[ATEM_PACKET_LEN_MAX];
 		atem_handshake_resetpeer();
 
 		// Gets client assigned session id and peer port on first connection attempt
@@ -61,7 +61,7 @@ int main(void) {
 
 	// Ensures restarting opening handshake after reject changes session id and port 
 	RUN_TEST() {
-		uint8_t packet[ATEM_MAX_PACKET_LEN];
+		uint8_t packet[ATEM_PACKET_LEN_MAX];
 		atem_handshake_resetpeer();
 
 		int sock = atem_socket_create();

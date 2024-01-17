@@ -2,7 +2,7 @@
 #include <assert.h> // assert
 #include <stdbool.h> // bool, true, false
 
-#include "../../core/atem.h" // ATEM_MAX_PACKET_LEN
+#include "../../core/atem.h" // ATEM_PACKET_LEN_MAX
 #include "../../core/atem_protocol.h" // ATEM_FLAG_ACK, ATEM_FLAG_ACKREQ, ATEM_LEN_ACK
 #include "./atem_header.h" // atem_header_flags_set, atem_header_len_set, atem_header_sessionid_set, atem_header_remoteid_set, atem_header_flags_get_verify, atem_header_sessionid_get_verify, atem_header_localid_get_verify, atem_header_ackid_get_verify, atem_header_remoteid_get, atem_header_flags_remoteid_get_verify, atem_header_len_get_verify, atem_header_ackid_set, atem_header_ackid_get, atem_packet_clear, atem_header_flags_get, ATEM_FLAG_RETX, atem_header_sessionid_get
 #include "./atem_sock.h" // atem_socket_send, atem_socket_recv
@@ -40,21 +40,21 @@ void atem_acknowledge_request_get_verify(uint8_t* packet, uint16_t sessionId, ui
 
 // Sends acknowledge request packet with speficied remote id and session id
 void atem_acknowledge_request_send(int sock, uint16_t sessionId, uint16_t remoteId) {
-	uint8_t packet[ATEM_MAX_PACKET_LEN] = {0};
+	uint8_t packet[ATEM_PACKET_LEN_MAX] = {0};
 	atem_acknowledge_request_set(packet, sessionId, remoteId);
 	atem_socket_send(sock, packet);
 }
 
 // Gets remote id from received verified acknowledge request packet
 uint16_t atem_acknowledge_request_recv(int sock, uint16_t sessionId) {
-	uint8_t packet[ATEM_MAX_PACKET_LEN];
+	uint8_t packet[ATEM_PACKET_LEN_MAX];
 	atem_socket_recv(sock, packet);
 	return atem_acknowledge_request_get(packet, sessionId);
 }
 
 // Ensures remote id in verified acknowledge request packet matches expected remote id
 void atem_acknowledge_request_recv_verify(int sock, uint16_t sessionId, uint16_t remoteId) {
-	uint8_t packet[ATEM_MAX_PACKET_LEN];
+	uint8_t packet[ATEM_PACKET_LEN_MAX];
 	atem_socket_recv(sock, packet);
 	atem_acknowledge_request_get_verify(packet, sessionId, remoteId);
 }
@@ -91,21 +91,21 @@ void atem_acknowledge_response_get_verify(uint8_t* packet, uint16_t sessionId, u
 
 // Sends acknowledge packet with speficied ack id and session id
 void atem_acknowledge_response_send(int sock, uint16_t sessionId, uint16_t ackId) {
-	uint8_t packet[ATEM_MAX_PACKET_LEN] = {0};
+	uint8_t packet[ATEM_PACKET_LEN_MAX] = {0};
 	atem_acknowledge_response_set(packet, sessionId, ackId);
 	atem_socket_send(sock, packet);
 }
 
 // Gets ack id from received verified acknowledge packet
 uint16_t atem_acknowledge_response_recv(int sock, uint16_t sessionId) {
-	uint8_t packet[ATEM_MAX_PACKET_LEN];
+	uint8_t packet[ATEM_PACKET_LEN_MAX];
 	atem_socket_recv(sock, packet);
 	return atem_acknowledge_response_get(packet, sessionId);
 }
 
 // Ensures ack id in verified acknowledge packet matches expected ack id
 void atem_acknowledge_response_recv_verify(int sock, uint16_t sessionId, uint16_t ackId) {
-	uint8_t packet[ATEM_MAX_PACKET_LEN];
+	uint8_t packet[ATEM_PACKET_LEN_MAX];
 	atem_socket_recv(sock, packet);
 	atem_acknowledge_response_get_verify(packet, sessionId, ackId);
 }
@@ -129,7 +129,7 @@ bool atem_acknowledge_keepalive(int sock, uint8_t* packet) {
 
 // Tests functions in this file
 void atem_acknowledge_init(void) {
-	uint8_t packet[ATEM_MAX_PACKET_LEN] = {0};
+	uint8_t packet[ATEM_PACKET_LEN_MAX] = {0};
 
 	// Tests getter/setter for acknowledgement request
 	atem_packet_clear(packet);

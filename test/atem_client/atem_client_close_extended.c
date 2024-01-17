@@ -8,7 +8,7 @@
 
 // Ensures the peer socket is closed and does not send any data
 void atem_client_closed(int sock) {
-	uint8_t packet[ATEM_MAX_PACKET_LEN];
+	uint8_t packet[ATEM_PACKET_LEN_MAX];
 	size_t packetLen = sizeof(packet);
 
 	if (!simple_socket_recv_error(sock, ECONNREFUSED, packet, &packetLen)) {
@@ -26,7 +26,7 @@ int main(void) {
 		int sock = atem_socket_create();
 		uint16_t sessionId = atem_handshake_listen(sock, 0x0001);
 
-		uint8_t packet[ATEM_MAX_PACKET_LEN];
+		uint8_t packet[ATEM_PACKET_LEN_MAX];
 		while (atem_acknowledge_keepalive(sock, packet));
 		atem_handshake_sessionid_get_verify(packet, ATEM_OPCODE_CLOSING, false, sessionId);
 		atem_handshake_sessionid_send(sock, ATEM_OPCODE_CLOSED, false, sessionId);
@@ -40,7 +40,7 @@ int main(void) {
 		int sock = atem_socket_create();
 		uint16_t sessionId = atem_handshake_listen(sock, 0x0001);
 
-		uint8_t packet[ATEM_MAX_PACKET_LEN];
+		uint8_t packet[ATEM_PACKET_LEN_MAX];
 		while (atem_acknowledge_keepalive(sock, packet));
 		atem_handshake_sessionid_get_verify(packet, ATEM_OPCODE_CLOSING, false, sessionId);
 
@@ -53,7 +53,7 @@ int main(void) {
 		int sock = atem_socket_create();
 		uint16_t sessionId = atem_handshake_listen(sock, 0x0001);
 
-		uint8_t packet[ATEM_MAX_PACKET_LEN];
+		uint8_t packet[ATEM_PACKET_LEN_MAX];
 		while (atem_acknowledge_keepalive(sock, packet));
 		atem_handshake_sessionid_get_verify(packet, ATEM_OPCODE_CLOSING, false, sessionId);
 		atem_acknowledge_request_send(sock, sessionId, 0x0001);
