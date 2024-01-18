@@ -32,14 +32,35 @@ bool logs_find(const char* match) {
 
 // Prints binary buffer in hex
 void logs_print_buffer(FILE* pipe, uint8_t* buf, size_t bufLen) {
+	size_t clampIndex;
+	size_t len;
+
+	// Gets clamp index if defined
+	char* clampLen = getenv("LOGS_BUFFER_CLAMP");
+	if (clampLen) {
+		clampIndex = (size_t)atoi(clampLen) * PRINT_BYTE_LEN;
+		len = (bufLen < clampIndex) ? bufLen : clampIndex;
+	}
+	else {
+		clampIndex = bufLen;
+		len = bufLen;
+	}
+
+	// Prints buffer to clamp index or end of buffer
 	fprintf(pipe, "\t");
-	for (size_t i = 0; i < bufLen; i++) {
+	for (size_t i = 0; i < len; i++) {
 		if (i != 0 && !(i % PRINT_BYTE_LEN)) {
 			fprintf(pipe, "\n\t");
 		}
 		fprintf(pipe, "%02x ", buf[i]);
 	}
-	fprintf(pipe, "\n");
+
+	if (bufLen > clampIndex) {
+		printf("\n\t... (%zu)\n", bufLen - len);
+	}
+	else {
+		fprintf(pipe, "\n");
+	}
 }
 
 // Prints multiline string with clear start and end markers
