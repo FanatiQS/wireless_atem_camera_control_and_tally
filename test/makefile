@@ -10,10 +10,16 @@ UTILS_SOURCE = utils/simple_socket.c utils/atem_sock.c utils/atem_header.c utils
 
 
 # Tests normal DNS lookups
-run_dns_lookup:
+script_dns_lookup:
 	./http/dns_lookup.sh
-device: run_dns_lookup
-all: run_dns_lookup
+device: script_dns_lookup
+all: script_dns_lookup
+
+# Tests device configuration
+script_config:
+	./config/test_conf.sh
+device: script_config
+all: script_config
 
 # All tests specific to device configuration
 TESTS_DEVICE = http_parser http_connect dns_parser
