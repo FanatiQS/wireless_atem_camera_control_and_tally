@@ -100,6 +100,31 @@ int main(void) {
 		atem_socket_close(sock);
 	}
 
+	// Ensures opening handshake response from retransmitted request does not consume from retransmit count
+	RUN_TEST() {
+		uint16_t clientSessionId = 0x1337;
+		int sock = atem_socket_create();
+		uint16_t newSessionId = atem_handshake_start_client(sock, clientSessionId);
+
+		// Retransmits opening handshake and reads response 50 times
+		for (int i = 0; i < 50; i++) {
+			atem_handshake_sessionid_send(sock, ATEM_OPCODE_OPEN, true, clientSessionId);
+			atem_handshake_newsessionid_recv_verify(sock, ATEM_OPCODE_ACCEPT, true, clientSessionId, newSessionId);
+		}
+
+		// Server should still retransmit response ATEM_RESENDS times even though it has already been retransmitted from the retransmitted requests
+		for (int i = 0; i < ATEM_RESENDS; i++) {
+			atem_handshake_newsessionid_recv_verify(sock, ATEM_OPCODE_ACCEPT, true, clientSessionId, newSessionId);
+		}
+
+		uint16_t serverSessionId = newSessionId | 0x8000;
+		atem_handshake_sessionid_recv_verify(sock, ATEM_OPCODE_CLOSING, false, serverSessionId);
+		atem_handshake_sessionid_send(sock, ATEM_OPCODE_CLOSED, false, serverSessionId);
+
+		atem_socket_norecv(sock);
+		atem_socket_close(sock);
+	}
+
 
 
 	// Ensures rejected opening handshake works as expected
