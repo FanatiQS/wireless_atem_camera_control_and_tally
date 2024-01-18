@@ -218,7 +218,7 @@ uint16_t atem_handshake_start_client(int sock, uint16_t sessionId) {
 
 // Receives an opening handshake request from an ATEM client and returns client assigned session id
 uint16_t atem_handshake_start_server(int sock) {
-	uint8_t packet[ATEM_LEN_MAX];
+	uint8_t packet[ATEM_PACKET_LEN_MAX];
 	atem_socket_listen(sock, packet);
 	return atem_handshake_sessionid_get(packet, ATEM_OPCODE_OPEN, false);
 }
@@ -238,7 +238,7 @@ uint16_t atem_handshake_tryconnect(int sock, uint16_t clientSessionId) {
 	atem_handshake_sessionid_send(sock, ATEM_OPCODE_OPEN, false, clientSessionId);
 
 	// Reads ATEM packets until receiving non acknowledge requests
-	uint8_t packet[ATEM_LEN_MAX];
+	uint8_t packet[ATEM_PACKET_LEN_MAX];
 	while (atem_acknowledge_keepalive(sock, packet));
 	atem_header_sessionid_get_verify(packet, clientSessionId);
 	atem_header_flags_isnotset(packet, ATEM_FLAG_RETX);
@@ -258,7 +258,7 @@ uint16_t atem_handshake_tryconnect(int sock, uint16_t clientSessionId) {
 
 // Gets ATEM client connection by completing entire opening handshake, does not enforce no retransmit flag in request
 uint16_t atem_handshake_listen(int sock, uint16_t newSessionId) {
-	uint8_t packet[ATEM_LEN_MAX];
+	uint8_t packet[ATEM_PACKET_LEN_MAX];
 	atem_socket_listen(sock, packet);
 	atem_handshake_opcode_get_verify(packet, ATEM_OPCODE_OPEN);
 	uint16_t sessionId = atem_header_sessionid_get(packet);
@@ -270,7 +270,7 @@ uint16_t atem_handshake_listen(int sock, uint16_t newSessionId) {
 // Closes connection to ATEM switcher or client by completing entire closing handshake
 void atem_handshake_close(int sock, uint16_t sessionId) {
 	atem_handshake_sessionid_send(sock, ATEM_OPCODE_CLOSING, false, sessionId);
-	uint8_t packet[ATEM_LEN_MAX];
+	uint8_t packet[ATEM_PACKET_LEN_MAX];
 	do {
 		atem_socket_recv(sock, packet);
 	} while (atem_header_flags_get(packet) != ATEM_FLAG_SYN);
@@ -297,7 +297,7 @@ void atem_handshake_fill(int sock) {
 
 // Tests functions in this file
 void atem_handshake_init(void) {
-	uint8_t packet[ATEM_LEN_MAX];
+	uint8_t packet[ATEM_PACKET_LEN_MAX];
 
 	// Tests getter/setter for new session id
 	atem_packet_clear(packet);
