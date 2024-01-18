@@ -50,7 +50,7 @@ int main(void) {
 		test_connected_and_close(sock, newSessionId | 0x8000);
 	}
 
-	// Ensures a bouble opening handshake response due to network latency is handled correctly
+	// Ensures a double opening handshake response due to network latency is handled correctly
 	RUN_TEST() {
 		uint16_t clientSessionId = 0x1337;
 		int sock = atem_socket_create();
