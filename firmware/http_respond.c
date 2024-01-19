@@ -199,20 +199,58 @@ bool http_respond(struct http_t* http) {
 				"<meta content=\"width=device-width\"name=viewport>"
 				"<title>Configure Device</title>"
 				"<style>"
-					"body{display:flex;place-content:center}"
-					"form{background:#f8f8f8;padding:1em;border-radius:1em}"
-					"td{padding:0 1em}"
-					"tr:empty{height:1em}"
-					"input[maxlength]{width:100%;margin:2px}"
+					"body{"
+						"text-align:center;"
+						"font-family:system-ui;"
+						"margin:1em 0"
+					"}"
+					"form{"
+						"margin:1em;"
+						"display:inline-block;"
+						"background:#f8f8f8;"
+						"padding:1em;"
+						"border-radius:1em;"
+						"box-shadow:0 0 20px rgba(0,0,0,.2)"
+					"}"
+					"td{"
+						"text-align:left;"
+						"padding:0 .5em;"
+						"white-space:nowrap"
+					"}"
+					"tr{"
+						"height:1.2em"
+					"}"
+					"input:not([type]){"
+						"width:100%;"
+						"box-sizing:border-box"
+					"}"
+					"button{"
+            			"padding:.5em;"
+            			"background-color:#007bff;"
+            			"color:#fff;"
+            			"border:none;"
+            			"border-radius:4px;"
+            			"cursor:pointer;"
+						"font-size:1em;"
+						"margin:2em auto 0;"
+						"display:block;"
+						"width:80%"
+					"}"
+        			"button:hover{"
+            			"background-color:#0056b3"
+        			"}"
+					"h1{"
+						"margin:.5em"
+					"}"
+					"@media screen and (max-width:500px){"
+						"body,input{"
+							"font-size:12px"
+						"}"
+					"}"
 				"</style>"
-			"<form method=post><table>"
-			"<tr><td>Request time:<td>"
-			"<script>document.scripts[0].outerHTML=new Date().toTimeString().slice(0,8)</script>"
-			"<tr><td>Time since boot:<td>"
-		)
-		HTTP_RESPONSE_CASE(http_write_uptime(http))
-		HTTP_RESPONSE_CASE_STR(http,
-			"<tr>"
+			"<form method=post>"
+			"<h1>WACCAT</h1>"
+			"<table>"
 			"<tr><td>Firmware Version:<td>" FIRMWARE_VERSION_STRING
 			"<tr><td>WiFi signal strength:<td>"
 		)
@@ -222,29 +260,33 @@ bool http_respond(struct http_t* http) {
 		)
 		HTTP_RESPONSE_CASE_STR(http, atem_state)
 		HTTP_RESPONSE_CASE_STR(http,
+			"<tr><td>Time since boot:<td>"
+		)
+		HTTP_RESPONSE_CASE(http_write_uptime(http))
+		HTTP_RESPONSE_CASE_STR(http,
 			"<tr>"
 			"<tr><td>Name:<td>"
-			"<input required maxlength=32 name=" "name" " value=\""
+			"<input maxlength=32 name=" "name" " value=\""
 		)
 		http->stringEscapeIndex = 0;
 		HTTP_RESPONSE_CASE(http_write_value_string(http, (char*)http->cache.CACHE_NAME, sizeof(http->cache.CACHE_NAME)))
 		HTTP_RESPONSE_CASE_STR(http,
-			"\">"
+			"\"required>"
 			"<tr>"
 			"<tr><td>Network name (SSID):<td>"
-			"<input required maxlength=32 name=" "ssid" " value=\""
+			"<input maxlength=32 name=" "ssid" " value=\""
 		)
 		http->stringEscapeIndex = 0;
 		HTTP_RESPONSE_CASE(http_write_value_string(http, (char*)http->cache.CACHE_SSID, sizeof(http->cache.CACHE_SSID)))
 		HTTP_RESPONSE_CASE_STR(http,
-			"\">"
+			"\"required>"
 			"<tr><td>Network password (PSK):<td>"
-			"<input required maxlength=64 name=" "psk" " value=\""
+			"<input maxlength=64 name=" "psk" " value=\""
 		)
 		http->stringEscapeIndex = 0;
 		HTTP_RESPONSE_CASE(http_write_value_string(http, (char*)http->cache.CACHE_PSK, sizeof(http->cache.CACHE_PSK)))
 		HTTP_RESPONSE_CASE_STR(http,
-			"\">"
+			"\"required>"
 			"<tr>"
 			"<tr><td>Camera number:<td>"
 			"<input required type=number min=1 max=254 name=" "dest" " value="
@@ -284,7 +326,7 @@ bool http_respond(struct http_t* http) {
 		HTTP_RESPONSE_CASE(http_write_value_addr(http, http->cache.config.gateway))
 		HTTP_RESPONSE_CASE_STR(http,
 			">"
-			"</table><button style=\"margin:1em 2em\">Submit</button></form>"
+			"</table><button>Submit</button></form>"
 		)
 		http->responseState = HTTP_RESPONSE_STATE_NONE;
 		break;
