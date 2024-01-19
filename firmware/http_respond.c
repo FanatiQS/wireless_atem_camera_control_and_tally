@@ -120,8 +120,46 @@ static inline bool http_write_wifi(struct http_t* http) {
 }
 
 // Writes HTML input string value with unknown length up to a maximum value to TCP PCB
-static inline bool http_write_value_string(struct http_t* http, char* str, size_t maxlen) {
-	return http_write(http, str, strnlen(str, maxlen));
+static bool http_write_value_string(struct http_t* http, char* str, size_t maxlen) {
+	maxlen -= http->stringEscapeIndex;
+	str += http->stringEscapeIndex;
+
+	size_t len = 0;
+	while (len < maxlen && str[len] != '\0') {
+		char* replacement;
+
+		// Escapes quote character
+		if (str[len] == '"') {
+			replacement = "&#34;";
+		}
+		// Escapes ampersand character
+		else if (str[len] == '&') {
+			replacement = "&amp;";
+		}
+		// Include character in next chunk write
+		else {
+			len++;
+			continue;
+		}
+
+		// Writes string up to escaped character
+		if (len > 0 && !http_write(http, str, len)) {
+			return false;
+		}
+
+		// Writes escape sequence
+		http->stringEscapeIndex += len;
+		if (!HTTP_SEND(http, replacement)) {
+			return false;
+		}
+		str += len + 1;
+		maxlen -= len - 1;
+		http->stringEscapeIndex += 1;
+		len = 0;
+	}
+
+	// Writes remaining string
+	return http_write(http, str, len);
 }
 
 // Writes HTML input uint8 value to TCP PCB
@@ -188,6 +226,7 @@ bool http_respond(struct http_t* http) {
 			"<tr><td>Name:<td>"
 			"<input required maxlength=32 name=" "name" " value=\""
 		)
+		http->stringEscapeIndex = 0;
 		HTTP_RESPONSE_CASE(http_write_value_string(http, (char*)http->cache.CACHE_NAME, sizeof(http->cache.CACHE_NAME)))
 		HTTP_RESPONSE_CASE_STR(http,
 			"\">"
@@ -195,12 +234,14 @@ bool http_respond(struct http_t* http) {
 			"<tr><td>Network name (SSID):<td>"
 			"<input required maxlength=32 name=" "ssid" " value=\""
 		)
+		http->stringEscapeIndex = 0;
 		HTTP_RESPONSE_CASE(http_write_value_string(http, (char*)http->cache.CACHE_SSID, sizeof(http->cache.CACHE_SSID)))
 		HTTP_RESPONSE_CASE_STR(http,
 			"\">"
 			"<tr><td>Network password (PSK):<td>"
 			"<input required maxlength=64 name=" "psk" " value=\""
 		)
+		http->stringEscapeIndex = 0;
 		HTTP_RESPONSE_CASE(http_write_value_string(http, (char*)http->cache.CACHE_PSK, sizeof(http->cache.CACHE_PSK)))
 		HTTP_RESPONSE_CASE_STR(http,
 			"\">"

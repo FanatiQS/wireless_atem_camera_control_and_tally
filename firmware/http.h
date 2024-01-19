@@ -57,7 +57,10 @@ struct http_t {
 		int hex; // Used by http_post_value_string and setup in http_post_key_string
 		int responseState; // Used by http_respond
 	};
-	int32_t remainingBodyLen;
+	union {
+		int32_t remainingBodyLen;
+		int32_t stringEscapeIndex;
+	};
 	union {
 		struct cache_t cache;
 		struct {
