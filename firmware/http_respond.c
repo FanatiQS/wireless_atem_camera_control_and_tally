@@ -295,7 +295,7 @@ bool http_respond(struct http_t* http) {
 		HTTP_RESPONSE_CASE_STR(http,
 			">"
 			"<tr><td>ATEM IP:<td>"
-			"<input pattern=^((25[0-5]|(2[0-4]|1\\d|[1-9]|)\\d)(\\.(?!$)|$)){4}$ name=" "atem" " value="
+			"<input required pattern=^((25[0-5]|(2[0-4]|1\\d|\\d|)\\d)(\\.(?!$)|$)){4}$ name=" "atem" " value="
 		)
 		HTTP_RESPONSE_CASE(http_write_value_addr(http, http->cache.config.atemAddr))
 		HTTP_RESPONSE_CASE_STR(http,
@@ -309,19 +309,19 @@ bool http_respond(struct http_t* http) {
 		HTTP_RESPONSE_CASE_STR(http,
 			">"
 			"<tr><td>Local IP:<td>"
-			"<input pattern=^((25[0-5]|(2[0-4]|1\\d|[1-9]|)\\d)(\\.(?!$)|$)){4}$ name=" "localip" " value="
+			"<input required pattern=^((25[0-5]|(2[0-4]|1\\d|\\d|)\\d)(\\.(?!$)|$)){4}$ name=" "localip" " value="
 		)
 		HTTP_RESPONSE_CASE(http_write_value_addr(http, http->cache.config.localAddr))
 		HTTP_RESPONSE_CASE_STR(http,
 			">"
 			"<tr><td>Subnet mask:<td>"
-			"<input pattern=^((25[0-5]|(2[0-4]|1\\d|[1-9]|)\\d)(\\.(?!$)|$)){4}$ name=" "netmask" " value="
+			"<input required pattern=^((25[0-5]|(2[0-4]|1\\d|\\d|)\\d)(\\.(?!$)|$)){4}$ name=" "netmask" " value="
 		)
 		HTTP_RESPONSE_CASE(http_write_value_addr(http, http->cache.config.netmask))
 		HTTP_RESPONSE_CASE_STR(http,
 			">"
 			"<tr><td>Gateway:<td>"
-			"<input pattern=^((25[0-5]|(2[0-4]|1\\d|[1-9]|)\\d)(\\.(?!$)|$)){4}$ name=" "gateway" " value="
+			"<input required pattern=^((25[0-5]|(2[0-4]|1\\d|\\d|)\\d)(\\.(?!$)|$)){4}$ name=" "gateway" " value="
 		)
 		HTTP_RESPONSE_CASE(http_write_value_addr(http, http->cache.config.gateway))
 		HTTP_RESPONSE_CASE_STR(http,
