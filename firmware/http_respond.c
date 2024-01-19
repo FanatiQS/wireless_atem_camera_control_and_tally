@@ -101,7 +101,7 @@ static inline bool http_write_uptime(struct http_t* http) {
 	char buf[sizeof("1000000h 59m 59s")];
 	time_t t = time(NULL);
 	int len = sprintf(buf, "%uh %02um %02us", (uint32_t)(t / 60 / 60), (uint32_t)(t / 60 % 60), (uint32_t)(t % 60));
-	return tcp_write(http->pcb, buf, len, TCP_WRITE_FLAG_COPY) != ERR_OK;
+	return tcp_write(http->pcb, buf, len, TCP_WRITE_FLAG_COPY) == ERR_OK;
 }
 
 // Writes wifi disconnected status or RSSI if connected to TCP PCB
@@ -109,40 +109,40 @@ static inline bool http_write_wifi(struct http_t* http) {
 #ifdef ESP8266
 	// Writes status when not connected to network
 	if (wifi_station_get_connect_status() != STATION_GOT_IP) {
-		return !HTTP_SEND(http, "Not connected");
+		return HTTP_SEND(http, "Not connected");
 	}
 
 	// Writes signal strength of network connection
 	char buf[sizeof("-128 dBm")];
 	int len = sprintf(buf, "%d dBm", wifi_station_get_rssi());
-	return tcp_write(http->pcb, buf, len, TCP_WRITE_FLAG_COPY) != ERR_OK;
+	return tcp_write(http->pcb, buf, len, TCP_WRITE_FLAG_COPY) == ERR_OK;
 #endif // ESP8266
 }
 
 // Writes HTML input string value with unknown length up to a maximum value to TCP PCB
 static inline bool http_write_value_string(struct http_t* http, char* str, size_t maxlen) {
-	return !http_write(http, str, strnlen(str, maxlen));
+	return http_write(http, str, strnlen(str, maxlen));
 }
 
 // Writes HTML input uint8 value to TCP PCB
 static inline bool http_write_value_uint8(struct http_t* http, uint8_t value) {
 	char buf[sizeof("255")];
 	int len = sprintf(buf, "%u", value);
-	return tcp_write(http->pcb, buf, len, TCP_WRITE_FLAG_COPY) != ERR_OK;
+	return tcp_write(http->pcb, buf, len, TCP_WRITE_FLAG_COPY) == ERR_OK;
 }
 
 // Writes HTML input ip address value  to TCP PCB
 static inline bool http_write_value_addr(struct http_t* http, uint32_t addr) {
 	char* buf = ipaddr_ntoa(&(const ip_addr_t)IPADDR4_INIT(addr));
-	return tcp_write(http->pcb, buf, strlen(buf), TCP_WRITE_FLAG_COPY) != ERR_OK;
+	return tcp_write(http->pcb, buf, strlen(buf), TCP_WRITE_FLAG_COPY) == ERR_OK;
 }
 
 
 
 // Creates state machine without having to specify case number for each state
-#define HTTP_RESPONSE_CASE_BODY(condition) if (condition) { http->responseState = __LINE__; break; }
+#define HTTP_RESPONSE_CASE_BODY(condition) if (!condition) { http->responseState = __LINE__; break; }
 #define HTTP_RESPONSE_CASE(condition) /* FALLTHROUGH */ case __LINE__: HTTP_RESPONSE_CASE_BODY(condition)
-#define HTTP_RESPONSE_CASE_STR(http, str) HTTP_RESPONSE_CASE(!HTTP_SEND(http, str))
+#define HTTP_RESPONSE_CASE_STR(http, str) HTTP_RESPONSE_CASE(HTTP_SEND(http, str))
 
 // Resumable HTTP write state machine handling all responses
 bool http_respond(struct http_t* http) {
