@@ -13,19 +13,19 @@ conf_get() {
 
 	conf_ssid=$(echo "$html" \
 		| sed -n 's/.*<input \(.*\)name=ssid\([^>]*\)>.*/\1\2/p' \
-		| sed -n 's/.*value="\(.*\)[^"]*"/\1/p')
+		| sed -n 's/.*value="\(.*\)[^"]*".*/\1/p')
 	echo "	ssid=$conf_ssid"
 	conf_psk=$(echo "$html" \
 		| sed -n 's/.*<input \(.*\)name=psk\([^>]*\)>.*/\1\2/p' \
-		| sed -n 's/.*value="\(.*\)[^"]*"/\1/p')
+		| sed -n 's/.*value="\(.*\)[^"]*".*/\1/p')
 	echo "	psk=$conf_psk"
 	conf_name=$(echo "$html" \
 		| sed -n 's/.*<input \(.*\)name=name\([^>]*\)>.*/\1\2/p' \
-		| sed -n 's/.*value="\(.*\)[^"]*"/\1/p')
+		| sed -n 's/.*value="\(.*\)[^"]*".*/\1/p')
 	echo "	name=$conf_name"
 	conf_dhcp=$(echo "$html" \
-		| sed -n 's/.*<input \(.*\)name=dhcp\([^>]*\)>.*/\1\2/p' \
-		| sed -n 's/.*value=1  \(.*\).*/\1/p')
+		| sed -n 's/.*<input \([^>]*\)name=dhcp\([^>]*\)>.*/\1\2/p' \
+		| sed -n 's/.*\(checked\).*/\1/p')
 	echo "	dhcp=$conf_dhcp"
 	conf_localip=$(echo "$html" \
 		| sed -n 's/.*<input \(.*\)name=localip\([^>]*\)>.*/\1\2/p' \
