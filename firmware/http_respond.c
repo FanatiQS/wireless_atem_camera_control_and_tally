@@ -327,6 +327,12 @@ bool http_respond(struct http_t* http) {
 		HTTP_RESPONSE_CASE_STR(http,
 			">"
 			"</table><button>Submit</button></form>"
+			"<script>"
+				"let a=document.querySelector('[type=checkbox][name=dhcp]');"
+				"a.onchange=b=>['localip','netmask','gateway']"
+					".forEach(c=>document.querySelector(`[name=${c}]`)"
+					".disabled=a.checked);a.checked&&a.onchange()"
+			"</script>"		
 		)
 		http->responseState = HTTP_RESPONSE_STATE_NONE;
 		break;
