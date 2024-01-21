@@ -17,26 +17,30 @@
 		font-family: sans-serif;
 		min-width: 16em; /* 16em == (qrcode-width / 1em) == (256px / 1em) */
 	}
+	
+	#title {
+		margin: 0 1em 2.1em;
+	}
+
+	.credentialsField {
+		margin: 1.1em 1em;
+		border: 0.078125em solid darkgray; /* 0.078125 == (1px / 1em) */
+	}
 	.credentialsField label {
 		padding: 0 1em;
-		background: white;
-		font-size: 1.1em;
 		margin: 0 1em;
+		background: white;
+		transform: translateY(-50%);
+		display: inline-block;
+		font-size: 1.1em;
 	}
 	.credentialsField span {
 		font-size: 0.8em;
 		outline: none;
-		border: 0.078125em solid darkgray; /* 0.078125 == (1px / 1em) */
-		padding: 1.8em 1.25em 1.5em;
-		margin-top: -0.9em;
+		padding: 0.2em 1.25em 1.4em;
 		display: block;
 	}
-	.credentialsField {
-		margin: 1.5em 1em 0.5em;
-	}
-	.credentialsField ~ .credentialsField {
-		margin: 0.5em 1em 1em;
-	}
+
 	#qrcode {
 		position: relative;
 		padding-bottom: 100%;
