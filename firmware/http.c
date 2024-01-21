@@ -2,7 +2,7 @@
 #include <stddef.h> // size_t, NULL
 #include <stdint.h> // uint8_t, uint16_t, uint32_t, int32_t, INT32_MAX
 #include <string.h> // memcpy
-#include <ctype.h> // tolower
+#include <ctype.h> // tolower, isdigit
 #include <string.h> // strlen
 
 #include <lwip/tcp.h> // struct tcp_pcb, tcp_new, tcp_bind, tcp_close, tcp_listen, tcp_accept, tcp_nagle_disable, tcp_poll, tcp_recv, tcp_sent, tcp_err, tcp_recved, tcp_arg, tcp_abort
@@ -161,11 +161,6 @@ static inline bool http_post_int_complete(struct http_t* http, const char c) {
 	return true;
 }
 
-// Validates that the character is a numeric character
-static inline bool http_post_int_isnum(const char c) {
-	return ((uint8_t)(c - '0') < 10);
-}
-
 // Increments integer with numeric character from HTTP stream
 static inline bool http_post_octet(struct http_t* http, const char c, uint8_t* addr) {
 	uint8_t num = (uint8_t)c - '0';
@@ -239,7 +234,7 @@ static bool http_post_value_string(struct http_t* http, char* addr, size_t addrS
 static bool http_post_value_uint8(struct http_t* http, uint8_t* addr, size_t min, size_t max) {
 	while (http_char_available(http)) {
 		char c = http_char_consume(http);
-		if (!http_post_int_isnum(c)) {
+		if (!isdigit(c)) {
 			if (http_post_int_complete(http, c)) return true;
 			http_post_err(http, "Invalid character in integer");
 			return false;
@@ -257,7 +252,7 @@ static bool http_post_value_uint8(struct http_t* http, uint8_t* addr, size_t min
 static bool http_post_value_ip(struct http_t* http, uint32_t* addr) {
 	while (http_char_available(http)) {
 		char c = http_char_consume(http);
-		if (http_post_int_isnum(c)) {
+		if (isdigit(c)) {
 			if (!http_post_octet(http, c, ((uint8_t*)addr) + http->offset)) {
 				http_post_err(http, "Invalid IPV4 address");
 				return false;
