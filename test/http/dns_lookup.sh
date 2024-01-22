@@ -40,7 +40,7 @@ for query in "google.com" "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
 									exit 1
 								fi
 							fi
-							((tests++))
+							((tests+=1))
 						done
 					done
 				done
