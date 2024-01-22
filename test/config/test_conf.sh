@@ -111,10 +111,12 @@ fi
 
 trap '[ "$?" -eq 0 ] || echo Failed' EXIT
 
+inet=$(ifconfig | grep 'inet ' | grep -v '127.0.0.1')
+
 
 
 echo "Get host address"
-host_addr=$(ifconfig | grep 'inet ' | grep -v '127.0.0.1' | cut -d ' ' -f2)
+host_addr=$(echo $inet | cut -d ' ' -f2)
 echo "	$host_addr"
 
 echo "Get free static ip address"
@@ -125,14 +127,17 @@ done
 echo "	$input_localip"
 
 echo "Get network netmask"
-hex=$(ifconfig | grep 'inet ' | grep -v '127.0.0.1' | sed -n 's/.*0x\([^ ]*\).*/\1/p')
-h1=${hex%????}
-h2=${hex#????}
-input_netmask=$(printf "%d.%d.%d.%d\n" 0x${h1%??} 0x${h1#??} 0x${h2%??} 0x${h2#??})
+input_netmask=$(echo $inet | cut -d ' ' -f4)
+if [[ $(echo $input_netmask | grep '0x.*') != "" ]]; then
+	hex=$(echo $input_netmask | sed -n 's/0x\(.*\)/\1/p')
+	h1=${hex%????}
+	h2=${hex#????}
+	input_netmask=$(printf "%d.%d.%d.%d\n" 0x${h1%??} 0x${h1#??} 0x${h2%??} 0x${h2#??})
+fi
 echo "	$input_netmask"
 
 echo "Get network gateway address"
-input_gateway=$(echo $(route -n get default | grep gateway) | cut -d ' ' -f2)
+input_gateway=$(netstat -rn | grep '^\(default\|0\.0\.0\.0\)' | sed -n 's/^[^ ]* *\([^ ]*\).*/\1/p' | head -1)
 echo "	$input_gateway"
 
 
