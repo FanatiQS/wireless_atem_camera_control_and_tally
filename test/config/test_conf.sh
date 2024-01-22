@@ -142,6 +142,10 @@ echo "	$input_gateway"
 
 
 
+if [[ $host_addr == "" || $input_localip == "" || $input_netmask == "" || $input_gateway == "" ]]; then
+	exit 1
+fi
+
 echo "Connect to device at DHCP ip"
 conf_get $DEVICE_ADDR
 conf_update
