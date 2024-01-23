@@ -6,5 +6,5 @@ if [[ "$1" == "" || "$2" == "" ]]; then
 fi
 
 args=("${@:2}")
-curl -X POST $1 ${args[@]/#/--data-urlencode } --max-time 5
+curl --max-time 5 $1 ${args[@]/#/--data-urlencode }
 printf "\n"
