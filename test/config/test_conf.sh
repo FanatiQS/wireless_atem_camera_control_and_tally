@@ -6,6 +6,7 @@ set -o pipefail
 
 
 conf_get() {
+	until ping $1 -c 1 > /dev/null 2>&1; do :; done
 	local html=$(curl -s $1)
 	if [[ "$html" == "" ]]; then
 		exit 1
