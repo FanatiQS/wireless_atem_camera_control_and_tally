@@ -5,8 +5,6 @@
 #include <time.h> // time, NULL
 #include <assert.h> // assert
 
-#include <unistd.h> // usleep
-
 #include "./http_sock.h" // http_socket_create, http_socket_send_string, http_socket_recv_len, http_socket_close, http_socket_recv_flush, http_socket_recv_cmp_status, http_socket_recv_error
 #include "../utils/runner.h" // RUN_TEST, runner_exit
 
@@ -93,7 +91,6 @@ int main(void) {
 		printf("Test close socket right away\n");
 		for (int i = 0; i < iters; i++) {
 			int sock = http_socket_create();
-			usleep(20000);
 			http_socket_close(sock);
 			progressprint(i, iters);
 		}

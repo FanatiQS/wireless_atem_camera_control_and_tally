@@ -2,7 +2,7 @@
 #include <stddef.h> // size_t, NULL
 #include <stdio.h> // fprintf, stderr, perror
 #include <stdbool.h> // bool, true, false
-#include <errno.h> // errno
+#include <errno.h> // errno, EINPROGRESS
 
 #include <sys/socket.h> // socket, AF_INET, connect, struct sockaddr, setsockopt, SOL_SOCKET, SO_RCVTIMEO, SO_SNDTIMEO, ssize_t, send, recv, bind
 #include <poll.h> // struct pollfd, poll, nfds_t
@@ -55,7 +55,7 @@ void simple_socket_connect(int sock, int port, in_addr_t addr) {
 		.sin_port = htons(port),
 		.sin_addr.s_addr = addr
 	};
-	if (connect(sock, (struct sockaddr*)&sockAddr, sizeof(sockAddr))) {
+	if (connect(sock, (struct sockaddr*)&sockAddr, sizeof(sockAddr)) && errno != EINPROGRESS) {
 		perror("Failed to connect client socket to server");
 		abort();
 	}
