@@ -30,7 +30,7 @@ for query in "google.com" "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
 					for cd in "cdflag" "nocdflag"; do
 						for aa in "aaflag" "noaaflag"; do
 							echo "Test started: $aa $cd $ad $rd $type $class '$query'"
-							ret=$(dig @$DEVICE_ADDR +short +time=1 +$aa +$cd +$ad +$rd -t $type -c $class -q $query)
+							ret=$(dig @$DEVICE_ADDR +short +notcp +time=1 +$aa +$cd +$ad +$rd -t $type -c $class -q $query)
 							if [[ $ret != $DEVICE_ADDR ]]; then
 								echo "ERROR: Received unexpected response"
 								echo "	Response: '$ret'"
