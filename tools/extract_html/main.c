@@ -39,6 +39,7 @@ struct cache_wlan {
 struct {
 	struct cache_t cache;
 	int responseState;
+	int stringEscapeIndex;
 } _http = {
 	.cache = {
 		.config.atemAddr  = ATEM_ADDR,
