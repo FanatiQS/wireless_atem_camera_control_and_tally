@@ -165,11 +165,10 @@ static inline bool http_post_int_complete(struct http_t* http, const char c) {
 static inline bool http_post_octet(struct http_t* http, const char c, uint8_t* addr) {
 	uint8_t num = (uint8_t)c - '0';
 
-	// Validates that incrementation will not overflow integer
-	if ((*addr + num) > ((UINT8_MAX / 10) + (UINT8_MAX % 10))) return false;
-
-	// Appends the number character to the integer pointer
+	// Appends the number character to the integer pointer and validates it will not overflow
+	if (*addr > (UINT8_MAX / 10)) return false;
 	*addr *= 10;
+	if (*addr > (UINT8_MAX - num)) return false;
 	*addr += num;
 	http->remainingBodyLen--;
 
