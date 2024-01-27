@@ -21,7 +21,7 @@
 #include "./debug.h" // DEBUG_ERR_PRINTF, DEBUG_HTTP_PRINTF
 #include "./http.h" // struct http_t
 #include "./init.h" // FIRMWARE_VERSION_STRING
-#include "./atem_sock.h" // atem_state, atem
+#include "./atem_sock.h" // atem_state
 #include "./http_respond.h" // http_respond, http_err, http_post_err
 #include "./flash.h" // CACHE_NAME, CACHE_SSID, CACHE_PSK, CONF_FLAG_DHCP, flash_cache_write
 
@@ -291,7 +291,7 @@ bool http_respond(struct http_t* http) {
 			"<tr><td>Camera number:<td>"
 			"<input required type=number min=1 max=254 name=" "dest" " value="
 		)
-		HTTP_RESPONSE_CASE(http_write_value_uint8(http, atem.dest))
+		HTTP_RESPONSE_CASE(http_write_value_uint8(http, http->cache.config.dest))
 		HTTP_RESPONSE_CASE_STR(http,
 			">"
 			"<tr><td>ATEM IP:<td>"
