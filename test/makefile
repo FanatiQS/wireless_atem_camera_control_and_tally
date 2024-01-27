@@ -55,7 +55,7 @@ $(PLAYGROUNDS): $(BUILD_DIR)/playground_%: playground/%.c http/http_sock.c
 
 
 # Shared source files
-$(EXECS:%=$(BUILD_DIR)/%): \
+$(EXECS:%=$(BUILD_DIR)/%) $(PLAYGROUNDS): \
 	utils/simple_socket.c \
 	utils/atem_sock.c \
 	utils/atem_header.c \
@@ -82,7 +82,7 @@ $(EXECS:%=$(BUILD_DIR)/%) $(PLAYGROUNDS): | $(BUILD_DIR)
 
 # Runs test
 .PHONY: $(EXECS)
-$(EXECS): %: $(BUILD_DIR)/%
+$(EXECS) $(PLAYGROUNDS:$(BUILD_DIR)/%=%): %: $(BUILD_DIR)/%
 	./$<
 
 # Runs script
