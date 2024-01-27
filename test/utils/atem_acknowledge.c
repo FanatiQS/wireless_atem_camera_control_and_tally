@@ -114,6 +114,10 @@ void atem_acknowledge_response_recv_verify(int sock, uint16_t sessionId, uint16_
 
 // Receives data and responds to pings
 bool atem_acknowledge_keepalive(int sock, uint8_t* packet) {
+	uint8_t _packet[ATEM_PACKET_LEN_MAX];
+	if (packet == NULL) {
+		packet = _packet;
+	}
 	atem_socket_recv(sock, packet);
 	if (!(atem_header_flags_get(packet) & ATEM_FLAG_ACKREQ)) {
 		return false;
