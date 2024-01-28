@@ -79,6 +79,12 @@ void flash_cache_write(struct cache_t* cache) {
 	}
 
 #ifdef ESP8266
+	// Enables softap to commit device name
+	if (!wifi_set_opmode(STATIONAP_MODE)) {
+		DEBUG_ERR_PRINTF("Failed to set opcode\n");
+		return;
+	}
+
 	// Writes wlan station and softap configuration to flash
 	if (!wifi_station_set_config(&cache->wlan.station)) {
 		DEBUG_ERR_PRINTF("Failed to write station config\n");
