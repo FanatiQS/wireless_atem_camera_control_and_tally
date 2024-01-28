@@ -22,41 +22,20 @@
  */
 #define FLASH_SIZE (1 << ((spi_flash_get_id() >> 16) & 0xff))
 #define CONFIG_START (FLASH_SIZE - (12 + 4 + 4) * 1024)
-#endif // ESP8266
 
 
 
 // Reads configuration from persistent storage
 bool flash_config_read(struct config_t* conf) {
-#ifdef ESP8266
 	if (spi_flash_read(CONFIG_START, (uint32_t*)conf, sizeof(*conf)) != SPI_FLASH_RESULT_OK) {
 		DEBUG_ERR_PRINTF("Failed to read device configuration\n");
 		return false;
 	}
 	return true;
-#endif // ESP8266
 }
-
-// Writes configuration to persistent storage
-static inline bool flash_config_write(struct config_t* conf) {
-#ifdef ESP8266
-	if (spi_flash_erase_sector((uint16_t)(CONFIG_START / SPI_FLASH_SEC_SIZE))) {
-		DEBUG_ERR_PRINTF("Failed to erase flash sector\n");
-		return false;
-	}
-	if (spi_flash_write(CONFIG_START, (uint32_t*)conf, sizeof(*conf)) != SPI_FLASH_RESULT_OK) {
-		DEBUG_ERR_PRINTF("Failed to write config data\n");
-		return false;
-	}
-	return true;
-#endif // ESP8266
-}
-
-
 
 // Reads flash configuration and other platform specific configurations for HTTP cache
 bool flash_cache_read(struct cache_t* cache) {
-#ifdef ESP8266
 	if (!wifi_station_get_config(&cache->wlan.station)) {
 		DEBUG_ERR_PRINTF("Failed to read station config\n");
 		return false;
@@ -65,20 +44,11 @@ bool flash_cache_read(struct cache_t* cache) {
 		DEBUG_ERR_PRINTF("Failed to read softap config\n");
 		return false;
 	}
-#endif // ESP8266
 	return flash_config_read(&cache->config);
 }
 
 // Writes flash configuration and other platform specific configurations for HTTP cache
 void flash_cache_write(struct cache_t* cache) {
-	// Only updates flash if required
-	struct config_t conf;
-	if (!flash_config_read(&conf)) return;
-	if (memcmp(&conf, &cache->config, sizeof(conf)) != 0) {
-		if (!flash_config_write(&cache->config)) return;
-	}
-
-#ifdef ESP8266
 	// Enables softap to commit device name
 	if (!wifi_set_opmode(STATIONAP_MODE)) {
 		DEBUG_ERR_PRINTF("Failed to set opcode\n");
@@ -95,13 +65,26 @@ void flash_cache_write(struct cache_t* cache) {
 		DEBUG_ERR_PRINTF("Failed to write softap config\n");
 		return;
 	}
-#endif // ESP8266
 
-	DEBUG_HTTP_PRINTF("Rebooting...\n");
+	// Writes configuration to persistent storage if changed
+	struct config_t currentConf;
+	if (!flash_config_read(&currentConf)) {
+		return;
+	}
+	if (memcmp(&currentConf, &cache->config, sizeof(currentConf)) != 0) {
+		if (spi_flash_erase_sector((uint16_t)(CONFIG_START / SPI_FLASH_SEC_SIZE))) {
+			DEBUG_ERR_PRINTF("Failed to erase flash sector\n");
+			return;
+		}
+		if (spi_flash_write(CONFIG_START, (uint32_t*)&cache->config, sizeof(cache->config)) != SPI_FLASH_RESULT_OK) {
+			DEBUG_ERR_PRINTF("Failed to write config data\n");
+			return;
+		}
+	}
 
 	// Restarts device after flash write
-#ifdef ESP8266
+	DEBUG_HTTP_PRINTF("Rebooting...\n");
 	wifi_set_event_handler_cb(NULL);
 	system_restart();
-#endif // ESP8266
 }
+#endif // ESP8266
