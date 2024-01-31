@@ -14,16 +14,13 @@
 #include <lwip/err.h> // err_t
 #include <lwip/pbuf.h> // struct pbuf
 
-#ifdef ESP8266
-#include <user_interface.h> // wifi_station_get_connect_status, STATION_GOT_IP, wifi_station_get_rssi
-#endif // ESP8266
-
 #include "./debug.h" // DEBUG_ERR_PRINTF, DEBUG_HTTP_PRINTF
 #include "./http.h" // struct http_t
 #include "./init.h" // FIRMWARE_VERSION_STRING
 #include "./atem_sock.h" // atem_state
 #include "./http_respond.h" // http_respond, http_err, http_post_err
 #include "./flash.h" // CACHE_NAME, CACHE_SSID, CACHE_PSK, CONF_FLAG_DHCP, flash_cache_write
+#include "./wlan.h" // wlan_station_rssi
 
 
 
@@ -106,17 +103,17 @@ static inline bool http_write_uptime(struct http_t* http) {
 
 // Writes wifi disconnected status or RSSI if connected to TCP PCB
 static inline bool http_write_wifi(struct http_t* http) {
-#ifdef ESP8266
+	int8_t rssi = wlan_station_rssi();
+
 	// Writes status when not connected to network
-	if (wifi_station_get_connect_status() != STATION_GOT_IP) {
+	if (rssi > 0) {
 		return HTTP_SEND(http, "Not connected");
 	}
 
 	// Writes signal strength of network connection
 	char buf[sizeof("-128 dBm")];
-	int len = sprintf(buf, "%d dBm", wifi_station_get_rssi());
+	int len = sprintf(buf, "%d dBm", rssi);
 	return tcp_write(http->pcb, buf, len, TCP_WRITE_FLAG_COPY) == ERR_OK;
-#endif // ESP8266
 }
 
 // Writes HTML input string value with unknown length up to a maximum value to TCP PCB

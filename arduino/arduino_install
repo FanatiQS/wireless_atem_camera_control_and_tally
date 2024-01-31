@@ -45,4 +45,6 @@ cpy firmware/init.h
 cpy firmware/led.h
 cpy firmware/sdi.c
 cpy firmware/sdi.h
+cpy firmware/wlan.c
+cpy firmware/wlan.h
 echo "Installed"

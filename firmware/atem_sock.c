@@ -9,9 +9,6 @@
 #include <lwip/arch.h> // LWIP_UNUSED_ARG
 #include <lwip/timeouts.h> // sys_timeout, sys_untimeout
 #include <lwip/netif.h> // netif_default, netif_ip4_addr, netif_ip4_netmask, netif_ip4_gw
-#ifdef ESP8266
-#include <user_interface.h> // wifi_set_opmode_current, STATION_MODE
-#endif // ESP8266
 
 #include "../core/atem.h" // struct atem_t atem_connection_reset, atem_parse, ATEM_STATUS_WRITE, ATEM_STATUS_CLOSING, ATEM_STATUS_REJECTED, ATEM_STATUS_WRITE_ONLY, ATEM_STATUS_CLOSED, ATEM_STATUS_ACCEPTED, ATEM_STATUS_ERROR, ATEM_STATUS_NONE, ATEM_TIMEOUT, ATEM_PORT, atem_cmd_available, atem_cmd_next, ATEM_CMDNAME_VERSION, ATEM_CMDNAME_TALLY, ATEM_CMDNAME_CAMERACONTROL, atem_protocol_major, atem_protocol_minor, ATEM_TIMEOUT_MS
 #include "../core/atem_protocol.h" // ATEM_INDEX_FLAGS, ATEM_INDEX_REMOTEID_HIGH, ATEM_INDEX_REMOTEID_LOW, ATEM_FLAG_ACK
@@ -19,6 +16,7 @@
 #include "./led.h" // LED_TALLY, LED_CONN, led_init
 #include "./sdi.h" // SDI_ENABLED, sdi_write_tally, sdi_write_cc, sdi_init
 #include "./debug.h" // DEBUG_PRINTF, DEBUG_ERR_PRINTF, DEBUG_IP, IP_FMT, IP_VALUE, WRAP
+#include "./wlan.h" // wlan_softap_disable
 #include "./atem_sock.h"
 
 
@@ -148,11 +146,9 @@ static inline void atem_process(struct udp_pcb* pcb) {
 			);
 			LED_CONN(true);
 			atem_state = atem_state_connected;
-#ifdef ESP8266
-			if (!wifi_set_opmode_current(STATION_MODE)) {
+			if (!wlan_softap_disable()) {
 				DEBUG_ERR_PRINTF("Failed to disable soft AP\n");
 			}
-#endif // ESP8266
 			break;
 		}
 		// Outputs tally status on GPIO pins and SDI

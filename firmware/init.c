@@ -5,12 +5,13 @@
 #include <lwip/init.h> // LWIP_VERSION_STRING, LWIP_VERSION
 
 #include "./user_config.h" // DEBUG, DEBUG_TALLY, DEBUG_CC, DEBUG_HTTP, VERSIONS_ANY
-#include "./debug.h" // DEBUG_PRINTF, DEBUG_ERR_PRINTF, DEBUG_IP, WRAP
+#include "./debug.h" // DEBUG_PRINTF, DEBUG_ERR_PRINTF, WRAP
 #include "./atem_sock.h" // atem_init
 #include "./http.h" // http_init
-#include "./flash.h" // struct config_t, CONF_FLAG_DHCP, flash_config_read
+#include "./flash.h" // struct config_t, flash_config_read
 #include "./init.h" // FIRMWARE_VERSION_STRING
 #include "./dns.h" // captive_portal_init
+#include "./wlan.h" // wlan_station_dhcp_get
 
 // Defines empty LWIP thread locking macros when LWIP is not running in a separate thread
 #if NO_SYS
@@ -237,17 +238,9 @@ static void _waccat_init(void) {
 		DEBUG_ERR_PRINTF("Failed to start wifi connection\n");
 		return;
 	}
-#endif // ESP8266
 
 	// Uses static IP if configured to do so
-	if (conf.flags & CONF_FLAG_DHCP) {
-		DEBUG_PRINTF("Using DHCP\n");
-	}
-	else {
-		DEBUG_IP("Using static IP", conf.localAddr, conf.netmask, conf.gateway);
-
-		// Sets static ip
-#ifdef ESP8266
+	if (!wlan_station_dhcp_get(conf)) {
 		struct ip_info ipInfo = {
 			.ip.addr = conf.localAddr,
 			.netmask.addr = conf.netmask,
@@ -261,8 +254,8 @@ static void _waccat_init(void) {
 			DEBUG_ERR_PRINTF("Failed to set static ip\n");
 			return;
 		}
-#endif // ESP8266
 	}
+#endif // ESP8266
 
 	// Initializes connection to ATEM
 	struct udp_pcb* pcb = atem_init(conf.atemAddr, conf.dest);
