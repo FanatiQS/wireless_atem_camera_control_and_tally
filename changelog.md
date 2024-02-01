@@ -2,6 +2,25 @@
 
 ## Version 0.7.2 (development)
 
+### Core
+* `ATEM_MAX_PACKET_LEN` renamed to `ATEM_PACKET_LEN_MAX`.
+
+### Firmware
+* Sanitizes ssid, psk and device name in HTML to display quotation character correctly.
+* Huge styling rewrite to HTML configuration page.
+* Fixed IP address parser rejecting valid octets.
+* Fixed unable to update configuration when connected to ATEM.
+
+### Test Suite
+* Added more tests for atem_server.
+* Added test for static ip and dhcp.
+* Added environment variable to clamp number of lines printed from buffer.
+* Fixed tests not running correctly on linux.
+* Removed `run_*` prefix in make.
+
+### Tools
+* Added tool to generate HTML and HTTP on host.
+
 ## Version 0.7.1
 
 ### Firmware
