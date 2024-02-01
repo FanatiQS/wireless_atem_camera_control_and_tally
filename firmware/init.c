@@ -240,7 +240,7 @@ static void _waccat_init(void) {
 	}
 
 	// Uses static IP if configured to do so
-	if (!wlan_station_dhcp_get(conf)) {
+	if (!wlan_station_dhcp_get(&conf)) {
 		struct ip_info ipInfo = {
 			.ip.addr = conf.localAddr,
 			.netmask.addr = conf.netmask,

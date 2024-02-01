@@ -12,13 +12,13 @@ bool wlan_softap_disable(void);
 int8_t wlan_station_rssi(void);
 
 // Gets WLAN station DHCP client status from persistent storage data
-static inline bool wlan_station_dhcp_get(struct config_t conf) {
-	if (conf.flags & CONF_FLAG_DHCP) {
+static inline bool wlan_station_dhcp_get(struct config_t* conf) {
+	if (conf->flags & CONF_FLAG_DHCP) {
 		DEBUG_PRINTF("Using DHCP\n");
 		return true;
 	}
 	else {
-		DEBUG_IP("Using static IP", conf.localAddr, conf.netmask, conf.gateway);
+		DEBUG_IP("Using static IP", conf->localAddr, conf->netmask, conf->gateway);
 		return false;
 	}
 }
