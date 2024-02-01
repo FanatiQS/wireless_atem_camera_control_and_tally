@@ -121,6 +121,13 @@ static void network_callback(System_Event_t* event) {
 #define DEBUG_HTTP_LABEL "disabled"
 #endif // DEBUG_HTTP
 
+// Defines string label of DEBUG_DNS flag
+#if DEBUG_DNS
+#define DEBUG_DNS_LABEL "enabled"
+#else // DEBUG_ATEM
+#define DEBUG_DNS_LABEL "disabled"
+#endif // DEBUG_DNS
+
 // Defines undefined version for compilers where the macro does not exist
 #ifndef __VERSION__
 #define __VERSION__ "undefined"
@@ -162,6 +169,7 @@ static void _waccat_init(void) {
 		"Camera control debug: " DEBUG_CC_LABEL "\n"
 		"ATEM debug: " DEBUG_ATEM_LABEL "\n"
 		"HTTP debug: " DEBUG_HTTP_LABEL "\n"
+		"DNS debug: " DEBUG_DNS_LABEL "\n"
 	);
 
 	// Initializes the HTTP configuration server
