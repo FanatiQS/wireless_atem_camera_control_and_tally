@@ -8,7 +8,8 @@
 #include <lwip/err.h> // err_t, ERR_OK
 #include <lwip/arch.h> // LWIP_UNUSED_ARG
 #include <lwip/timeouts.h> // sys_timeout, sys_untimeout
-#include <lwip/netif.h> // netif_default, netif_ip4_addr, netif_ip4_netmask, netif_ip4_gw
+#include <lwip/netif.h> // netif_ip4_addr, netif_ip4_netmask, netif_ip4_gw
+#include <lwip/ip4.h> // ip4_route
 
 #include "../core/atem.h" // struct atem_t atem_connection_reset, atem_parse, ATEM_STATUS_WRITE, ATEM_STATUS_CLOSING, ATEM_STATUS_REJECTED, ATEM_STATUS_WRITE_ONLY, ATEM_STATUS_CLOSED, ATEM_STATUS_ACCEPTED, ATEM_STATUS_ERROR, ATEM_STATUS_NONE, ATEM_TIMEOUT, ATEM_PORT, atem_cmd_available, atem_cmd_next, ATEM_CMDNAME_VERSION, ATEM_CMDNAME_TALLY, ATEM_CMDNAME_CAMERACONTROL, atem_protocol_major, atem_protocol_minor, ATEM_TIMEOUT_MS
 #include "../core/atem_protocol.h" // ATEM_INDEX_FLAGS, ATEM_INDEX_REMOTEID_HIGH, ATEM_INDEX_REMOTEID_LOW, ATEM_FLAG_ACK
@@ -253,27 +254,46 @@ static void atem_recv_callback(void* arg, struct udp_pcb* pcb, struct pbuf* p, c
 	pbuf_free(p);
 }
 
+// Gets netif ATEM server address should be available on
+static struct netif* atem_netif_get(const struct udp_pcb* pcb) {
+	struct netif *netif;
+	NETIF_FOREACH(netif) {
+		if (
+			netif_is_up(netif)
+			&& netif_is_link_up(netif)
+			&& !ip4_addr_isany_val(*netif_ip4_addr(netif))
+			&& ip4_addr_netcmp(&pcb->remote_ip, netif_ip4_addr(netif), netif_ip4_netmask(netif))
+		) {
+			return netif;
+		}
+	}
+	return NULL;
+}
+
 // Connects to ATEM when network interface is available
 static void atem_netif_poll(void* arg) {
+	struct udp_pcb* pcb = arg;
+
 	// Keeps waiting until network is connected
-	if (netif_default == NULL) {
-		sys_timeout(0, atem_netif_poll, arg);
+	struct netif* netif = atem_netif_get(pcb);
+	if (netif == NULL) {
+		sys_timeout(20, atem_netif_poll, pcb);
 		return;
 	}
 
 	DEBUG_IP(
 		"Connected to network interface",
-		netif_ip4_addr(netif_default)->addr,
-		netif_ip4_netmask(netif_default)->addr,
-		netif_ip4_gw(netif_default)->addr
+		netif_ip4_addr(netif)->addr,
+		netif_ip4_netmask(netif)->addr,
+		netif_ip4_gw(netif)->addr
 	);
 	DEBUG_PRINTF("Connecting to ATEM\n");
 
 	// Sends ATEM handshake
-	atem_send(arg);
+	atem_send(pcb);
 
 	// Enables ATEM timeout callback function
-	sys_timeout(ATEM_TIMEOUT_MS, atem_timeout_callback, arg);
+	sys_timeout(ATEM_TIMEOUT_MS, atem_timeout_callback, pcb);
 }
 
 // Initializes UDP connection to ATEM
