@@ -1,3 +1,4 @@
+// Include guard
 #ifndef ATEM_PROTOCOL_H
 #define ATEM_PROTOCOL_H
 
