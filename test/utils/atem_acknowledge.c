@@ -1,6 +1,7 @@
 #include <stdint.h> // uint8_t, uint16_t
 #include <assert.h> // assert
 #include <stdbool.h> // bool, true, false
+#include <stddef.h> // NULL
 
 #include "../../core/atem.h" // ATEM_PACKET_LEN_MAX
 #include "../../core/atem_protocol.h" // ATEM_FLAG_ACK, ATEM_FLAG_ACKREQ, ATEM_LEN_ACK
