@@ -18,9 +18,9 @@ struct timespec timediff_mark(void) {
 }
 
 // Gets time delta from a previous timestamp
-long timediff_get(struct timespec t1) {
-	struct timespec t2 = timediff_mark();
-	long diff = ((t2.tv_sec - t1.tv_sec) * 1000) + ((t2.tv_nsec - t1.tv_nsec) / 1000000);
+long timediff_get(struct timespec startMark) {
+	struct timespec endMark = timediff_mark();
+	long diff = ((endMark.tv_sec - startMark.tv_sec) * 1000) + ((endMark.tv_nsec - startMark.tv_nsec) / 1000000);
 
 	if (logs_find("timer")) {
 		printf("Timer difference: %lu\n", diff);
@@ -30,8 +30,8 @@ long timediff_get(struct timespec t1) {
 }
 
 // Ensures time delta from a previous timestamp is baseDiff ms and not more than lateAllowed ms late
-void timediff_get_verify(struct timespec t1, long baseDiff, long lateAllowed) {
-	long diff = timediff_get(t1);
+void timediff_get_verify(struct timespec startMark, long baseDiff, long lateAllowed) {
+	long diff = timediff_get(startMark);
 	if ((diff < baseDiff) || (diff > (baseDiff + lateAllowed))) {
 		fprintf(stderr,
 			"Expected timer delta between %lu and %lu, but got %lu\n",

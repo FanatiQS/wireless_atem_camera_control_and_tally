@@ -8,7 +8,7 @@
 #define TIMEDIFF_LATE (10)
 
 struct timespec timediff_mark(void);
-long timediff_get(struct timespec t1);
-void timediff_get_verify(struct timespec t1, long baseDiff, long lateAllowed);
+long timediff_get(struct timespec startMark);
+void timediff_get_verify(struct timespec startMark, long baseDiff, long lateAllowed);
 
 #endif // TIMEDIFF_H
