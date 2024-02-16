@@ -32,7 +32,7 @@ void atem_header_ackid_get_verify(uint8_t* packet, uint16_t expectedAckId);
 
 void atem_header_localid_set(uint8_t* packet, uint16_t localId);
 uint16_t atem_header_localid_get(uint8_t* packet);
-void atem_header_localid_get_verify(uint8_t* packet, uint16_t expectLocalId);
+void atem_header_localid_get_verify(uint8_t* packet, uint16_t expectedLocalId);
 
 void atem_header_unknownid_set(uint8_t* packet, uint16_t unknownId);
 uint16_t atem_header_unknownid_get(uint8_t* packet);
