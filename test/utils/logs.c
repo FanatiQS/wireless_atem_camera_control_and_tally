@@ -1,9 +1,9 @@
-#include <stdio.h> // FILE, fprintf, printf
+#include <stdio.h> // FILE, fprintf, stderr, printf
 #include <stdint.h> // uint8_t
 #include <stddef.h> // size_t, NULL
 #include <string.h> // strlen, strncmp, strchr
 #include <stdbool.h> // bool, true, false
-#include <stdlib.h> // getenv
+#include <stdlib.h> // getenv, atoi, abort
 
 #include "./logs.h"
 
@@ -13,7 +13,9 @@
 bool logs_find(const char* match) {
 	// Gets environment variable for array of logs enabled
     const char* start = getenv("LOGS");
-	if (start == NULL) return false;
+	if (start == NULL) {
+		return false;
+	}
 
 	// Searches through string array for match
     const char* end;
@@ -39,6 +41,10 @@ void logs_print_buffer(FILE* pipe, uint8_t* buf, size_t bufLen) {
 	char* clampLen = getenv("LOGS_BUFFER_CLAMP");
 	if (clampLen) {
 		clampIndex = (size_t)atoi(clampLen) * PRINT_BYTE_LEN;
+		if (clampIndex == 0) {
+			fprintf(stderr, "Invalid LOGS_BUFFER_CLAMP value: %s\n", clampLen);
+			abort();
+		}
 		len = (bufLen < clampIndex) ? bufLen : clampIndex;
 	}
 	else {
