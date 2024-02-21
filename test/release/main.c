@@ -1,7 +1,6 @@
 #include <string.h> // strstr, memcmp, strlen, strchr
 #include <stdlib.h> // EXIT_FAILURE, EXIT_SUCCESS
-#include <stdio.h> // fopen, fread, FILE
-#include <stdio.h> // fprintf, stderr
+#include <stdio.h> // fopen, fread, FILE, fprintf, stderr
 #include <stddef.h> // NULL, size_t
 
 #include "../../firmware/init.h" // FIRMWARE_VERSION_STRING
