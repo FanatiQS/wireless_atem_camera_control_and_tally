@@ -27,6 +27,9 @@
 #define PIN_CONN_MASK (0)
 #endif // PIN_CONN
 
+// Bit mask for both tally pins
+#define PIN_TALLY_MASK (PIN_PGM_MASK | PIN_PVW_MASK)
+
 
 
 #ifdef ESP8266
@@ -39,7 +42,7 @@
 #define RTC_PIN 16
 
 // Initializes GPIO or RTC pin
-static inline void led_init(uint32_t pin) {
+static inline void led_init(const uint32_t pin) {
 	if (pin < GPIO_PIN_COUNT) {
 		GPIO_REG_WRITE(GPIO_PIN0_ADDRESS + pin * 4, 0);
 		GPIO_REG_WRITE(GPIO_ENABLE_W1TS_ADDRESS, 1 << pin);
@@ -50,16 +53,18 @@ static inline void led_init(uint32_t pin) {
 	}
 }
 
-// Separates RTC pin from normal GPIO pins
-#define GPIO_MASK(mask) ((mask) & GPIO_OUT_W1TC_DATA_MASK)
-#define RTC_MASK(mask) (((mask) >> RTC_PIN) & 1)
-
 // Writes bit field to GPIO and/or RTC register
-// Pin masks are able to be eliminated by compiler when defined deterministically
-static inline void gpio_write(uint32_t setPins, uint32_t setValue, uint32_t clearPins, uint32_t clearValue) {
-	if (GPIO_MASK(setPins)) GPIO_REG_WRITE(GPIO_OUT_W1TS_ADDRESS, GPIO_MASK(setValue));
-	if (GPIO_MASK(clearPins)) GPIO_REG_WRITE(GPIO_OUT_W1TC_ADDRESS, GPIO_MASK(clearValue));
-	if (RTC_MASK(setPins | clearPins)) WRITE_PERI_REG(RTC_GPIO_OUT, RTC_MASK(setValue));
+// Pin masks are known at compiletime so conditionals can be eliminated by compiler
+static inline void gpio_write(const uint32_t setMask, const uint32_t clearMask, const uint32_t values) {
+	if (setMask & GPIO_OUT_W1TC_DATA_MASK) {
+		GPIO_REG_WRITE(GPIO_OUT_W1TS_ADDRESS, values & GPIO_OUT_W1TC_DATA_MASK);
+	}
+	if (clearMask & GPIO_OUT_W1TC_DATA_MASK) {
+		GPIO_REG_WRITE(GPIO_OUT_W1TC_ADDRESS, ~values & clearMask & GPIO_OUT_W1TC_DATA_MASK);
+	}
+	if (((setMask | clearMask) >> RTC_PIN) & 1) {
+		WRITE_PERI_REG(RTC_GPIO_OUT, (values >> RTC_PIN) & 1);
+	}
 }
 
 #else // ESP8266
@@ -79,22 +84,12 @@ static inline void gpio_write(uint32_t setPins, uint32_t setValue, uint32_t clea
 
 // Uses gpio_write if LED_TALLY is not defined to write tally states to registers as bit fields
 #ifndef LED_TALLY
-#define LED_TALLY(pgm, pvw) gpio_write(\
-								PIN_PGM_MASK | PIN_PVW_MASK,\
-								(pgm * PIN_PGM_MASK) | (pvw * PIN_PVW_MASK),\
-								PIN_PGM_MASK | PIN_PVW_MASK,\
-								(!pgm * PIN_PGM_MASK) | (!pvw * PIN_PVW_MASK)\
-							)
+#define LED_TALLY(pgm, pvw) gpio_write(PIN_TALLY_MASK, PIN_TALLY_MASK, (pgm * PIN_PGM_MASK) | (pvw * PIN_PVW_MASK))
 #endif // LED_TALLY
 
 // Uses gpio_write if LED_CONN is not defined to write connection state to register as bit field
 #ifndef LED_CONN
-#define LED_CONN(state) gpio_write(\
-							!state * PIN_CONN_MASK,\
-							!state * PIN_CONN_MASK,\
-							state * PIN_CONN_MASK,\
-							state * PIN_CONN_MASK\
-						)
+#define LED_CONN(state) gpio_write(!state * PIN_CONN_MASK, state * PIN_CONN_MASK, !state * PIN_CONN_MASK)
 #endif // LED_CONN
 
 #endif // LED_H
