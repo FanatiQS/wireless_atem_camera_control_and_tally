@@ -1,4 +1,3 @@
-#include <stdio.h> // printf
 #include <errno.h> // ECONNRESET
 #include <string.h> // strlen
 
