@@ -18,8 +18,8 @@
 // Strips out SDI communication functions if SDI is disabled
 #ifdef SDI_ENABLED
 bool sdi_init(uint8_t dest);
-void sdi_write_tally(uint8_t, bool, bool);
-void sdi_write_cc(uint8_t*, uint16_t);
+void sdi_write_tally(uint8_t dest, bool pgm, bool pvw);
+void sdi_write_cc(uint8_t* buf, uint16_t len);
 #else // SDI_ENABLED
 #define sdi_init(dest) true
 #define sdi_write_tally(dest, pgm, pvw)
