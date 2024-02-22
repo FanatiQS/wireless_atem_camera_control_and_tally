@@ -1,7 +1,7 @@
 #include <setjmp.h> // longjmp, jmp_buf
 #include <signal.h> // signal, SIGABRT
 #include <stdio.h> // printf, fprintf, stderr
-#include <stdlib.h> // abort, getenv, EXIT_SUCCESS
+#include <stdlib.h> // abort, getenv, EXIT_SUCCESS, atoi
 #include <string.h> // strcmp
 #include <stddef.h> // NULL
 #include <stdbool.h> // bool, true
