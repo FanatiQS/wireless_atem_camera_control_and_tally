@@ -123,6 +123,26 @@ int main(void) {
 		test_timeout("GET ");
 	}
 
+	// Tests invalid GET back compare method short
+	RUN_TEST() {
+		test_code("PE", 405);
+	}
+
+	// Tests segmented invalid GET back compare method short
+	RUN_TEST() {
+		test_code_segment("P", "E", 405);
+	}
+
+	// Tests invalid GET back comparing method full
+	RUN_TEST() {
+		test_code("PET / HTTP/1.1\r\n\r\n", 405);
+	}
+
+	// Tests segmented invalid GET back compare method full
+	RUN_TEST() {
+		test_code_segment_reset("PE", "T / HTTP/1.1\r\n\r\n", 405);
+	}
+
 	// Tests invalid GET method short
 	RUN_TEST() {
 		test_code("GEF", 405);
@@ -176,22 +196,22 @@ int main(void) {
 		test_timeout("POST ");
 	}
 
-	// Tests back compare method matching short
+	// Tests invalid POST back compare method short
 	RUN_TEST() {
 		test_code("GO", 405);
 	}
 
-	// Tests segmented back compare method matching short
+	// Tests segmented invlaid POST back compare method short
 	RUN_TEST() {
 		test_code_segment("G", "O", 405);
 	}
 
-	// Tests back comparing method matching full
+	// Tests invalid POST back comparing method full
 	RUN_TEST() {
 		test_code("GOST / HTTP/1.1\r\n\r\n", 405);
 	}
 
-	// Tests segmented back compare method matching full
+	// Tests segmented invalid POST back compare method full
 	RUN_TEST() {
 		test_code_segment_reset("GOS", "T / HTTP/1.1\r\n\r\n", 405);
 	}
