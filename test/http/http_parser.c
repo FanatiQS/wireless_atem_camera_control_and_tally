@@ -165,7 +165,7 @@ int main(void) {
 
 
 
-	// HTTP GET paths
+	// HTTP GET resource
 
 	// Tests successful GET request short
 	RUN_TEST() {
@@ -174,7 +174,13 @@ int main(void) {
 
 	// Tests segmented successful GET request short
 	RUN_TEST() {
-		test_code_segment("GET", " / ", 200);
+		test_code_segment("GE", "T /", 200);
+	}
+	RUN_TEST() {
+		test_code_segment("GET", " /", 200);
+	}
+	RUN_TEST() {
+		test_code_segment("GET ", "/", 200);
 	}
 
 	// Tests successful GET request full
@@ -184,7 +190,13 @@ int main(void) {
 
 	// Tests segmented successful GET request full
 	RUN_TEST() {
+		test_code_segment("GET /", " HTTP/1.1\r\n\r\n", 200);
+	}
+	RUN_TEST() {
 		test_code_segment("GET / ", "HTTP/1.1\r\n\r\n", 200);
+	}
+	RUN_TEST() {
+		test_code_segment("GET / HTTP/1.1", "\r\n\r\n", 200);
 	}
 
 
