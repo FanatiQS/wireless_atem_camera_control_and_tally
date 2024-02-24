@@ -111,6 +111,11 @@ void test_body_err_segment_reset(const char* body1, const char* body2, const cha
 
 // Runs all tests verifying HTTP server works as expected
 int main(void) {
+	// HTTP unsupported method
+	RUN_TEST() {
+		test_code("PUT /", 405);
+	}
+
 	// HTTP GET method
 
 	// Tests incomplete GET method
