@@ -359,10 +359,41 @@ int main(void) {
 
 	// Tests segmented no body
 	RUN_TEST() {
+		test_code_segment("PO", "ST / HTTP/1.1\r\nContent-Length: 0\r\n\r\n", 200);
+	}
+	RUN_TEST() {
+		test_code_segment("POST", " / HTTP/1.1\r\nContent-Length: 0\r\n\r\n", 200);
+	}
+	RUN_TEST() {
+		test_code_segment("POST ", "/ HTTP/1.1\r\nContent-Length: 0\r\n\r\n", 200);
+	}
+	RUN_TEST() {
+		test_code_segment("POST /", " HTTP/1.1\r\nContent-Length: 0\r\n\r\n", 200);
+	}
+	RUN_TEST() {
+		test_code_segment("POST / HTT", "P/1.1\r\nContent-Length: 0\r\n\r\n", 200);
+	}
+	RUN_TEST() {
+		test_code_segment("POST / HTTP/1.1", "\r\nContent-Length: 0\r\n\r\n", 200);
+	}
+	RUN_TEST() {
+		test_code_segment("POST / HTTP/1.1\r", "\nContent-Length: 0\r\n\r\n", 200);
+	}
+	RUN_TEST() {
+		test_code_segment("POST / HTTP/1.1\r\nCont", "ent-Length: 0\r\n\r\n", 200);
+	}
+	RUN_TEST() {
+		test_code_segment("POST / HTTP/1.1\r\nContent-Length: ", "0\r\n\r\n", 200);
+	}
+	RUN_TEST() {
+		test_code_segment("POST / HTTP/1.1\r\nContent-Length: 0", "\r\n\r\n", 200);
+	}
+	RUN_TEST() {
 		test_code_segment("POST / HTTP/1.1\r\nContent-Length: 0\r", "\n\r\n", 200);
 	}
-
-	// Tests segmented no body
+	RUN_TEST() {
+		test_code_segment("POST / HTTP/1.1\r\nContent-Length: 0\r\n", "\r\n", 200);
+	}
 	RUN_TEST() {
 		test_code_segment("POST / HTTP/1.1\r\nContent-Length: 0\r\n\r", "\n", 200);
 	}
