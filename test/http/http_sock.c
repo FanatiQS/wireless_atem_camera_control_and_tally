@@ -26,7 +26,9 @@ int http_socket_create(void) {
 
 // Sends HTTP buffer to server
 void http_socket_send_buffer(int sock, const char* buf, size_t len) {
+	assert(len == strlen(buf));
 	if (logs_find("http_send")) {
+		printf("HTTP transmit:\n");
 		logs_print_string(stdout, buf);
 	}
 	simple_socket_send(sock, buf, len);
@@ -34,9 +36,6 @@ void http_socket_send_buffer(int sock, const char* buf, size_t len) {
 
 // Sends HTTP string to server
 void http_socket_send_string(int sock, const char* str) {
-	if (logs_find("http_send")) {
-		logs_print_string(stdout, str);
-	}
 	http_socket_send_buffer(sock, str, strlen(str));
 }
 
@@ -49,6 +48,7 @@ size_t http_socket_recv(int sock, char* buf, size_t size) {
 	buf[len] = '\0';
 
 	if (logs_find("http_recv")) {
+		printf("HTTP receive:\n");
 		logs_print_string(stdout, buf);
 	}
 
@@ -103,14 +103,27 @@ void http_socket_recv_cmp_status(int sock, int code) {
 	// Ensures HTTP version and status code
 	http_socket_recv_cmp(sock, "HTTP/1.1 ");
 	http_socket_recv_cmp(sock, http_status(code));
+	
+	bool logging = logs_find("http_recv");
+	if (logging) {
+		printf("HTTP receive:\n");
+	}
 
 	// Ensures double CRLF after potential headers
+	char buf[BUF_LEN];
+	size_t offset = 0;
 	size_t index = 0;
 	do {
-		char buf[2];
-		assert(http_socket_recv(sock, buf, 2) == 1);
-		index = (buf[0] == "\r\n\r\n"[index]) ? index + 1 : 0;
+		assert(offset < sizeof(buf));
+		assert(simple_socket_recv(sock, buf + offset, 1) == 1);
+		index = (buf[offset] == "\r\n\r\n"[index]) ? index + 1 : 0;
+		offset++;
 	} while (index < 4);
+
+	if (logging) {
+		buf[offset] = '\0';
+		logs_print_string(stdout, buf);
+	}
 }
 
 

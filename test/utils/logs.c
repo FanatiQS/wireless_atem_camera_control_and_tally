@@ -4,6 +4,7 @@
 #include <string.h> // strlen, strncmp, strchr
 #include <stdbool.h> // bool, true, false
 #include <stdlib.h> // getenv, atoi, abort
+#include <assert.h> // assert
 
 #include "./logs.h"
 
@@ -69,7 +70,28 @@ void logs_print_buffer(FILE* pipe, uint8_t* buf, size_t bufLen) {
 	}
 }
 
-// Prints multiline string with clear start and end markers
+// Clearly prints multiline string
 void logs_print_string(FILE* pipe, const char* str) {
-	fprintf(pipe, "=====START=====\n%s\n=====END=====\n", str);
+	assert(pipe == stdout || pipe == stderr);
+	assert(str != NULL);
+
+	if (*str == '\0') {
+		return;
+	}
+
+	fprintf(pipe, "\x1b[7m");
+	do {
+		const unsigned char c = *str;
+		if (c == '\r') {
+			fprintf(pipe, "\\r");
+		}
+		else if (c == '\n') {
+			fprintf(pipe, "\\n\n");
+		}
+		else {
+			assert(c >= ' ' || c == '\t');
+			fprintf(pipe, "%c", c);
+		}
+	} while (*(++str) != '\0');
+	fprintf(pipe, "\x1b[m\n");
 }
