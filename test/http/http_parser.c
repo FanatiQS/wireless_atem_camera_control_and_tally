@@ -163,6 +163,11 @@ int main(void) {
 		test_code_segment_reset("GEF ", "/ HTTP/1.1\r\n\r\n", 405);
 	}
 
+	// Tests GET method in lower case
+	RUN_TEST() {
+		test_code("get / HTTP/1.1\r\n\r\n", 405);
+	}
+
 
 
 	// HTTP GET resource
@@ -246,6 +251,11 @@ int main(void) {
 	// Tests segmented invalid POST method full
 	RUN_TEST() {
 		test_code_segment_reset("POSF ", "/ HTTP/1.1\r\n\r\n", 405);
+	}
+
+	// Tests POST method in lower case
+	RUN_TEST() {
+		test_code("post / HTTP/1.1\r\n\r\n", 405);
 	}
 
 
