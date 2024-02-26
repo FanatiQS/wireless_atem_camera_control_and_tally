@@ -204,6 +204,16 @@ int main(void) {
 		test_code_segment("GET / HTTP/1.1", "\r\n\r\n", 200);
 	}
 
+	// Tests any URI should work
+	RUN_TEST() {
+		test_code("GET /invalid HTTP/1.1\r\n\r\n", 200);
+	}
+
+	// Tests GET with query parameters
+	RUN_TEST() {
+		test_code("GET /?key=value HTTP/1.1\r\n\r\n", 200);
+	}
+
 
 
 	// HTTP POST method
