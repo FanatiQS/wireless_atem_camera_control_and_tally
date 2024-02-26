@@ -1,9 +1,8 @@
-#include <stdio.h> // printf
-#include <stdlib.h> // getenv, atoi, malloc, free
+#include <stdio.h> // printf, fprintf, stderr
+#include <stdlib.h> // getenv, atoi, malloc, free, abort
 #include <errno.h> // ECONNRESET
 #include <stdbool.h> // bool
 #include <time.h> // time, NULL
-#include <assert.h> // assert
 
 #include "./http_sock.h" // http_socket_create, http_socket_send_string, http_socket_recv_len, http_socket_close, http_socket_recv_flush, http_socket_recv_cmp_status, http_socket_recv_error
 #include "../utils/runner.h" // RUN_TEST, runner_exit
@@ -26,7 +25,10 @@ int main(void) {
 	// Number of iterations to trigger memory leak if available
 	char* itersEnvStr = getenv("HTTP_CONNECTION_ITERS");
 	int iters = (itersEnvStr) ? atoi(itersEnvStr) : 1000;
-	assert(iters > 0);
+	if (iters <= 0) {
+		fprintf(stderr, "Invalid HTTP_CONNECTION_ITERS value: %s\n", itersEnvStr);
+		abort();
+	}
 
 	// Ensure there are no memory leaks for normal HTTP requests
 	RUN_TEST() {
