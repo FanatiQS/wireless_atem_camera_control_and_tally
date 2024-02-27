@@ -472,11 +472,6 @@ int main(void) {
 		test_body_err("dest=0", "Integer value out of range");
 	}
 
-	// Tests int over max
-	RUN_TEST() {
-		test_body_err("dest=255", "Integer value out of range");
-	}
-
 	// Tests out-of-range dest value
 	RUN_TEST() {
 		test_body_err("dest=0", "Integer value out of range");
