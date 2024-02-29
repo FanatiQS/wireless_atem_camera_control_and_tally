@@ -8,15 +8,16 @@ all:
 EXECS_DEVICE = http_parser http_connect dns_parser
 $(EXECS_DEVICE:%=$(BUILD_DIR)/%): $(BUILD_DIR)/%: http/%.c http/http_sock.c
 SCRIPTS_DEVICE += config/test_conf http/dns_lookup
-.PHONY: device
-device: $(EXECS_DEVICE) $(SCRIPTS_DEVICE)
+.PHONY: config_device
+config_device: $(EXECS_DEVICE) $(SCRIPTS_DEVICE)
 EXECS += $(EXECS_DEVICE)
 SCRIPTS += $(SCRIPTS_DEVICE)
 
 # All ATEM client tests applying for both device and official clients
 EXECS_ATEM_CLIENT_DEVICE = atem_client_open atem_client_close
 EXECS_ATEM_CLIENT += $(EXECS_ATEM_CLIENT_DEVICE)
-device: $(EXECS_ATEM_CLIENT_DEVICE)
+.PHONY: atem_client_device
+atem_client_device: $(EXECS_ATEM_CLIENT_DEVICE)
 
 # All ATEM client tests
 EXECS_ATEM_CLIENT += atem_client_open_extended atem_client_close_extended
