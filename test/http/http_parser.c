@@ -277,6 +277,11 @@ int main(void) {
 		test_timeout("POST /");
 	}
 
+	// Tests incomplete POST headers
+	RUN_TEST() {
+		test_timeout("POST / HTTP/1.1\r\nContent-Length: 0\r\n");
+	}
+
 	// Tests POST with no headers
 	RUN_TEST() {
 		test_code("POST / HTTP/1.1\r\n\r\n", 411);
