@@ -709,6 +709,7 @@ static inline err_t http_close(struct http_t* http) {
 	tcp_poll(http->pcb, NULL, 0);
 	tcp_recv(http->pcb, NULL);
 	tcp_err(http->pcb, NULL);
+	tcp_sent(http->pcb, NULL);
 	mem_free(http);
 
 	return ERR_OK;
