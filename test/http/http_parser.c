@@ -489,6 +489,13 @@ int main(void) {
 	RUN_TEST() {
 		test_body_err("dest=", "Invalid empty integer");
 	}
+	RUN_TEST() {
+		const char* req = "dest=";
+		int sock = http_socket_create();
+		http_socket_body_send_buffer(sock, req, 0);
+		http_socket_recv_cmp_status(sock, 400);
+		http_socket_recv_cmp(sock, "Invalid empty integer");
+	}
 
 	// Tests invalid character in ipv4 short
 	RUN_TEST() {
