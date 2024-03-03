@@ -5,7 +5,7 @@ BUILD_DIR = ../build/test
 all:
 
 # All tests specific to device configuration
-EXECS_DEVICE = http_parser http_connect dns_parser
+EXECS_DEVICE = http_parser http_close http_connect dns_parser
 $(EXECS_DEVICE:%=$(BUILD_DIR)/%): $(BUILD_DIR)/%: http/%.c http/http_sock.c
 SCRIPTS_DEVICE += config/test_conf http/dns_lookup
 .PHONY: config_device
