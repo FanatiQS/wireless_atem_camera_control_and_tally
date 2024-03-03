@@ -442,6 +442,16 @@ int main(void) {
 		test_body_err_segment("ss", "k=1", "Invalid POST body key");
 	}
 
+	// Tests invalid body key after valid key
+	RUN_TEST() {
+		test_body_err("dest=4&xyz=123", "Invalid POST body key");
+	}
+
+	// Tests key without delimiter or value
+	RUN_TEST() {
+		test_body_err("ssid", "Invalid POST body key");
+	}
+
 
 
 	// HTTP POST body invalid value
