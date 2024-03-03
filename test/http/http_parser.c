@@ -452,6 +452,11 @@ int main(void) {
 		test_body_err("ssid", "Invalid POST body key");
 	}
 
+	// Tests timeout for content length longer than body
+	RUN_TEST() {
+		test_timeout("POST / HTTP/1.1\r\nContent-Length: 5\r\n\r\ndest");
+	}
+
 
 
 	// HTTP POST body invalid value
