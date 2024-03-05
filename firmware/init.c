@@ -13,12 +13,6 @@
 #include "./dns.h" // captive_portal_init
 #include "./wlan.h" // wlan_station_dhcp_get
 
-// Defines empty LWIP thread locking macros when LWIP is not running in a separate thread
-#if NO_SYS
-#define LOCK_TCPIP_CORE()
-#define UNLOCK_TCPIP_CORE()
-#endif // NO_SYS
-
 
 
 #ifdef ESP8266
@@ -143,7 +137,7 @@ static void network_callback(System_Event_t* event) {
 
 
 // Initializes firmware
-static void _waccat_init(void) {
+void waccat_init(void) {
 	struct config_t conf;
 
 	// Initializes uart serial printing
@@ -271,16 +265,4 @@ static void _waccat_init(void) {
 	else {
 		DEBUG_PRINTF("Boot completed\n");
 	}
-}
-
-// Initilization wrapper to handle multithreaded platforms
-void waccat_init(void) {
-	// Required when LwIP core is running in another thread
-	LOCK_TCPIP_CORE();
-
-	// Initializes firmware
-	_waccat_init();
-
-	// Required when LwIP core is running in another thread
-	UNLOCK_TCPIP_CORE();
 }
