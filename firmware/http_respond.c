@@ -345,7 +345,28 @@ bool http_respond(struct http_t* http) {
 
 		// Writes HTTP response to successful POST and restarts device
 		case HTTP_RESPONSE_STATE_POST_ROOT:
-		HTTP_RESPONSE_CASE_STR(http, "HTTP/1.1 200 OK\r\n\r\nsuccess")
+		HTTP_RESPONSE_CASE_STR(http,
+			"HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n"
+			"<!DOCTYPEhtml>"
+				"<meta charset=utf-8>"
+				"<meta content=\"width=device-width\"name=viewport>"
+				"<title>Rebooting...</title>"
+				"<style>"
+					"body{"
+						"text-align:center;"
+						"font-family:system-ui;"
+						"margin:2em 0"
+					"}"
+				"</style>"
+			"<p>Device is rebooting...</p>"
+			"<p style=font-size:.8em>"
+				"Configuration page will automatically reload if device is reachable after reboot."
+				"<br>"
+				"If device can not connect to an ATEM switcher, "
+				"it will create its own wireless network for configuration."
+			"</p>"
+			"<script>location.reload()</script>"
+		)
 		http_reboot(http);
 		break;
 	}
