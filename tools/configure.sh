@@ -6,10 +6,10 @@ if [[ "$1" == "" || "$2" == "" ]]; then
 fi
 
 args=("${@:2}")
-res=$(curl --silent --max-time 5 $1 ${args[@]/#/--data-urlencode })
+res=$(curl --silent --show-error --max-time 5 $1 ${args[@]/#/--data-urlencode })
 
-if [[ "$res" != "<!DOCTYPE"* ]]; then
-	echo $res
-else
+if [[ "$res" == "<!DOCTYPE"* ]]; then
 	echo "Successfully commited configuration"
+elif [[ "$res" != "" ]]; then
+	echo $res
 fi
