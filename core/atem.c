@@ -207,7 +207,7 @@ bool atem_tally_updated(struct atem_t *atem) {
 	atem->pvwTally = atem->cmdBuf[TALLY_OFFSET + atem->dest] == TALLY_FLAG_PVW;
 
 	// Returns boolean indicating if tally was updated or not
- 	return oldTally != (atem->pgmTally | atem->pvwTally << 1);
+	return oldTally != (atem->pgmTally | atem->pvwTally << 1);
 }
 
 // Translates camera control data from ATEMs protocol to Blackmagis SDI camera control protocol

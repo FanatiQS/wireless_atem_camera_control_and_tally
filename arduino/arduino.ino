@@ -109,7 +109,7 @@ void handleHTTP() {
 	// Processes POST request
 	if (confServer.method() == HTTP_POST) {
 		// Sends response to post before switching network
- 		confServer.send(200, "text/html",
+		confServer.send(200, "text/html",
 			"<!DOCTYPEhtml><meta content=\"width=device-width\"name=viewport>"
 			"<title>Configure Device</title>"
 			"<div>Updated, device is rebooting..."

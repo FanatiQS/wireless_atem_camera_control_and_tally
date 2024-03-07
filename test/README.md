@@ -176,7 +176,7 @@ This tests that all known camera control parameters are still available and no n
 	* PTZ Control - Pan/Tilt Velocity
 5. Adjust these parameters manually from a control panel on camera 2 and make sure they are printed:
 	* Zoom should be printed as "Lens - Set continuous zoom (speed)"
- 	* Auto focus should be printed as "Lens - Instantaneous autofocus"
+	* Auto focus should be printed as "Lens - Instantaneous autofocus"
 	* Auto aperture (not available from the software, requires hardware panel) should be printed as "Lens - Instantaneous auto aperture ]"
 
 

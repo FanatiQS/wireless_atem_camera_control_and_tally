@@ -36,7 +36,7 @@ static struct packet_t* resendQueueTail;
 // Creates and opens proxy socket
 bool setupProxy() {
 	// Creates a UDP socket for the proxy server
- 	sockProxy = socket(AF_INET, SOCK_DGRAM, 0);
+	sockProxy = socket(AF_INET, SOCK_DGRAM, 0);
 	if (sockProxy == -1) {
 		return false;
 	}

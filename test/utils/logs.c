@@ -13,24 +13,24 @@
 // Searches for match in LOGS environment variable to detect if certain type of printing should be done
 bool logs_find(const char* match) {
 	// Gets environment variable for array of logs enabled
-    const char* start = getenv("LOGS");
+	const char* start = getenv("LOGS");
 	if (start == NULL) {
 		return false;
 	}
 
 	// Searches through string array for match
-    const char* end;
-    while ((end = strchr(start, ','))) {
-        if (!strncmp(start, match, (size_t)(end - start))) {
-            return true;
-        }
-        start = end + 1;
-    }
-    if (!strncmp(start, match, strlen(start))) {
-        return true;
-    }
+	const char* end;
+	while ((end = strchr(start, ','))) {
+		if (!strncmp(start, match, (size_t)(end - start))) {
+			return true;
+		}
+		start = end + 1;
+	}
+	if (!strncmp(start, match, strlen(start))) {
+		return true;
+	}
 
-    return false;
+	return false;
 }
 
 // Prints binary buffer in hex

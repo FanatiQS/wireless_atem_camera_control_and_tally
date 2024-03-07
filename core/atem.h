@@ -64,7 +64,7 @@ enum atem_commands_t {
 	ATEM_CMDNAME_VERSION = ATEM_CMDNAME('_', 'v', 'e', 'r'),
 	/**
 	 * Contains tally states for all inputs. Use atem_tally_updated() to
- 	 * store tally status for camera identifier \ref atem_t.dest in
+	 * store tally status for camera identifier \ref atem_t.dest in
 	 * \ref atem_t.
 	 */
 	ATEM_CMDNAME_TALLY = ATEM_CMDNAME('T', 'l', 'I', 'n'),
