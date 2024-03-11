@@ -22,6 +22,9 @@
 #if DEBUG_HTTP
 #error Enabling HTTP debugging requires general debugging to be enabled
 #endif // DEBUG_HTTP
+#if DEBUG_DNS
+#error Enabling DNS debugging requires general debugging to be enabled
+#endif // DEBUG_DNS
 #endif // !DEBUG
 
 
