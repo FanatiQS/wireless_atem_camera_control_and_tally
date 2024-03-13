@@ -262,7 +262,7 @@ static struct netif* atem_netif_get(const struct udp_pcb* pcb) {
 			netif_is_up(netif)
 			&& netif_is_link_up(netif)
 			&& !ip4_addr_isany_val(*netif_ip4_addr(netif))
-			&& ip4_addr_netcmp(&pcb->remote_ip, netif_ip4_addr(netif), netif_ip4_netmask(netif))
+			&& ip4_addr_netcmp(ip_2_ip4(&pcb->remote_ip), netif_ip4_addr(netif), netif_ip4_netmask(netif))
 		) {
 			return netif;
 		}
