@@ -123,7 +123,7 @@ static bool http_write_value_string(struct http_t* http, char* str, size_t maxle
 
 	size_t len = 0;
 	while (len < maxlen && str[len] != '\0') {
-		char* replacement;
+		const char* replacement;
 
 		// Escapes quote character
 		if (str[len] == '"') {
