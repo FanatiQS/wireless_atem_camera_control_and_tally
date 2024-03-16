@@ -20,7 +20,7 @@
 #include "./atem_sock.h" // atem_state
 #include "./http_respond.h" // http_respond, http_err, http_post_err
 #include "./flash.h" // CACHE_NAME, CACHE_SSID, CACHE_PSK, CONF_FLAG_DHCP, flash_cache_write
-#include "./wlan.h" // wlan_station_rssi
+#include "./wlan.h" // wlan_station_rssi, WLAN_STATION_NOT_CONNECTED
 
 
 
@@ -106,7 +106,7 @@ static inline bool http_write_wifi(struct http_t* http) {
 	int8_t rssi = wlan_station_rssi();
 
 	// Writes status when not connected to network
-	if (rssi > 0) {
+	if (rssi == WLAN_STATION_NOT_CONNECTED) {
 		return HTTP_SEND(http, "Not connected");
 	}
 

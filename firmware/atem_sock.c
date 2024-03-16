@@ -147,9 +147,7 @@ static inline void atem_process(struct udp_pcb* pcb) {
 			);
 			LED_CONN(true);
 			atem_state = atem_state_connected;
-			if (!wlan_softap_disable()) {
-				DEBUG_ERR_PRINTF("Failed to disable soft AP\n");
-			}
+			wlan_softap_disable();
 			break;
 		}
 		// Outputs tally status on GPIO pins and SDI

@@ -8,7 +8,9 @@
 #include "./flash.h" // struct config_t, CONF_FLAG_DHCP
 #include "./debug.h" // DEBUG_IP, DEBUG_PRINTF
 
-bool wlan_softap_disable(void);
+#define WLAN_STATION_NOT_CONNECTED 1
+
+void wlan_softap_disable(void);
 int8_t wlan_station_rssi(void);
 
 // Gets WLAN station DHCP client status from persistent storage data
