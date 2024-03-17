@@ -107,7 +107,7 @@ static inline void atem_process(struct udp_pcb* pcb) {
 		}
 		case ATEM_STATUS_WRITE: {
 #if DEBUG_ATEM
-			DEBUG_PRINTF("ATEM packet to acknowledge: %d\n", atem.lastRemoteId);
+			DEBUG_PRINTF("[ ATEM ] packet to acknowledge: %d\n", atem.lastRemoteId);
 #endif // DEBUG_ATEM
 			break;
 		}
@@ -123,7 +123,7 @@ static inline void atem_process(struct udp_pcb* pcb) {
 #if DEBUG_ATEM
 			if (atem.lastRemoteId > 0 && atem.writeBuf[ATEM_INDEX_FLAGS] == ATEM_FLAG_ACK) {
 				DEBUG_PRINTF(
-					"ATEM out-of-order packet: %d\n",
+					"[ ATEM ] out-of-order packet: %d\n",
 					atem.readBuf[ATEM_INDEX_REMOTEID_HIGH] << 8 |
 					atem.readBuf[ATEM_INDEX_REMOTEID_LOW]
 				);
