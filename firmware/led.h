@@ -32,8 +32,7 @@
 
 
 
-#ifdef ESP8266
-
+#ifdef ESP8266 /* ESP8266 NONOS SDK */
 #include <stdint.h> // uint32_t
 
 #include <eagle_soc.h> // GPIO_PIN_COUNT, GPIO_REG_WRITE, GPIO_PIN0_ADDRESS, GPIO_ENABLE_W1TS_ADDRESS, RTC_GPIO_ENABLE, GPIO_OUT_W1TC_DATA_MASK, GPIO_OUT_W1TS_ADDRESS, GPIO_OUT_W1TC_ADDRESS, WRITE_PERI_REG, RTC_GPIO_OUT
@@ -67,7 +66,30 @@ static inline void gpio_write(const uint32_t setMask, const uint32_t clearMask, 
 	}
 }
 
-#else // ESP8266
+#elif defined(ESP_PLATFORM) /* ESP-IDF */
+#include <stdint.h> // uint32_t
+
+#include <soc/gpio_struct.h> // GPIO
+#include <hal/gpio_types.h> // gpio_num_t, GPIO_MODE_OUTPUT
+#include <driver/gpio.h> // gpio_set_direction
+
+// Initializes GPIO pin
+static inline void led_init(const uint32_t pin) {
+	gpio_set_direction((gpio_num_t)pin, GPIO_MODE_OUTPUT);
+}
+
+// Writes bit field to GPIO register
+// Pin masks are known at compiletime so conditionals can be eliminated by compiler
+static inline void gpio_write(const uint32_t setMask, const uint32_t clearMask, const uint32_t values) {
+	if (setMask) {
+		GPIO.out_w1ts.val = values;
+	}
+	if (clearMask) {
+		GPIO.out_w1tc.val = ~values & clearMask;
+	}
+}
+
+#else
 
 // Throws compilation error if any LED pin is used for platform without LED support
 #if defined(PIN_PGM) || defined(PIN_PVW) || defined(PIN_CONN)

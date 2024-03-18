@@ -5,7 +5,7 @@
 #include <stdint.h> // uint8_t, uint32_t
 #include <stdbool.h> // bool
 
-#ifdef ESP8266
+#if defined(ESP8266) /* ESP8266 NONOS SDK */
 #include <user_interface.h> // struct station_config, struct softap_config
 
 // Cached wifi station and softap configurations for HTTP configuration
@@ -19,7 +19,20 @@ struct cache_wlan {
 #define CACHE_PSK wlan.station.password
 #define CACHE_NAME wlan.softap.ssid
 
-#endif // ESP8266
+#elif defined(ESP_PLATFORM) /* ESP-IDF */
+#include <esp_wifi.h> // wifi_config_t
+
+struct cache_wlan {
+	wifi_config_t station;
+	wifi_config_t softap;
+};
+
+// Linkers to ESP8266 specific wlan data structure in cache
+#define CACHE_SSID wlan.station.sta.ssid
+#define CACHE_PSK wlan.station.sta.password
+#define CACHE_NAME wlan.softap.ap.ssid
+
+#endif
 
 
 

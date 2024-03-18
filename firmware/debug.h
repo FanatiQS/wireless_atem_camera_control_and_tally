@@ -4,7 +4,10 @@
 
 #include <stdio.h> // printf
 
+#include <lwip/init.h> // LWIP_VERSION_STRING
+
 #include "./user_config.h" // DEBUG, DEBUG_TALLY, DEBUG_CC, DEBUG_ATEM, DEBUG_HTTP
+#include "./init.h" // FIRMWARE_VERSION_STRING
 
 
 
@@ -26,6 +29,51 @@
 #error Enabling DNS debugging requires general debugging to be enabled
 #endif // DEBUG_DNS
 #endif // !DEBUG
+
+// Defines debug flag labels
+#if DEBUG_TALLY
+#define BOOT_INFO_DEBUG_TALLY "Tally debug: enabled\n"
+#else // DEBUG_TALLY
+#define BOOT_INFO_DEBUG_TALLY "Tally debug: disabled\n"
+#endif // DEBUG_TALLY
+#if DEBUG_CC
+#define BOOT_INFO_DEBUG_CC "Camera control debug: enabled\n"
+#else // DEBUG_CC
+#define BOOT_INFO_DEBUG_CC "Camera control debug: disabled\n"
+#endif // DEBUG_CC
+#if DEBUG_ATEM
+#define BOOT_INFO_DEBUG_ATEM "ATEM debug: enabled\n"
+#else // DEBUG_ATEM
+#define BOOT_INFO_DEBUG_ATEM "ATEM debug: disabled\n"
+#endif // DEBUG_ATEM
+#if DEBUG_HTTP
+#define BOOT_INFO_DEBUG_HTTP "HTTP debug: enabled\n"
+#else // DEBUG_HTTP
+#define BOOT_INFO_DEBUG_HTTP "HTTP debug: disabled\n"
+#endif // DEBUG_HTTP
+#if DEBUG_DNS
+#define BOOT_INFO_DEBUG_DNS "DNS debug: enabled\n"
+#else // DEBUG_DNS
+#define BOOT_INFO_DEBUG_DNS "DNS debug: disabled\n"
+#endif // DEBUG_DNS
+
+// Defines undefined version for compilers where the macro does not exist
+#ifndef __VERSION__
+#define __VERSION__ "undefined"
+#endif // __VERSION__
+
+// Static information to print at boot
+#define DEBUG_BOOT_INFO\
+	"\n\n"\
+	"Booting...\n"\
+	BOOT_INFO_DEBUG_TALLY\
+	BOOT_INFO_DEBUG_CC\
+	BOOT_INFO_DEBUG_ATEM\
+	BOOT_INFO_DEBUG_HTTP\
+	BOOT_INFO_DEBUG_DNS\
+	"Using compiler version: " __VERSION__ "\n"\
+	"Firmware version: " FIRMWARE_VERSION_STRING "\n"\
+	"Using LwIP version: " LWIP_VERSION_STRING "\n"
 
 
 
@@ -49,6 +97,15 @@
 		IP_VALUE(local),\
 		IP_VALUE(netmask),\
 		IP_VALUE(gw)\
+	)
+
+// Prints wlan SSID and PSK
+#define DEBUG_WLAN(label, ssid, psk)\
+	DEBUG_PRINTF(\
+		label " SSID: \"%.*s\"\n"\
+		label " PSK: \"%.*s\"\n",\
+		(int)sizeof(ssid), ssid,\
+		(int)sizeof(psk), psk\
 	)
 
 
