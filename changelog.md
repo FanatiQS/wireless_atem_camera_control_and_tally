@@ -10,6 +10,12 @@
 * Huge styling rewrite to HTML configuration page.
 * Fixed IP address parser rejecting valid octets.
 * Fixed unable to update configuration when connected to ATEM.
+* Moved single source include file.
+* Prints DNS debug state at boot.
+* Fixed crash on HTTP client close before server sent response.
+* Fixed empty `atem=` causing successful configuration of invalid 0 value.
+* Updated successul HTTP configuration response message.
+* Fixed `DEBUG_ATEM` message prefix.
 
 ### Test Suite
 * Added more tests for atem_server.
@@ -17,6 +23,12 @@
 * Added environment variable to clamp number of lines printed from buffer.
 * Fixed tests not running correctly on linux.
 * Removed `run_*` prefix in make.
+* Added MSVC shims for posix APIs.
+* Added environment variable for clamping buffer prints.
+* Added more HTTP tests.
+* Overhauled `logs_print_string` output styling (uses ancii escape codes).
+* Separated make rule `device` into `config_device` and `atem_client_device`.
+* Added tests for closing before HTTP response.
 
 ### Tools
 * Added tool to generate HTML and HTTP on host.
