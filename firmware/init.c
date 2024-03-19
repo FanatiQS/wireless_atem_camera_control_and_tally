@@ -138,8 +138,6 @@ static void network_callback(System_Event_t* event) {
 
 // Initializes firmware
 void waccat_init(void) {
-	struct config_t conf;
-
 	// Initializes uart serial printing
 #if DEBUG
 #ifdef ESP8266
@@ -172,41 +170,30 @@ void waccat_init(void) {
 	}
 
 	// Initializes captive portal
-	if (!captive_portal_init()) {
-		return;
-	}
-
-	// Reads configuration from non-volotile flash memory
-	if (!flash_config_read(&conf)) {
-		return;
-	}
+	captive_portal_init();
 
 #ifdef ESP8266
+	// Gets WiFi softap SSID and PSK for debug printing and hostname
+	struct softap_config conf_ap;
+	if (!wifi_softap_get_config(&conf_ap)) {
+		DEBUG_ERR_PRINTF("Failed to read soft ap configuration\n");
+		return;
+	}
+
+	DEBUG_WLAN("Soft AP", conf_ap.ssid, conf_ap.password);
+
 	// Enables both station mode and ap mode without writing to flash
 	if (!wifi_set_opmode_current(STATIONAP_MODE)) {
 		DEBUG_ERR_PRINTF("Failed to set wifi opmode\n");
 		return;
 	}
 
-	// Gets WiFi softap SSID and PSK for debug printing and hostname
-	struct softap_config softapConfig;
-	if (!wifi_softap_get_config(&softapConfig)) {
-		DEBUG_ERR_PRINTF("Failed to read soft ap configuration\n");
-		return;
-	}
-
-	DEBUG_PRINTF(
-		"Soft AP SSID: \"%.*s\"\n"
-		"Soft AP PSK: \"%.*s\"\n",
-		softapConfig.ssid_len, softapConfig.ssid,
-		(int)sizeof(softapConfig.password), softapConfig.password
-	);
+	// Terminates max length device name, nothing else in the struct is safe to use after this
+	((char*)conf_ap.ssid)[sizeof(conf_ap.ssid)] = '\0';
 
 	// Sets hostname of device
-	((char*)softapConfig.ssid)[sizeof(softapConfig.ssid)] = '\0';
-	if (!wifi_station_set_hostname((char*)softapConfig.ssid)) {
+	if (!wifi_station_set_hostname((char*)conf_ap.ssid)) {
 		DEBUG_ERR_PRINTF("Failed to set hostname\n");
-		return;
 	}
 
 	// Sets WiFi to automatically reconnect when connection is lost
@@ -217,25 +204,22 @@ void waccat_init(void) {
 
 #if DEBUG
 	// Gets WiFi station SSID and PSK for debug printing
-	struct station_config stationConfig;
-	if (!wifi_station_get_config(&stationConfig)) {
+	struct station_config conf_sta;
+	if (!wifi_station_get_config(&conf_sta)) {
 		DEBUG_ERR_PRINTF("Failed to get Station configuration\n");
 		return;
 	}
-	DEBUG_PRINTF(
-		"Station SSID: \"%.*s\"\n"
-		"Station PSK: \"%.*s\"\n",
-		(int)sizeof(stationConfig.ssid), stationConfig.ssid,
-		(int)sizeof(stationConfig.password), stationConfig.password
-	);
+	else {
+		DEBUG_WLAN("Station", conf_sta.ssid, conf_sta.password);
+	}
 #endif // DEBUG
 
 	// Disables station scanning when soft ap is used to fix soft ap stability issue
 	wifi_set_event_handler_cb(network_callback);
 
-	// Starts connecting to WiFi station
-	if (!wifi_station_connect()) {
-		DEBUG_ERR_PRINTF("Failed to start wifi connection\n");
+	// Reads configuration from non-volotile flash memory
+	struct config_t conf;
+	if (!flash_config_read(&conf)) {
 		return;
 	}
 
@@ -255,14 +239,18 @@ void waccat_init(void) {
 			return;
 		}
 	}
+
+	// Starts connecting to WiFi station
+	if (!wifi_station_connect()) {
+		DEBUG_ERR_PRINTF("Failed to start wifi connection\n");
+		return;
+	}
 #endif // ESP8266
 
 	// Initializes connection to ATEM
-	struct udp_pcb* pcb = atem_init(conf.atemAddr, conf.dest);
-	if (pcb == NULL) {
-		DEBUG_PRINTF("Boot failed\n");
+	if (!atem_init(conf.atemAddr, conf.dest)) {
+		return;
 	}
-	else {
-		DEBUG_PRINTF("Boot completed\n");
-	}
+
+	DEBUG_PRINTF("Boot completed\n");
 }
