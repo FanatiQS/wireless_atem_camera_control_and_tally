@@ -1,6 +1,5 @@
 #include <stdbool.h> // true
 
-#include <lwip/udp.h> // struct udp_pcb
 #include <lwip/init.h> // LWIP_VERSION
 
 #include "./user_config.h" // DEBUG, VERSIONS_ANY
@@ -14,7 +13,6 @@
 
 
 #ifdef ESP8266
-#include <string.h> // strncpy
 #include <user_interface.h> // wifi_set_opmode_current, STATIONAP_MODE, wifi_station_set_reconnect_policy, struct station_config, wifi_station_get_config, wifi_set_event_handler_cb, wifi_station_connect, wifi_station_dchpc_stop, wifi_set_ip_info, STATION_IF, ip_info, uart_div_modify, struct softap, wifi_softap_get_config, wifi_station_set_hostname
 #include <version.h> // ESP_SDK_VERSION_STRING, ESP_SDK_VERSION_NUMBER
 #include <eagle_soc.h> // UART_CLK_FREQ, WRITE_PERI_REG, PERIPHS_IO_MUX_U0TXD_U
