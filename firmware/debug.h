@@ -6,7 +6,7 @@
 
 #include <lwip/init.h> // LWIP_VERSION_STRING
 
-#include "./user_config.h" // DEBUG, DEBUG_TALLY, DEBUG_CC, DEBUG_ATEM, DEBUG_HTTP
+#include "./user_config.h" // DEBUG, DEBUG_TALLY, DEBUG_CC, DEBUG_ATEM, DEBUG_HTTP, DEBUG_DNS
 #include "./init.h" // FIRMWARE_VERSION_STRING
 
 
