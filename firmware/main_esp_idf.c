@@ -96,6 +96,9 @@ void waccat_init(void) {
 		return;
 	}
 
+	// Terminates max length device name, nothing else in the struct is safe to use after this
+	((char*)conf_ap.ap.ssid)[sizeof(conf_ap.ap.ssid)] = '\0';
+
 	// Sets hostname of device
 	err = esp_netif_set_hostname(netif_sta, (char*)conf_ap.ap.ssid);
 	if (err != ESP_OK) {
