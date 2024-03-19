@@ -2,14 +2,13 @@
 
 #include <lwip/udp.h> // struct udp_pcb
 #include <lwip/tcpip.h> // LOCK_TCPIO_CORE, UNLCOK_TCPIP_CORE
-#include <lwip/init.h> // LWIP_VERSION_STRING, LWIP_VERSION
+#include <lwip/init.h> // LWIP_VERSION
 
-#include "./user_config.h" // DEBUG, DEBUG_TALLY, DEBUG_CC, DEBUG_HTTP, VERSIONS_ANY
-#include "./debug.h" // DEBUG_PRINTF, DEBUG_ERR_PRINTF, WRAP
+#include "./user_config.h" // DEBUG, VERSIONS_ANY
+#include "./debug.h" // DEBUG_PRINTF, DEBUG_ERR_PRINTF, WRAP, DEBUG_BOOT_INFO
 #include "./atem_sock.h" // atem_init
 #include "./http.h" // http_init
 #include "./flash.h" // struct config_t, flash_config_read
-#include "./init.h" // FIRMWARE_VERSION_STRING
 #include "./dns.h" // captive_portal_init
 #include "./wlan.h" // wlan_station_dhcp_get
 
@@ -87,48 +86,6 @@ static void network_callback(System_Event_t* event) {
 
 
 
-// Defines string label of DEBUG_TALLY flag
-#if DEBUG_TALLY
-#define DEBUG_TALLY_LABEL "enabled"
-#else // DEBUG_TALLY
-#define DEBUG_TALLY_LABEL "disabled"
-#endif // DEBUG_TALLY
-
-// Defines string label of DEBUG_CC flag
-#if DEBUG_CC
-#define DEBUG_CC_LABEL "enabled"
-#else // DEBUG_CC
-#define DEBUG_CC_LABEL "disabled"
-#endif // DEBUG_CC
-
-// Defines string label of DEBUG_ATEM flag
-#if DEBUG_ATEM
-#define DEBUG_ATEM_LABEL "enabled"
-#else // DEBUG_ATEM
-#define DEBUG_ATEM_LABEL "disabled"
-#endif // DEBUG_ATEM
-
-// Defines string label of DEBUG_HTTP flag
-#if DEBUG_HTTP
-#define DEBUG_HTTP_LABEL "enabled"
-#else // DEBUG_ATEM
-#define DEBUG_HTTP_LABEL "disabled"
-#endif // DEBUG_HTTP
-
-// Defines string label of DEBUG_DNS flag
-#if DEBUG_DNS
-#define DEBUG_DNS_LABEL "enabled"
-#else // DEBUG_ATEM
-#define DEBUG_DNS_LABEL "disabled"
-#endif // DEBUG_DNS
-
-// Defines undefined version for compilers where the macro does not exist
-#ifndef __VERSION__
-#define __VERSION__ "undefined"
-#endif // __VERSION__
-
-
-
 // Sets default uart baud rate if not specified
 #ifndef DEBUG_BAUD
 #define DEBUG_BAUD 115200
@@ -147,21 +104,8 @@ void waccat_init(void) {
 #endif // DEBUG
 
 	DEBUG_PRINTF(
-		"\n\n"
-		"Booting...\n"
-
-		// Prints versions
-		"Firmware version: " FIRMWARE_VERSION_STRING "\n"
-		"Using LwIP version: " LWIP_VERSION_STRING "\n"
+		DEBUG_BOOT_INFO
 		BOOT_INFO_VERSIONS
-		"Using compiler version: " __VERSION__ "\n"
-
-		// Prints debugging flags enabled/disabled state
-		"Tally debug: " DEBUG_TALLY_LABEL "\n"
-		"Camera control debug: " DEBUG_CC_LABEL "\n"
-		"ATEM debug: " DEBUG_ATEM_LABEL "\n"
-		"HTTP debug: " DEBUG_HTTP_LABEL "\n"
-		"DNS debug: " DEBUG_DNS_LABEL "\n"
 	);
 
 	// Initializes the HTTP configuration server
