@@ -2,6 +2,9 @@
 #ifndef LED_H
 #define LED_H
 
+#include <stdbool.h> // bool, true
+#include <stdint.h> // uint32_t
+
 #include "./user_config.h" // PIN_CONN, PIN_PGM, PIN_PVW
 
 
@@ -33,8 +36,6 @@
 
 
 #ifdef ESP8266 /* ESP8266 NONOS SDK */
-#include <stdint.h> // uint32_t
-
 #include <eagle_soc.h> // GPIO_PIN_COUNT, GPIO_REG_WRITE, GPIO_PIN0_ADDRESS, GPIO_ENABLE_W1TS_ADDRESS, RTC_GPIO_ENABLE, GPIO_OUT_W1TC_DATA_MASK, GPIO_OUT_W1TS_ADDRESS, GPIO_OUT_W1TC_ADDRESS, WRITE_PERI_REG, RTC_GPIO_OUT
 
 // GPIO16 is not a normal GPIO pin and is processed in other registers as RTC pin
@@ -54,21 +55,19 @@ static inline void led_init(const uint32_t pin) {
 
 // Writes bit field to GPIO and/or RTC register
 // Pin masks are known at compiletime so conditionals can be eliminated by compiler
-static inline void gpio_write(const uint32_t setMask, const uint32_t clearMask, const uint32_t values) {
-	if (setMask & GPIO_OUT_W1TC_DATA_MASK) {
+static inline void gpio_write(const bool set, const bool clr, const uint32_t mask, const uint32_t values) {
+	if (set && (mask & GPIO_OUT_W1TC_DATA_MASK)) {
 		GPIO_REG_WRITE(GPIO_OUT_W1TS_ADDRESS, values & GPIO_OUT_W1TC_DATA_MASK);
 	}
-	if (clearMask & GPIO_OUT_W1TC_DATA_MASK) {
-		GPIO_REG_WRITE(GPIO_OUT_W1TC_ADDRESS, ~values & clearMask & GPIO_OUT_W1TC_DATA_MASK);
+	if (clr && (mask & GPIO_OUT_W1TC_DATA_MASK)) {
+		GPIO_REG_WRITE(GPIO_OUT_W1TC_ADDRESS, (values ^ mask) & GPIO_OUT_W1TC_DATA_MASK);
 	}
-	if (((setMask | clearMask) >> RTC_PIN) & 1) {
+	if (mask & (1 << RTC_PIN)) {
 		WRITE_PERI_REG(RTC_GPIO_OUT, (values >> RTC_PIN) & 1);
 	}
 }
 
 #elif defined(ESP_PLATFORM) /* ESP-IDF */
-#include <stdint.h> // uint32_t
-
 #include <soc/gpio_struct.h> // GPIO
 #include <hal/gpio_types.h> // gpio_num_t, GPIO_MODE_OUTPUT
 #include <driver/gpio.h> // gpio_set_direction
@@ -80,12 +79,12 @@ static inline void led_init(const uint32_t pin) {
 
 // Writes bit field to GPIO register
 // Pin masks are known at compiletime so conditionals can be eliminated by compiler
-static inline void gpio_write(const uint32_t setMask, const uint32_t clearMask, const uint32_t values) {
-	if (setMask) {
+static inline void gpio_write(const bool set, const bool clr, const uint32_t mask, const uint32_t values) {
+	if (set) {
 		GPIO.out_w1ts.val = values;
 	}
-	if (clearMask) {
-		GPIO.out_w1tc.val = ~values & clearMask;
+	if (clr) {
+		GPIO.out_w1tc.val = values ^ mask;
 	}
 }
 
@@ -106,12 +105,12 @@ static inline void gpio_write(const uint32_t setMask, const uint32_t clearMask, 
 
 // Uses gpio_write if LED_TALLY is not defined to write tally states to registers as bit fields
 #ifndef LED_TALLY
-#define LED_TALLY(pgm, pvw) gpio_write(PIN_TALLY_MASK, PIN_TALLY_MASK, (pgm * PIN_PGM_MASK) | (pvw * PIN_PVW_MASK))
+#define LED_TALLY(pgm, pvw) gpio_write(true, true, PIN_TALLY_MASK, ((pgm) * PIN_PGM_MASK) | ((pvw) * PIN_PVW_MASK))
 #endif // LED_TALLY
 
 // Uses gpio_write if LED_CONN is not defined to write connection state to register as bit field
 #ifndef LED_CONN
-#define LED_CONN(state) gpio_write(!state * PIN_CONN_MASK, state * PIN_CONN_MASK, !state * PIN_CONN_MASK)
+#define LED_CONN(state) gpio_write((state), (!state), PIN_CONN_MASK, (state) * PIN_CONN_MASK)
 #endif // LED_CONN
 
 #endif // LED_H
