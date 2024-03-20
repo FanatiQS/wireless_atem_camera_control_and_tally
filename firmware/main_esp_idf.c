@@ -1,5 +1,5 @@
-#include <assert.h> // assert
 #include <stddef.h> // NULL
+#include <stdlib.h> // abort
 
 #include "./user_config.h" // DEBUG
 #include "./debug.h" // DEBUG_PRINTF, DEBUG_ERR_PRINTF, WRAP, DEBUG_BOOT_INFO, DEBUG_WLAN
@@ -71,7 +71,9 @@ void waccat_init(void) {
 	ESP_ERROR_CHECK(esp_wifi_init(&cfg));
 
 	// Initializes the HTTP configuration server
-	assert(http_init());
+	if (!http_init()) {
+		abort();
+	}
 
 	// Initializes captive portal
 	captive_portal_init();
