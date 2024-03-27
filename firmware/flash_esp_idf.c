@@ -48,13 +48,17 @@ bool flash_cache_read(struct cache_t* cache) {
 
 // Writes cached HTTP configuration to persistent storage and reboots
 void flash_cache_write(struct cache_t* cache) {
+	esp_err_t err;
+
 	// Writes wlan configuration and device name to persistent storage
-	if (esp_wifi_set_config(ESP_IF_WIFI_STA, &cache->wlan.station) != ESP_OK) {
-		DEBUG_ERR_PRINTF("Failed to write station config");
+	err = esp_wifi_set_config(ESP_IF_WIFI_STA, &cache->wlan.station);
+	if (err != ESP_OK) {
+		DEBUG_ERR_PRINTF("Failed to write station config: %x\n", err);
 		return;
 	}
-	if (esp_wifi_set_config(ESP_IF_WIFI_AP, &cache->wlan.softap) != ESP_OK) {
-		DEBUG_ERR_PRINTF("Failed to write softap config");
+	err = esp_wifi_set_config(ESP_IF_WIFI_AP, &cache->wlan.softap);
+	if (err != ESP_OK) {
+		DEBUG_ERR_PRINTF("Failed to write softap config: %x\n", err);
 		return;
 	}
 
@@ -64,12 +68,14 @@ void flash_cache_write(struct cache_t* cache) {
 		return;
 	}
 	if (memcmp(&conf_current, &cache->config, sizeof(conf_current)) != 0) {
-		if (spi_flash_erase_sector(CONFIG_START / SPI_FLASH_SEC_SIZE) != ESP_OK) {
-			DEBUG_ERR_PRINTF("Failed to erase flash sector\n");
+		err = spi_flash_erase_sector(CONFIG_START / SPI_FLASH_SEC_SIZE);
+		if (err != ESP_OK) {
+			DEBUG_ERR_PRINTF("Failed to erase flash sector: %x\n", err);
 			return;
 		}
-		if (spi_flash_write(CONFIG_START, &cache->config, sizeof(cache->config)) != ESP_OK) {
-			DEBUG_ERR_PRINTF("Failed to write config data\n");
+		err = spi_flash_write(CONFIG_START, &cache->config, sizeof(cache->config));
+		if (err != ESP_OK) {
+			DEBUG_ERR_PRINTF("Failed to write config data: %x\n", err);
 			return;
 		}
 	}
