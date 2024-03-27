@@ -97,7 +97,7 @@ static bool http_write(struct http_t* http, const char* buf, size_t len) {
 static inline bool http_write_uptime(struct http_t* http) {
 	char buf[sizeof("1000000h 59m 59s")];
 	time_t t = time(NULL);
-	int len = sprintf(buf, "%uh %02um %02us", (uint32_t)(t / 60 / 60), (uint32_t)(t / 60 % 60), (uint32_t)(t % 60));
+	int len = sprintf(buf, "%luh %02um %02us", (uint32_t)(t / 60 / 60), (unsigned)(t / 60 % 60), (unsigned)(t % 60));
 	return tcp_write(http->pcb, buf, len, TCP_WRITE_FLAG_COPY) == ERR_OK;
 }
 
