@@ -3,10 +3,15 @@
 
 #include "./flash.h" // struct config_t
 
-#include <esp_spi_flash.h> // spi_flash_read, SPI_FLASH_SEC_SIZE, spi_flash_erase_sector, spi_flash_write
+#include <esp_flash.h> // esp_flash_read, esp_flash_erase_region, esp_flash_write
 #include <esp_err.h> // esp_err_t, ESP_OK
 #include <esp_wifi.h> // esp_wifi_get_config, ESP_IF_WIFI_STA, ESP_IF_WIFI_AP, esp_wifi_set_config
 #include <esp_system.h> // esp_restart
+#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 0, 0)
+#include <spi_flash_mmap.h> // SPI_FLASH_SEC_SIZE
+#else
+#include <esp_spi_flash.h> // SPI_FLASH_SEC_SIZE
+#endif // ESP_IDF_VERSION
 
 #include "./debug.h" // DEBUG_ERR_PRINTF, DEBUG_HTTP_PRINTF
 #include "./flash.h" // struct config_t, struct cache_t
@@ -16,7 +21,7 @@
 
 // Reads configuration from persistent storage
 bool flash_config_read(struct config_t* conf) {
-	esp_err_t err = spi_flash_read(CONFIG_START, conf, sizeof(*conf));
+	esp_err_t err = esp_flash_read(NULL, conf, CONFIG_START, sizeof(*conf));
 	if (err != ESP_OK) {
 		DEBUG_ERR_PRINTF("Failed to read config data from flash: %x\n", err);
 		return false;
@@ -68,12 +73,12 @@ void flash_cache_write(struct cache_t* cache) {
 		return;
 	}
 	if (memcmp(&conf_current, &cache->config, sizeof(conf_current)) != 0) {
-		err = spi_flash_erase_sector(CONFIG_START / SPI_FLASH_SEC_SIZE);
+		err = esp_flash_erase_region(NULL, CONFIG_START, SPI_FLASH_SEC_SIZE);
 		if (err != ESP_OK) {
 			DEBUG_ERR_PRINTF("Failed to erase flash sector: %x\n", err);
 			return;
 		}
-		err = spi_flash_write(CONFIG_START, &cache->config, sizeof(cache->config));
+		err = esp_flash_write(NULL, &cache->config, CONFIG_START, sizeof(cache->config));
 		if (err != ESP_OK) {
 			DEBUG_ERR_PRINTF("Failed to write config data: %x\n", err);
 			return;
