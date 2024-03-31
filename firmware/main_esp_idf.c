@@ -81,16 +81,6 @@ void waccat_init(void) {
 	// Enables handling softap connections even if the initilization fails further down
 	ESP_ERROR_CHECK(esp_wifi_start());
 
-	// Gets WiFi softap SSID and PSK for debug printing and hostname
-	wifi_config_t conf_ap;
-	err = esp_wifi_get_config(WIFI_IF_AP, &conf_ap);
-	if (err != ESP_OK) {
-		DEBUG_ERR_PRINTF("Failed to read soft ap configuration: %x\n", err);
-		return;
-	}
-
-	DEBUG_WLAN("Soft AP", conf_ap.ap.ssid, conf_ap.ap.password);
-
 	// Enable wlan station along with existing softap
 	err = esp_wifi_set_mode(WIFI_MODE_APSTA);
 	if (err != ESP_OK) {
@@ -98,13 +88,23 @@ void waccat_init(void) {
 		return;
 	}
 
-	// Terminates max length device name, nothing else in the struct is safe to use after this
-	((char*)conf_ap.ap.ssid)[sizeof(conf_ap.ap.ssid)] = '\0';
-
-	// Sets hostname of device
-	err = esp_netif_set_hostname(netif_sta, (char*)conf_ap.ap.ssid);
+	// Gets WiFi softap SSID and PSK for debug printing and hostname
+	wifi_config_t conf_ap;
+	err = esp_wifi_get_config(WIFI_IF_AP, &conf_ap);
 	if (err != ESP_OK) {
-		DEBUG_ERR_PRINTF("Failed to set hostname: %x\n", err);
+		DEBUG_ERR_PRINTF("Failed to read soft ap configuration: %x\n", err);
+	}
+	else {
+		DEBUG_WLAN("Soft AP", conf_ap.ap.ssid, conf_ap.ap.password);
+
+		// Terminates max length device name, nothing else in the struct is safe to use after this
+		((char*)conf_ap.ap.ssid)[sizeof(conf_ap.ap.ssid)] = '\0';
+
+		// Sets hostname of device
+		err = esp_netif_set_hostname(netif_sta, (char*)conf_ap.ap.ssid);
+		if (err != ESP_OK) {
+			DEBUG_ERR_PRINTF("Failed to set hostname: %x\n", err);
+		}
 	}
 
 #if DEBUG
