@@ -17,6 +17,7 @@
 #include <esp_netif_defaults.h> // esp_netif_create_default_wifi_ap, esp_netif_create_default_wifi_sta
 #include <esp_event.h> // esp_event_loop_create_default, esp_event_handler_instance_register
 #include <esp_err.h> // ESP_OK, ESP_ERROR_CHECK, esp_err_t
+#include <nvs_flash.h> // nvs_flash_init
 #include <esp_idf_version.h> // ESP_IDF_VERSION, ESP_IDF_VERSION_VAL
 #if ARDUINO
 #include <core_version.h> // ARDUINO_ESP32_GIT_DESC, ARDUINO_ESP32_GIT_VER
@@ -52,7 +53,11 @@ static void wlan_reconnect_callback() {
 }
 
 // Initializes firmware
+#if ARDUINO
 void waccat_init(void) {
+#else // ARDUINO
+void app_main(void) {
+#endif // ARDUINO
 	esp_err_t err;
 
 	DEBUG_PRINTF(
@@ -63,6 +68,7 @@ void waccat_init(void) {
 	);
 
 	// Initializes wlan and its underlying components
+	ESP_ERROR_CHECK(nvs_flash_init());
 	ESP_ERROR_CHECK(esp_netif_init());
 	ESP_ERROR_CHECK(esp_event_loop_create_default());
 	esp_netif_create_default_wifi_ap();
