@@ -18,30 +18,38 @@
 #include "./sdi.h" // SDI_ENABLED, sdi_write_tally, sdi_write_cc, sdi_init
 #include "./debug.h" // DEBUG_PRINTF, DEBUG_ERR_PRINTF, DEBUG_IP, IP_FMT, IP_VALUE, WRAP
 #include "./wlan.h" // wlan_softap_disable
+#include "./ws2812.h" // ws2812_init, ws2812_update
 #include "./atem_sock.h"
 
 
 
-// Logging string for PGM tally pins
+// Logging string for PGM tally pin
 #if PIN_PGM
 #define BOOT_INFO_PIN_PGM "Tally PGM pin: " WRAP(PIN_PGM) "\n"
 #else // PIN_PGM
 #define BOOT_INFO_PIN_PGM "Tally PGM: disabled\n"
 #endif // PIN_PGM
 
-// Logging string for PVW tally pins
+// Logging string for PVW tally pin
 #if PIN_PVW
 #define BOOT_INFO_PIN_PVW "Tally PVW pin: " WRAP(PIN_PVW) "\n"
 #else // PIN_PVW
 #define BOOT_INFO_PIN_PVW "Tally PVW: disabled\n"
 #endif // PIN_PVW
 
-// Logging string for CONN LED pins
+// Logging string for CONN LED pin
 #if PIN_CONN
 #define BOOT_INFO_PIN_CONN "CONN LED pin: " WRAP(PIN_CONN) "\n"
 #else // PIN_CONN
 #define BOOT_INFO_PIN_CONN "CONN LED: disabled\n"
 #endif // PIN_CONN
+
+// Logging string for RGB tally LED pin
+#if TALLY_RGB_PIN
+#define BOOT_INFO_TALLY_RGB_PIN "RGB TALLY LED pin: " WRAP(TALLY_RGB_PIN) "\n"
+#else // TALLY_RGB_PIN
+#define BOOT_INFO_TALLY_RGB_PIN "RGB TALLY LED: disabled\n"
+#endif // TALLY_RGB_PIN
 
 // Logging string for I2C pins
 #ifdef SDI_ENABLED
@@ -73,6 +81,7 @@ const char* const atem_state_disconnected = "Disconnected";
 static inline void tally_reset(void) {
 	LED_CONN(false ^ PIN_CONN_INVERTED);
 	LED_TALLY(false, false);
+	ws2812_update(false, false);
 	sdi_write_tally(atem.dest, false, false);
 	atem.pgmTally = false;
 	atem.pvwTally = false;
@@ -169,6 +178,9 @@ static inline void atem_process(struct udp_pcb* pcb) {
 
 			// Sets tally pin states
 			LED_TALLY(atem.pgmTally, atem.pvwTally);
+
+			// Sets RGB tally states
+			ws2812_update(atem.pgmTally, atem.pvwTally);
 
 			// Writes tally data over SDI
 			sdi_write_tally(atem.dest, atem.pgmTally, atem.pvwTally);
@@ -329,6 +341,7 @@ struct udp_pcb* atem_init(uint32_t addr, uint8_t dest) {
 		BOOT_INFO_PIN_PGM
 		BOOT_INFO_PIN_PVW
 		BOOT_INFO_PIN_CONN
+		BOOT_INFO_TALLY_RGB_PIN
 		BOOT_INFO_PIN_I2C
 	);
 
@@ -344,6 +357,9 @@ struct udp_pcb* atem_init(uint32_t addr, uint8_t dest) {
 #endif // PIN_PVW
 	LED_TALLY(false, false);
 	LED_CONN(false ^ PIN_CONN_INVERTED);
+
+	// Initializes RGB LED
+	ws2812_init();
 
 	// Initializes ATEM struct for handshake
 	atem_connection_reset(&atem);
