@@ -113,34 +113,28 @@ void waccat_init(void) {
 	// Initializes captive portal
 	captive_portal_init();
 
-#ifdef ESP8266
-	// Gets WiFi softap SSID and PSK for debug printing and hostname
-	struct softap_config conf_ap;
-	if (!wifi_softap_get_config(&conf_ap)) {
-		DEBUG_ERR_PRINTF("Failed to read soft ap configuration\n");
-		return;
-	}
-
-	DEBUG_WLAN("Soft AP", conf_ap.ssid, conf_ap.password);
-
 	// Enables both station mode and ap mode without writing to flash
 	if (!wifi_set_opmode_current(STATIONAP_MODE)) {
 		DEBUG_ERR_PRINTF("Failed to set wifi opmode\n");
 		return;
 	}
 
-	// Terminates max length device name, nothing else in the struct is safe to use after this
-	((char*)conf_ap.ssid)[sizeof(conf_ap.ssid)] = '\0';
-
-	// Sets hostname of device
-	if (!wifi_station_set_hostname((char*)conf_ap.ssid)) {
-		DEBUG_ERR_PRINTF("Failed to set hostname\n");
+#ifdef ESP8266
+	// Gets WiFi softap SSID and PSK for debug printing and hostname
+	struct softap_config conf_ap;
+	if (!wifi_softap_get_config(&conf_ap)) {
+		DEBUG_ERR_PRINTF("Failed to read soft ap configuration\n");
 	}
+	else {
+		DEBUG_WLAN("Soft AP", conf_ap.ssid, conf_ap.password);
 
-	// Sets WiFi to automatically reconnect when connection is lost
-	if (!wifi_station_set_reconnect_policy(true)) {
-		DEBUG_ERR_PRINTF("Failed to set reconnect policy\n");
-		return;
+		// Terminates max length device name, nothing else in the struct is safe to use after this
+		((char*)conf_ap.ssid)[sizeof(conf_ap.ssid)] = '\0';
+
+		// Sets hostname of device
+		if (!wifi_station_set_hostname((char*)conf_ap.ssid)) {
+			DEBUG_ERR_PRINTF("Failed to set hostname\n");
+		}
 	}
 
 #if DEBUG
@@ -148,12 +142,16 @@ void waccat_init(void) {
 	struct station_config conf_sta;
 	if (!wifi_station_get_config(&conf_sta)) {
 		DEBUG_ERR_PRINTF("Failed to get Station configuration\n");
-		return;
 	}
 	else {
 		DEBUG_WLAN("Station", conf_sta.ssid, conf_sta.password);
 	}
 #endif // DEBUG
+
+	// Sets WiFi to automatically reconnect when connection is lost
+	if (!wifi_station_set_reconnect_policy(true)) {
+		DEBUG_ERR_PRINTF("Failed to set reconnect policy\n");
+	}
 
 	// Disables station scanning when soft ap is used to fix soft ap stability issue
 	wifi_set_event_handler_cb(network_callback);
