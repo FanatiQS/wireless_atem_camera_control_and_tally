@@ -49,7 +49,10 @@
 
 // Automatically reconnects wlan if disconnected
 static void wlan_reconnect_callback() {
-	esp_wifi_connect();
+	esp_err_t err = esp_wifi_connect();
+	if (err != ESP_OK) {
+		DEBUG_ERR_PRINTF("Failed to reconnect wlan station: %x\n", err);
+	}
 }
 
 // Initializes firmware
