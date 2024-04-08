@@ -350,7 +350,7 @@ bool http_respond(struct http_t* http) {
 					"body{"
 						"text-align:center;"
 						"font-family:system-ui;"
-						"margin:2em 0"
+						"margin:2em 1em"
 					"}"
 				"</style>"
 			"<p>Device is rebooting...</p>"
