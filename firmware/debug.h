@@ -127,6 +127,13 @@
 #define DEBUG_DNS_PRINTF(...)
 #endif // DEBUG_DNS
 
+// Only prints ATEM debug info when it is enabled in user_config.h
+#if DEBUG_ATEM
+#define DEBUG_ATEM_PRINTF(...) DEBUG_PRINTF("[ ATEM ] " __VA_ARGS)
+#else // DEBUG_ATEM
+#define DEBUG_ATEM_PRINTF(...)
+#endif // DEBUG_ATEM
+
 
 
 // Wraps argument into a string
