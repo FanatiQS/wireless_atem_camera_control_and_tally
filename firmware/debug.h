@@ -129,7 +129,7 @@
 
 // Only prints ATEM debug info when it is enabled in user_config.h
 #if DEBUG_ATEM
-#define DEBUG_ATEM_PRINTF(...) DEBUG_PRINTF("[ ATEM ] " __VA_ARGS)
+#define DEBUG_ATEM_PRINTF(...) DEBUG_PRINTF("[ ATEM ] " __VA_ARGS__)
 #else // DEBUG_ATEM
 #define DEBUG_ATEM_PRINTF(...)
 #endif // DEBUG_ATEM

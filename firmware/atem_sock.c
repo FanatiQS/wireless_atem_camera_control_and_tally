@@ -16,7 +16,7 @@
 #include "./user_config.h" // DEBUG_TALLY, DEBUG_CC, DEBUG_ATEM, PIN_CONN, PIN_PGM, PIN_PVW, PIN_SCL, PIN_SDA, PIN_CONN_INVERTED
 #include "./led.h" // LED_TALLY, LED_CONN, led_init
 #include "./sdi.h" // SDI_ENABLED, sdi_write_tally, sdi_write_cc, sdi_init
-#include "./debug.h" // DEBUG_PRINTF, DEBUG_ERR_PRINTF, DEBUG_IP, IP_FMT, IP_VALUE, WRAP
+#include "./debug.h" // DEBUG_PRINTF, DEBUG_ERR_PRINTF, DEBUG_IP, IP_FMT, IP_VALUE, WRAP, DEBUG_ATEM_PRINTF
 #include "./wlan.h" // wlan_softap_disable
 #include "./ws2812.h" // ws2812_init, ws2812_update
 #include "./atem_sock.h"
