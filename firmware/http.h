@@ -58,8 +58,8 @@ struct http_t {
 		int responseState; // Used by http_respond
 	};
 	union {
-		int32_t remainingBodyLen;
-		int32_t stringEscapeIndex;
+		int remainingBodyLen;
+		int stringEscapeIndex;
 	};
 	union {
 		struct cache_t cache;

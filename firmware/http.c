@@ -483,7 +483,7 @@ static inline void http_parse(struct http_t* http, struct pbuf* p) {
 				return;
 			}
 			DEBUG_HTTP_PRINTF(
-				"Got a content length of %ld bytes from %p\n",
+				"Got a content length of %d bytes from %p\n",
 				http->remainingBodyLen, (void*)http->pcb
 			);
 		}
