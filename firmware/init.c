@@ -8,7 +8,7 @@
 #include <core_version.h> // ARDUINO_ESP8266_GIT_DESC, ARDUINO_ESP8266_GIT_VER
 #endif // ARDUINO
 
-#include "./user_config.h" // DEBUG, VERSIONS_ANY
+#include "./user_config.h" // DEBUG
 #include "./debug.h" // DEBUG_PRINTF, DEBUG_ERR_PRINTF, WRAP, DEBUG_BOOT_INFO
 #include "./atem_sock.h" // atem_init
 #include "./http.h" // http_init
@@ -24,6 +24,26 @@
 #else // ARDUINO
 #define DEBUG_BOOT_VERSION_ARDUINO ""
 #endif // ARDUINO
+
+// Verifies versions of ESP8266 SDK and Arduino
+#if ESP_SDK_VERSION_NUMBER != 0x020200
+#warning Expected ESP8266 SDK version 2.2.0
+#endif // ESP_SDK_VERSION_NUMBER
+#if ARDUINO && ARDUINO_ESP8266_GIT_VER != 0x9c56ed1f
+#warning Expected Arduino ESP8266 version 2.7.0
+#endif // ARDUINO_ESP8266_GIT_VER
+
+// Verifies LwIP version
+#if LWIP_VERSION != 0x020102ff
+#warning Expected LwIP version 2.1.2
+#endif // LWIP_VERSION
+
+// Sets default uart baud rate if not specified
+#ifndef DEBUG_BAUD
+#define DEBUG_BAUD 115200
+#endif // DEBUG_BAUD
+
+
 
 // Disables scanning for wifi station when configuration network is used
 static void network_callback(System_Event_t* event) {
@@ -51,32 +71,6 @@ static void network_callback(System_Event_t* event) {
 		}
 	}
 }
-
-// Verifies versions of ESP8266 SDK and Arduino
-#if !VERSIONS_ANY
-#if ESP_SDK_VERSION_NUMBER != 0x020200
-#error Expected ESP8266 SDK version 2.2.0
-#endif // ESP_SDK_VERSION_NUMBER
-#if ARDUINO && ARDUINO_ESP8266_GIT_VER != 0x9c56ed1f
-#error Expected Arduino ESP8266 version 2.7.0
-#endif // ARDUINO_ESP8266_GIT_VER
-#endif // !VERSIONS_ANY
-
-// Verifies LwIP version
-#if !VERSIONS_ANY
-#if LWIP_VERSION != 0x020102ff
-#error Expected LwIP version 2.1.2
-#endif // LWIP_VERSION
-#endif // !VERSIONS_ANY
-
-
-
-// Sets default uart baud rate if not specified
-#ifndef DEBUG_BAUD
-#define DEBUG_BAUD 115200
-#endif // DEBUG_BAUD
-
-
 
 // Initializes firmware
 void waccat_init(void) {
