@@ -1,6 +1,12 @@
 #include <stdbool.h> // true
 
 #include <lwip/init.h> // LWIP_VERSION
+#include <user_interface.h> // wifi_set_opmode_current, STATIONAP_MODE, wifi_station_set_reconnect_policy, struct station_config, wifi_station_get_config, wifi_set_event_handler_cb, wifi_station_connect, wifi_station_dchpc_stop, wifi_set_ip_info, STATION_IF, ip_info, uart_div_modify, struct softap, wifi_softap_get_config, wifi_station_set_hostname
+#include <version.h> // ESP_SDK_VERSION_STRING, ESP_SDK_VERSION_NUMBER
+#include <eagle_soc.h> // UART_CLK_FREQ, WRITE_PERI_REG, PERIPHS_IO_MUX_U0TXD_U
+#if ARDUINO
+#include <core_version.h> // ARDUINO_ESP8266_GIT_DESC, ARDUINO_ESP8266_GIT_VER
+#endif // ARDUINO
 
 #include "./user_config.h" // DEBUG, VERSIONS_ANY
 #include "./debug.h" // DEBUG_PRINTF, DEBUG_ERR_PRINTF, WRAP, DEBUG_BOOT_INFO
@@ -12,12 +18,11 @@
 
 
 
-#ifdef ESP8266
-#include <user_interface.h> // wifi_set_opmode_current, STATIONAP_MODE, wifi_station_set_reconnect_policy, struct station_config, wifi_station_get_config, wifi_set_event_handler_cb, wifi_station_connect, wifi_station_dchpc_stop, wifi_set_ip_info, STATION_IF, ip_info, uart_div_modify, struct softap, wifi_softap_get_config, wifi_station_set_hostname
-#include <version.h> // ESP_SDK_VERSION_STRING, ESP_SDK_VERSION_NUMBER
-#include <eagle_soc.h> // UART_CLK_FREQ, WRITE_PERI_REG, PERIPHS_IO_MUX_U0TXD_U
+// Debug info of the SDK version
 #if ARDUINO
-#include <core_version.h> // ARDUINO_ESP8266_GIT_DESC, ARDUINO_ESP8266_GIT_VER
+#define DEBUG_BOOT_VERSION_ARDUINO "Using Arduino SDK version: " WRAP(ARDUINO_ESP8266_GIT_DESC) "\n"
+#else // ARDUINO
+#define DEBUG_BOOT_VERSION_ARDUINO ""
 #endif // ARDUINO
 
 // Disables scanning for wifi station when configuration network is used
@@ -47,15 +52,6 @@ static void network_callback(System_Event_t* event) {
 	}
 }
 
-// Debug info of the SDK version
-#define BOOT_INFO_VERSION_ESP "Using ESP8266 SDK version: " ESP_SDK_VERSION_STRING "\n"
-#if ARDUINO
-#define BOOT_INFO_VERSION_ARDUINO "Using Arduino SDK version: " WRAP(ARDUINO_ESP8266_GIT_DESC) "\n"
-#else // ARDUINO
-#define BOOT_INFO_VERSION_ARDUINO ""
-#endif // ARDUINO
-#define BOOT_INFO_VERSIONS BOOT_INFO_VERSION_ESP BOOT_INFO_VERSION_ARDUINO
-
 // Verifies versions of ESP8266 SDK and Arduino
 #if !VERSIONS_ANY
 #if ESP_SDK_VERSION_NUMBER != 0x020200
@@ -65,14 +61,6 @@ static void network_callback(System_Event_t* event) {
 #error Expected Arduino ESP8266 version 2.7.0
 #endif // ARDUINO_ESP8266_GIT_VER
 #endif // !VERSIONS_ANY
-
-#else
-
-#error No WiFi implementation for platform
-
-#endif
-
-
 
 // Verifies LwIP version
 #if !VERSIONS_ANY
@@ -94,15 +82,14 @@ static void network_callback(System_Event_t* event) {
 void waccat_init(void) {
 	// Initializes uart serial printing
 #if DEBUG
-#ifdef ESP8266
 	WRITE_PERI_REG(PERIPHS_IO_MUX_U0TXD_U, 0);
 	uart_div_modify(0, UART_CLK_FREQ / DEBUG_BAUD);
-#endif // ESP8266
 #endif // DEBUG
 
 	DEBUG_PRINTF(
 		DEBUG_BOOT_INFO
-		BOOT_INFO_VERSIONS
+		"Using ESP8266 NON-OS SDK version: " ESP_SDK_VERSION_STRING "\n"
+		DEBUG_BOOT_VERSION_ARDUINO
 	);
 
 	// Initializes the HTTP configuration server
@@ -119,7 +106,6 @@ void waccat_init(void) {
 		return;
 	}
 
-#ifdef ESP8266
 	// Gets WiFi softap SSID and PSK for debug printing and hostname
 	struct softap_config conf_ap;
 	if (!wifi_softap_get_config(&conf_ap)) {
@@ -184,7 +170,6 @@ void waccat_init(void) {
 		DEBUG_ERR_PRINTF("Failed to start wifi connection\n");
 		return;
 	}
-#endif // ESP8266
 
 	// Initializes connection to ATEM
 	if (!atem_init(conf.atemAddr, conf.dest)) {
