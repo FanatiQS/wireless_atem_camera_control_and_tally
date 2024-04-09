@@ -9,7 +9,7 @@
 #endif // ARDUINO
 
 #include "./user_config.h" // DEBUG
-#include "./debug.h" // DEBUG_PRINTF, DEBUG_ERR_PRINTF, WRAP, DEBUG_BOOT_INFO
+#include "./debug.h" // DEBUG_PRINTF, DEBUG_ERR_PRINTF, WRAP, DEBUG_BOOT_INFO, DEBUG_WLAN
 #include "./atem_sock.h" // atem_init
 #include "./http.h" // http_init
 #include "./flash.h" // struct config_t, flash_config_read
@@ -18,25 +18,25 @@
 
 
 
-// Debug info of the SDK version
-#if ARDUINO
-#define DEBUG_BOOT_VERSION_ARDUINO "Using Arduino SDK version: " WRAP(ARDUINO_ESP8266_GIT_DESC) "\n"
-#else // ARDUINO
-#define DEBUG_BOOT_VERSION_ARDUINO ""
-#endif // ARDUINO
+// Verifies LwIP version
+#if LWIP_VERSION != 0x020102ff
+#warning Expected LwIP version 2.1.2
+#endif // LWIP_VERSION
 
 // Verifies versions of ESP8266 SDK and Arduino
 #if ESP_SDK_VERSION_NUMBER != 0x020200
 #warning Expected ESP8266 SDK version 2.2.0
 #endif // ESP_SDK_VERSION_NUMBER
-#if ARDUINO && ARDUINO_ESP8266_GIT_VER != 0x9c56ed1f
+#if ARDUINO && !defined(ARDUINO_ESP8266_RELEASE_2_7_0)
 #warning Expected Arduino ESP8266 version 2.7.0
 #endif // ARDUINO_ESP8266_GIT_VER
 
-// Verifies LwIP version
-#if LWIP_VERSION != 0x020102ff
-#warning Expected LwIP version 2.1.2
-#endif // LWIP_VERSION
+// Debug boot line for arduino version
+#if ARDUINO
+#define DEBUG_BOOT_VERSION_ARDUINO "Using Arduino SDK version: " WRAP(ARDUINO_ESP8266_GIT_DESC) "\n"
+#else // ARDUINO
+#define DEBUG_BOOT_VERSION_ARDUINO ""
+#endif // ARDUINO
 
 // Sets default uart baud rate if not specified
 #ifndef DEBUG_BAUD
@@ -144,7 +144,7 @@ void waccat_init(void) {
 
 	// Uses static IP if configured to do so
 	if (!wlan_station_dhcp_get(&conf)) {
-		struct ip_info ipInfo = {
+		struct ip_info ip_info = {
 			.ip.addr = conf.localAddr,
 			.netmask.addr = conf.netmask,
 			.gw.addr = conf.gateway
@@ -153,7 +153,7 @@ void waccat_init(void) {
 			DEBUG_ERR_PRINTF("Failed to stop DHCP client\n");
 			return;
 		}
-		if (!wifi_set_ip_info(STATION_IF, &ipInfo)) {
+		if (!wifi_set_ip_info(STATION_IF, &ip_info)) {
 			DEBUG_ERR_PRINTF("Failed to set static ip\n");
 			return;
 		}

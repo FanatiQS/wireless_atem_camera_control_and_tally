@@ -1,14 +1,6 @@
 #include <stddef.h> // NULL
 #include <stdlib.h> // abort
 
-#include "./user_config.h" // DEBUG
-#include "./debug.h" // DEBUG_PRINTF, DEBUG_ERR_PRINTF, WRAP, DEBUG_BOOT_INFO, DEBUG_WLAN
-#include "./atem_sock.h" // atem_init
-#include "./http.h" // http_init
-#include "./flash.h" // struct config_t, flash_config_read
-#include "./dns.h" // captive_portal_init
-#include "./wlan.h" // wlan_station_dhcp_get
-
 #include <lwip/init.h> // LWIP_VERSION
 #include <esp_wifi.h> // WIFI_INIT_CONFIG_DEFAULT, esp_wifi_init, esp_wifi_set_mode, esp_wifi_start, esp_wifi_connect, esp_wifi_get_config, wifi_init_config_t
 #include <esp_wifi_types.h> // WIFI_MODE_APSTA, WIFI_IF_STA, WIFI_IF_AP, wifi_config_t, WIFI_EVENT, WIFI_EVENT_STA_DISCONNECTED
@@ -22,6 +14,14 @@
 #if ARDUINO
 #include <core_version.h> // ARDUINO_ESP32_GIT_DESC, ARDUINO_ESP32_GIT_VER
 #endif // ARDUINO
+
+#include "./user_config.h" // DEBUG
+#include "./debug.h" // DEBUG_PRINTF, DEBUG_ERR_PRINTF, WRAP, DEBUG_BOOT_INFO, DEBUG_WLAN
+#include "./atem_sock.h" // atem_init
+#include "./http.h" // http_init
+#include "./flash.h" // struct config_t, flash_config_read
+#include "./dns.h" // captive_portal_init
+#include "./wlan.h" // wlan_station_dhcp_get
 
 
 
