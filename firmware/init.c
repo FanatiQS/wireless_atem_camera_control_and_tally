@@ -1,4 +1,5 @@
 #include <stdbool.h> // true
+#include <stdlib.h> // abort
 
 #include <lwip/init.h> // LWIP_VERSION
 #include <user_interface.h> // wifi_set_opmode_current, STATIONAP_MODE, wifi_station_set_reconnect_policy, struct station_config, wifi_station_get_config, wifi_set_event_handler_cb, wifi_station_connect, wifi_station_dchpc_stop, wifi_set_ip_info, STATION_IF, ip_info, uart_div_modify, struct softap, wifi_softap_get_config, wifi_station_set_hostname
@@ -88,7 +89,7 @@ void waccat_init(void) {
 
 	// Initializes the HTTP configuration server
 	if (!http_init()) {
-		return;
+		abort();
 	}
 
 	// Initializes captive portal
