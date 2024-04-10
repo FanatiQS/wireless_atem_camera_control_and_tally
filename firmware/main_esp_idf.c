@@ -26,13 +26,13 @@
 
 
 // Verifies LwIP version
-#if LWIP_VERSION != 0x02010200
-#warning Expected LwIP version 2.1.2
+#if LWIP_VERSION != 0x02010300
+#warning Expected LwIP version 2.1.3
 #endif // LWIP_VERSION
 
 // Verifies versions of ESP8266 SDK and Arduino
-#if ESP_IDF_VERSION != ESP_IDF_VERSION_VAL(4, 4, 1)
-#warning Expected ESP-IDF version 4.4.1
+#if ESP_IDF_VERSION != ESP_IDF_VERSION_VAL(5, 2, 1)
+#warning Expected ESP-IDF version 5.2.1
 #endif // ESP_IDF_VERSION
 #if ARDUINO && !defined(ARDUINO_ESP32_RELEASE_2_0_4)
 #warning Expected Arduino ESP32 version 2.0.4
