@@ -11,8 +11,7 @@
 
 
 
-#ifdef ESP8266
-
+#if defined(ARDUINO) && defined(ESP8266)
 #include <stdbool.h> // true
 
 #include <twi.h> // twi_init, twi_readFrom, twi_writeTo
@@ -22,7 +21,7 @@
 #define I2C_READ(buf, len) twi_readFrom(SDI_I2C_ADDR, buf, len, true)
 #define I2C_WRITE(buf, len) twi_writeTo(SDI_I2C_ADDR, buf, len, true)
 
-#else // ESP8266
+#else // ARDUINO && ESP8266
 
 // Throws compilation error if SDI pins are used for platform without I2C support
 #error Platform does not support SDI control over I2C
