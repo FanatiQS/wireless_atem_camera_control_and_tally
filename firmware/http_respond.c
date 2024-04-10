@@ -258,7 +258,7 @@ bool http_respond(struct http_t* http) {
 		HTTP_RESPONSE_CASE_STR(http,
 			"<tr>"
 			"<tr><td>Name:<td>"
-			"<input maxlength=32 name=" "name" " value=\""
+			"<input maxlength=32 name=name value=\""
 		)
 		http->stringEscapeIndex = 0;
 		HTTP_RESPONSE_CASE(http_write_value_string(http, (char*)http->cache.CACHE_NAME, sizeof(http->cache.CACHE_NAME)))
@@ -266,14 +266,14 @@ bool http_respond(struct http_t* http) {
 			"\"required>"
 			"<tr>"
 			"<tr><td>Network name (SSID):<td>"
-			"<input maxlength=32 name=" "ssid" " value=\""
+			"<input maxlength=32 name=ssid value=\""
 		)
 		http->stringEscapeIndex = 0;
 		HTTP_RESPONSE_CASE(http_write_value_string(http, (char*)http->cache.CACHE_SSID, sizeof(http->cache.CACHE_SSID)))
 		HTTP_RESPONSE_CASE_STR(http,
 			"\"required>"
 			"<tr><td>Network password (PSK):<td>"
-			"<input maxlength=64 name=" "psk" " value=\""
+			"<input maxlength=64 name=psk value=\""
 		)
 		http->stringEscapeIndex = 0;
 		HTTP_RESPONSE_CASE(http_write_value_string(http, (char*)http->cache.CACHE_PSK, sizeof(http->cache.CACHE_PSK)))
@@ -281,39 +281,39 @@ bool http_respond(struct http_t* http) {
 			"\"required>"
 			"<tr>"
 			"<tr><td>Camera number:<td>"
-			"<input required type=number min=1 max=254 name=" "dest" " value="
+			"<input required type=number min=1 max=254 name=dest value="
 		)
 		HTTP_RESPONSE_CASE(http_write_value_uint8(http, http->cache.config.dest))
 		HTTP_RESPONSE_CASE_STR(http,
 			">"
 			"<tr><td>ATEM IP:<td>"
-			"<input required pattern=^((25[0-5]|(2[0-4]|1\\d|\\d|)\\d)(\\.(?!$)|$)){4}$ name=" "atem" " value="
+			"<input required pattern=^((25[0-5]|(2[0-4]|1\\d|\\d|)\\d)(\\.(?!$)|$)){4}$ name=atem value="
 		)
 		HTTP_RESPONSE_CASE(http_write_value_addr(http, http->cache.config.atemAddr))
 		HTTP_RESPONSE_CASE_STR(http,
 			">"
 			"<tr>"
 			"<tr><td>Use DHCP:<td>"
-			"<input type=hidden value=0 name=" "dhcp" ">"
-			"<input type=checkbox value=1 name=" "dhcp"
+			"<input type=hidden value=0 name=dhcp>"
+			"<input type=checkbox value=1 name=dhcp"
 		)
 		if (http->cache.config.flags & CONF_FLAG_DHCP) HTTP_RESPONSE_CASE_STR(http, " checked")
 		HTTP_RESPONSE_CASE_STR(http,
 			">"
 			"<tr><td>Local IP:<td>"
-			"<input required pattern=^((25[0-5]|(2[0-4]|1\\d|\\d|)\\d)(\\.(?!$)|$)){4}$ name=" "localip" " value="
+			"<input required pattern=^((25[0-5]|(2[0-4]|1\\d|\\d|)\\d)(\\.(?!$)|$)){4}$ name=localip value="
 		)
 		HTTP_RESPONSE_CASE(http_write_value_addr(http, http->cache.config.localAddr))
 		HTTP_RESPONSE_CASE_STR(http,
 			">"
 			"<tr><td>Subnet mask:<td>"
-			"<input required pattern=^((25[0-5]|(2[0-4]|1\\d|\\d|)\\d)(\\.(?!$)|$)){4}$ name=" "netmask" " value="
+			"<input required pattern=^((25[0-5]|(2[0-4]|1\\d|\\d|)\\d)(\\.(?!$)|$)){4}$ name=netmask value="
 		)
 		HTTP_RESPONSE_CASE(http_write_value_addr(http, http->cache.config.netmask))
 		HTTP_RESPONSE_CASE_STR(http,
 			">"
 			"<tr><td>Gateway:<td>"
-			"<input required pattern=^((25[0-5]|(2[0-4]|1\\d|\\d|)\\d)(\\.(?!$)|$)){4}$ name=" "gateway" " value="
+			"<input required pattern=^((25[0-5]|(2[0-4]|1\\d|\\d|)\\d)(\\.(?!$)|$)){4}$ name=gateway value="
 		)
 		HTTP_RESPONSE_CASE(http_write_value_addr(http, http->cache.config.gateway))
 		HTTP_RESPONSE_CASE_STR(http,
