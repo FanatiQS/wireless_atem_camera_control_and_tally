@@ -5,7 +5,7 @@
 #include <stdbool.h> // bool, true
 #include <stdint.h> // uint32_t
 
-#include "./user_config.h" // PIN_CONN, PIN_PGM, PIN_PVW
+#include "./user_config.h" // PIN_CONN, PIN_PGM, PIN_PVW, PIN_CONN_INVERTED
 
 
 
@@ -32,6 +32,11 @@
 
 // Bit mask for both tally pins
 #define PIN_TALLY_MASK (PIN_PGM_MASK | PIN_PVW_MASK)
+
+// Default define invert flag to false
+#ifndef PIN_CONN_INVERTED
+#define PIN_CONN_INVERTED (false)
+#endif // PIN_CONN_INVERTED
 
 
 
@@ -103,6 +108,9 @@ static inline void gpio_write(const bool set, const bool clr, const uint32_t mas
 
 
 
+// Writes LED state to pin
+#define LED_STATE(mask, state) gpio_write((state), (!state), mask, (state) * mask)
+
 // Uses gpio_write if LED_TALLY is not defined to write tally states to registers as bit fields
 #ifndef LED_TALLY
 #define LED_TALLY(pgm, pvw) gpio_write(true, true, PIN_TALLY_MASK, ((pgm) * PIN_PGM_MASK) | ((pvw) * PIN_PVW_MASK))
@@ -110,7 +118,7 @@ static inline void gpio_write(const bool set, const bool clr, const uint32_t mas
 
 // Uses gpio_write if LED_CONN is not defined to write connection state to register as bit field
 #ifndef LED_CONN
-#define LED_CONN(state) gpio_write((state), (!state), PIN_CONN_MASK, (state) * PIN_CONN_MASK)
+#define LED_CONN(state) LED_STATE(PIN_CONN_MASK, state ^ PIN_CONN_INVERTED)
 #endif // LED_CONN
 
 #endif // LED_H
