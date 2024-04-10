@@ -1,6 +1,6 @@
 // Only defines RGB LED functions if configured to be used
-#include "./user_config.h" // TALLY_RGB_PIN, TALLY_RGB_COUNT
-#ifdef TALLY_RGB_PIN
+#include "./user_config.h" // PIN_TALLY_RGB_PIN, PIN_TALLY_RGB_COUNT
+#ifdef PIN_TALLY_RGB_PIN
 
 #include <stdbool.h> // bool, false, true
 #include <stdint.h> // uint8_t
@@ -16,9 +16,9 @@
 #include "./debug.h" // DEBUG_ERR_PRINTF
 #include "./ws2812.h"
 
-#ifndef TALLY_RGB_COUNT
-#error RGB tally was enabled without specifying number of LEDs using TALLY_RGB_COUNT
-#endif // TALLY_RGB_COUNT
+#ifndef PIN_TALLY_RGB_COUNT
+#error RGB tally was enabled without specifying number of LEDs using PIN_TALLY_RGB_COUNT
+#endif // PIN_TALLY_RGB_COUNT
 
 #define TALLY_RGB_BRIGHTNESS 0x8 // @todo replace with runtime configurable value from config
 
@@ -54,14 +54,14 @@ bool ws2812_update(bool pgm, bool pvw) {
 	esp_err_t err;
 
 	// Creates RGB LED buffer
-	uint8_t buf[TALLY_RGB_COUNT * (3 + TALLY_RGB_RGBW)] = {0};
+	uint8_t buf[PIN_TALLY_RGB_COUNT * (3 + TALLY_RGB_RGBW)] = {0};
 	if (pgm) {
-		for (int i = 0; i < TALLY_RGB_COUNT; i++) {
+		for (int i = 0; i < PIN_TALLY_RGB_COUNT; i++) {
 			buf[i * 3 + TALLY_RGB_OFFSET_RED] = TALLY_RGB_BRIGHTNESS;
 		}
 	}
 	else if (pvw) {
-		for (int i = 0; i < TALLY_RGB_COUNT; i++) {
+		for (int i = 0; i < PIN_TALLY_RGB_COUNT; i++) {
 			buf[i * 3 + TALLY_RGB_OFFSET_GREEN] = TALLY_RGB_BRIGHTNESS;
 		}
 	}
@@ -91,7 +91,7 @@ bool ws2812_init(void) {
 
 	// Creates RMT channel
 	rmt_tx_channel_config_t channel_config = {
-		.gpio_num = TALLY_RGB_PIN,
+		.gpio_num = PIN_TALLY_RGB_PIN,
 		.resolution_hz = LED_RMT_FREQUENCY,
 		.clk_src = RMT_CLK_SRC_DEFAULT,
 		.mem_block_symbols = 64,
@@ -138,4 +138,4 @@ bool ws2812_init(void) {
 	return true;
 }
 
-#endif // TALLY_RGB_PIN
+#endif // PIN_TALLY_RGB_PIN
