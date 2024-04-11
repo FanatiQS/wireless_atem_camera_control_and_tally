@@ -4,15 +4,15 @@
 
 #include <stdbool.h> // bool
 
-#include "./user_config.h" // TALLY_RGB_PIN
+#include "./user_config.h" // PIN_TALLY_RGB
 
 // Strips out RGB LED communication if pin is not defined
-#ifdef TALLY_RGB_PIN
+#ifdef PIN_TALLY_RGB
 bool ws2812_init(void);
 bool ws2812_update(bool pgm, bool pvw);
-#else // TALLY_RGB_PIN
+#else // PIN_TALLY_RGB
 #define ws2812_init()
 #define ws2812_update(pgm, pvw)
-#endif // TALLY_RGB_PIN
+#endif // PIN_TALLY_RGB
 
 #endif // WS2812_H

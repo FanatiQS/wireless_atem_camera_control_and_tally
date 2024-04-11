@@ -1,6 +1,6 @@
 // Only defines RGB LED functions if configured to be used
-#include "./user_config.h" // PIN_TALLY_RGB_PIN, PIN_TALLY_RGB_COUNT
-#ifdef PIN_TALLY_RGB_PIN
+#include "./user_config.h" // PIN_TALLY_RGB, PIN_TALLY_RGB_COUNT
+#ifdef PIN_TALLY_RGB
 
 #include <stdbool.h> // bool, false, true
 #include <stdint.h> // uint8_t
@@ -91,7 +91,7 @@ bool ws2812_init(void) {
 
 	// Creates RMT channel
 	rmt_tx_channel_config_t channel_config = {
-		.gpio_num = PIN_TALLY_RGB_PIN,
+		.gpio_num = PIN_TALLY_RGB,
 		.resolution_hz = LED_RMT_FREQUENCY,
 		.clk_src = RMT_CLK_SRC_DEFAULT,
 		.mem_block_symbols = 64,
@@ -138,4 +138,4 @@ bool ws2812_init(void) {
 	return true;
 }
 
-#endif // PIN_TALLY_RGB_PIN
+#endif // PIN_TALLY_RGB
