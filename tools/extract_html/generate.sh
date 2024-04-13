@@ -1,25 +1,111 @@
-#!/usr/bin/env sh
+#!/usr/bin/env bash
 
 set -e
 
-echo "#define UPTIME      \"${UPTIME:-"0h 13m 37s"}\""
-echo "#define WIFI_STATUS \"${WIFI_STATUS:-"-50 dBm"}\""
-echo "#define ATEM_STATUS \"${ATEM_STATUS:-"Connected"}\""
-echo "#define SSID        \"${SSID:-"myWiFi"}\""
-echo "#define PSK         \"${PSK:-"password123"}\""
-echo "#define DEVICE_NAME \"${DEVICE_NAME:-"waccat0"}\""
-echo "#define DEST        ${DEST:-4}"
-echo "#define ATEM_ADDR   \"${ATEM_ADDR:-"192.168.1.240"}\""
-echo "#define DHCP        ${DHCP:-1}"
-echo "#define LOCAL_ADDR  \"${LOCAL_ADDR:-"192.168.1.69"}\""
-echo "#define NETMASK     \"${NETMASK:-"255.255.255.0"}\""
-echo "#define GATEWAY     \"${GATEWAY:-"192.168.1.1"}\""
+# Gets state as first argument
+state=$1
+shift
 
-echo "#include <$PWD/main.c>"
+# Parses command line arguments
+while [[ $# -gt 0 ]]; do
+	i=$1
+	case "$i" in
+		--http)
+			http=1
+			;;
+		--err_code=*)
+			err_code="${i#*=}"
+			;;
+		--err_body=*)
+			err_body="${i#*=}"
+			;;
+		--wifi_status=*)
+			wifi_status="${i#*=}"
+			;;
+		--atem_status=*)
+			atem_status="${i#*=}"
+			;;
+		--uptime=*)
+			uptime="${i#*=}"
+			;;
+		--name=*)
+			name="${i#*=}"
+			;;
+		--ssid=*)
+			ssid="${i#*=}"
+			;;
+		--psk=*)
+			psk="${i#*=}"
+			;;
+		--dest=*)
+			dest="${i#*=}"
+			;;
+		--atem_addr=*)
+			atem_addr="${i#*=}"
+			;;
+		--localip=*)
+			localip="${i#*=}"
+			;;
+		--netmask=*)
+			netmask="${i#*=}"
+			;;
+		--gateway=*)
+			gateway="${i#*=}"
+			;;
+		-h|--help)
+			echo "Usage: $0 state [...opts]"
+			echo "	Read source code to see what arguments are available"
+			exit 0
+			;;
+		*)
+			echo "Invalid argument: $1"
+			exit 1
+	esac
+	shift
+done
 
-echo "int main(int argc, char** argv) {"
-echo "	switch (atoi(argv[1])) {"
-sed -n "/case HTTP_RESPONSE_STATE_ROOT:/,/break;/p" ../../firmware/http_respond.c
-sed -n "/case HTTP_RESPONSE_STATE_POST_ROOT:/,/break;/p" ../../firmware/http_respond.c
-echo "	}"
-echo "}"
+# Generates HTTP response
+output=$(printf '%b ' $({
+	# Extracts only addr/value/str
+	echo "#define http_write_value_addr(http, ptr, addr) addr"
+	echo "#define http_write_value_uint8(http, ptr, value) value"
+	echo "#define http_write_value_string(http, ptr, str, size) str"
+	
+	echo "#define STRIP_ME(...)" # Defines stripping macro
+	echo "STRIP_ME(" # Strips all data up to first macro function call to keep content for
+	{
+		echo "#include \"../../firmware/init.h\" // FIRMWARE_VERSION_STRING"
+
+		# Defines macros to replace configurations
+		echo "#define http_write_wifi(http) \"${wifi_status:-"-50 dBm"}\""
+		echo "#define atem_state \"${atem_status:-"Connected"}\""
+		echo "#define http_write_uptime(http) \"${uptime:-"0h 13m 37s"}\""
+		echo "#define CACHE_SSID , \"${ssid:-"myWiFi"}\""
+		echo "#define CACHE_PSK , \"${psk:-"password123"}\""
+		echo "#define CACHE_NAME , \"${name:-"waccat0"}\""
+		echo "#define dest , \"${dest:-4}\""
+		echo "#define atemAddr , \"${atem_addr:-"192.168.1.240"}\""
+		echo "#define localAddr , \"${localip:-"192.168.1.69"}\""
+		echo "#define netmask , \"${netmask:-"255.255.255.0"}\""
+		echo "#define gateway , \"${gatway:-"192.168.1.1"}\""
+		echo "#define errCode \"${err_code:-"400 Bad Request"}\""
+		echo "#define errBody \"${err_body:-$err_code}\""
+
+		# HTTP_RESPONSE_CASE macro functions should close stripper, dumps its data and starts new stripper
+		echo "#define HTTP_RESPONSE_CASE_STR(http, str) ) str STRIP_ME("
+		echo "#define HTTP_RESPONSE_CASE(fn) ) fn STRIP_ME("
+
+		# Strips out C conditional for DHCP if it is not enabled
+		[ "$dhcp" == 0 ] && echo "#define if #define DELETE_THIS_ROW"
+
+		sed -n "/case HTTP_RESPONSE_STATE_$state:/,/break;/p" ../../firmware/http_respond.c | sed 's/http->//'
+	} | gcc -E -P - -xc
+	echo ")" # Closes last stripper
+} | gcc -E -P - -xc | sed 's/" "//g') | sed 's/\\"/"/g' | sed 's/" *$//' | sed 's/^"//')
+
+# Outputs HTTP or HTML
+if [[ "$http" == 1 ]]; then 
+	echo "$output"
+else
+	echo "$output" | sed -n '/^.$/,//p' | tail -n +2
+fi
