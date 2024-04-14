@@ -100,9 +100,9 @@ output=$(printf '%b ' $({
 		[ "$dhcp" == 0 ] && echo "#define if #define DELETE_THIS_ROW"
 
 		sed -n "/case HTTP_RESPONSE_STATE_$state:/,/break;/p" ../../firmware/http_respond.c | sed 's/http->//'
-	} | gcc -E -P - -xc
+	} | gcc -E -P -xc -
 	echo ")" # Closes last stripper
-} | gcc -E -P - -xc | sed 's/" "//g') | sed 's/\\"/"/g' | sed 's/" *$//' | sed 's/^"//')
+} | gcc -E -P -xc - | sed 's/" "//g') | sed 's/\\"/"/g' | sed 's/" *$//' | sed 's/^"//')
 
 # Outputs HTTP or HTML
 if [[ "$http" == 1 ]]; then 
