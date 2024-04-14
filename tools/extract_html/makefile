@@ -5,7 +5,7 @@ OUT_DIR = $(ROOT)/dist/extract_html
 all: $(OUT_DIR)
 
 # Generates all output files
-$(OUT_DIR): $(ROOT)/firmware/http_respond.c $(ROOT)/firmware/http.h $(ROOT)/firmware/init.h ./generate.sh
+$(OUT_DIR): $(ROOT)/firmware/http_respond.c $(ROOT)/firmware/init.h $(ROOT)/firmware/http.c ./generate.sh
 	-mkdir -p $@
 
 	echo "Generating index.html"
