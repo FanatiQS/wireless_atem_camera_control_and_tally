@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 
+# Aborts on errors
 set -e
 
 # Gets state as first argument
