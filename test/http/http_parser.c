@@ -624,14 +624,29 @@ int main(void) {
 		test_body_err("gateway=", "Invalid IPV4 address");
 	}
 
-	// Tests invalid character in flag value
+	// Tests empty boolean value
 	RUN_TEST() {
-		test_body_err("dhcp=2", "Invalid character in boolean");
+		test_body_err("dhcp=", "Empty boolean value");
 	}
 
-	// Tests too many characters
+	// Tests invalid character in boolean value
 	RUN_TEST() {
-		test_body_err("dhcp=12", "Invalid character in boolean");
+		test_body_err("dhcp=2", "Invalid boolean value, only accepts '1' or '0'");
+	}
+
+	// Tests invlaid character in segmented boolean value
+	RUN_TEST() {
+		test_body_err_segment("dhcp=", "2", "Invalid boolean value, only accepts '1' or '0'");
+	}
+
+	// Tests too many characters in boolean value
+	RUN_TEST() {
+		test_body_err("dhcp=11", "Invalid boolean value, only accepts '1' or '0'");
+	}
+
+	// Tests segmented too many characters in boolean value
+	RUN_TEST() {
+		test_body_err_segment("dhcp=1", "1", "Invalid boolean value, only accepts '1' or '0'");
 	}
 
 	return runner_exit();

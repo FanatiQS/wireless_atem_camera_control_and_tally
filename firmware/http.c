@@ -154,7 +154,7 @@ static bool http_post_key_incomplete(struct http_t* http) {
 
 
 // Completes integer parsing on terminator character
-static inline bool http_post_int_complete(struct http_t* http, const char c) {
+static inline bool http_post_delimited(struct http_t* http, const char c) {
 	if (c != '&') return false;
 	http->remainingBodyLen--;
 	http->state = HTTP_STATE_POST_ROOT_BODY_KEYS;
@@ -234,7 +234,9 @@ static bool http_post_value_uint8(struct http_t* http, uint8_t* addr, size_t min
 	while (http_char_available(http)) {
 		char c = http_char_consume(http);
 		if (!isdigit(c)) {
-			if (http_post_int_complete(http, c)) return true;
+			if (http_post_delimited(http, c)) {
+				return true;
+			}
 			http_post_err(http, "Invalid character in integer");
 			return false;
 		}
@@ -268,11 +270,11 @@ static bool http_post_value_ip(struct http_t* http, uint32_t* addr) {
 			http->offset++;
 			http->remainingBodyLen--;
 		}
+		else if (http_post_delimited(http, c) && http->offset == 3) {
+			http->offset = 0;
+			return true;
+		}
 		else {
-			if (http_post_int_complete(http, c) && http->offset == 3) {
-				http->offset = 0;
-				return true;
-			}
 			http_post_err(http, "Invalid IPV4 address");
 			return false;
 		}
@@ -290,39 +292,51 @@ static bool http_post_value_ip(struct http_t* http, uint32_t* addr) {
 
 // Writes POST body flag to HTTP clients cache
 static bool http_post_value_flag(struct http_t* http, uint8_t* flags, int mask) {
-	if (!http_char_available(http)) {
-		http_post_completed(http);
+	// Continues after already processed boolean character value
+	if (http->offset != 0) {
+		if (!http_char_available(http)) { // @todo is this needed? should only get here if this is the first character and a pbuf should never be empty, right?
+			return false;
+		}
+		http->offset = 0;
+	}
+	// Comes back here if HTTP stream is empty and expects more body data
+	else if (!http_char_available(http)) {
+		if (http->remainingBodyLen <= 0) {
+			http_post_err(http, "Empty boolean value");
+		}
 		return false;
 	}
-
-	switch (http->offset) {
-		case 0: {
-			char c = http_char_peek(http);
-			if (c == '0') {
-				*flags &= ~mask;
-			}
-			else if (c == '1') {
-				*flags |= mask;
-			}
-			else {
-				break;
-			}
-			http->index++;
-			http->remainingBodyLen--;
-			if (!http_char_available(http)) {
-				if (http_post_completed(http)) return false;
-				http->offset = 1;
-				return true;
-			}
-			break;
+	// Parses boolean character
+	else {
+		char c = http_char_consume(http);
+		if (c == '0') {
+			*flags &= ~mask;
 		}
-		default: {
-			http->offset = 0;
+		else if (c == '1') {
+			*flags |= mask;
+		}
+		else {
+			http_post_err(http, "Invalid boolean value, only accepts '1' or '0'");
+			return false;
+		}
+		http->remainingBodyLen--;
+
+		// Comes back to parse expected delimiter if HTTP stream is empty and expects more body data
+		if (!http_char_available(http)) {
+			if (http_post_completed(http)) {
+				return false;
+			}
+			http->offset = 1;
+			return false;
 		}
 	}
 
-	if (http_post_int_complete(http, http_char_consume(http))) return true;
-	http_post_err(http, "Invalid character in boolean");
+	// Completes configuration at delimiter
+	if (!http_post_delimited(http, http_char_consume(http))) {
+		http_post_err(http, "Invalid boolean value, only accepts '1' or '0'");
+		return false;
+	}
+	http_post_completed(http);
 	return false;
 }
 
