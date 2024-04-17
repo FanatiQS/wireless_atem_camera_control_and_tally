@@ -147,7 +147,7 @@ void app_main(void) {
 	// Uses static IP if configured to do so
 	if (!wlan_station_dhcp_get(&conf)) {
 		esp_netif_ip_info_t ip_info = {
-			.ip.addr = conf.localAddr,
+			.ip.addr = conf.localip,
 			.netmask.addr = conf.netmask,
 			.gw.addr = conf.gateway
 		};

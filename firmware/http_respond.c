@@ -305,7 +305,7 @@ bool http_respond(struct http_t* http) {
 			"<tr><td>Local IP:<td>"
 			"<input required pattern=^((25[0-5]|(2[0-4]|1\\d|\\d|)\\d)(\\.(?!$)|$)){4}$ name=localip value="
 		)
-		HTTP_RESPONSE_CASE(http_write_value_addr(http, http->cache.config.localAddr))
+		HTTP_RESPONSE_CASE(http_write_value_addr(http, http->cache.config.localip))
 		HTTP_RESPONSE_CASE_STR(http,
 			">"
 			"<tr><td>Subnet mask:<td>"

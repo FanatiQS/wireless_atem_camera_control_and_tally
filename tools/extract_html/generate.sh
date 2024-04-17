@@ -86,7 +86,7 @@ output=$(printf '%b ' $({
 		echo "#define CACHE_NAME , \"${name:-"waccat0"}\""
 		echo "#define dest , \"${dest:-4}\""
 		echo "#define atemAddr , \"${atem_addr:-"192.168.1.240"}\""
-		echo "#define localAddr , \"${localip:-"192.168.1.69"}\""
+		echo "#define localip , \"${localip:-"192.168.1.69"}\""
 		echo "#define netmask , \"${netmask:-"255.255.255.0"}\""
 		echo "#define gateway , \"${gatway:-"192.168.1.1"}\""
 		echo "#define errCode \"${err_code:-"400 Bad Request"}\""

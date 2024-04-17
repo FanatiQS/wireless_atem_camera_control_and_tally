@@ -146,7 +146,7 @@ void waccat_init(void) {
 	// Uses static IP if configured to do so
 	if (!wlan_station_dhcp_get(&conf)) {
 		struct ip_info ip_info = {
-			.ip.addr = conf.localAddr,
+			.ip.addr = conf.localip,
 			.netmask.addr = conf.netmask,
 			.gw.addr = conf.gateway
 		};

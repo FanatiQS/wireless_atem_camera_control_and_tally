@@ -20,7 +20,7 @@ static inline bool wlan_station_dhcp_get(struct config_t* conf) {
 		return true;
 	}
 	else {
-		DEBUG_IP("Using static IP", conf->localAddr, conf->netmask, conf->gateway);
+		DEBUG_IP("Using static IP", conf->localip, conf->netmask, conf->gateway);
 		return false;
 	}
 }

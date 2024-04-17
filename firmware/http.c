@@ -624,7 +624,7 @@ static inline void http_parse(struct http_t* http, struct pbuf* p) {
 		/* FALLTHROUGH */
 		case HTTP_STATE_POST_ROOT_BODY_LOCALIP_KEY: {
 			if (http_post_key(http, "localip=")) {
-				http->cache.config.localAddr = 0;
+				http->cache.config.localip = 0;
 				http->state = HTTP_STATE_POST_ROOT_BODY_LOCALIP_VALUE;
 				continue;
 			}
@@ -734,10 +734,10 @@ static inline void http_parse(struct http_t* http, struct pbuf* p) {
 		}
 		// Transfers static ip local address from POST body to client cache
 		case HTTP_STATE_POST_ROOT_BODY_LOCALIP_VALUE: {
-			if (!http_post_value_ip(http, &http->cache.config.localAddr)) return;
+			if (!http_post_value_ip(http, &http->cache.config.localip)) return;
 			DEBUG_HTTP_PRINTF(
 				"Updated 'localip' to " IP_FMT " for %p\n",
-				IP_VALUE(http->cache.config.localAddr),
+				IP_VALUE(http->cache.config.localip),
 				(void*)http->pcb
 			);
 			continue;

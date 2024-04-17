@@ -41,7 +41,7 @@ struct cache_wlan {
 
 // Persistent storage structure for configuration
 struct config_t {
-	uint32_t localAddr;
+	uint32_t localip;
 	uint32_t netmask;
 	uint32_t gateway;
 	uint32_t atemAddr;
