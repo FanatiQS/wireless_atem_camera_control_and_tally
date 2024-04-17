@@ -26,7 +26,9 @@
 
 // Writes configuration to flash and restarts device
 static void http_reboot_callback_defer(void* arg) {
-	flash_cache_write(&((struct http_t*)arg)->cache);
+	struct http_t* http = arg;
+	DEBUG_HTTP_PRINTF("Writing configuration to flash from %p\n", (void*)http->pcb);
+	flash_cache_write(&http->cache);
 }
 
 // Restarts device on client timeout or successfull close

@@ -225,8 +225,15 @@ static bool http_post_value_string(struct http_t* http, char* addr, size_t addrS
 
 	// Stops copying string when entire body is processed
 	if (http->offset < addrSize) addr[http->offset] = '\0';
+
+	// Completes HTTP parsing if end of body is reached
+#if !DEBUG_HTTP
 	http_post_completed(http);
 	return false;
+#else // !DEBUG_HTTP
+ 	// Goes back through HTTP state machine again to print cached address
+ 	return http_post_completed(http);
+#endif // !DEBUG_HTTP
 }
 
 // Writes POST body integer to HTTP clients cache
@@ -245,8 +252,15 @@ static bool http_post_value_uint8(struct http_t* http, uint8_t* addr, size_t min
 			return false;
 		}
 	}
+
+	// Completes HTTP parsing if end of body is reached
+#if !DEBUG_HTTP
 	http_post_completed(http);
 	return false;
+#else // !DEBUG_HTTP
+	// Goes back through HTTP state machine again to print cached address
+	return http_post_completed(http);
+#endif // !DEBUG_HTTP
 }
 
 // Writes POST body IPV4 address to HTTP clients cache
@@ -286,8 +300,14 @@ static bool http_post_value_ip(struct http_t* http, uint32_t* addr) {
 		return false;
 	}
 
+	// Completes configuration if there is no more pending data
+#if !DEBUG_HTTP
 	http_post_completed(http);
 	return false;
+#else // !DEBUG_HTTP
+	// Goes back through HTTP state machine again to print cached address
+	return http_post_completed(http);
+#endif // !DEBUG_HTTP
 }
 
 // Writes POST body flag to HTTP clients cache
@@ -324,7 +344,12 @@ static bool http_post_value_flag(struct http_t* http, uint8_t* flags, int mask) 
 		// Comes back to parse expected delimiter if HTTP stream is empty and expects more body data
 		if (!http_char_available(http)) {
 			if (http_post_completed(http)) {
+#if !DEBUG_HTTP
 				return false;
+#else // !DEBUG_HTTP
+				// Goes back through HTTP state machine again to print cached address
+				return true;
+#endif // !DEBUG_HTTP
 			}
 			http->offset = 1;
 			return false;
@@ -336,8 +361,13 @@ static bool http_post_value_flag(struct http_t* http, uint8_t* flags, int mask) 
 		http_post_err(http, "Invalid boolean value, only accepts '1' or '0'");
 		return false;
 	}
+#if !DEBUG_HTTP
 	http_post_completed(http);
 	return false;
+#else // !DEBUG_HTTP
+	// Goes back through HTTP state machine again to print cached address
+	return http_post_completed(http);
+#endif // !DEBUG_HTTP
 }
 
 
@@ -644,66 +674,93 @@ static inline void http_parse(struct http_t* http, struct pbuf* p) {
 
 		// Transfers wlan ssid from POST body to client cache
 		case HTTP_STATE_POST_ROOT_BODY_SSID_VALUE: {
-			if (http_post_value_string(http, (char*)http->cache.CACHE_SSID, sizeof(http->cache.CACHE_SSID))) {
-				continue;
-			}
-			return;
+			if (!http_post_value_string(http, (char*)http->cache.CACHE_SSID, sizeof(http->cache.CACHE_SSID))) return;
+			DEBUG_HTTP_PRINTF(
+				"Updated 'ssid' to \"%.*s\" for %p\n",
+				sizeof(http->cache.CACHE_SSID), http->cache.CACHE_SSID,
+				(void*)http->pcb
+			);
+			continue;
 		}
 		// Transfers wlan psk from POST body to client cache
 		case HTTP_STATE_POST_ROOT_BODY_PSK_VALUE: {
-			if (http_post_value_string(http, (char*)http->cache.CACHE_PSK, sizeof(http->cache.CACHE_PSK))) {
-				continue;
-			}
-			return;
+			if (!http_post_value_string(http, (char*)http->cache.CACHE_PSK, sizeof(http->cache.CACHE_PSK))) return;
+			DEBUG_HTTP_PRINTF(
+				"Updated 'psk' to \"%.*s\" for %p\n",
+				sizeof(http->cache.CACHE_PSK), http->cache.CACHE_PSK,
+				(void*)http->pcb
+			);
+			continue;
 		}
 		// Transfers device name from POST body to client cache
 		case HTTP_STATE_POST_ROOT_BODY_NAME_VALUE: {
-			if (http_post_value_string(http, (char*)http->cache.CACHE_NAME, sizeof(http->cache.CACHE_NAME))) {
-				continue;
-			}
-			return;
+			if (!http_post_value_string(http, (char*)http->cache.CACHE_NAME, sizeof(http->cache.CACHE_NAME))) return;
+			DEBUG_HTTP_PRINTF(
+				"Updated 'name' to \"%.*s\" for %p\n",
+				sizeof(http->cache.CACHE_NAME), http->cache.CACHE_NAME,
+				(void*)http->pcb
+			);
+			continue;
 		}
 		// Transfers camera id (dest) from POST body to client cache
 		case HTTP_STATE_POST_ROOT_BODY_DEST_VALUE: {
-			if (http_post_value_uint8(http, &http->cache.config.dest, DEST_MIN, DEST_MAX)) {
-				continue;
-			}
-			return;
+			if (!http_post_value_uint8(http, &http->cache.config.dest, DEST_MIN, DEST_MAX)) return;
+			DEBUG_HTTP_PRINTF(
+				"Updated 'dest' to %d for %p\n",
+				http->cache.config.dest,
+				(void*)http->pcb
+			);
+			continue;
 		}
 		// Transfers ATEM address from POST body to client cache
 		case HTTP_STATE_POST_ROOT_BODY_ATEM_VALUE: {
-			if (http_post_value_ip(http, &http->cache.config.atemAddr)) {
-				continue;
-			}
-			return;
+			if (!http_post_value_ip(http, &http->cache.config.atemAddr)) return;
+			DEBUG_HTTP_PRINTF(
+				"Updated 'atem' to " IP_FMT " for %p\n",
+				IP_VALUE(http->cache.config.atemAddr),
+				(void*)http->pcb
+			);
+			continue;
 		}
 		// Transfers static ip flag from POST body to client cache
 		case HTTP_STATE_POST_ROOT_BODY_DHCP_VALUE: {
-			if (http_post_value_flag(http, &http->cache.config.flags, CONF_FLAG_DHCP)) {
-				continue;
-			}
-			return;
+			if (!http_post_value_flag(http, &http->cache.config.flags, CONF_FLAG_DHCP)) return;
+			DEBUG_HTTP_PRINTF(
+				"Updated 'dhcp' to %s for %p\n",
+				(http->cache.config.flags & CONF_FLAG_DHCP) ? "ON" : "OFF",
+				(void*)http->pcb
+			);
+			continue;
 		}
 		// Transfers static ip local address from POST body to client cache
 		case HTTP_STATE_POST_ROOT_BODY_LOCALIP_VALUE: {
-			if (http_post_value_ip(http, &http->cache.config.localAddr)) {
-				continue;
-			}
-			return;
+			if (!http_post_value_ip(http, &http->cache.config.localAddr)) return;
+			DEBUG_HTTP_PRINTF(
+				"Updated 'localip' to " IP_FMT " for %p\n",
+				IP_VALUE(http->cache.config.localAddr),
+				(void*)http->pcb
+			);
+			continue;
 		}
 		// Transfers static ip netmask from POST body to client cache
 		case HTTP_STATE_POST_ROOT_BODY_NETMASK_VALUE: {
-			if (http_post_value_ip(http, &http->cache.config.netmask)) {
-				continue;
-			}
-			return;
+			if (!http_post_value_ip(http, &http->cache.config.netmask)) return;
+			DEBUG_HTTP_PRINTF(
+				"Updated 'netmask' to " IP_FMT " for %p\n",
+				IP_VALUE(http->cache.config.netmask),
+				(void*)http->pcb
+			);
+			continue;
 		}
 		// Transfers static ip gateway from POST body to client cache
 		case HTTP_STATE_POST_ROOT_BODY_GATEWAY_VALUE: {
-			if (http_post_value_ip(http, &http->cache.config.gateway)) {
-				continue;
-			}
-			return;
+			if (!http_post_value_ip(http, &http->cache.config.gateway)) return;
+			DEBUG_HTTP_PRINTF(
+				"Updated 'gateway' to " IP_FMT " for %p\n",
+				IP_VALUE(http->cache.config.gateway),
+				(void*)http->pcb
+			);
+			continue;
 		}
 		// Ignores segment from client that has already sent response to request
 		case HTTP_STATE_DONE: return;
