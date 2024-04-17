@@ -27,7 +27,7 @@ $(OUT_DIR): $(ROOT)/firmware/http_respond.c $(ROOT)/firmware/init.h $(ROOT)/firm
 	sed -n 's/.*http_post_err(http, \"\(.*\)\").*/\1/p' ../../firmware/http.c | while IFT= read -r msg; do \
 		filename=$$(echo $$msg | tr '[:upper:]' '[:lower:]' | sed 's/ /_/g');\
 		./generate.sh ERR --http --err_body="$$msg" > $(OUT_DIR)/$$filename.http;\
-		./generate.sh ERR --err_body="$msg" > $(OUT_DIR)/$$filename.html;\
+		./generate.sh ERR --err_body="$$msg" > $(OUT_DIR)/$$filename.html;\
 	done
 
 # Cleans up generated files and directory
