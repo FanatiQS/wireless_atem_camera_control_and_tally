@@ -106,7 +106,7 @@ output=$(printf '%b ' $({
 
 # Outputs HTTP or HTML
 if [[ "$http" == 1 ]]; then 
-	echo "$output"
+	printf '%s' "$output"
 else
-	echo "$output" | sed -n '/^.$/,//p' | tail -n +2
+	printf '%s' "${output#*$'\r\n\r\n'}"
 fi
