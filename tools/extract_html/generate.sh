@@ -91,7 +91,7 @@ output=$(printf '%b ' $({
 		echo "#define atemAddr , \"${atem_addr-"192.168.1.240"}\""
 		echo "#define localip , \"${localip-"192.168.1.69"}\""
 		echo "#define netmask , \"${netmask-"255.255.255.0"}\""
-		echo "#define gateway , \"${gatway-"192.168.1.1"}\""
+		echo "#define gateway , \"${gateway-"192.168.1.1"}\""
 		echo "#define errCode \"${err_code-"400 Bad Request"}\""
 		echo "#define errBody \"${err_body-$err_code}\""
 
