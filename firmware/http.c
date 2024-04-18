@@ -361,13 +361,8 @@ static bool http_post_value_flag(struct http_t* http, uint8_t* flags, int mask) 
 		http_post_err(http, "Invalid boolean value, only accepts '1' or '0'");
 		return false;
 	}
-#if !DEBUG_HTTP
-	http_post_completed(http);
-	return false;
-#else // !DEBUG_HTTP
-	// Goes back through HTTP state machine again to print cached address
-	return http_post_completed(http);
-#endif // !DEBUG_HTTP
+	http->remainingBodyLen--;
+	return true;
 }
 
 
