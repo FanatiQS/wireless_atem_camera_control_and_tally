@@ -44,6 +44,9 @@ while [[ $# -gt 0 ]]; do
 		--atem_addr=*)
 			atem_addr="${i#*=}"
 			;;
+		--dhcp=*)
+			dhcp="${i#*=}"
+			;;
 		--localip=*)
 			localip="${i#*=}"
 			;;
