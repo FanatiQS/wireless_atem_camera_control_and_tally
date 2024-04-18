@@ -5,6 +5,8 @@
 #include <stdint.h> // uint8_t, uint32_t
 
 #include <lwip/udp.h> // struct udp_pcb
+#include <lwip/netif.h> // struct netif
+#include <lwip/ip_addr.h> // ip_addr_t
 
 #include "../core/atem.h" // struct atem_t
 
@@ -19,6 +21,8 @@ extern const char* const atem_state_disconnected;
 
 // The connection context to the ATEM switcher
 extern struct atem_t atem;
+
+struct netif* atem_netif_get(const ip_addr_t* addr);
 
 // Initializes ATEM UDP client
 struct udp_pcb* atem_init(uint32_t addr, uint8_t dest);

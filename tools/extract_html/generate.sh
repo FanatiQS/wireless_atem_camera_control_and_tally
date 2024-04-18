@@ -29,6 +29,9 @@ while [[ $# -gt 0 ]]; do
 		--uptime=*)
 			uptime="${i#*=}"
 			;;
+		--current_addr=*)
+			current_addr="${i#*=}"
+			;;
 		--name=*)
 			name="${i#*=}"
 			;;
@@ -84,6 +87,7 @@ output=$(printf '%b ' $({
 		echo "#define http_write_wifi(http) \"${wifi_status-"-50 dBm"}\""
 		echo "#define atem_state \"${atem_status-"Connected"}\""
 		echo "#define http_write_uptime(http) \"${uptime-"0h 13m 37s"}\""
+		echo "#define http_write_local_addr(http) \"${current_addr-"192.168.1.69"}\""
 		echo "#define CACHE_SSID , \"${ssid-"myWiFi"}\""
 		echo "#define CACHE_PSK , \"${psk-"password123"}\""
 		echo "#define CACHE_NAME , \"${name-"waccat0"}\""

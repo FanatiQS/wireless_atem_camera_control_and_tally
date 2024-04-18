@@ -118,6 +118,17 @@ static inline bool http_write_wifi(struct http_t* http) {
 	return tcp_write(http->pcb, buf, len, TCP_WRITE_FLAG_COPY) == ERR_OK;
 }
 
+// Writes current local ip on network where ATEM is available
+static inline bool http_write_local_addr(struct http_t* http) {
+	const ip_addr_t addr = IPADDR4_INIT(http->cache.config.atemAddr);
+	struct netif* netif = atem_netif_get(&addr);
+	if (netif == NULL) {
+		return HTTP_SEND(http, "N/A");
+	}
+	char* buf = ipaddr_ntoa(netif_ip_addr4(netif));
+	return tcp_write(http->pcb, buf, strlen(buf), TCP_WRITE_FLAG_COPY) == ERR_OK;
+}
+
 // Writes HTML input string value with unknown length up to a maximum value to TCP PCB
 static bool http_write_value_string(struct http_t* http, char* str, size_t maxlen) {
 	maxlen -= http->stringEscapeIndex;
@@ -253,6 +264,10 @@ bool http_respond(struct http_t* http) {
 			"<tr><td>ATEM connection status:<td>"
 		)
 		HTTP_RESPONSE_CASE_STR(http, atem_state)
+		HTTP_RESPONSE_CASE_STR(http,
+			"<tr><td>Current address:<td>"
+		)
+		HTTP_RESPONSE_CASE(http_write_local_addr(http))
 		HTTP_RESPONSE_CASE_STR(http,
 			"<tr><td>Time since boot:<td>"
 		)

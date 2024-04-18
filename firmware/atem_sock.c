@@ -4,12 +4,13 @@
 
 #include <lwip/udp.h> // struct udp_pcb, udp_send, udp_new, udp_recv, udp_connect, udp_remove
 #include <lwip/pbuf.h> // struct pbuf, pbuf_alloc_reference, PBUF_REF, pbuf_free, pbuf_copy_partial
-#include <lwip/ip_addr.h> // ip_addr_t, IPADDR4_INIT
+#include <lwip/ip_addr.h> // ip_addr_t, IPADDR4_INIT, ip_2_ip4
 #include <lwip/err.h> // err_t, ERR_OK
 #include <lwip/arch.h> // LWIP_UNUSED_ARG
 #include <lwip/timeouts.h> // sys_timeout, sys_untimeout
-#include <lwip/netif.h> // netif_ip4_addr, netif_ip4_netmask, netif_ip4_gw
+#include <lwip/netif.h> // struct netif, netif_ip4_addr, netif_ip4_netmask, netif_ip4_gw, NETIF_FOREACH, netif_is_up, netif_is_link_up
 #include <lwip/ip4.h> // ip4_route
+#include <lwip/ip4_addr.h> // ip4_addr_isany_val, ip4_addr_netcmp
 
 #include "../core/atem.h" // struct atem_t atem_connection_reset, atem_parse, ATEM_STATUS_WRITE, ATEM_STATUS_CLOSING, ATEM_STATUS_REJECTED, ATEM_STATUS_WRITE_ONLY, ATEM_STATUS_CLOSED, ATEM_STATUS_ACCEPTED, ATEM_STATUS_ERROR, ATEM_STATUS_NONE, ATEM_TIMEOUT, ATEM_PORT, atem_cmd_available, atem_cmd_next, ATEM_CMDNAME_VERSION, ATEM_CMDNAME_TALLY, ATEM_CMDNAME_CAMERACONTROL, atem_protocol_major, atem_protocol_minor, ATEM_TIMEOUT_MS
 #include "../core/atem_protocol.h" // ATEM_INDEX_FLAGS, ATEM_INDEX_REMOTEID_HIGH, ATEM_INDEX_REMOTEID_LOW, ATEM_FLAG_ACK
@@ -263,14 +264,14 @@ static void atem_recv_callback(void* arg, struct udp_pcb* pcb, struct pbuf* p, c
 }
 
 // Gets netif ATEM server address should be available on
-static struct netif* atem_netif_get(const struct udp_pcb* pcb) {
+struct netif* atem_netif_get(const ip_addr_t* addr) {
 	struct netif *netif;
 	NETIF_FOREACH(netif) {
 		if (
 			netif_is_up(netif)
 			&& netif_is_link_up(netif)
 			&& !ip4_addr_isany_val(*netif_ip4_addr(netif))
-			&& ip4_addr_netcmp(ip_2_ip4(&pcb->remote_ip), netif_ip4_addr(netif), netif_ip4_netmask(netif))
+			&& ip4_addr_netcmp(addr, netif_ip4_addr(netif), netif_ip4_netmask(netif))
 		) {
 			return netif;
 		}
@@ -283,7 +284,7 @@ static void atem_netif_poll(void* arg) {
 	struct udp_pcb* pcb = arg;
 
 	// Keeps waiting until network is connected
-	struct netif* netif = atem_netif_get(pcb);
+	struct netif* netif = atem_netif_get(ip_2_ip4(&pcb->remote_ip));
 	if (netif == NULL) {
 		sys_timeout(20, atem_netif_poll, pcb);
 		return;
