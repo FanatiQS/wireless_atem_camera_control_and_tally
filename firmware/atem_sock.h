@@ -22,7 +22,7 @@ extern const char* const atem_state_disconnected;
 // The connection context to the ATEM switcher
 extern struct atem_t atem;
 
-struct netif* atem_netif_get(const ip_addr_t* addr);
+struct netif* atem_netif_get(const ip4_addr_t* addr);
 
 // Initializes ATEM UDP client
 struct udp_pcb* atem_init(uint32_t addr, uint8_t dest);

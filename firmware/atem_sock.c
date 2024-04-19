@@ -10,7 +10,7 @@
 #include <lwip/timeouts.h> // sys_timeout, sys_untimeout
 #include <lwip/netif.h> // struct netif, netif_ip4_addr, netif_ip4_netmask, netif_ip4_gw, NETIF_FOREACH, netif_is_up, netif_is_link_up
 #include <lwip/ip4.h> // ip4_route
-#include <lwip/ip4_addr.h> // ip4_addr_isany_val, ip4_addr_netcmp
+#include <lwip/ip4_addr.h> // ip4_addr_isany_val, ip4_addr_netcmp, ip4_addr_t
 
 #include "../core/atem.h" // struct atem_t atem_connection_reset, atem_parse, ATEM_STATUS_WRITE, ATEM_STATUS_CLOSING, ATEM_STATUS_REJECTED, ATEM_STATUS_WRITE_ONLY, ATEM_STATUS_CLOSED, ATEM_STATUS_ACCEPTED, ATEM_STATUS_ERROR, ATEM_STATUS_NONE, ATEM_TIMEOUT, ATEM_PORT, atem_cmd_available, atem_cmd_next, ATEM_CMDNAME_VERSION, ATEM_CMDNAME_TALLY, ATEM_CMDNAME_CAMERACONTROL, atem_protocol_major, atem_protocol_minor, ATEM_TIMEOUT_MS
 #include "../core/atem_protocol.h" // ATEM_INDEX_FLAGS, ATEM_INDEX_REMOTEID_HIGH, ATEM_INDEX_REMOTEID_LOW, ATEM_FLAG_ACK
@@ -264,7 +264,7 @@ static void atem_recv_callback(void* arg, struct udp_pcb* pcb, struct pbuf* p, c
 }
 
 // Gets netif ATEM server address should be available on
-struct netif* atem_netif_get(const ip_addr_t* addr) {
+struct netif* atem_netif_get(const ip4_addr_t* addr) {
 	struct netif *netif;
 	NETIF_FOREACH(netif) {
 		if (
