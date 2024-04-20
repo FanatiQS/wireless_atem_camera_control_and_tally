@@ -13,9 +13,21 @@
 * Moved single source include file.
 * Prints DNS debug state at boot.
 * Fixed crash on HTTP client close before server sent response.
-* Fixed empty `atem=` causing successful configuration of invalid 0 value.
+* Fixed empty `dest=` causing successful configuration of invalid 0 value.
 * Updated successul HTTP configuration response message.
 * Fixed `DEBUG_ATEM` message prefix.
+* Reworked configuration page mobile scaling.
+* Added ESP32 support.
+* Added compiler flag to invert PIN_CONN, previously was always inverted.
+* Do not abort on non critical initilization errors (for example captive portal or hostname).
+* Changed order or debug boot messages.
+* Added ws2812 (neopixel) support on ESP32.
+* Deprecated compiler macro VERSIONS_ANY (uses warnings instead).
+* Moved ESP8266 platform code to its own files and deprecated `/firmware/init.c` and `/firmware/flash.c`.
+* Updated HTML POST response message.
+* Added debug printing for HTTP configuration values.
+* Made `timespec_get` shim easier to use.
+* Adds devices current ip on network with ATEM switcher to HTML configuration page.
 
 ### Test Suite
 * Added more tests for atem_server.
