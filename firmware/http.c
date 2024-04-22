@@ -5,7 +5,7 @@
 #include <ctype.h> // tolower, isdigit
 #include <string.h> // strlen
 
-#include <lwip/tcp.h> // struct tcp_pcb, tcp_new, tcp_bind, tcp_close, tcp_listen, tcp_accept, tcp_nagle_disable, tcp_poll, tcp_recv, tcp_sent, tcp_err, tcp_recved, tcp_arg, tcp_abort
+#include <lwip/tcp.h> // struct tcp_pcb, tcp_new, tcp_bind, tcp_close, tcp_listen, tcp_accept, tcp_nagle_disable, tcp_poll, tcp_recv, tcp_sent, tcp_err, tcp_recved, tcp_arg
 #include <lwip/err.h> // err_t, ERR_OK, ERR_VAL
 #include <lwip/pbuf.h> // struct pbuf, pbuf_free
 #include <lwip/ip_addr.h> // IP_ADDR_ANY
