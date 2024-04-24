@@ -81,7 +81,7 @@ void logs_print_string(FILE* pipe, const char* str) {
 
 	fprintf(pipe, "\x1b[7m");
 	do {
-		const unsigned char c = *str;
+		const char c = *str;
 		if (c == '\r') {
 			fprintf(pipe, "\\r");
 		}
