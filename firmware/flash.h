@@ -6,6 +6,7 @@
 #include <stdbool.h> // bool
 
 #if defined(ESP8266) /* ESP8266 NONOS SDK */
+#include <lwip/ip_addr.h> // required by user_interface for lwip2 link layer to not warn about struct ip_info
 #include <user_interface.h> // struct station_config, struct softap_config
 
 // Cached wifi station and softap configurations for HTTP configuration
