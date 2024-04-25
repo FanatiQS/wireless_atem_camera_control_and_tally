@@ -10,7 +10,7 @@ void setup() {
 	waccat_init();
 
 	// Sets up OTA update server
-	while (WiFi.waitForConnectResult() != WL_CONNECTED) yield();
+	ArduinoOTA.setHostname(WiFi.softAPSSID().c_str());
 	ArduinoOTA.begin();
 
 	// Adds mDNS querying support
