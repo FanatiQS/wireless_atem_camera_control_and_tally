@@ -12,7 +12,6 @@ void setup() {
 	}
 
 	// Initializes wifi, ATEM connection, SDI shield and GPIO LEDs
-	WiFi.begin();
 	waccat_init();
 
 	// Sets up OTA update server
