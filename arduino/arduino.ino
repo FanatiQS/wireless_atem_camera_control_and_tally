@@ -5,6 +5,12 @@
 #include "./src/firmware/init.h" // waccat_init
 
 void setup() {
+	// Sets softap password if not configured
+	if (WiFi.softAPPSK().isEmpty()) {
+		WiFi.persistent(true);
+		WiFi.softAP(NULL, WiFi.macAddress().c_str());
+	}
+
 	// Initializes wifi, ATEM connection, SDI shield and GPIO LEDs
 	WiFi.begin();
 	waccat_init();
