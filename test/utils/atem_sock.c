@@ -1,17 +1,20 @@
 #include <stdint.h> // uint8_t, uint16_t
-#include <stddef.h> // size_t
+#include <stddef.h> // size_t, NULL
 #include <stdio.h> // printf, fprintf, stderr, perror, stdout
-#include <stdlib.h> // abort
+#include <stdlib.h> // abort, getenv
+#include <assert.h> // assert
 
 #include <unistd.h> // close
 #include <sys/socket.h> // SOCK_DGRAM, ssize_t, connect, struct sockaddr, socklen_t, recvfrom
 #include <netinet/in.h> // struct sockaddr_in
+#include <arpa/inet.h> // inet_addr, in_addr_t
 
 #include "./simple_socket.h" // simple_socket_create, simple_socket_poll, simple_socket_send, simple_socket_recv, simple_socket_connect_env, simple_socket_listen
 #include "../../core/atem_protocol.h" // ATEM_FLAG_SYN, ATEM_FLAG_RETX
 #include "../../core/atem.h" // ATEM_PORT, ATEM_PACKET_LEN_MAX
 #include "./atem_header.h" // atem_header_len_get, atem_header_flags_get, atem_header_unknownid_get, atem_header_len_get_verify
 #include "./logs.h" // logs_print_buffer, logs_find
+#include "./timediff.h" // timediff_mark, timediff_get
 #include "./atem_sock.h"
 
 #define TIMEOUT_LISTEN 10000
@@ -78,34 +81,48 @@ struct sockaddr_in atem_socket_listen(int sock, uint8_t* packet) {
 	// Binds socket for receiving ATEM client packets
 	simple_socket_listen(sock, ATEM_PORT);
 
-	// Awaits first packet from ATEM client
-	if (simple_socket_poll(sock, TIMEOUT_LISTEN) != 1) {
-		fprintf(stderr, "No client connected\n");
+	// Gets ip address to allow client connections from
+	const char* envKey = "ATEM_CLIENT_ADDR";
+	const char* cmpAddrEnv = getenv(envKey);
+	if (cmpAddrEnv == NULL) {
+		fprintf(stderr, "Environment variable %s not defined\n", envKey);
 		abort();
 	}
+	const in_addr_t cmpAddr = inet_addr(cmpAddrEnv);
 
-	// Receives first packet
+	struct timespec timeoutStart = timediff_mark();
 	struct sockaddr_in peerAddr;
-	socklen_t peerAddrLen = sizeof(peerAddr);
-	ssize_t recvLen = recvfrom(sock, packet, ATEM_PACKET_LEN_MAX, 0, (struct sockaddr*)&peerAddr, &peerAddrLen);
-	if (recvLen <= 0) {
-		if (recvLen == -1) {
-			perror("Failed to recvfrom packet");
+	ssize_t recvLen;
+	do {
+		// Awaits first packet from ATEM client
+		if (simple_socket_poll(sock, TIMEOUT_LISTEN - timediff_get(timeoutStart)) != 1) {
+			fprintf(stderr, "No client connected\n");
+			abort();
 		}
-		else if (recvLen == 0) {
-			fprintf(stderr, "Received empty packet from client\n");
+
+		// Receives first packet
+		socklen_t peerAddrLen = sizeof(peerAddr);
+		recvLen = recvfrom(sock, packet, ATEM_PACKET_LEN_MAX, 0, (struct sockaddr*)&peerAddr, &peerAddrLen);
+		assert(peerAddrLen == sizeof(peerAddr));
+		if (recvLen <= 0) {
+			if (recvLen == -1) {
+				perror("Failed to recvfrom packet");
+			}
+			else if (recvLen == 0) {
+				fprintf(stderr, "Received empty packet from client\n");
+			}
+			else {
+				fprintf(stderr, "Failed to recvfrom: %zu\n", recvLen);
+			}
+			abort();
 		}
-		else {
-			fprintf(stderr, "Failed to recvfrom: %zu\n", recvLen);
-		}
-		abort();
-	}
+	} while (peerAddr.sin_addr.s_addr != cmpAddr);
 
 	// Verifies received ATEM packet
 	atem_packet_verify(packet, (size_t)recvLen);
 
 	// Connects socket to ATEM client
-	if (connect(sock, (struct sockaddr*)&peerAddr, peerAddrLen)) {
+	if (connect(sock, (struct sockaddr*)&peerAddr, sizeof(peerAddr))) {
 		perror("Failed to connect socket");
 		abort();
 	}
