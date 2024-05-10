@@ -71,6 +71,9 @@ while [[ $# -gt 0 ]]; do
 	shift
 done
 
+# Sets workding directory to project root
+cd "$(dirname $0)/../.."
+
 # Generates HTTP response
 output=$(printf '%b ' $({
 	# Extracts only addr/value/str
@@ -81,7 +84,7 @@ output=$(printf '%b ' $({
 	echo "#define STRIP_ME(...)" # Defines stripping macro
 	echo "STRIP_ME(" # Strips all data up to first macro function call to keep content for
 	{
-		echo "#include \"../../firmware/init.h\" // FIRMWARE_VERSION_STRING"
+		echo "#include \"./firmware/init.h\" // FIRMWARE_VERSION_STRING"
 
 		# Defines macros to replace configurations
 		echo "#define http_write_wifi(http) \"${wifi_status-"-50 dBm"}\""
@@ -106,7 +109,7 @@ output=$(printf '%b ' $({
 		# Strips out C conditional for DHCP if it is not enabled
 		[ "$dhcp" == 0 ] && echo "#define if #define DELETE_THIS_ROW"
 
-		sed -n "/case HTTP_RESPONSE_STATE_$state:/,/break;/p" ../../firmware/http_respond.c | sed 's/http->//'
+		sed -n "/case HTTP_RESPONSE_STATE_$state:/,/break;/p" ./firmware/http_respond.c | sed 's/http->//'
 	} | gcc -E -P -xc -
 	echo ")" # Closes last stripper
 } | gcc -E -P -xc - | sed 's/" "//g') | sed 's/\\"/"/g' | sed 's/" *$//' | sed 's/^"//')
