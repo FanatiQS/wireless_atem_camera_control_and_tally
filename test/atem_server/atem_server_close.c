@@ -151,6 +151,23 @@ int main(void) {
 		atem_socket_close(sock);
 	}
 
+	// Ensures retransmitted closing request is not processed if previous closing closed the session
+	RUN_TEST() {
+		int sock = atem_socket_create();
+		uint16_t  session_id = atem_handshake_connect(sock, 0x1234);
+
+		atem_handshake_sessionid_send(sock, ATEM_OPCODE_CLOSING, false, session_id);
+		uint8_t packet[ATEM_PACKET_LEN_MAX];
+		do {
+			atem_socket_recv(sock, packet);
+		} while (!(atem_header_flags_get(packet) & ATEM_FLAG_SYN));
+		atem_handshake_sessionid_get_verify(packet, ATEM_OPCODE_CLOSED, false, session_id);
+		atem_handshake_sessionid_send(sock, ATEM_OPCODE_CLOSING, true, session_id);
+
+		atem_socket_norecv(sock);
+		atem_socket_close(sock);
+	}
+
 
 
 	// Ensures client closing session before acknowledging opening handshake response closes session correctly
