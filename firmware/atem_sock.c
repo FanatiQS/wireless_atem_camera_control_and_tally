@@ -75,6 +75,7 @@ const char* const atem_state_disconnected = "Disconnected";
 
 // Resets tally and connection status when disconnected from ATEM
 static inline void tally_reset(void) {
+	DEBUG_TALLY_PRINTF("Reset\n");
 	LED_CONN(false);
 	LED_TALLY(false, false);
 	ws2812_update(false, false);
@@ -163,12 +164,10 @@ static inline void atem_process(struct udp_pcb* pcb) {
 			// Only processes tally updates for selected camera
 			if (!atem_tally_updated(&atem)) break;
 
-#if DEBUG_TALLY
-			DEBUG_PRINTF(
-				"Tally state: %s\n",
+			DEBUG_TALLY_PRINTF(
+				"Changed state: %s\n",
 				((atem.pgmTally) ? "PGM" : ((atem.pvwTally) ? "PVW" : "NONE"))
 			);
-#endif // DEBUG_TALLY
 
 			// Sets tally pin states
 			LED_TALLY(atem.pgmTally, atem.pvwTally);
@@ -199,7 +198,7 @@ static inline void atem_process(struct udp_pcb* pcb) {
 				printBuf[offset++] = "0123456789abcdef"[atem.cmdBuf[i] & 0xf];
 			}
 			printBuf[offset] = '\0';
-			DEBUG_PRINTF("Got camera control data:%s\n", printBuf);
+			DEBUG_PRINTF("[ Camera Control ] Got camera control data:%s\n", printBuf);
 #endif // DEBUG_CC
 
 			// Writes camera control data over SDI

@@ -127,6 +127,13 @@
 #define DEBUG_DNS_PRINTF(...)
 #endif // DEBUG_DNS
 
+// Only prints Tally debug info when it is enabled in user_config.h
+#if DEBUG_TALLY
+#define DEBUG_TALLY_PRINTF(...) DEBUG_PRINTF("[ TALLY ] ", __VA_ARGS__)
+#else // DEBUG_TALLY
+#define DEBUG_TALLY_PRINTF(...)
+#endif // DEBUG_TALLY
+
 // Only prints ATEM debug info when it is enabled in user_config.h
 #if DEBUG_ATEM
 #define DEBUG_ATEM_PRINTF(...) DEBUG_PRINTF("[ ATEM ] " __VA_ARGS__)
