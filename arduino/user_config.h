@@ -21,6 +21,7 @@
 #define DEBUG_CC          0
 #define DEBUG_HTTP        DEBUG
 #define DEBUG_ATEM        0
+#define DEBUG_DNS         DEBUG
 
 /**
  * The pins to use for PGM tally, PVW tally and/or ATEM connection indicator LEDs.
