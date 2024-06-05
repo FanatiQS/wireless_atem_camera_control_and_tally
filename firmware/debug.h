@@ -129,7 +129,7 @@
 
 // Only prints Tally debug info when it is enabled in user_config.h
 #if DEBUG_TALLY
-#define DEBUG_TALLY_PRINTF(...) DEBUG_PRINTF("[ TALLY ] ", __VA_ARGS__)
+#define DEBUG_TALLY_PRINTF(...) DEBUG_PRINTF("[ TALLY ] " __VA_ARGS__)
 #else // DEBUG_TALLY
 #define DEBUG_TALLY_PRINTF(...)
 #endif // DEBUG_TALLY
