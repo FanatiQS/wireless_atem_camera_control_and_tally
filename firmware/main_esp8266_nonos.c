@@ -20,16 +20,16 @@
 
 
 // Verifies LwIP version
-#if LWIP_VERSION != 0x020102ff
-#warning Expected LwIP version 2.1.2
+#if LWIP_VERSION != 0x020103ff
+#warning Expected LwIP version 2.1.3
 #endif // LWIP_VERSION
 
 // Verifies versions of ESP8266 SDK and Arduino
 #if ESP_SDK_VERSION_NUMBER != 0x020200
 #warning Expected ESP8266 SDK version 2.2.0
 #endif // ESP_SDK_VERSION_NUMBER
-#if ARDUINO && !defined(ARDUINO_ESP8266_RELEASE_2_7_0)
-#warning Expected Arduino ESP8266 version 2.7.0
+#if ARDUINO && !defined(ARDUINO_ESP8266_RELEASE_3_1_2)
+#warning Expected Arduino ESP8266 version 3.1.2
 #endif // ARDUINO_ESP8266_GIT_VER
 
 // Debug boot line for arduino version
