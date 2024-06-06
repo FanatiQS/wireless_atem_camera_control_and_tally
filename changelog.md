@@ -1,6 +1,6 @@
 # Changelog
 
-## Version 0.7.2 (development)
+## Version 0.8.0 (development)
 
 ### Core
 * `ATEM_MAX_PACKET_LEN` renamed to `ATEM_PACKET_LEN_MAX`.
@@ -27,7 +27,13 @@
 * Updated HTML POST response message.
 * Added debug printing for HTTP configuration values.
 * Made `timespec_get` shim easier to use.
-* Adds devices current ip on network with ATEM switcher to HTML configuration page.
+* Added devices current ip on network with ATEM switcher to HTML configuration page.
+* Deprecated Arduino HTTP configuration server on port 81
+* Sets Arduino OTA host name
+* Sets password for configuration network in arduino without having to use old arduino HTTP server.
+* Added tally and camera control debug log labels.
+* Upgraded framework versions for firmware.
+* Enables DNS debug printing by default.
 
 ### Test Suite
 * Added more tests for atem_server.
@@ -41,6 +47,7 @@
 * Overhauled `logs_print_string` output styling (uses ancii escape codes).
 * Separated make rule `device` into `config_device` and `atem_client_device`.
 * Added tests for closing before HTTP response.
+* Locks ATEM server tests to specified client address.
 
 ### Tools
 * Added tool to generate HTML and HTTP on host.
