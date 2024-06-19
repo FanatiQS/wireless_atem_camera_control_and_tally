@@ -2,6 +2,7 @@
 #ifndef USER_CONFIG_H
 #define USER_CONFIG_H
 
+#include <stdint.h> // used by not included in pins_arduino for ESP8266
 #include <pins_arduino.h>
 
 /**
