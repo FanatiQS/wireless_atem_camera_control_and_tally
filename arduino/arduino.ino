@@ -2,7 +2,7 @@
 #include <ESP8266mDNS.h>
 #include <ArduinoOTA.h>
 
-#include "./src/firmware/init.h" // waccat_init
+#include "./src/waccat.h" // waccat_init
 
 void setup() {
 	// Sets softap password if not configured
@@ -14,11 +14,11 @@ void setup() {
 	// Initializes wifi, ATEM connection, SDI shield and GPIO LEDs
 	waccat_init();
 
-	// Sets up OTA update server
+	// Initializes OTA server with waccat configured name
 	ArduinoOTA.setHostname(WiFi.softAPSSID().c_str());
 	ArduinoOTA.begin();
 
-	// Adds mDNS querying support
+	// Initializes mDNS lookup with waccat configured name
 	MDNS.begin(WiFi.softAPSSID());
 	MDNS.addService("http", "tcp", 80);
 }
