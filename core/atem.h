@@ -1,3 +1,8 @@
+/**
+ * @file
+ * @brief Low level API for communicating with an ATEM server
+ */
+
 // Include guard
 #ifndef ATEM_H
 #define ATEM_H
