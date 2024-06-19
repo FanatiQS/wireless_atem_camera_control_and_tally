@@ -1,6 +1,6 @@
 # Changelog
 
-## Version 0.8.0 (development)
+## Version 0.8.0
 
 ### Core
 * `ATEM_MAX_PACKET_LEN` renamed to `ATEM_PACKET_LEN_MAX`.
