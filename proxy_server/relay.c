@@ -19,11 +19,11 @@
 int sockRelay;
 
 // State for ATEM connection
-static struct atem_t atem;
+static struct atem atem;
 
 // Sends the buffered ATEM data to the ATEM switcher
 static void sendAtem() {
-	if (send(sockRelay, atem.writeBuf, atem.writeLen, 0) == -1) {
+	if (send(sockRelay, atem.write_buf, atem.write_len, 0) == -1) {
 		perror("Failed to send data to ATEM");
 	}
 
@@ -70,7 +70,7 @@ void relayDisable() {
 // Relays and caches ATEM commands
 void processRelayData() {
 	// Reads data from the ATEM switcher
-	ssize_t recvLen = recv(sockRelay, atem.readBuf, ATEM_PACKET_LEN_MAX, 0);
+	ssize_t recvLen = recv(sockRelay, atem.read_buf, ATEM_PACKET_LEN_MAX, 0);
 	if (recvLen == -1) {
 		perror("Failed to read data from relay server");
 		return;
@@ -87,7 +87,7 @@ void processRelayData() {
 		case ATEM_STATUS_ACCEPTED:
 		case ATEM_STATUS_CLOSING:
 		case ATEM_STATUS_WRITE_ONLY: {
-			atem.cmdIndex = ATEM_PACKET_LEN_MAX;
+			atem.cmd_index = ATEM_PACKET_LEN_MAX;
 			break;
 		}
 		case ATEM_STATUS_WRITE: break;

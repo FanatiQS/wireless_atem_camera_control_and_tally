@@ -8,7 +8,7 @@
 #include <lwip/netif.h> // struct netif
 #include <lwip/ip_addr.h> // ip_addr_t
 
-#include "../core/atem.h" // struct atem_t
+#include "../core/atem.h" // struct atem
 
 // String representing the current ATEM connection status
 extern const char* atem_state;
@@ -20,7 +20,7 @@ extern const char* const atem_state_rejected;
 extern const char* const atem_state_disconnected;
 
 // The connection context to the ATEM switcher
-extern struct atem_t atem;
+extern struct atem atem;
 
 struct netif* atem_netif_get(const ip4_addr_t* addr);
 

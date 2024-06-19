@@ -12,7 +12,7 @@
 #include <lwip/ip4.h> // ip4_route
 #include <lwip/ip4_addr.h> // ip4_addr_isany_val, ip4_addr_netcmp, ip4_addr_t
 
-#include "../core/atem.h" // struct atem_t atem_connection_reset, atem_parse, ATEM_STATUS_WRITE, ATEM_STATUS_CLOSING, ATEM_STATUS_REJECTED, ATEM_STATUS_WRITE_ONLY, ATEM_STATUS_CLOSED, ATEM_STATUS_ACCEPTED, ATEM_STATUS_ERROR, ATEM_STATUS_NONE, ATEM_TIMEOUT, ATEM_PORT, atem_cmd_available, atem_cmd_next, ATEM_CMDNAME_VERSION, ATEM_CMDNAME_TALLY, ATEM_CMDNAME_CAMERACONTROL, atem_protocol_major, atem_protocol_minor, ATEM_TIMEOUT_MS
+#include "../core/atem.h" // struct atem atem_connection_reset, atem_parse, ATEM_STATUS_WRITE, ATEM_STATUS_CLOSING, ATEM_STATUS_REJECTED, ATEM_STATUS_WRITE_ONLY, ATEM_STATUS_CLOSED, ATEM_STATUS_ACCEPTED, ATEM_STATUS_ERROR, ATEM_STATUS_NONE, ATEM_TIMEOUT, ATEM_PORT, atem_cmd_available, atem_cmd_next, ATEM_CMDNAME_VERSION, ATEM_CMDNAME_TALLY, ATEM_CMDNAME_CAMERACONTROL, atem_protocol_major, atem_protocol_minor, ATEM_TIMEOUT_MS
 #include "../core/atem_protocol.h" // ATEM_INDEX_FLAGS, ATEM_INDEX_REMOTEID_HIGH, ATEM_INDEX_REMOTEID_LOW, ATEM_FLAG_ACK
 #include "./user_config.h" // DEBUG_TALLY, DEBUG_CC, DEBUG_ATEM, PIN_CONN, PIN_PGM, PIN_PVW, PIN_SCL, PIN_SDA
 #include "./led.h" // LED_TALLY, LED_CONN, led_init
@@ -62,7 +62,7 @@
 
 
 // ATEM connection context
-struct atem_t atem;
+struct atem atem;
 
 // HTML text states of connection to ATEM
 const char* atem_state = "Unconnected";
@@ -80,14 +80,14 @@ static inline void tally_reset(void) {
 	LED_TALLY(false, false);
 	ws2812_update(false, false);
 	sdi_write_tally(atem.dest, false, false);
-	atem.pgmTally = false;
-	atem.pvwTally = false;
+	atem.tally_pgm = false;
+	atem.tally_pvw = false;
 }
 
 // Sends buffered data to ATEM
 static void atem_send(struct udp_pcb* pcb) {
 	// Creates pbuf container for ATEM data without copying
-	struct pbuf* p = pbuf_alloc_reference(atem.writeBuf, atem.writeLen, PBUF_REF);
+	struct pbuf* p = pbuf_alloc_reference(atem.write_buf, atem.write_len, PBUF_REF);
 	if (p == NULL) {
 		DEBUG_ERR_PRINTF("Failed to alloc pbuf for ATEM\n");
 		return;
@@ -117,7 +117,7 @@ static inline void atem_process(struct udp_pcb* pcb) {
 			return;
 		}
 		case ATEM_STATUS_WRITE: {
-			DEBUG_ATEM_PRINTF("packet to acknowledge: %d\n", atem.lastRemoteId);
+			DEBUG_ATEM_PRINTF("packet to acknowledge: %d\n", atem.remote_id_last);
 			break;
 		}
 		case ATEM_STATUS_CLOSING: {
@@ -130,11 +130,11 @@ static inline void atem_process(struct udp_pcb* pcb) {
 		case ATEM_STATUS_WRITE_ONLY: {
 			atem_send(pcb);
 #if DEBUG_ATEM
-			if (atem.lastRemoteId > 0 && atem.writeBuf[ATEM_INDEX_FLAGS] == ATEM_FLAG_ACK) {
+			if (atem.remote_id_last > 0 && atem.write_buf[ATEM_INDEX_FLAGS] == ATEM_FLAG_ACK) {
 				DEBUG_ATEM_PRINTF(
 					"out-of-order packet: %d\n",
-					atem.readBuf[ATEM_INDEX_REMOTEID_HIGH] << 8 |
-					atem.readBuf[ATEM_INDEX_REMOTEID_LOW]
+					atem.read_buf[ATEM_INDEX_REMOTEID_HIGH] << 8 |
+					atem.read_buf[ATEM_INDEX_REMOTEID_LOW]
 				);
 			}
 #endif // DEBUG_ATEM
@@ -166,17 +166,17 @@ static inline void atem_process(struct udp_pcb* pcb) {
 
 			DEBUG_TALLY_PRINTF(
 				"Changed state: %s\n",
-				((atem.pgmTally) ? "PGM" : ((atem.pvwTally) ? "PVW" : "NONE"))
+				((atem.tally_pgm) ? "PGM" : ((atem.tally_pvw) ? "PVW" : "NONE"))
 			);
 
 			// Sets tally pin states
-			LED_TALLY(atem.pgmTally, atem.pvwTally);
+			LED_TALLY(atem.tally_pgm, atem.tally_pvw);
 
 			// Sets RGB tally states
-			ws2812_update(atem.pgmTally, atem.pvwTally);
+			ws2812_update(atem.tally_pgm, atem.tally_pvw);
 
 			// Writes tally data over SDI
-			sdi_write_tally(atem.dest, atem.pgmTally, atem.pvwTally);
+			sdi_write_tally(atem.dest, atem.tally_pgm, atem.tally_pvw);
 
 			break;
 		}
@@ -190,19 +190,19 @@ static inline void atem_process(struct udp_pcb* pcb) {
 			atem_cc_translate(&atem);
 
 #if DEBUG_CC
-			char printBuf[255 * 3 + 1];
+			char buf_print[255 * 3 + 1];
 			uint8_t offset = 0;
-			for (uint16_t i = 0; i < atem.cmdLen; i++) {
-				printBuf[offset++] = ' ';
-				printBuf[offset++] = "0123456789abcdef"[atem.cmdBuf[i] >> 4];
-				printBuf[offset++] = "0123456789abcdef"[atem.cmdBuf[i] & 0xf];
+			for (uint16_t i = 0; i < atem.cmd_len; i++) {
+				buf_print[offset++] = ' ';
+				buf_print[offset++] = "0123456789abcdef"[atem.cmd_buf[i] >> 4];
+				buf_print[offset++] = "0123456789abcdef"[atem.cmd_buf[i] & 0xf];
 			}
-			printBuf[offset] = '\0';
-			DEBUG_PRINTF("[ Camera Control ] Got camera control data:%s\n", printBuf);
+			buf_print[offset] = '\0';
+			DEBUG_PRINTF("[ Camera Control ] Got camera control data:%s\n", buf_print);
 #endif // DEBUG_CC
 
 			// Writes camera control data over SDI
-			sdi_write_cc(atem.cmdBuf - 2, atem.cmdLen);
+			sdi_write_cc(atem.cmd_buf - 2, atem.cmd_len);
 
 			break;
 		}
@@ -245,7 +245,7 @@ static void atem_recv_callback(void* arg, struct udp_pcb* pcb, struct pbuf* p, c
 	LWIP_UNUSED_ARG(port);
 
 	// Copies contents of pbuf to atem structs processing buffer
-	if (!pbuf_copy_partial(p, atem.readBuf, sizeof(atem.readBuf), 0)) {
+	if (!pbuf_copy_partial(p, atem.read_buf, sizeof(atem.read_buf), 0)) {
 		DEBUG_ERR_PRINTF("Failed to copy ATEM packet\n");
 		pbuf_free(p);
 		return;

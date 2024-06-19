@@ -7,8 +7,8 @@
 #ifndef ATEM_H
 #define ATEM_H
 
-#include <stdbool.h>
-#include <stdint.h>
+#include <stdbool.h> // bool
+#include <stdint.h> // uint8_t, uint16_t
 
 // The Blackmagic bluetooth UUIDs
 #define ATEM_BLE_UUID_SERVICE "291D567A-6D75-11E6-8B77-86F30CA893D3"
@@ -47,7 +47,7 @@
 #define ATEM_TIMEOUT_MS (ATEM_TIMEOUT * 1000)
 
 /**
- * Maximum size of an ATEM packet, used by \ref atem_t.readBuf.
+ * Maximum size of an ATEM packet, used by \ref atem.read_buf.
  */
 #define ATEM_PACKET_LEN_MAX 2047
 
@@ -61,7 +61,7 @@
  * ascii characters but are here represented as a single 32bit
  * integer for fast comparisons and makes them usable in switch statements.
  */
-enum atem_commands_t {
+enum atem_commands {
 	/**
 	 * Contains the ATEM protocol version number. Can be extracted with
 	 * atem_protocol_major() and atem_protocol_minor().
@@ -69,8 +69,8 @@ enum atem_commands_t {
 	ATEM_CMDNAME_VERSION = ATEM_CMDNAME('_', 'v', 'e', 'r'),
 	/**
 	 * Contains tally states for all inputs. Use atem_tally_updated() to
-	 * store tally status for camera identifier \ref atem_t.dest in
-	 * \ref atem_t.
+	 * store tally status for camera identifier \ref atem.dest in
+	 * \ref atem.
 	 */
 	ATEM_CMDNAME_TALLY = ATEM_CMDNAME('T', 'l', 'I', 'n'),
 	/**
@@ -84,20 +84,20 @@ enum atem_commands_t {
 /**
  * ATEM parse statues returned from atem_parse().
  */
-enum atem_status_t {
+enum atem_status {
 	/**
 	 * Unable to parse the packet. This packet should be ignored.
 	 */
 	ATEM_STATUS_ERROR = -1,
 	/**
 	 * Received data that has to be acknowledged by sending the
-	 * \ref atem_t.writeBuf. It might also contain commands to process
+	 * \ref atem.write_buf. It might also contain commands to process
 	 * with atem_cmd_next().
 	 */
 	ATEM_STATUS_WRITE = 0,
 	/**
 	 * Client has established a connection to the ATEM switcher and has
-	 * to acknowledge the packet by sending the \ref atem_t.writeBuf.
+	 * to acknowledge the packet by sending the \ref atem.write_buf.
 	 */
 	ATEM_STATUS_ACCEPTED = 0x02,
 	/**
@@ -108,7 +108,7 @@ enum atem_status_t {
 	ATEM_STATUS_REJECTED = 0x03,
 	/**
 	 * The ATEM switcher requests closing of the session. This action
-	 * should to be responded to by sending the \ref atem_t.writeBuf.
+	 * should to be responded to by sending the \ref atem.write_buf.
 	 */
 	ATEM_STATUS_CLOSING = 0x04,
 	/**
@@ -119,7 +119,7 @@ enum atem_status_t {
 	ATEM_STATUS_CLOSED = 0x05,
 	/**
 	 * Received data that has to be acknowledged by sending the
-	 * \ref atem_t.writeBuf. The commands in the payload should NOT
+	 * \ref atem.write_buf. The commands in the payload should NOT
 	 * be processed.
 	 */
 	ATEM_STATUS_WRITE_ONLY = 6,
@@ -132,18 +132,18 @@ enum atem_status_t {
 };
 
 // Contains incoming and outgoing ATEM socket data
-typedef struct atem_t {
-	uint8_t* writeBuf;
-	uint8_t* cmdBuf;
-	uint16_t readLen;
-	uint16_t writeLen;
-	uint16_t cmdLen;
-	uint16_t cmdIndex;
-	uint16_t lastRemoteId;
+typedef struct atem {
+	uint8_t* write_buf;
+	uint8_t* cmd_buf;
+	uint16_t read_len;
+	uint16_t write_len;
+	uint16_t cmd_len;
+	uint16_t cmd_index;
+	uint16_t remote_id_last;
 	uint8_t dest;
-	uint8_t readBuf[ATEM_PACKET_LEN_MAX];
-	bool pvwTally;
-	bool pgmTally;
+	uint8_t read_buf[ATEM_PACKET_LEN_MAX];
+	bool tally_pvw;
+	bool tally_pgm;
 } atem_t;
 
 // Makes functions available in C++
@@ -154,7 +154,7 @@ extern "C" {
 /**
  * @brief Restarts the connection when disconnected or not yet connected.
  *
- * Sets the \ref atem_t.writeBuf to a request that opens a new session
+ * Sets the \ref atem.write_buf to a request that opens a new session
  * that manually has to be sent to the switcher. All future data received from
  * the switcher has to be parsed with atem_parse(). The handshake is completed
  * when atem_parse() returns \ref ATEM_STATUS_ACCEPTED or
@@ -169,12 +169,12 @@ extern "C" {
  *
  * @param[in,out] atem The atem connection context to reset the connection for.
  */
-void atem_connection_reset(struct atem_t *atem);
+void atem_connection_reset(struct atem* atem);
 
 /**
  * @brief Requests the ATEM connection to close.
  *
- * Sets the \ref atem_t.writeBuf to a closing request that manually has to
+ * Sets the \ref atem.write_buf to a closing request that manually has to
  * be sent to the switcher. Commands in any future packets will be ignored
  * by atem_parse(). Write buffer remains as a close request until receiving an
  * \ref ATEM_STATUS_CLOSED and should continue to be sent for every packet
@@ -184,27 +184,27 @@ void atem_connection_reset(struct atem_t *atem);
  *
  * @param[in,out] atem The atem connection context to close the connection for.
  */
-void atem_connection_close(struct atem_t *atem);
+void atem_connection_close(struct atem* atem);
 
 /**
- * @brief Parses the ATEM packet available in \ref atem_t.readBuf.
+ * @brief Parses the ATEM packet available in \ref atem.read_buf.
  *
  * If the status received from parsing an ATEM packet is \ref ATEM_STATUS_WRITE,
  * it might contain commands that can be processed using atem_cmd_next().
  * The statuses \ref ATEM_STATUS_WRITE, \ref ATEM_STATUS_WRITE_ONLY,
  * \ref ATEM_STATUS_ACCEPTED and \ref ATEM_STATUS_CLOSING all require sending
- * a response that is put in \ref atem_t.writeBuf.
+ * a response that is put in \ref atem.write_buf.
  * These statues are all represented by even numbers, so detemining if a status
  * requires sending data or not is as easy as checking if the status is odd or
  * even.
  * 
- * @attention Copy ATEM UDP packet to \ref atem_t.readBuf array manually before
+ * @attention Copy ATEM UDP packet to \ref atem.read_buf array manually before
  * calling this function with a max length of \ref ATEM_PACKET_LEN_MAX.
  *
  * @param[in,out] atem The atem connection context containing the data to parse.
  * @returns Describes the basic purpous of the received ATEM packet.
  */
-enum atem_status_t atem_parse(struct atem_t *atem);
+enum atem_status atem_parse(struct atem* atem);
 
 /**
  * @brief Gets the next command name from the ATEM packet.
@@ -212,7 +212,7 @@ enum atem_status_t atem_parse(struct atem_t *atem);
  * If atem_parse() returns status code \ref ATEM_STATUS_WRITE, this function can
  * be used in combination with atem_cmd_available() to iterate through all
  * commands in ATEM the packet.
- * Some commands are available in \ref atem_commands_t.
+ * Some commands are available in \ref atem_commands.
  * Command names can be constructed using ATEM_CMDNAME() macro function.
  * 
  * @attention This function can ONLY be called when atem_parse() returns
@@ -223,14 +223,14 @@ enum atem_status_t atem_parse(struct atem_t *atem);
  * @param[in,out] atem The atem connection context containing the parsed data.
  * @returns A command name as a 32 bit integer.
  */
-uint32_t atem_cmd_next(struct atem_t *atem);
+uint32_t atem_cmd_next(struct atem* atem);
 
 /**
  * @brief Gets tally status from \ref ATEM_CMDNAME_TALLY command in ATEM packet.
  * 
  * Call this function when receiving a \ref ATEM_CMDNAME_TALLY command to update
- * the values at \ref atem_t.pvwTally and \ref atem_t.pgmTally based on the
- * camera idenfifier in \ref atem_t.dest.
+ * the values at \ref atem.tally_pvw and \ref atem.tally_pgm based on the
+ * camera idenfifier in \ref atem.dest.
  * 
  * @attention This function can ONLY be called when atem_cmd_next() returns
  * the command name \ref ATEM_CMDNAME_TALLY.
@@ -238,24 +238,24 @@ uint32_t atem_cmd_next(struct atem_t *atem);
  * @param[in,out] atem The atem connection context containing the parsed data.
  * @returns Indicates if the internal tally state changed.
  */
-bool atem_tally_updated(struct atem_t *atem);
+bool atem_tally_updated(struct atem* atem);
 
 /**
  * @brief Translates camera control data for \ref ATEM_CMDNAME_CAMERACONTROL command
  * in ATEM packet.
  * 
  * Translates ATEM camera control protocol to Blackmagic SDI Camera Control
- * Protocol. The translated data is available in the \ref atem_t.cmdBuf and the
- * length of the data block in \ref atem_t.cmdLen.
+ * Protocol. The translated data is available in the \ref atem.cmd_buf and the
+ * length of the data block in \ref atem.cmd_len.
  * 
  * @attention This function can ONLY be called when atem_cmd_next() returns
  * the command name \ref ATEM_CMDNAME_CAMERACONTROL.
- * @attention The transformed data is still located inside the \ref atem_t.readBuf
+ * @attention The transformed data is still located inside the \ref atem.read_buf
  * and will therefore be overwritten when parsing next packet.
  * 
  * @param[in,out] atem The atem connection context containing the parsed data.
  */
-void atem_cc_translate(struct atem_t *atem);
+void atem_cc_translate(struct atem* atem);
 
 // Ends extern C block
 #ifdef __cplusplus
@@ -275,7 +275,7 @@ void atem_cc_translate(struct atem_t *atem);
  * @param[in,out] atem The atem connection context containing the parsed data.
  * @returns Boolean indicating if there are commands available to process.
  */
-#define atem_cmd_available(atem) ((atem)->cmdIndex < (atem)->readLen)
+#define atem_cmd_available(atem) ((atem)->cmd_index < (atem)->read_len)
 
 /**
  * Gets the major version of the ATEM protocol from \ref ATEM_CMDNAME_VERSION
@@ -285,7 +285,7 @@ void atem_cc_translate(struct atem_t *atem);
  * \ref ATEM_STATUS_VERSION.
  * @returns The major version of the ATEM protocol.
  */
-#define atem_protocol_major(atem) ((atem)->cmdBuf[0] << 8 | (atem)->cmdBuf[1])
+#define atem_protocol_major(atem) ((atem)->cmd_buf[0] << 8 | (atem)->cmd_buf[1])
 
 /**
  * Gets the minor version of the ATEM protocol from \ref ATEM_CMDNAME_VERSION
@@ -295,14 +295,14 @@ void atem_cc_translate(struct atem_t *atem);
  * \ref ATEM_STATUS_VERSION.
  * @returns The minor version of the ATEM protocol.
  */
-#define atem_protocol_minor(atem) ((atem)->cmdBuf[2] << 8 | (atem)->cmdBuf[3])
+#define atem_protocol_minor(atem) ((atem)->cmd_buf[2] << 8 | (atem)->cmd_buf[3])
 
 /**
  * @brief Checks dest in the \ref ATEM_CMDNAME_CAMERACONTROL command in ATEM packet.
  * 
  * Call this function when receiving a \ref ATEM_CMDNAME_CAMERACONTROL
  * command to check if the content of the command is for the contexts camera
- * identifier defined in \ref atem_t.dest.
+ * identifier defined in \ref atem.dest.
  * 
  * @attention This function can ONLY be called when atem_cmd_next() returns
  * the command name \ref ATEM_CMDNAME_CAMERACONTROL.
@@ -311,6 +311,6 @@ void atem_cc_translate(struct atem_t *atem);
  * @returns Boolean indicating if the internal camera identifier matched the
  * commands destination identifier.
  */
-#define atem_cc_updated(atem) ((atem)->cmdBuf[0] == (atem)->dest)
+#define atem_cc_updated(atem) ((atem)->cmd_buf[0] == (atem)->dest)
 
 #endif // ATEM_H
