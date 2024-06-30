@@ -1,5 +1,14 @@
 # Changelog
 
+## Version 0.9.0 (development)
+
+### Arduino
+* Simplified arduino install process.
+
+### Core
+* **BREAKING** Renamed core components.
+* Improved protocol documentation.
+
 ## Version 0.8.0
 
 ### Core
