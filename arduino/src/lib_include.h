@@ -4,7 +4,7 @@
 #endif // LIB_PATH
 
 // Includes configuration header from parent directory
-#include "../user_config.h"
+#include "../waccat_config.h"
 
 // Gets library path from file
 #include "./lib_path.h"

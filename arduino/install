@@ -2,3 +2,4 @@
 set -e
 cd $(dirname $0)
 echo "#define LIB_PATH $(cd .. && pwd)" > src/lib_path.h
+cp -n user_config.h waccat_config.h || true
