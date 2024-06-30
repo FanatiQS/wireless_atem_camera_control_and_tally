@@ -74,6 +74,7 @@ void _runner_success(void) {
 int runner_exit(void) {
 	char* mode = getenv("RUNNER_MODE");
 	if (mode == NULL || !strcmp(mode, "abort")) {
+		printf("Number of tests competed: %d\n", runner_all);
 		return EXIT_SUCCESS;
 	}
 
