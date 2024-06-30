@@ -7,7 +7,7 @@
 #include "../user_config.h"
 
 // Gets library path from file
-#include "../lib_path.h"
+#include "./lib_path.h"
 
 // Ensures path to library macro is defined
 #ifndef LIB_PATH

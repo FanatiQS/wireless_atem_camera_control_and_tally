@@ -1,4 +1,4 @@
 #!/usr/bin/env bash
 set -e
 cd $(dirname $0)
-echo "#define LIB_PATH $(cd .. && pwd)" > lib_path.h
+echo "#define LIB_PATH $(cd .. && pwd)" > src/lib_path.h
