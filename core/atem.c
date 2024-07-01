@@ -46,6 +46,11 @@ static ATEM_THREAD_LOCAL uint8_t buf_close[ATEM_LEN_SYN] = {
 	[ATEM_INDEX_LEN_LOW] = ATEM_LEN_SYN
 };
 
+// Buffer to request a packet to be retransmitted
+static ATEM_THREAD_LOCAL uint8_t buf_retxreq[ATEM_LEN_ACK] = {
+	[ATEM_INDEX_FLAGS] = ATEM_FLAG_RETXREQ,
+	[ATEM_INDEX_LEN_LOW] = ATEM_LEN_ACK
+};
 
 
 // Resets write buffer to be a SYN packet for starting handshake
@@ -96,26 +101,30 @@ enum atem_status atem_parse(struct atem* atem) {
 
 	// Responds with ACK packet to packet requesting it
 	if (atem->read_buf[ATEM_INDEX_FLAGS] & ATEM_FLAG_ACKREQ) {
-		// Gets remote id of this packet
-		const uint16_t remote_id = (uint16_t)(atem->read_buf[ATEM_INDEX_REMOTEID_HIGH] << 8) |
+		// Gets remote id in this packet and next remote id in sequence
+		const uint16_t remote_id_next = (atem->remote_id_last + 1) & ATEM_LIMIT_REMOTEID;
+		const uint16_t remote_id_recved = (uint16_t)(atem->read_buf[ATEM_INDEX_REMOTEID_HIGH] << 8) |
 			atem->read_buf[ATEM_INDEX_REMOTEID_LOW];
 
-		// Copies over session id from incomming packet to ACK response
-		buf_ack[ATEM_INDEX_SESSIONID_HIGH] = atem->read_buf[ATEM_INDEX_SESSIONID_HIGH];
-		buf_ack[ATEM_INDEX_SESSIONID_LOW] = atem->read_buf[ATEM_INDEX_SESSIONID_LOW];
-
 		// Acknowledges this packet if it is next in line
-		if (remote_id == ((atem->remote_id_last + 1) & ATEM_LIMIT_REMOTEID)) {
+		if (remote_id_recved == remote_id_next) {
+			// Updates last acknowledged remote id
+			atem->remote_id_last = remote_id_recved;
+
+			// Sets ACK response to be sent as response
+			atem->write_buf = buf_ack;
+
+			// Copies over session id from incomming packet to ACK response
+			buf_ack[ATEM_INDEX_SESSIONID_HIGH] = atem->read_buf[ATEM_INDEX_SESSIONID_HIGH];
+			buf_ack[ATEM_INDEX_SESSIONID_LOW] = atem->read_buf[ATEM_INDEX_SESSIONID_LOW];
+
 			// Copies over remote id from incomming packets to ACK responses ack id
 			buf_ack[ATEM_INDEX_ACKID_HIGH] = atem->read_buf[ATEM_INDEX_REMOTEID_HIGH];
 			buf_ack[ATEM_INDEX_ACKID_LOW] = atem->read_buf[ATEM_INDEX_REMOTEID_LOW];
 
-			// Updates last acknolwedged remote id
-			atem->remote_id_last = remote_id;
-
 			// Sets length of read buffer
-			atem->read_len = (uint16_t)((atem->read_buf[ATEM_INDEX_LEN_HIGH] & ATEM_MASK_LEN_HIGH) << 8) |
-				atem->read_buf[ATEM_INDEX_LEN_LOW];
+			atem->read_len = (uint16_t)(atem->read_buf[ATEM_INDEX_LEN_HIGH] << 8 |
+				atem->read_buf[ATEM_INDEX_LEN_LOW]) & ATEM_PACKET_LEN_MAX;
 
 			// Sets up for parsing ATEM commands in payload
 			atem->cmd_index = ATEM_LEN_HEADER;
@@ -123,14 +132,35 @@ enum atem_status atem_parse(struct atem* atem) {
 			// Process payload if available
 			return ATEM_STATUS_WRITE;
 		}
-		// Sets response acknowledge id to last acknowledged packet id if it is not the next in line
+		// Sends retransmit request if received remote id is closer to being ahead than behind
+		else if (((remote_id_recved - remote_id_next) & 0x7fff) < 0x3fff) {
+			// Sets RETX response to be sent as response
+			atem->write_buf = buf_retxreq;
+
+			// Copies over session id from incomming packet to RETX response
+			buf_retxreq[ATEM_INDEX_SESSIONID_HIGH] = atem->read_buf[ATEM_INDEX_SESSIONID_HIGH];
+			buf_retxreq[ATEM_INDEX_SESSIONID_LOW] = atem->read_buf[ATEM_INDEX_SESSIONID_LOW];
+
+			// Sets RETX responses local id to next remote id in sequence
+			buf_retxreq[ATEM_INDEX_LOCALID_HIGH] = remote_id_next >> 8;
+			buf_retxreq[ATEM_INDEX_LOCALID_LOW] = remote_id_next & 0xff;
+		}
+		// Sends acknowledgement for last acknowledged remote id if received remote id is behind in sequence
 		else {
+			// Sets ACK response to be sent as response
+			atem->write_buf = buf_ack;
+
+			// Copies over session id from incomming packet to ACK response
+			buf_ack[ATEM_INDEX_SESSIONID_HIGH] = atem->read_buf[ATEM_INDEX_SESSIONID_HIGH];
+			buf_ack[ATEM_INDEX_SESSIONID_LOW] = atem->read_buf[ATEM_INDEX_SESSIONID_LOW];
+
+			// Sets ACK responses ack id to last remote id acknowledged
 			buf_ack[ATEM_INDEX_ACKID_HIGH] = atem->remote_id_last >> 8;
 			buf_ack[ATEM_INDEX_ACKID_LOW] = atem->remote_id_last & 0xff;
-
-			// Do not process payload for already received remote id
-			return ATEM_STATUS_WRITE_ONLY;
 		}
+
+		// Do not process payload for packets with remote id not next in sequence
+		return ATEM_STATUS_WRITE_ONLY;
 	}
 	// Ignores packets that are not ACK or SYN
 	else if (!(atem->read_buf[ATEM_INDEX_FLAGS] & ATEM_FLAG_SYN)) {
