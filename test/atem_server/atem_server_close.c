@@ -188,5 +188,14 @@ int main(void) {
 		atem_socket_close(sock);
 	}
 
+	// Ensures closing connected session before another one has connected works correctly
+	RUN_TEST() {
+		int sock = atem_socket_create();
+		uint16_t session_id_a = atem_handshake_connect(sock, 0x1234);
+		uint16_t session_id_b = atem_handshake_start_client(sock, 0x5678) | 0x8000;
+		atem_handshake_close(sock, session_id_a);
+		atem_handshake_close(sock, session_id_b);
+	}
+
 	return runner_exit();
 }
