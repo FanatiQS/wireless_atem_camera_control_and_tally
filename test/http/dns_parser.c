@@ -20,7 +20,6 @@
 #define DNS_LEN_MAX (512)
 #define DNS_LEN_MIN (12)
 
-#define DNS_INDEX_ID         (0)
 #define DNS_INDEX_FLAGS_HIGH (2)
 #define DNS_INDEX_FLAGS_LOW  (3)
 #define DNS_INDEX_QDCOUNT    (4)
@@ -30,10 +29,7 @@
 #define DNS_RCODE_NOTIMP   (4)
 
 #define DNS_QTYPE_A   (1)
-#define DNS_QTYPE_ANY (255)
-
 #define DNS_QCLASS_IN  (1)
-#define DNS_QCLASS_ANY (255)
 
 
 
