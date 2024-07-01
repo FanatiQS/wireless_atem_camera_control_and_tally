@@ -3,7 +3,7 @@
 #include "../utils/utils.h"
 
 // Makes an HTTP request but closes it right away
-void test_close(const char* req) {
+static void test_close(const char* req) {
 	int sock = http_socket_create();
 	http_socket_send_string(sock, req);
 	shutdown(sock, SHUT_RDWR);

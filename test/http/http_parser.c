@@ -9,7 +9,7 @@
 
 
 // Checks HTTP response
-void test_recv_cmp_response(int sock, int code) {
+static void test_recv_cmp_response(int sock, int code) {
 	// Checks status line and flushes headers
 	http_socket_recv_cmp_status(sock, code);
 
@@ -28,13 +28,13 @@ void test_recv_cmp_response(int sock, int code) {
 }
 
 // Delays next test to let device restart on successful POST
-void test_delay(const char* req, int code) {
+static void test_delay(const char* req, int code) {
 	if (memcmp("POST", req, 4) && code != 200) return;
 	sleep(1);
 }
 
 // Sends HTTP request expecting specified response code
-void test_code(const char* req, int code) {
+static void test_code(const char* req, int code) {
 	int sock = http_socket_create();
 	http_socket_send_string(sock, req);
 	test_recv_cmp_response(sock, code);
@@ -42,7 +42,7 @@ void test_code(const char* req, int code) {
 }
 
 // Sends HTTP request in two segments expecting specified response code
-void test_code_segment(const char* req1, const char* req2, int code) {
+static void test_code_segment(const char* req1, const char* req2, int code) {
 	int sock = http_socket_create();
 	http_socket_send_string(sock, req1);
 	http_socket_send_string(sock, req2);
@@ -51,7 +51,7 @@ void test_code_segment(const char* req1, const char* req2, int code) {
 }
 
 // Sends HTTP request in to segments expecting specified response code and closed by server before send complete
-void test_code_segment_reset(const char* req1, const char* req2, int code) {
+static void test_code_segment_reset(const char* req1, const char* req2, int code) {
 	int sock = http_socket_create();
 	http_socket_send_string(sock, req1);
 	http_socket_send_string(sock, req2);
@@ -67,7 +67,7 @@ void test_code_segment_reset(const char* req1, const char* req2, int code) {
 }
 
 // Sends HTTP request expecting timeout
-void test_timeout(const char* req) {
+static void test_timeout(const char* req) {
 	int sock = http_socket_create();
 	http_socket_send_string(sock, req);
 	http_socket_recv_close(sock);
@@ -76,7 +76,7 @@ void test_timeout(const char* req) {
 
 
 // Sends HTTP POST request expecting error message
-void test_body_err(const char* body, const char* errMsg) {
+static void test_body_err(const char* body, const char* errMsg) {
 	int sock = http_socket_create();
 	http_socket_body_send_string(sock, body);
 	http_socket_recv_cmp_status(sock, 400);
@@ -85,7 +85,7 @@ void test_body_err(const char* body, const char* errMsg) {
 }
 
 // Sends segmented HTTP POST request expecting error message without closing
-int test_body_err_segment_helper(const char* body1, const char* body2, const char* errMsg) {
+static int test_body_err_segment_helper(const char* body1, const char* body2, const char* errMsg) {
 	int sock = http_socket_create();
 	http_socket_body_send_buffer(sock, body1, strlen(body1) + strlen(body2));
 	http_socket_send_string(sock, body2);
@@ -95,13 +95,13 @@ int test_body_err_segment_helper(const char* body1, const char* body2, const cha
 }
 
 // Sends segmented HTTP POST request expecting error message
-void test_body_err_segment(const char* body1, const char* body2, const char* errMsg) {
+static void test_body_err_segment(const char* body1, const char* body2, const char* errMsg) {
 	int sock = test_body_err_segment_helper(body1, body2, errMsg);
 	http_socket_close(sock);
 }
 
 // Sends segmented HTTP POST request expecting error message and closed on first segment causing reset by peer error
-void test_body_err_segment_reset(const char* body1, const char* body2, const char* errMsg) {
+static void test_body_err_segment_reset(const char* body1, const char* body2, const char* errMsg) {
 	int sock = test_body_err_segment_helper(body1, body2, errMsg);
 	http_socket_recv_error(sock, ECONNRESET);
 	http_socket_close(sock);

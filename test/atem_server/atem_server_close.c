@@ -1,7 +1,7 @@
 #include "../utils/utils.h"
 
 // Connects to ATEM server and waits for server to start closing handshake
-uint16_t test_connect_and_drop(int sock) {
+static uint16_t test_connect_and_drop(int sock) {
 	uint8_t packet[ATEM_PACKET_LEN_MAX];
 
 	// Connects to ATEM server

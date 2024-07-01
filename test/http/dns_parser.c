@@ -44,14 +44,14 @@
 
 
 // Creates a UDP socket connected to DNS server at address from environment variable
-int dns_socket_create(void) {
+static int dns_socket_create(void) {
 	int sock = simple_socket_create(SOCK_DGRAM);
 	simple_socket_connect_env(sock, DNS_PORT, "DEVICE_ADDR");
 	return sock;
 }
 
 // Sends binary DNS data request to server
-void dns_socket_send(int sock, uint8_t* reqBuf, size_t reqLen) {
+static void dns_socket_send(int sock, uint8_t* reqBuf, size_t reqLen) {
 	if (logs_find("dns_send")) {
 		printf("Request packet:\n");
 		logs_print_buffer(stdout, reqBuf, reqLen);
@@ -60,7 +60,7 @@ void dns_socket_send(int sock, uint8_t* reqBuf, size_t reqLen) {
 }
 
 // Receives binary DNS data response from server
-size_t dns_socket_recv(int sock, uint8_t* resBuf, size_t resSize) {
+static size_t dns_socket_recv(int sock, uint8_t* resBuf, size_t resSize) {
 	size_t resLen = simple_socket_recv(sock, resBuf, resSize);
 	if (logs_find("dns_recv")) {
 		printf("Response packet:\n");
@@ -70,7 +70,7 @@ size_t dns_socket_recv(int sock, uint8_t* resBuf, size_t resSize) {
 }
 
 // Prints received DNS packet
-void dns_socket_recv_print(int sock) {
+static void dns_socket_recv_print(int sock) {
 	uint8_t buf[DNS_LEN_MAX];
 	size_t recvLen = dns_socket_recv(sock, buf, sizeof(buf));
 	logs_print_buffer(stdout, buf, recvLen);
@@ -79,7 +79,7 @@ void dns_socket_recv_print(int sock) {
 
 
 // Appends query name label to DNS request buffer
-void dns_append_label(uint8_t* buf, size_t* bufLen, const char* label) {
+static void dns_append_label(uint8_t* buf, size_t* bufLen, const char* label) {
 	size_t labelLen = strlen(label);
 	assert(labelLen < UINT8_MAX);
 	buf[*bufLen] = (uint8_t)labelLen;
@@ -89,7 +89,7 @@ void dns_append_label(uint8_t* buf, size_t* bufLen, const char* label) {
 }
 
 // Completes DNS query after appended labels
-void dns_append_complete(uint8_t* buf, size_t* bufLen, int qtype, int qclass) {
+static void dns_append_complete(uint8_t* buf, size_t* bufLen, int qtype, int qclass) {
 	// Terminates query name
 	buf[*bufLen] = 0x00;
 	*bufLen += 1;
@@ -105,14 +105,14 @@ void dns_append_complete(uint8_t* buf, size_t* bufLen, int qtype, int qclass) {
 }
 
 // Appends query name for google.com without completing it
-size_t dns_append_default_name(uint8_t* reqBuf, size_t reqLen) {
+static size_t dns_append_default_name(uint8_t* reqBuf, size_t reqLen) {
 	dns_append_label(reqBuf, &reqLen, "google");
 	dns_append_label(reqBuf, &reqLen, "com");
 	return reqLen;
 }
 
 // Appends query for google.com
-size_t dns_append_default(uint8_t* reqBuf, size_t reqLen) {
+static size_t dns_append_default(uint8_t* reqBuf, size_t reqLen) {
 	reqLen = dns_append_default_name(reqBuf, reqLen);
 	dns_append_complete(reqBuf, &reqLen, DNS_QTYPE_A, DNS_QCLASS_IN);
 	return reqLen;
@@ -121,7 +121,7 @@ size_t dns_append_default(uint8_t* reqBuf, size_t reqLen) {
 
 
 // Ensures invalid DNS request is not responded to
-void dns_expect_timeout(uint8_t* reqBuf, size_t reqLen) {
+static void dns_expect_timeout(uint8_t* reqBuf, size_t reqLen) {
 	// Sends DNS request
 	int sock = dns_socket_create();
 	dns_socket_send(sock, reqBuf, reqLen);
@@ -136,7 +136,7 @@ void dns_expect_timeout(uint8_t* reqBuf, size_t reqLen) {
 }
 
 // Validates DNS response against comparison buffer
-void dns_expect_error_validate(int sock, uint8_t* cmpBuf, size_t cmpLen) {
+static void dns_expect_error_validate(int sock, uint8_t* cmpBuf, size_t cmpLen) {
 	// Reads DNS response buffer
 	uint8_t resBuf[DNS_LEN_MAX] = {0};
 	size_t resLen = dns_socket_recv(sock, resBuf, sizeof(resBuf));
@@ -158,7 +158,7 @@ void dns_expect_error_validate(int sock, uint8_t* cmpBuf, size_t cmpLen) {
 }
 
 // Sends DNS request expecting specific rcode error not including query
-void dns_expect_error_short(uint8_t* reqBuf, size_t reqLen, uint8_t code) {
+static void dns_expect_error_short(uint8_t* reqBuf, size_t reqLen, uint8_t code) {
 	// Sends DNS request
 	int sock = dns_socket_create();
 	dns_socket_send(sock, reqBuf, reqLen);
@@ -174,7 +174,7 @@ void dns_expect_error_short(uint8_t* reqBuf, size_t reqLen, uint8_t code) {
 }
 
 // Sends DNS request expecting specific rcode error including query
-void dns_expect_error_long(uint8_t* reqBuf, size_t reqLen, uint8_t code) {
+static void dns_expect_error_long(uint8_t* reqBuf, size_t reqLen, uint8_t code) {
 	// Sends DNS request
 	int sock = dns_socket_create();
 	dns_socket_send(sock, reqBuf, reqLen);

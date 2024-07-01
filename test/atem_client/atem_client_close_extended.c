@@ -7,7 +7,7 @@
 #include "../utils/utils.h"
 
 // Ensures the peer socket is closed and does not send any data
-void atem_client_closed(int sock) {
+static void atem_client_closed(int sock) {
 	uint8_t packet[ATEM_PACKET_LEN_MAX];
 	size_t packetLen = sizeof(packet);
 

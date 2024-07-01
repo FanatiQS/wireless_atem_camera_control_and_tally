@@ -4,7 +4,7 @@
 #include "../utils/utils.h"
 
 // Ensures client is connected and closes
-void test_connected_and_close(int sock, uint16_t sessionId) {
+static void test_connected_and_close(int sock, uint16_t sessionId) {
 	uint8_t packet[ATEM_PACKET_LEN_MAX];
 	atem_socket_recv(sock, packet);
 	atem_header_flags_get_verify(packet, ATEM_FLAG_ACKREQ, ATEM_FLAG_ACK);

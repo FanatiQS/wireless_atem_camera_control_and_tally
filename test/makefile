@@ -78,7 +78,7 @@ $(BUILD_DIR):
 
 # Builds test executable
 $(EXECS:%=$(BUILD_DIR)/%) $(PLAYGROUNDS): | $(BUILD_DIR)
-	$(CC) $(filter %.c,$^) -o $@ -g -Wall -Wextra -Wpedantic $(CFLAGS) $(CPPFLAGS) $(LDFLAGS)
+	$(CC) $(filter %.c,$^) -o $@ -g -Wall -Wextra -Wpedantic -Wmissing-prototypes $(CFLAGS) $(CPPFLAGS) $(LDFLAGS)
 	$(CC) $(filter %.c,$^) -MM -MT $@ > $@.d
 
 # Runs test
