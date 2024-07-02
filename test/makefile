@@ -61,6 +61,7 @@ $(EXECS:%=$(BUILD_DIR)/%) $(PLAYGROUNDS): \
 	utils/atem_sock.c \
 	utils/atem_header.c \
 	utils/atem_handshake.c \
+	utils/atem_command.c \
 	utils/simple_socket.c \
 	utils/logs.c \
 	utils/atem_acknowledge.c \

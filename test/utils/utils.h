@@ -8,6 +8,7 @@
 #include "./atem_sock.h"
 #include "./atem_acknowledge.h"
 #include "./atem_handshake.h"
+#include "./atem_command.h"
 #include "./logs.h"
 #include "./runner.h"
 #include "./timediff.h"
