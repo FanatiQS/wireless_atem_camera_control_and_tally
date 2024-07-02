@@ -17,18 +17,18 @@ int main(void) {
 	}
 
 	// Reads content from changelog file
-	char changelogContent[1024];
-	FILE* changelogFile = fopen("../changelog.md", "r");
-	size_t changelogLen = fread(changelogContent, sizeof(char), sizeof(changelogContent), changelogFile);
-	if (changelogLen < strlen(CHANGELOG_MATCH)) {
-		fprintf(stderr, "Content from changelog file too short: %zu %zu\n", changelogLen, strlen(CHANGELOG_MATCH));
+	char changelog_content[1024];
+	FILE* changelog_file = fopen("../changelog.md", "r");
+	size_t changelog_len = fread(changelog_content, sizeof(char), sizeof(changelog_content), changelog_file);
+	if (changelog_len < strlen(CHANGELOG_MATCH)) {
+		fprintf(stderr, "Content from changelog file too short: %zu %zu\n", changelog_len, strlen(CHANGELOG_MATCH));
 		return EXIT_FAILURE;
 	}
-	changelogContent[changelogLen - 1] = '\0';
+	changelog_content[changelog_len - 1] = '\0';
 
 	// Compares changelog file content with expected content
-	if (memcmp(changelogContent, CHANGELOG_MATCH, strlen(CHANGELOG_MATCH)) != 0) {
-		char* version = &changelogContent[strlen(CHANGELOG_HEAD)];
+	if (memcmp(changelog_content, CHANGELOG_MATCH, strlen(CHANGELOG_MATCH)) != 0) {
+		char* version = &changelog_content[strlen(CHANGELOG_HEAD)];
 		char* lf = strchr(version, '\n');
 		if (lf != NULL) {
 			*lf = '\0';
