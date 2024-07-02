@@ -169,7 +169,7 @@ A closing handshake starts when either the server or the client sends a [SYN pac
 When the other side receives the closing request, it needs to respond to it with a [SYN packet](#syn-flag-0x10) that has the [opcode](#opcode) set to [closed](#closed-opcode-0x05).
 Only after receiving either of these opcodes should the session be considered terminated.
 In the case that the initiator does not receive a response in a timely manner, it is allowed to [resend](#retransmit-flag-0x20) the packet.
-The ATEM server [resends](#retransmit-flag-0x20) its closing request a maximum of one time while the [ATEM software control](#missing-link) doesn't [resend](#retransmit-flag-0x20) at all.
+The ATEM server [resends](#retransmit-flag-0x20) its closing request a maximum of one time while the [ATEM software control](https://www.blackmagicdesign.com/se/products/atemmini/software) doesn't [resend](#retransmit-flag-0x20) at all.
 If the response packet is lost, the peer will have closed the session while the initiater is still allowed to [retransmit](#retransmit-flag-0x20) the closing request, resulting in the closing response not being completely dependable.
 
 The [session id](#session-id) in a closing handshake always uses the [server assigned session id](#session-id), even if the connection is closed during the [opening handshake](#opening-handshake).
