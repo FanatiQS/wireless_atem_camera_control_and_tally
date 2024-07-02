@@ -27,7 +27,7 @@ int main(void) {
 	changelogContent[changelogLen - 1] = '\0';
 
 	// Compares changelog file content with expected content
-	if (memcmp(changelogContent, CHANGELOG_MATCH, strlen(CHANGELOG_MATCH))) {
+	if (memcmp(changelogContent, CHANGELOG_MATCH, strlen(CHANGELOG_MATCH)) != 0) {
 		char* version = &changelogContent[strlen(CHANGELOG_HEAD)];
 		char* lf = strchr(version, '\n');
 		if (lf != NULL) {
