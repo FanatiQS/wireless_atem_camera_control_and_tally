@@ -372,6 +372,7 @@ bool http_respond(struct http_t* http) {
 						"margin:2em 1em"
 					"}"
 				"</style>"
+				"<meta http-equiv=refresh content=1>"
 			"<p>Device is rebooting...</p>"
 			"<p style=font-size:.8em>"
 				"Configuration page will automatically reload if device is reachable after reboot."
@@ -379,7 +380,6 @@ bool http_respond(struct http_t* http) {
 				"If device is unable to connect to the ATEM switcher, "
 				"it will create its own wireless network for configuration."
 			"</p>"
-			"<script>location.reload()</script>"
 		)
 		http_reboot(http);
 		break;
