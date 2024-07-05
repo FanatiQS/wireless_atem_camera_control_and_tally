@@ -18,7 +18,7 @@ void setup() {
 	// Sets softap password if not configured
 	if (WiFi.softAPPSK().isEmpty()) {
 		WiFi.persistent(true);
-		WiFi.softAP(NULL, WiFi.macAddress().c_str());
+		WiFi.softAP(WiFi.softAPSSID(), WiFi.macAddress());
 	}
 #endif // ESP8266
 
