@@ -46,7 +46,7 @@ static void sdi_read(uint16_t reg, uint8_t* readBuf, uint8_t readLen) {
 
 // Prints an SDI version type read from shield
 #if DEBUG
-void sdi_version_print(const char* label, uint16_t reg) {
+static void sdi_version_print(const char* label, uint16_t reg) {
 	uint8_t buf[2];
 	sdi_read(reg, buf, sizeof(buf));
 	DEBUG_PRINTF("SDI shield %s version: %d.%d\n", label, buf[1], buf[0]);
