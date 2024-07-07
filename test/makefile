@@ -13,31 +13,23 @@ config_device: $(EXECS_DEVICE) $(SCRIPTS_DEVICE)
 EXECS += $(EXECS_DEVICE)
 SCRIPTS += $(SCRIPTS_DEVICE)
 
-# All ATEM client tests applying for both device and official clients
-EXECS_ATEM_CLIENT_DEVICE = atem_client_open atem_client_close atem_client_data
-EXECS_ATEM_CLIENT += $(EXECS_ATEM_CLIENT_DEVICE)
-.PHONY: atem_client_device
-atem_client_device: $(EXECS_ATEM_CLIENT_DEVICE)
-
-# All ATEM client tests
-EXECS_ATEM_CLIENT += atem_client_open_extended atem_client_close_extended
-$(EXECS_ATEM_CLIENT:%=$(BUILD_DIR)/%): $(BUILD_DIR)/%: atem_client/%.c
-.PHONY: atem_client
+# All ATEM client tests for both device and official clients
+EXECS_ATEM_CLIENT = atem_client_open atem_client_close atem_client_data
+EXECS_ATEM_CLIENT_EXTENDED += atem_client_open_extended atem_client_close_extended
+$(EXECS_ATEM_CLIENT EXECS_ATEM_CLIENT_EXTENDED:%=$(BUILD_DIR)/%): $(BUILD_DIR)/%: atem_client/%.c
+.PHONY: atem_client atem_client_extended
 atem_client: $(EXECS_ATEM_CLIENT)
-EXECS += $(EXECS_ATEM_CLIENT)
+atem_client_extended: $(EXECS_ATEM_CLIENT_EXTENDED)
+EXECS += $(EXECS_ATEM_CLIENT) $(EXECS_ATEM_CLIENT_EXTENDED)
 
-# All ATEM server tests applying to both proxy server and official switchers
-EXECS_ATEM_SERVER_PROXY = atem_server_open atem_server_close
-EXECS_ATEM_SERVER += $(EXECS_ATEM_SERVER_PROXY)
-.PHONY: atem_server_proxy
-atem_server_proxy: $(EXECS_ATEM_SERVER_PROXY)
-
-# All tests for testing ATEM server
-EXECS_ATEM_SERVER += atem_server_open_extended
-$(EXECS_ATEM_SERVER:%=$(BUILD_DIR)/%): $(BUILD_DIR)/%: atem_server/%.c
-.PHONY: atem_server
+# All ATEM server tests for both proxy server and official switchers
+EXECS_ATEM_SERVER = atem_server_open atem_server_close
+EXECS_ATEM_SERVER_EXTENDED += atem_server_open_extended
+$(EXECS_ATEM_SERVER_EXTENDED EXECS_ATEM_SERVER:%=$(BUILD_DIR)/%): $(BUILD_DIR)/%: atem_server/%.c
+.PHONY: atem_server atem_server_proxy
 atem_server: $(EXECS_ATEM_SERVER)
-EXECS += $(EXECS_ATEM_SERVER)
+atem_server_extended: $(EXECS_ATEM_SERVER_EXTENDED)
+EXECS += $(EXECS_ATEM_SERVER) $(EXECS_ATEM_SERVER_EXTENDED)
 
 # Builds all tests and runs unit tests
 $(BUILD_DIR)/build: utils/main.c
@@ -46,7 +38,6 @@ EXECS += build
 
 # Ensures everything is ready for release
 $(BUILD_DIR)/release: release/main.c
-release: build
 EXECS += release
 
 # Playgrounds for messing around in
