@@ -141,5 +141,27 @@ int main(void) {
 		}
 	}
 
+
+
+	// Ensures the client reconnects when connection is dropped
+	RUN_TEST() {
+		int sock = atem_socket_create();
+		uint16_t session_id = atem_handshake_listen(sock, 0x0001);
+
+		uint8_t packet[ATEM_PACKET_LEN_MAX];
+		struct timespec timeout_start = timediff_mark();
+		while (simple_socket_poll(sock, ATEM_TIMEOUT_MS - timediff_get(timeout_start))) {
+			atem_socket_recv(sock, packet);
+			atem_header_sessionid_get_verify(packet, session_id);
+		}
+
+		atem_socket_close(sock);
+		sock = atem_socket_create();
+		session_id = atem_handshake_listen(sock, 0x0001);
+
+		atem_handshake_close(sock, session_id);
+		atem_socket_close(sock);
+	}
+
 	return runner_exit();
 }
