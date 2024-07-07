@@ -7,6 +7,7 @@ They utilize a program return feed back to the camera to send it both video and 
 When you need a camera to be wireless, just adding a wireless video transmitter from the camera to the switcher looses the return feed including camera control and tally.
 This project aims to add camera control and tally to a wireless camera with as little complexity as possible.
 
+<!--
 ## FAQ
 
 ### Why not just add a cheap HDMI or SDI receiver on the camera?
@@ -28,6 +29,11 @@ No, this project does not rely on the BMDSDIControl library anymore.
 
 ### My LEDs are inverted
 Make sure that you have connected the LEDs correctly. Note that status LEDs should be connected to 3.3v while the tally LEDs should be connected to ground.
+
+### Device is not connecting to wifi when connected to configuration network
+Unfortunately, the way the wifi hardware works, the device is not able to scan for networks while it has clients connected to its configuration network.
+
+-->
 
 
 
