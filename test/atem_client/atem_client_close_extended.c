@@ -99,5 +99,47 @@ int main(void) {
 		atem_client_closed(sock);
 	}
 
+
+
+	// Ensures client does not resend closing request a single time
+	RUN_TEST() {
+		int sock = atem_socket_create();
+		uint16_t session_id = atem_handshake_listen(sock, 0x0012);
+
+		uint8_t packet[ATEM_PACKET_LEN_MAX];
+		do {
+			atem_socket_recv(sock, packet);
+		} while (!(atem_header_flags_get(packet) & ATEM_FLAG_SYN));
+		atem_handshake_sessionid_get_verify(packet, ATEM_OPCODE_CLOSING, false, session_id);
+
+		atem_socket_norecv(sock);
+		atem_socket_close(sock);
+	}
+
+	// Ensures time without packet being acknowledged is never higher than ATEM_TIMEOUT_MS before being dropped
+	RUN_TEST() {
+		for (int i = 0; i < 10; i++) {
+			int sock = atem_socket_create();
+			uint16_t session_id = atem_handshake_listen(sock, 0x0001);
+
+			uint8_t packet[ATEM_PACKET_LEN_MAX];
+			struct timespec timeout_start = timediff_mark();
+			atem_socket_recv(sock, packet);
+			do {
+				atem_socket_recv(sock, packet);
+			} while (!(atem_header_flags_get(packet) & ATEM_FLAG_SYN));
+			atem_handshake_sessionid_get_verify(packet, ATEM_OPCODE_CLOSING, false, session_id);
+
+			long timeout_diff = timediff_get(timeout_start);
+			if (timeout_diff > ATEM_TIMEOUT_MS) {
+				fprintf(stderr, "Client closed session later than expected: %ld\n", timeout_diff);
+				abort();
+			}
+
+			atem_handshake_sessionid_send(sock, ATEM_OPCODE_CLOSED, false, session_id);
+			atem_socket_close(sock);
+		}
+	}
+
 	return runner_exit();
 }
