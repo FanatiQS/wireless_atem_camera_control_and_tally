@@ -75,10 +75,10 @@ bool atem_recv(int sock, struct atem* atem);
 enum atem_posix_status atem_poll(int sock, struct atem* atem);
 
 /**
- * @brief Reads ATEM packets and returns its commands
+ * @brief Reads ATEM packets and returns its status or commands
  * @param sock ATEM server UDP socket to read data from
  * @param atem ATEM context to read data into
- * @return Command in an ATEM packet or -1 on error from `atem_poll`
+ * @return Status code from `atem_poll` or command in an ATEM packet
  */
 uint32_t atem_next(int sock, struct atem* atem);
 

@@ -99,17 +99,23 @@ enum atem_posix_status atem_poll(int sock, struct atem* atem) {
 	return (enum atem_posix_status)status;
 }
 
-// Iterates through commands in ATEM packets
+// Returns status codes or iterates through commands in ATEM packets
 uint32_t atem_next(int sock, struct atem* atem) {
 	while (!atem_cmd_available(atem)) {
 		enum atem_posix_status status;
 		while ((status = atem_poll(sock, atem)) != ATEM_POSIX_STATUS_WRITE) {
-			if (status == ATEM_POSIX_STATUS_DROPPED) {
-				sleep(ATEM_TIMEOUT);
-				atem_send(sock, atem);
-			}
-			if (status == ATEM_POSIX_STATUS_ERROR_NETWORK) {
-				return -1;
+			switch (status) {
+				case ATEM_POSIX_STATUS_NONE:
+				case ATEM_POSIX_STATUS_WRITE_ONLY: {
+					break;
+				}
+				case ATEM_POSIX_STATUS_DROPPED: {
+					atem_send(sock, atem);
+					return ATEM_POSIX_STATUS_DROPPED;
+				}
+				default: {
+					return status;
+				}
 			}
 		}
 	}
