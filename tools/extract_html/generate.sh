@@ -99,8 +99,8 @@ output=$(printf '%b ' $({
 		echo "#define localip , \"${localip-"192.168.1.69"}\""
 		echo "#define netmask , \"${netmask-"255.255.255.0"}\""
 		echo "#define gateway , \"${gateway-"192.168.1.1"}\""
-		echo "#define errCode \"${err_code-"400 Bad Request"}\""
-		echo "#define errBody \"${err_body-$err_code}\""
+		echo "#define err_code \"${err_code-"400 Bad Request"}\""
+		echo "#define err_body \"${err_body-$err_code}\""
 
 		# HTTP_RESPONSE_CASE macro functions should close stripper, dumps its data and starts new stripper
 		echo "#define HTTP_RESPONSE_CASE_STR(http, str) ) str STRIP_ME("

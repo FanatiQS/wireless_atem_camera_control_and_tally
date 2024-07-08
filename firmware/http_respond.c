@@ -17,7 +17,7 @@
 #include <lwip/netif.h> // struct netif, netif_ip_addr4
 
 #include "./debug.h" // DEBUG_ERR_PRINTF, DEBUG_HTTP_PRINTF
-#include "./http.h" // struct http_t
+#include "./http.h" // struct http_ctx
 #include "./version.h" // FIRMWARE_VERSION_STRING
 #include "./atem_sock.h" // atem_state, atem_netif_get
 #include "./http_respond.h" // http_respond, http_err, http_post_err
@@ -28,7 +28,7 @@
 
 // Writes configuration to flash and restarts device
 static void http_reboot_callback_defer(void* arg) {
-	struct http_t* http = arg;
+	struct http_ctx* http = arg;
 	DEBUG_HTTP_PRINTF("Writing configuration to flash from %p\n", (void*)http->pcb);
 	flash_cache_write(&http->cache);
 }
@@ -53,12 +53,12 @@ static err_t http_reboot_recv_callback(void* arg, struct tcp_pcb* pcb, struct pb
 // Restarts device async on error to not cause segfault when internally freeing pcb
 static void http_reboot_err_callback(void* arg, err_t err) {
 	LWIP_UNUSED_ARG(err);
-	DEBUG_ERR_PRINTF("HTTP client %p got an error after POST: %d\n", (void*)((struct http_t*)arg)->pcb, (int)err);
+	DEBUG_ERR_PRINTF("HTTP client %p got an error after POST: %d\n", (void*)((struct http_ctx*)arg)->pcb, (int)err);
 	sys_timeout(0, http_reboot_callback_defer, arg);
 }
 
 // Enqueues restarting device after TCP pcb has closed
-static inline void http_reboot(struct http_t* http) {
+static inline void http_reboot(struct http_ctx* http) {
 	tcp_recv(http->pcb, http_reboot_recv_callback);
 	tcp_poll(http->pcb, http_reboot_callback, 2);
 	tcp_err(http->pcb, http_reboot_err_callback);
@@ -69,7 +69,7 @@ static inline void http_reboot(struct http_t* http) {
 
 
 // Writes as much as TCP PCB can handle of a constant string with known length
-static bool http_write(struct http_t* http, const char* buf, size_t len) {
+static bool http_write(struct http_ctx* http, const char* buf, size_t len) {
 	// Shifts buffer pointer if previously partly written
 	buf += http->offset;
 	len -= http->offset;
@@ -98,7 +98,7 @@ static bool http_write(struct http_t* http, const char* buf, size_t len) {
 
 
 // Writes uptime for device to TCP PCB
-static inline bool http_write_uptime(struct http_t* http) {
+static inline bool http_write_uptime(struct http_ctx* http) {
 	char buf[sizeof("1000000h 59m 59s")];
 	time_t t = time(NULL);
 	int len = sprintf(buf, "%uh %02um %02us", (int)(t / 60 / 60), (unsigned)(t / 60 % 60), (unsigned)(t % 60));
@@ -106,7 +106,7 @@ static inline bool http_write_uptime(struct http_t* http) {
 }
 
 // Writes wifi disconnected status or RSSI if connected to TCP PCB
-static inline bool http_write_wifi(struct http_t* http) {
+static inline bool http_write_wifi(struct http_ctx* http) {
 	int8_t rssi = wlan_station_rssi();
 
 	// Writes status when not connected to network
@@ -121,7 +121,7 @@ static inline bool http_write_wifi(struct http_t* http) {
 }
 
 // Writes current local ip on network where ATEM is available
-static inline bool http_write_local_addr(struct http_t* http) {
+static inline bool http_write_local_addr(struct http_ctx* http) {
 	const ip4_addr_t addr = { http->cache.config.atemAddr };
 	struct netif* netif = atem_netif_get(&addr);
 	if (netif == NULL) {
@@ -132,9 +132,9 @@ static inline bool http_write_local_addr(struct http_t* http) {
 }
 
 // Writes HTML input string value with unknown length up to a maximum value to TCP PCB
-static bool http_write_value_string(struct http_t* http, char* str, size_t maxlen) {
-	maxlen -= http->stringEscapeIndex;
-	str += http->stringEscapeIndex;
+static bool http_write_value_string(struct http_ctx* http, char* str, size_t maxlen) {
+	maxlen -= http->string_escape_index;
+	str += http->string_escape_index;
 
 	size_t len = 0;
 	while (len < maxlen && str[len] != '\0') {
@@ -160,13 +160,13 @@ static bool http_write_value_string(struct http_t* http, char* str, size_t maxle
 		}
 
 		// Writes escape sequence
-		http->stringEscapeIndex += len;
+		http->string_escape_index += len;
 		if (!HTTP_SEND(http, replacement)) {
 			return false;
 		}
 		str += len + 1;
 		maxlen -= len - 1;
-		http->stringEscapeIndex += 1;
+		http->string_escape_index += 1;
 		len = 0;
 	}
 
@@ -175,14 +175,14 @@ static bool http_write_value_string(struct http_t* http, char* str, size_t maxle
 }
 
 // Writes HTML input uint8 value to TCP PCB
-static inline bool http_write_value_uint8(struct http_t* http, uint8_t value) {
+static inline bool http_write_value_uint8(struct http_ctx* http, uint8_t value) {
 	char buf[sizeof("255")];
 	int len = sprintf(buf, "%u", value);
 	return tcp_write(http->pcb, buf, len, TCP_WRITE_FLAG_COPY) == ERR_OK;
 }
 
 // Writes HTML input ip address value  to TCP PCB
-static inline bool http_write_value_addr(struct http_t* http, uint32_t addr) {
+static inline bool http_write_value_addr(struct http_ctx* http, uint32_t addr) {
 	char* buf = ipaddr_ntoa(&(const ip_addr_t)IPADDR4_INIT(addr));
 	return tcp_write(http->pcb, buf, strlen(buf), TCP_WRITE_FLAG_COPY) == ERR_OK;
 }
@@ -190,13 +190,13 @@ static inline bool http_write_value_addr(struct http_t* http, uint32_t addr) {
 
 
 // Creates state machine without having to specify case number for each state
-#define HTTP_RESPONSE_CASE_BODY(condition) if (!condition) { http->responseState = __LINE__; break; }
+#define HTTP_RESPONSE_CASE_BODY(condition) if (!condition) { http->response_state = __LINE__; break; }
 #define HTTP_RESPONSE_CASE(condition) /* FALLTHROUGH */ case __LINE__: HTTP_RESPONSE_CASE_BODY(condition)
 #define HTTP_RESPONSE_CASE_STR(http, str) HTTP_RESPONSE_CASE(HTTP_SEND(http, str))
 
 // Resumable HTTP write state machine handling all responses
-bool http_respond(struct http_t* http) {
-	switch (http->responseState) {
+bool http_respond(struct http_ctx* http) {
+	switch (http->response_state) {
 		// Returns false when all response data has been success transmitted
 		case HTTP_RESPONSE_STATE_NONE: {
 			return tcp_sndqueuelen(http->pcb);
@@ -279,7 +279,7 @@ bool http_respond(struct http_t* http) {
 			"<tr><td>Name:<td>"
 			"<input maxlength=32 name=name value=\""
 		)
-		http->stringEscapeIndex = 0;
+		http->string_escape_index = 0;
 		HTTP_RESPONSE_CASE(http_write_value_string(http, (char*)http->cache.CACHE_NAME, sizeof(http->cache.CACHE_NAME)))
 		HTTP_RESPONSE_CASE_STR(http,
 			"\"required>"
@@ -287,14 +287,14 @@ bool http_respond(struct http_t* http) {
 			"<tr><td>Network name (SSID):<td>"
 			"<input maxlength=32 name=ssid value=\""
 		)
-		http->stringEscapeIndex = 0;
+		http->string_escape_index = 0;
 		HTTP_RESPONSE_CASE(http_write_value_string(http, (char*)http->cache.CACHE_SSID, sizeof(http->cache.CACHE_SSID)))
 		HTTP_RESPONSE_CASE_STR(http,
 			"\"required>"
 			"<tr><td>Network password (PSK):<td>"
 			"<input maxlength=64 name=psk value=\""
 		)
-		http->stringEscapeIndex = 0;
+		http->string_escape_index = 0;
 		HTTP_RESPONSE_CASE(http_write_value_string(http, (char*)http->cache.CACHE_PSK, sizeof(http->cache.CACHE_PSK)))
 		HTTP_RESPONSE_CASE_STR(http,
 			"\"required>"
@@ -345,16 +345,16 @@ bool http_respond(struct http_t* http) {
 					".disabled=a.checked);a.checked&&a.onchange()"
 			"</script>"		
 		)
-		http->responseState = HTTP_RESPONSE_STATE_NONE;
+		http->response_state = HTTP_RESPONSE_STATE_NONE;
 		break;
 
 		// Writes HTTP error response
 		case HTTP_RESPONSE_STATE_ERR:
 		HTTP_RESPONSE_CASE_STR(http, "HTTP/1.1 ")
-		HTTP_RESPONSE_CASE_STR(http, http->errCode)
+		HTTP_RESPONSE_CASE_STR(http, http->err_code)
 		HTTP_RESPONSE_CASE_STR(http, "\r\nContent-Type: text/plain\r\n\r\n")
-		HTTP_RESPONSE_CASE_STR(http, http->errBody)
-		http->responseState = HTTP_RESPONSE_STATE_NONE;
+		HTTP_RESPONSE_CASE_STR(http, http->err_body)
+		http->response_state = HTTP_RESPONSE_STATE_NONE;
 		break;
 
 		// Writes HTTP response to successful POST and restarts device
@@ -393,35 +393,35 @@ bool http_respond(struct http_t* http) {
 }
 
 // Sends response HTTP if entire POST body is parsed
-bool http_post_completed(struct http_t* http) {
+bool http_post_completed(struct http_ctx* http) {
 	// Keeps parsing body until received expected length
-	if (http->remainingBodyLen > 0) return false;
+	if (http->remaining_body_len > 0) return false;
 
 	// Sends HTTP response
 	http->state = HTTP_STATE_DONE;
-	http->responseState = HTTP_RESPONSE_STATE_POST_ROOT;
+	http->response_state = HTTP_RESPONSE_STATE_POST_ROOT;
 	http->offset = 0;
 	http_respond(http);
 	return true;
 }
 
 // Responds with specified HTTP error code
-void http_err(struct http_t* http, const char* code) {
+void http_err(struct http_ctx* http, const char* code) {
 	http->state = HTTP_STATE_DONE;
-	http->responseState = HTTP_RESPONSE_STATE_ERR;
+	http->response_state = HTTP_RESPONSE_STATE_ERR;
 	http->offset = 0;
-	http->errCode = code;
-	http->errBody = code;
+	http->err_code = code;
+	http->err_body = code;
 	http_respond(http);
 }
 
 // Responds with HTTP 400 code and custom message
-void http_post_err(struct http_t* http, const char* msg) {
+void http_post_err(struct http_ctx* http, const char* msg) {
 	http->state = HTTP_STATE_DONE;
-	http->responseState = HTTP_RESPONSE_STATE_ERR;
+	http->response_state = HTTP_RESPONSE_STATE_ERR;
 	http->offset = 0;
-	http->errCode = "400 Bad Request";
-	http->errBody = msg;
+	http->err_code = "400 Bad Request";
+	http->err_body = msg;
 	http_respond(http);
 	DEBUG_HTTP_PRINTF("%s for %p\n", msg, (void*)http->pcb);
 }

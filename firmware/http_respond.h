@@ -4,6 +4,8 @@
 
 #include <stdbool.h> // bool
 
+#include "./http.h" // struct http_ctx
+
 // States for the response writer state machine
 enum http_response_state {
 	HTTP_RESPONSE_STATE_NONE,
@@ -12,9 +14,9 @@ enum http_response_state {
 	HTTP_RESPONSE_STATE_POST_ROOT
 };
 
-bool http_respond(struct http_t* http);
-void http_err(struct http_t* http, const char* status);
-bool http_post_completed(struct http_t* http);
-void http_post_err(struct http_t* http, const char* msg);
+bool http_respond(struct http_ctx* http);
+void http_err(struct http_ctx* http, const char* status);
+bool http_post_completed(struct http_ctx* http);
+void http_post_err(struct http_ctx* http, const char* msg);
 
 #endif // HTTP_RESPONDER_H

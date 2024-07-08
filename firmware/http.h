@@ -47,7 +47,7 @@ enum http_state {
 };
 
 // HTTP client context for streaming parser
-struct http_t {
+struct http_ctx {
 	struct tcp_pcb* pcb;
 	struct pbuf* p;
 	uint16_t index;
@@ -55,17 +55,17 @@ struct http_t {
 	union {
 		const char* cmp; // Uses by http_cmp_* functions
 		int hex; // Used by http_post_value_string and setup in http_post_key_string
-		int responseState; // Used by http_respond
+		int response_state; // Used by http_respond
 	};
 	union {
-		int remainingBodyLen;
-		int stringEscapeIndex;
+		int remaining_body_len;
+		int string_escape_index;
 	};
 	union {
 		struct cache_t cache;
 		struct {
-			const char* errCode;
-			const char* errBody;
+			const char* err_code;
+			const char* err_body;
 		};
 	};
 	enum http_state state;
