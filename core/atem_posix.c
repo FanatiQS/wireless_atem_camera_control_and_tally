@@ -43,7 +43,8 @@ int atem_init(in_addr_t addr, struct atem* atem) {
 	}
 
 	// Initializes context and starts opening handshake
-	memset(atem, 0, sizeof(*atem));
+	atem->tally_pgm = 0;
+	atem->tally_pvw = 0;
 	atem_connection_reset(atem);
 
 	// Returns UDP socket to use when communicating with ATEM server
