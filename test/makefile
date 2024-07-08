@@ -16,20 +16,22 @@ SCRIPTS += $(SCRIPTS_DEVICE)
 # All ATEM client tests for both device and official clients
 EXECS_ATEM_CLIENT = atem_client_open atem_client_close atem_client_data
 EXECS_ATEM_CLIENT_EXTENDED += atem_client_open_extended atem_client_close_extended
-$(EXECS_ATEM_CLIENT EXECS_ATEM_CLIENT_EXTENDED:%=$(BUILD_DIR)/%): $(BUILD_DIR)/%: atem_client/%.c
 .PHONY: atem_client atem_client_extended
 atem_client: $(EXECS_ATEM_CLIENT)
 atem_client_extended: $(EXECS_ATEM_CLIENT_EXTENDED)
-EXECS += $(EXECS_ATEM_CLIENT) $(EXECS_ATEM_CLIENT_EXTENDED)
+EXECS_ATEM_CLIENT += $(EXECS_ATEM_CLIENT_EXTENDED)
+$(EXECS_ATEM_CLIENT:%=$(BUILD_DIR)/%): $(BUILD_DIR)/%: atem_client/%.c
+EXECS += $(EXECS_ATEM_CLIENT)
 
 # All ATEM server tests for both proxy server and official switchers
 EXECS_ATEM_SERVER = atem_server_open atem_server_close
 EXECS_ATEM_SERVER_EXTENDED += atem_server_open_extended
-$(EXECS_ATEM_SERVER_EXTENDED EXECS_ATEM_SERVER:%=$(BUILD_DIR)/%): $(BUILD_DIR)/%: atem_server/%.c
 .PHONY: atem_server atem_server_proxy
 atem_server: $(EXECS_ATEM_SERVER)
 atem_server_extended: $(EXECS_ATEM_SERVER_EXTENDED)
-EXECS += $(EXECS_ATEM_SERVER) $(EXECS_ATEM_SERVER_EXTENDED)
+EXECS_ATEM_SERVER += $(EXECS_ATEM_SERVER_EXTENDED)
+$(EXECS_ATEM_SERVER:%=$(BUILD_DIR)/%): $(BUILD_DIR)/%: atem_server/%.c
+EXECS += $(EXECS_ATEM_SERVER)
 
 # Builds all tests and runs unit tests
 $(BUILD_DIR)/build: utils/main.c
