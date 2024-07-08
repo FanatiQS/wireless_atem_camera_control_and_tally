@@ -3,7 +3,7 @@
 #include <stdio.h> // fopen, fread, FILE, fprintf, stderr
 #include <stddef.h> // NULL, size_t
 
-#include "../../firmware/init.h" // FIRMWARE_VERSION_STRING
+#include "../../firmware/version.h" // FIRMWARE_VERSION_STRING
 
 #define CHANGELOG_HEAD "# Changelog\n\n## Version "
 #define CHANGELOG_MATCH CHANGELOG_HEAD FIRMWARE_VERSION_STRING "\n"

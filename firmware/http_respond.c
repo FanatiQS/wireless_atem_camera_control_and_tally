@@ -18,7 +18,7 @@
 
 #include "./debug.h" // DEBUG_ERR_PRINTF, DEBUG_HTTP_PRINTF
 #include "./http.h" // struct http_t
-#include "./init.h" // FIRMWARE_VERSION_STRING
+#include "./version.h" // FIRMWARE_VERSION_STRING
 #include "./atem_sock.h" // atem_state, atem_netif_get
 #include "./http_respond.h" // http_respond, http_err, http_post_err
 #include "./flash.h" // CACHE_NAME, CACHE_SSID, CACHE_PSK, CONF_FLAG_DHCP, flash_cache_write
