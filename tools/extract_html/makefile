@@ -24,8 +24,8 @@ $(OUT_DIR): $(ROOT)/firmware/http_respond.c $(ROOT)/firmware/version.h $(ROOT)/f
 	done
 
 	echo "Generating error pages for implementation specific errors"
-	sed -n 's/.*http_post_err(http, \"\(.*\)\").*/\1/p' ../../firmware/http.c | while IFT= read -r msg; do \
-		filename=$$(echo $$msg | tr '[:upper:]' '[:lower:]' | sed 's/ /_/g');\
+	sed -n 's/.*http_post_err(http, \"\(.*\)\").*/\1/p' $(ROOT)/firmware/http.c | while IFT= read -r msg; do \
+		filename=$$(echo $$msg | tr '[:upper:]' '[:lower:]' | cut -d, -f1 | sed 's/ /_/g');\
 		./generate.sh ERR --http --err_body="$$msg" > $(OUT_DIR)/$$filename.http;\
 		./generate.sh ERR --err_body="$$msg" > $(OUT_DIR)/$$filename.html;\
 	done
