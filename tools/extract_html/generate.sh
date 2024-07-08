@@ -84,7 +84,7 @@ output=$(printf '%b ' $({
 	echo "#define STRIP_ME(...)" # Defines stripping macro
 	echo "STRIP_ME(" # Strips all data up to first macro function call to keep content for
 	{
-		echo "#include \"./firmware/init.h\" // FIRMWARE_VERSION_STRING"
+		echo "#include \"./firmware/version.h\" // FIRMWARE_VERSION_STRING"
 
 		# Defines macros to replace configurations
 		echo "#define http_write_wifi(http) \"${wifi_status-"-50 dBm"}\""
