@@ -6,7 +6,7 @@ all: $(OUT_DIR)
 
 # Generates all output files
 $(OUT_DIR): $(ROOT)/firmware/http_respond.c $(ROOT)/firmware/version.h $(ROOT)/firmware/http.c ./generate.sh
-	-mkdir -p $@
+	mkdir -p $@
 
 	echo "Generating index.html"
 	./generate.sh ROOT > $(OUT_DIR)/index.html
@@ -29,6 +29,11 @@ $(OUT_DIR): $(ROOT)/firmware/http_respond.c $(ROOT)/firmware/version.h $(ROOT)/f
 		./generate.sh ERR --http --err_body="$$msg" > $(OUT_DIR)/$$filename.http;\
 		./generate.sh ERR --err_body="$$msg" > $(OUT_DIR)/$$filename.html;\
 	done
+
+# Autoreloads browser on source code or config page change
+.PHONY: autoreload
+autoreload:
+	node autoreload.js
 
 # Cleans up generated files and directory
 .PHONY: clean
