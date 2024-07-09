@@ -36,8 +36,8 @@
  * define the SCL and SDA pins to use for I2C communication and install the BMDSDIControl library
  * available for download from their website.
  *
- * If this is enabled without a shield attached, the microcontroller is never going to be able to
- * initialize and is most likely crash.
+ * If this is enabled without a shield attached, the microcontroller is not going to be able to
+ * fully boot.
  *
  * 3.3v microcontroller requires a logic level converter to be able to communicate with the SDI shield.
  */
@@ -53,5 +53,4 @@
  */
 // #define PIN_BATTREAD      A0
 
-// End include guard
-#endif
+#endif // USER_CONFIG_H
