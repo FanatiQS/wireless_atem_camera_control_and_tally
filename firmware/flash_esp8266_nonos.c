@@ -65,11 +65,11 @@ void flash_cache_write(struct cache_t* cache) {
 	}
 
 	// Writes configuration to persistent storage if changed
-	struct config_t currentConf;
-	if (!flash_config_read(&currentConf)) {
+	struct config_t conf_current;
+	if (!flash_config_read(&conf_current)) {
 		return;
 	}
-	if (memcmp(&currentConf, &cache->config, sizeof(currentConf)) != 0) {
+	if (memcmp(&conf_current, &cache->config, sizeof(conf_current)) != 0) {
 		if (spi_flash_erase_sector((uint16_t)(CONFIG_START / SPI_FLASH_SEC_SIZE))) {
 			DEBUG_ERR_PRINTF("Failed to erase flash sector\n");
 			return;
