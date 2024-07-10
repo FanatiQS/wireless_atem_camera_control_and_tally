@@ -5,7 +5,7 @@
 #include <lwip/ip_addr.h> // ip_addr_t, IP_ADDR_ANY
 #include <lwip/arch.h> // LWIP_UNUSED_ARG
 #include <lwip/pbuf.h> // struct pbuf, pbuf_free, pbuf_realloc, pbuf_alloc, PBUF_TRANSPORT, PBUF_POOL, pbuf_take, pbuf_take_at, pbuf_cat, pbuf_get_at, pbuf_put_at, pbuf_memcmp
-#include <lwip/def.h> // lwip_ntohl, lwip_htons, lwip_htonl
+#include <lwip/def.h> // htons
 #include <lwip/ip.h> // ip_current_dest_addr
 
 #include "./debug.h" // DEBUG_ERR_PRINTF, DEBUG_DNS_PRINTF
@@ -73,10 +73,10 @@ static void dns_recv_callback(void* arg, struct udp_pcb* pcb, struct pbuf* p, co
 	}
 
 	// Only supports query packets
-	uint8_t flagsAndOpcode = pbuf_get_at(p, DNS_INDEX_FLAGS);
-	if (flagsAndOpcode & (DNS_FLAGS_MASK_QR | DNS_FLAGS_MASK_OPCODE)) {
+	uint8_t flags_and_opcode = pbuf_get_at(p, DNS_INDEX_FLAGS);
+	if (flags_and_opcode & (DNS_FLAGS_MASK_QR | DNS_FLAGS_MASK_OPCODE)) {
 		// Ignores non query packets
-		if (flagsAndOpcode & DNS_FLAGS_MASK_QR) {
+		if (flags_and_opcode & DNS_FLAGS_MASK_QR) {
 			DEBUG_DNS_PRINTF("Packet is not a query\n");
 			pbuf_free(p);
 			return;
@@ -85,13 +85,13 @@ static void dns_recv_callback(void* arg, struct udp_pcb* pcb, struct pbuf* p, co
 		// Responds with error for non query opcode requests
 		dns_header_error(p, DNS_RCODE_NOTIMP);
 		udp_sendto(pcb, p, addr, port);
-		DEBUG_DNS_PRINTF("Unsupported opcode: %d\n", flagsAndOpcode);
+		DEBUG_DNS_PRINTF("Unsupported opcode: %d\n", flags_and_opcode);
 		pbuf_free(p);
 		return;
 	}
 
 	// Only supports single queries
-	if (pbuf_memcmp(p, DNS_INDEX_QDCOUNT, (uint16_t[]){ lwip_htons(0x0001) }, sizeof(uint16_t))) {
+	if (pbuf_memcmp(p, DNS_INDEX_QDCOUNT, (uint16_t[]){ htons(0x0001) }, sizeof(uint16_t))) {
 		DEBUG_DNS_PRINTF(
 			"Only supports single queries: %d\n",
 			pbuf_get_at(p, DNS_INDEX_QDCOUNT) << 8 | pbuf_get_at(p, DNS_INDEX_QDCOUNT + 1)
@@ -104,9 +104,9 @@ static void dns_recv_callback(void* arg, struct udp_pcb* pcb, struct pbuf* p, co
 
 	// Skips query labels to get to its type and class
 	uint16_t index = DNS_LEN_HEADER;
-	int labelLen;
-	while (index < p->tot_len && (labelLen = pbuf_get_at(p, index)) > 0) {
-		index += labelLen + 1;
+	int label_len;
+	while (index < p->tot_len && (label_len = pbuf_get_at(p, index)) > 0) {
+		index += label_len + 1;
 	}
 	index++;
 
@@ -145,7 +145,7 @@ static void dns_recv_callback(void* arg, struct udp_pcb* pcb, struct pbuf* p, co
 	}
 
 	// Use header and query for response with QDCount and ANCount in header set to 1
-	pbuf_take_at(p, (uint16_t[]){ lwip_htons(0x0001), lwip_htons(0x0001), 0x0000, 0x0000 }, DNS_LEN_COUNTS, DNS_INDEX_COUNTS);
+	pbuf_take_at(p, (uint16_t[]){ htons(0x0001), htons(0x0001), 0x0000, 0x0000 }, DNS_LEN_COUNTS, DNS_INDEX_COUNTS);
 	dns_prepare_send(p, index);
 
 	// Creates DNS answer
@@ -157,15 +157,15 @@ static void dns_recv_callback(void* arg, struct udp_pcb* pcb, struct pbuf* p, co
 		pbuf_free(p);
 		return;
 	}
-	uint16_t answerBuf[] = {
-		lwip_htons(0xc000 | DNS_LEN_HEADER), // Pointer to the queried name already defined in the packet
-		lwip_htons(DNS_QTYPE_A), // Defines the response type
-		lwip_htons(DNS_QCLASS_IN), // Defines the response internet class
-		0x0000, lwip_htons(60), // Defines the TTL
-		lwip_htons(4) // Defines the IP length
+	uint16_t answer_buf[] = {
+		htons(0xc000 | DNS_LEN_HEADER), // Pointer to the queried name already defined in the packet
+		htons(DNS_QTYPE_A), // Defines the response type
+		htons(DNS_QCLASS_IN), // Defines the response internet class
+		0x0000, htons(60), // Defines the TTL
+		htons(4) // Defines the IP length
 	};
-	pbuf_take(answer, answerBuf, sizeof(answerBuf));
-	pbuf_take_at(answer, ip_current_dest_addr(), 4, sizeof(answerBuf));
+	pbuf_take(answer, answer_buf, sizeof(answer_buf));
+	pbuf_take_at(answer, ip_current_dest_addr(), 4, sizeof(answer_buf));
 
 	// Sends DNS response
 	pbuf_cat(p, answer);
