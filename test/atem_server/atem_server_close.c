@@ -192,7 +192,15 @@ int main(void) {
 	RUN_TEST() {
 		int sock = atem_socket_create();
 		uint16_t session_id_a = atem_handshake_connect(sock, 0x1234);
-		uint16_t session_id_b = atem_handshake_start_client(sock, 0x5678) | 0x8000;
+
+		atem_handshake_sessionid_send(sock, ATEM_OPCODE_OPEN, false, 0x5678);
+		uint8_t packet[ATEM_PACKET_LEN_MAX];
+		do {
+			atem_socket_recv(sock, packet);
+		} while (!(atem_header_flags_get(packet) & ATEM_FLAG_SYN));
+		atem_handshake_sessionid_get_verify(packet, ATEM_OPCODE_ACCEPT, false, 0x5678);
+		uint16_t session_id_b = atem_handshake_newsessionid_get(packet) | 0x8000;
+
 		atem_handshake_close(sock, session_id_a);
 		atem_handshake_close(sock, session_id_b);
 	}
