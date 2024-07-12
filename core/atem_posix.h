@@ -45,8 +45,8 @@ extern "C" {
 /**
  * @brief Creates UDP socket for communicating with ATEM server
  * @param addr IP address of ATEM server to connect to
- * @param atem Blank ATEM context to connect to use with the created socket
- * @return UDP socket connected to ATEM server
+ * @param atem ATEM context to use with the created socket
+ * @return UDP socket connected to ATEM server or -1 on error with errno set
  */
 int atem_init(in_addr_t addr, struct atem* atem);
 
