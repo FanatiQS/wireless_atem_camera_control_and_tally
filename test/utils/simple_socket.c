@@ -166,19 +166,19 @@ bool simple_socket_recv_error(int sock, int err, void* buf, size_t* len) {
 }
 
 // Awaits data or timeout for socket
-int simple_socket_poll(int sock, int timeout) {
+bool simple_socket_poll(int sock, int timeout) {
 	struct pollfd fds = {
 		.fd = sock,
 		.events = POLLIN
 	};
-	int pollLen = poll(&fds, 1, timeout);
-	if (pollLen == -1) {
+	int poll_len = poll(&fds, 1, timeout);
+	if (poll_len == -1) {
 		perror("Poll got an error");
 		abort();
 	}
-	if (pollLen < 0 || pollLen > 1) {
-		fprintf(stderr, "Unexpected return value from poll: %d\n", pollLen);
+	if (poll_len < 0 || poll_len > 1) {
+		fprintf(stderr, "Unexpected return value from poll: %d\n", poll_len);
 		abort();
 	}
-	return pollLen;
+	return poll_len == 1;
 }

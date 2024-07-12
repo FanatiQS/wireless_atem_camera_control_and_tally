@@ -17,6 +17,6 @@ void simple_socket_listen(int sock, int port);
 void simple_socket_send(int sock, const void* buf, size_t len);
 size_t simple_socket_recv(int sock, void* buf, size_t size);
 bool simple_socket_recv_error(int sock, int err, void* buf, size_t* len);
-int simple_socket_poll(int sock, int timeout);
+bool simple_socket_poll(int sock, int timeout);
 
 #endif // SIMPLE_SOCKET_H
