@@ -56,6 +56,7 @@ bool atem_send(int sock, struct atem* atem) {
 	assert(atem != NULL);
 	assert(atem->write_buf != NULL);
 	assert(atem->write_len > 0);
+	assert(((atem->write_buf[0] << 8 | atem->write_buf[1]) & ATEM_PACKET_LEN_MAX) == atem->write_len);
 	ssize_t sent = send(sock, atem->write_buf, atem->write_len, 0);
 	assert(sent == -1 || sent == atem->write_len);
 	return sent == atem->write_len;
