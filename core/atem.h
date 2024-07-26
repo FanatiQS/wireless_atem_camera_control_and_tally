@@ -207,6 +207,23 @@ void atem_connection_close(struct atem* atem);
 enum atem_status atem_parse(struct atem* atem);
 
 /**
+ * @brief Checks if there are any commands available to process.
+ *
+ * Use this function to loop through all commands in an ATEM packet if
+ * atem_parse() returns \ref ATEM_STATUS_WRITE. For each command, get its name
+ * using atem_cmd_next().
+ * 
+ * @attention This function can ONLY be called after atem_parse() returns
+ * \ref ATEM_STATUS_WRITE.
+ *
+ * @param[in,out] atem The atem connection context containing the parsed data.
+ * @returns Indicates if there are commands available to process.
+ */
+static inline bool atem_cmd_available(struct atem* atem) {
+	return (atem->cmd_index < atem->read_len);
+}
+
+/**
  * @brief Gets the next command name from the ATEM packet.
  * 
  * If atem_parse() returns status code \ref ATEM_STATUS_WRITE, this function can
@@ -226,6 +243,30 @@ enum atem_status atem_parse(struct atem* atem);
 uint32_t atem_cmd_next(struct atem* atem);
 
 /**
+ * Gets the major version of the ATEM protocol from \ref ATEM_CMDNAME_VERSION
+ * command in ATEM protocol.
+ * 
+ * @attention This function can only be called after atem_parse() returns
+ * \ref ATEM_STATUS_VERSION.
+ * @returns The major version of the ATEM protocol.
+ */
+static inline uint16_t atem_protocol_major(struct atem* atem) {
+	return (atem->cmd_buf[0] << 8 | atem->cmd_buf[1]);
+}
+
+/**
+ * Gets the minor version of the ATEM protocol from \ref ATEM_CMDNAME_VERSION
+ * command in ATEM protocol.
+ * 
+ * @attention This function can only be called after atem_parse() returns
+ * \ref ATEM_STATUS_VERSION.
+ * @returns The minor version of the ATEM protocol.
+ */
+static inline uint16_t atem_protocol_minor(struct atem* atem) {
+	return (atem->cmd_buf[2] << 8 | atem->cmd_buf[3]);
+}
+
+/**
  * @brief Gets tally status from \ref ATEM_CMDNAME_TALLY command in ATEM packet.
  * 
  * Call this function when receiving a \ref ATEM_CMDNAME_TALLY command to update
@@ -239,6 +280,24 @@ uint32_t atem_cmd_next(struct atem* atem);
  * @returns Indicates if the internal tally state changed.
  */
 bool atem_tally_updated(struct atem* atem);
+
+/**
+ * @brief Checks dest in the \ref ATEM_CMDNAME_CAMERACONTROL command in ATEM packet.
+ * 
+ * Call this function when receiving a \ref ATEM_CMDNAME_CAMERACONTROL
+ * command to check if the content of the command is for the contexts camera
+ * identifier defined in \ref atem.dest.
+ * 
+ * @attention This function can ONLY be called when atem_cmd_next() returns
+ * the command name \ref ATEM_CMDNAME_CAMERACONTROL.
+ * 
+ * @param[in,out] atem The atem connection context containing the parsed data.
+ * @returns Indicates if the internal camera identifier matched the
+ * commands destination identifier.
+ */
+static inline bool atem_cc_updated(struct atem* atem) {
+	return (atem->cmd_buf[0] == atem->dest);
+}
 
 /**
  * @brief Translates camera control data for \ref ATEM_CMDNAME_CAMERACONTROL command
@@ -261,56 +320,5 @@ void atem_cc_translate(struct atem* atem);
 #ifdef __cplusplus
 }
 #endif
-
-/**
- * @brief Checks if there are any commands available to process.
- *
- * Use this function to loop through all commands in an ATEM packet if
- * atem_parse() returns \ref ATEM_STATUS_WRITE. For each command, get its name
- * using atem_cmd_next().
- * 
- * @attention This function can ONLY be called after atem_parse() returns
- * \ref ATEM_STATUS_WRITE.
- *
- * @param[in,out] atem The atem connection context containing the parsed data.
- * @returns Boolean indicating if there are commands available to process.
- */
-#define atem_cmd_available(atem) ((atem)->cmd_index < (atem)->read_len)
-
-/**
- * Gets the major version of the ATEM protocol from \ref ATEM_CMDNAME_VERSION
- * command in ATEM protocol.
- * 
- * @attention This function can only be called after atem_parse() returns
- * \ref ATEM_STATUS_VERSION.
- * @returns The major version of the ATEM protocol.
- */
-#define atem_protocol_major(atem) ((atem)->cmd_buf[0] << 8 | (atem)->cmd_buf[1])
-
-/**
- * Gets the minor version of the ATEM protocol from \ref ATEM_CMDNAME_VERSION
- * command in ATEM protocol.
- * 
- * @attention This function can only be called after atem_parse() returns
- * \ref ATEM_STATUS_VERSION.
- * @returns The minor version of the ATEM protocol.
- */
-#define atem_protocol_minor(atem) ((atem)->cmd_buf[2] << 8 | (atem)->cmd_buf[3])
-
-/**
- * @brief Checks dest in the \ref ATEM_CMDNAME_CAMERACONTROL command in ATEM packet.
- * 
- * Call this function when receiving a \ref ATEM_CMDNAME_CAMERACONTROL
- * command to check if the content of the command is for the contexts camera
- * identifier defined in \ref atem.dest.
- * 
- * @attention This function can ONLY be called when atem_cmd_next() returns
- * the command name \ref ATEM_CMDNAME_CAMERACONTROL.
- * 
- * @param[in,out] atem The atem connection context containing the parsed data.
- * @returns Boolean indicating if the internal camera identifier matched the
- * commands destination identifier.
- */
-#define atem_cc_updated(atem) ((atem)->cmd_buf[0] == (atem)->dest)
 
 #endif // ATEM_H
