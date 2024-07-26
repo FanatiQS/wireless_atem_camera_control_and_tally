@@ -63,6 +63,7 @@ bool atem_send(int sock, struct atem* atem) {
 
 // Reads next ATEM packet from server
 bool atem_recv(int sock, struct atem* atem) {
+	assert(atem != NULL);
 	errno = 0;
 	return recv(sock, atem->read_buf, ATEM_PACKET_LEN_MAX, 0) >= ATEM_LEN_HEADER;
 }
