@@ -16,19 +16,19 @@
 #include "./atem_posix.h" // enum atem_posix_status, ATEM_POSIX_STATUS_ERROR_NETWORK, ATEM_POSIX_STATUS_DROPPED
 
 // Initializes ATEM communication by creating UDP socket for context
-int atem_init(in_addr_t addr, struct atem* atem) {
-	assert(atem != NULL);
+bool atem_init(struct atem_posix_ctx* atem_ctx, in_addr_t addr) {
+	assert(atem_ctx != NULL);
 
 	// Sets errno to indicate bad address if ATEM address is not valid
 	if (addr == (in_addr_t)-1) {
 		errno = EFAULT;
-		return -1;
+		return false;
 	}
 
 	// Creates UDP socket for ATEM server connection
-	int sock = socket(AF_INET, SOCK_DGRAM, 0);
-	if (sock == -1) {
-		return -1;
+	atem_ctx->sock = socket(AF_INET, SOCK_DGRAM, 0);
+	if (atem_ctx->sock == -1) {
+		return false;
 	}
 
 	// Connects UDP socket to only communicate with ATEM server
@@ -37,43 +37,44 @@ int atem_init(in_addr_t addr, struct atem* atem) {
 		.sin_port = htons(ATEM_PORT),
 		.sin_addr.s_addr = addr
 	};
-	if (connect(sock, (const struct sockaddr*)&sockaddr, sizeof(sockaddr))) {
-		close(sock);
-		return -1;
+	if (connect(atem_ctx->sock, (const struct sockaddr*)&sockaddr, sizeof(sockaddr))) {
+		close(atem_ctx->sock);
+		return false;
 	}
 
 	// Initializes context and starts opening handshake
-	atem->tally_pgm = 0;
-	atem->tally_pvw = 0;
-	atem_connection_reset(atem);
+	atem_ctx->atem.tally_pgm = 0;
+	atem_ctx->atem.tally_pvw = 0;
+	atem_connection_reset(&atem_ctx->atem);
 
-	// Returns UDP socket to use when communicating with ATEM server
-	return sock;
+	return true;
 }
 
 // Sens buffered packet in context using ATEM UDP socket
-bool atem_send(int sock, struct atem* atem) {
-	assert(atem != NULL);
+bool atem_send(struct atem_posix_ctx* atem_ctx) {
+	assert(atem_ctx != NULL);
+
+	struct atem* atem = &atem_ctx->atem;
 	assert(atem->write_buf != NULL);
 	assert(atem->write_len > 0);
 	assert(((atem->write_buf[0] << 8 | atem->write_buf[1]) & ATEM_PACKET_LEN_MAX) == atem->write_len);
-	ssize_t sent = send(sock, atem->write_buf, atem->write_len, 0);
+	ssize_t sent = send(atem_ctx->sock, atem->write_buf, atem->write_len, 0);
 	assert(sent == -1 || sent == atem->write_len);
 	return sent == atem->write_len;
 }
 
 // Reads next ATEM packet from server
-bool atem_recv(int sock, struct atem* atem) {
-	assert(atem != NULL);
+bool atem_recv(struct atem_posix_ctx* atem_ctx) {
+	assert(atem_ctx != NULL);
 	errno = 0;
-	return recv(sock, atem->read_buf, ATEM_PACKET_LEN_MAX, 0) >= ATEM_LEN_HEADER;
+	return recv(atem_ctx->sock, atem_ctx->atem.read_buf, ATEM_PACKET_LEN_MAX, 0) >= ATEM_LEN_HEADER;
 }
 
 // Reads and parses ATEM packets until a packet with payload is received
-enum atem_posix_status atem_poll(int sock, struct atem* atem) {
-	assert(atem != NULL);
+enum atem_posix_status atem_poll(struct atem_posix_ctx* atem_ctx) {
+	assert(atem_ctx != NULL);
 
-	struct pollfd poll_fd = { .fd = sock, .events = POLLIN };
+	struct pollfd poll_fd = { .fd = atem_ctx->sock, .events = POLLIN };
 	int poll_len = poll(&poll_fd, 1, ATEM_TIMEOUT_MS);
 
 	if (poll_len != 1) {
@@ -84,17 +85,17 @@ enum atem_posix_status atem_poll(int sock, struct atem* atem) {
 
 		// Resets to send new opening handshake if connection is dropped
 		assert(poll_len == 0);
-		atem_connection_reset(atem);
+		atem_connection_reset(&atem_ctx->atem);
 		return ATEM_POSIX_STATUS_DROPPED;
 	}
 
-	if (!atem_recv(sock, atem)) {
+	if (!atem_recv(atem_ctx)) {
 		return ATEM_POSIX_STATUS_ERROR_NETWORK;
 	}
 
 	// Parses and acknowledges received ATEM packet
-	enum atem_status status = atem_parse(atem);
-	if (!(status & 1) && !atem_send(sock, atem)) {
+	enum atem_status status = atem_parse(&atem_ctx->atem);
+	if (!(status & 1) && !atem_send(atem_ctx)) {
 		return ATEM_POSIX_STATUS_ERROR_NETWORK;
 	}
 
@@ -102,17 +103,18 @@ enum atem_posix_status atem_poll(int sock, struct atem* atem) {
 }
 
 // Returns status codes or iterates through commands in ATEM packets
-uint32_t atem_next(int sock, struct atem* atem) {
-	while (!atem_cmd_available(atem)) {
+uint32_t atem_next(struct atem_posix_ctx* atem_ctx) {
+	assert(atem_ctx != NULL);
+	while (!atem_cmd_available(&atem_ctx->atem)) {
 		enum atem_posix_status status;
-		while ((status = atem_poll(sock, atem)) != ATEM_POSIX_STATUS_WRITE) {
+		while ((status = atem_poll(atem_ctx)) != ATEM_POSIX_STATUS_WRITE) {
 			switch (status) {
 				case ATEM_POSIX_STATUS_NONE:
 				case ATEM_POSIX_STATUS_WRITE_ONLY: {
 					break;
 				}
 				case ATEM_POSIX_STATUS_DROPPED: {
-					atem_send(sock, atem);
+					atem_send(atem_ctx);
 					return ATEM_POSIX_STATUS_DROPPED;
 				}
 				default: {
@@ -121,5 +123,5 @@ uint32_t atem_next(int sock, struct atem* atem) {
 			}
 		}
 	}
-	return atem_cmd_next(atem);
+	return atem_cmd_next(&atem_ctx->atem);
 }

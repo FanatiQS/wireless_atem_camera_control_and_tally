@@ -12,6 +12,14 @@
 
 
 /**
+ * @brief Context for ATEM connection
+ */
+struct atem_posix_ctx {
+	struct atem atem;
+	int sock;
+};
+
+/**
  * @brief Status codes returnd from \ref atem_poll.
  */
 enum atem_posix_status {
@@ -46,9 +54,9 @@ extern "C" {
  * @brief Creates UDP socket for communicating with ATEM server
  * @param addr IP address of ATEM server to connect to
  * @param atem ATEM context to use with the created socket
- * @return UDP socket connected to ATEM server or -1 on error with errno set
+ * @return Indicates if initilization was successful or not, `errno` set on failure
  */
-int atem_init(in_addr_t addr, struct atem* atem);
+bool atem_init(struct atem_posix_ctx* atem, in_addr_t addr);
 
 /**
  * @brief Sends cached ATEM UDP packet from ATEM context
@@ -56,7 +64,7 @@ int atem_init(in_addr_t addr, struct atem* atem);
  * @param atem ATEM context containing the data to send
  * @return Indicates if sending data was successful or not, `errno` is set on failure
  */
-bool atem_send(int sock, struct atem* atem);
+bool atem_send(struct atem_posix_ctx* atem);
 
 /**
  * @brief Reads next UDP packet into ATEM context
@@ -64,7 +72,7 @@ bool atem_send(int sock, struct atem* atem);
  * @param atem ATEM context to read data into
  * @return Indicates if packet was read successful or not, `errno` is set unless received packet was too short
  */
-bool atem_recv(int sock, struct atem* atem);
+bool atem_recv(struct atem_posix_ctx* atem);
 
 /**
  * @brief Receives and parses ATEM packets
@@ -72,7 +80,7 @@ bool atem_recv(int sock, struct atem* atem);
  * @param atem ATEM context to read data into
  * @return Status code describing the result from reading and parsing ATEM packet
  */
-enum atem_posix_status atem_poll(int sock, struct atem* atem);
+enum atem_posix_status atem_poll(struct atem_posix_ctx* atem);
 
 /**
  * @brief Reads ATEM packets and returns its status or commands
@@ -80,7 +88,7 @@ enum atem_posix_status atem_poll(int sock, struct atem* atem);
  * @param atem ATEM context to read data into
  * @return Status code from `atem_poll` or command in an ATEM packet
  */
-uint32_t atem_next(int sock, struct atem* atem);
+uint32_t atem_next(struct atem_posix_ctx* atem);
 
 #ifdef __cplusplus
 }
