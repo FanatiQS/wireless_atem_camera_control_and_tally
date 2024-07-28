@@ -122,7 +122,7 @@ static inline bool http_write_wifi(struct http_ctx* http) {
 
 // Writes current local ip on network where ATEM is available
 static inline bool http_write_local_addr(struct http_ctx* http) {
-	const ip4_addr_t addr = { http->cache.config.atemAddr };
+	const ip4_addr_t addr = { http->cache.config.atem_addr };
 	struct netif* netif = atem_netif_get(&addr);
 	if (netif == NULL) {
 		return HTTP_SEND(http, "N/A");
@@ -308,7 +308,7 @@ bool http_respond(struct http_ctx* http) {
 			"<tr><td>ATEM IP:<td>"
 			"<input required pattern=^((25[0-5]|(2[0-4]|1\\d|\\d|)\\d)(\\.(?!$)|$)){4}$ name=atem value="
 		)
-		HTTP_RESPONSE_CASE(http_write_value_addr(http, http->cache.config.atemAddr))
+		HTTP_RESPONSE_CASE(http_write_value_addr(http, http->cache.config.atem_addr))
 		HTTP_RESPONSE_CASE_STR(http,
 			">"
 			"<tr>"

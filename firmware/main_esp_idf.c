@@ -171,7 +171,7 @@ void app_main(void) {
 	}
 
 	// Initializes connection to ATEM
-	if (!atem_init(conf.atemAddr, conf.dest)) {
+	if (!atem_init(conf.atem_addr, conf.dest)) {
 		return;
 	}
 

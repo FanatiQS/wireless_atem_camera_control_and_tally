@@ -596,7 +596,7 @@ static inline void http_parse(struct http_ctx* http, struct pbuf* p) {
 		/* FALLTHROUGH */
 		case HTTP_STATE_POST_ROOT_BODY_ATEM_KEY: {
 			if (http_post_key(http, "atem=")) {
-				http->cache.config.atemAddr = 0;
+				http->cache.config.atem_addr = 0;
 				http->state = HTTP_STATE_POST_ROOT_BODY_ATEM_VALUE;
 				continue;
 			}
@@ -711,10 +711,10 @@ static inline void http_parse(struct http_ctx* http, struct pbuf* p) {
 		}
 		// Transfers ATEM address from POST body to client cache
 		case HTTP_STATE_POST_ROOT_BODY_ATEM_VALUE: {
-			if (!http_post_value_ip(http, &http->cache.config.atemAddr)) return;
+			if (!http_post_value_ip(http, &http->cache.config.atem_addr)) return;
 			DEBUG_HTTP_PRINTF(
 				"Updated 'atem' to " IP_FMT " for %p\n",
-				IP_VALUE(http->cache.config.atemAddr),
+				IP_VALUE(http->cache.config.atem_addr),
 				(void*)http->pcb
 			);
 			continue;

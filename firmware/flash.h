@@ -45,7 +45,7 @@ struct config_t {
 	uint32_t localip;
 	uint32_t netmask;
 	uint32_t gateway;
-	uint32_t atemAddr;
+	uint32_t atem_addr;
 	uint8_t flags;
 	uint8_t dest;
 };

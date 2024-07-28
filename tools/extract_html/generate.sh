@@ -95,7 +95,7 @@ output=$(printf '%b ' $({
 		echo "#define CACHE_PSK , \"${psk-"password123"}\""
 		echo "#define CACHE_NAME , \"${name-"waccat0"}\""
 		echo "#define dest , \"${dest-4}\""
-		echo "#define atemAddr , \"${atem_addr-"192.168.1.240"}\""
+		echo "#define atem_addr , \"${atem_addr-"192.168.1.240"}\""
 		echo "#define localip , \"${localip-"192.168.1.69"}\""
 		echo "#define netmask , \"${netmask-"255.255.255.0"}\""
 		echo "#define gateway , \"${gateway-"192.168.1.1"}\""
