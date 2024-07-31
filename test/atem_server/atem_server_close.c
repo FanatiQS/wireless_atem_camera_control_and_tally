@@ -121,6 +121,21 @@ int main(void) {
 		atem_socket_close(sock);
 	}
 
+	// Ensures server starts closing handshake within expected timeframe
+	RUN_TEST() {
+		int sock = atem_socket_create();
+		uint16_t session_id = atem_handshake_connect(sock, 0x4334);
+
+		struct timespec timeout_start = timediff_mark();
+		uint8_t packet[ATEM_PACKET_LEN_MAX];
+		do {
+			atem_socket_recv(sock, packet);
+		} while (!(atem_header_flags_get(packet) & ATEM_FLAG_SYN));
+
+		atem_handshake_sessionid_get(packet, ATEM_OPCODE_CLOSING, session_id, false);
+		timediff_get_verify(timeout_start, 0, ATEM_TIMEOUT_MS);
+	}
+
 
 
 	// Ensures client initiated closing request closes the session correctly
