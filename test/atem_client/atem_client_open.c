@@ -36,7 +36,7 @@ int main(void) {
 		atem_socket_close(sock);
 	}
 
-	// Ensures a resent opening handshake also successful opens
+	// Ensures a resent opening handshake also successfully opens
 	RUN_TEST() {
 		atem_handshake_resetpeer();
 		int sock = atem_socket_create();
@@ -143,7 +143,7 @@ int main(void) {
 
 
 
-	// Ensures the client reconnects when connection is dropped
+	// Ensures the client reconnects when connection is dropped within timeframe
 	RUN_TEST() {
 		int sock = atem_socket_create();
 		uint16_t session_id = atem_handshake_listen(sock, 0x0001);
@@ -160,6 +160,22 @@ int main(void) {
 		session_id = atem_handshake_listen(sock, 0x0001);
 
 		atem_handshake_close(sock, session_id);
+		atem_socket_close(sock);
+	}
+
+	// Ensures the client reconnects without retransmit flag set
+	RUN_TEST() {
+		int sock = atem_socket_create();
+		uint16_t session_id = atem_handshake_listen(sock, 0x0010);
+
+		uint8_t packet[ATEM_PACKET_LEN_MAX];
+		do {
+			atem_socket_close(sock);
+			sock = atem_socket_create();
+			atem_socket_listen(sock, packet);
+		} while (atem_header_sessionid_get(packet) == session_id);
+		atem_handshake_sessionid_get(packet, ATEM_OPCODE_OPEN, false);
+
 		atem_socket_close(sock);
 	}
 
