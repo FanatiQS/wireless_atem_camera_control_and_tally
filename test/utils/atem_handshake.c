@@ -271,9 +271,11 @@ uint16_t atem_handshake_listen(int sock, uint16_t newSessionId) {
 void atem_handshake_close(int sock, uint16_t sessionId) {
 	atem_handshake_sessionid_send(sock, ATEM_OPCODE_CLOSING, false, sessionId);
 	uint8_t packet[ATEM_PACKET_LEN_MAX];
+	uint8_t flags;
 	do {
 		atem_socket_recv(sock, packet);
-	} while (atem_header_flags_get(packet) != ATEM_FLAG_SYN);
+		flags = atem_header_flags_get(packet);
+	} while (flags != ATEM_FLAG_SYN || atem_handshake_opcode_get(packet) != ATEM_OPCODE_CLOSED);
 	atem_handshake_sessionid_get_verify(packet, ATEM_OPCODE_CLOSED, false, sessionId);
 }
 
