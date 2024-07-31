@@ -14,6 +14,19 @@ int main(void) {
 		atem_socket_close(sock);
 	}
 
+	// Ensures opening handshake is retried even after SYN is sent ATEM_RESENDS times
+	RUN_TEST() {
+		atem_handshake_resetpeer();
+
+		for (int i = 0; i < ATEM_RESENDS * 4; i++) {
+			uint8_t packet[ATEM_PACKET_LEN_MAX];
+			int sock = atem_socket_create();
+			atem_socket_listen(sock, packet);
+			atem_handshake_opcode_get_verify(packet, ATEM_OPCODE_OPEN);
+			atem_socket_close(sock);
+		}
+	}
+
 
 
 	// Ensures a successful opening handshake response connects client
