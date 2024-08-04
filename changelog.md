@@ -4,12 +4,35 @@
 
 ### Arduino
 * Simplified arduino install process.
+* Sets configuration network password at first boot for ESP32.
+* Fixes configuration network not set correctly on ESP8266.
+* Deprecated single source header completely.
 
 ### Core
 * **BREAKING** Renamed core components.
 * Improved protocol documentation.
+* Added retransmit request when receiving out-of-order packets.
+* Added POSIX core API.
+* Refactored core API macro functions to inline functions.
+
+### Firmware
+* Fixed firefox popup error on HTTP form submit.
+* Added experimental esp-idf support for ESP32.
+
+### Test Suite
+* Added more tests for atem_server and atem_client.
+* Restructured make rules.
+
+### Tools
+* Added HTTP server for generated HTML to auto-reload browser on file change.
 
 ## Version 0.8.0
+
+### Arduino
+* Moved single source include file.
+* Deprecated Arduino HTTP configuration server on port 81
+* Sets Arduino OTA host name
+* Sets password for configuration network in arduino without having to use old arduino HTTP server.
 
 ### Core
 * `ATEM_MAX_PACKET_LEN` renamed to `ATEM_PACKET_LEN_MAX`.
@@ -19,27 +42,23 @@
 * Huge styling rewrite to HTML configuration page.
 * Fixed IP address parser rejecting valid octets.
 * Fixed unable to update configuration when connected to ATEM.
-* Moved single source include file.
 * Prints DNS debug state at boot.
 * Fixed crash on HTTP client close before server sent response.
 * Fixed empty `dest=` causing successful configuration of invalid 0 value.
 * Updated successul HTTP configuration response message.
 * Fixed `DEBUG_ATEM` message prefix.
 * Reworked configuration page mobile scaling.
-* Added ESP32 support.
-* Added compiler flag to invert PIN_CONN, previously was always inverted.
+* Added experimental ESP32 support.
+* Added compiler flag to invert `PIN_CONN`, previously was always inverted.
 * Do not abort on non critical initilization errors (for example captive portal or hostname).
 * Changed order or debug boot messages.
 * Added ws2812 (neopixel) support on ESP32.
-* Deprecated compiler macro VERSIONS_ANY (uses warnings instead).
+* Deprecated compiler macro `VERSIONS_ANY` (uses warnings instead).
 * Moved ESP8266 platform code to its own files and deprecated `/firmware/init.c` and `/firmware/flash.c`.
 * Updated HTML POST response message.
 * Added debug printing for HTTP configuration values.
 * Made `timespec_get` shim easier to use.
 * Added devices current ip on network with ATEM switcher to HTML configuration page.
-* Deprecated Arduino HTTP configuration server on port 81
-* Sets Arduino OTA host name
-* Sets password for configuration network in arduino without having to use old arduino HTTP server.
 * Added tally and camera control debug log labels.
 * Upgraded framework versions for firmware.
 * Enables DNS debug printing by default.
