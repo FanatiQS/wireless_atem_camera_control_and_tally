@@ -10,7 +10,7 @@
 #include <user_interface.h> // struct station_config, struct softap_config
 
 // Cached wifi station and softap configurations for HTTP configuration
-struct cache_wlan {
+struct flash_cache_wlan {
 	struct station_config station;
 	struct softap_config softap;
 };
@@ -23,7 +23,7 @@ struct cache_wlan {
 #elif defined(ESP_PLATFORM) /* ESP-IDF */
 #include <esp_wifi.h> // wifi_config_t
 
-struct cache_wlan {
+struct flash_cache_wlan {
 	wifi_config_t station;
 	wifi_config_t softap;
 };
@@ -41,7 +41,7 @@ struct cache_wlan {
 #define CONF_FLAG_DHCP 0x01
 
 // Persistent storage structure for configuration
-struct config_t {
+struct flash_config {
 	uint32_t localip;
 	uint32_t netmask;
 	uint32_t gateway;
@@ -51,13 +51,13 @@ struct config_t {
 };
 
 // Cached data for HTTP configuration
-struct cache_t {
-	struct config_t config;
-	struct cache_wlan wlan;
+struct flash_cache {
+	struct flash_config config;
+	struct flash_cache_wlan wlan;
 };
 
-bool flash_config_read(struct config_t* conf);
-bool flash_cache_read(struct cache_t* cache);
-void flash_cache_write(struct cache_t* cache);
+bool flash_config_read(struct flash_config* conf);
+bool flash_cache_read(struct flash_cache* cache);
+void flash_cache_write(struct flash_cache* cache);
 
 #endif // FLASH_H

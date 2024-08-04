@@ -1,7 +1,7 @@
 #include <stdbool.h> // bool, true, false
 #include <string.h> // memcmp
 
-#include "./flash.h" // struct config_t
+#include "./flash.h" // struct flash_config
 
 #include <esp_flash.h> // esp_flash_read, esp_flash_erase_region, esp_flash_write
 #include <esp_err.h> // esp_err_t, ESP_OK
@@ -14,13 +14,13 @@
 #endif // ESP_IDF_VERSION
 
 #include "./debug.h" // DEBUG_ERR_PRINTF, DEBUG_HTTP_PRINTF
-#include "./flash.h" // struct config_t, struct cache_t
+#include "./flash.h" // struct flash_config, struct flash_cache
 
 // Configuration is located in the first flash sector after second OTA partition
 #define CONFIG_START (0x290000)
 
 // Reads configuration from persistent storage
-bool flash_config_read(struct config_t* conf) {
+bool flash_config_read(struct flash_config* conf) {
 	esp_err_t err = esp_flash_read(NULL, conf, CONFIG_START, sizeof(*conf));
 	if (err != ESP_OK) {
 		DEBUG_ERR_PRINTF("Failed to read config data from flash: %x\n", err);
@@ -30,7 +30,7 @@ bool flash_config_read(struct config_t* conf) {
 }
 
 // Reads configuration for HTTP from persistent storage
-bool flash_cache_read(struct cache_t* cache) {
+bool flash_cache_read(struct flash_cache* cache) {
 	esp_err_t err;
 
 	// Reads wlan configuration
@@ -52,7 +52,7 @@ bool flash_cache_read(struct cache_t* cache) {
 }
 
 // Writes cached HTTP configuration to persistent storage and reboots
-void flash_cache_write(struct cache_t* cache) {
+void flash_cache_write(struct flash_cache* cache) {
 	esp_err_t err;
 
 	// Writes wlan configuration and device name to persistent storage
@@ -68,7 +68,7 @@ void flash_cache_write(struct cache_t* cache) {
 	}
 
 	// Writes configuration to persistent storage if changed
-	struct config_t conf_current;
+	struct flash_config conf_current;
 	if (!flash_config_read(&conf_current)) {
 		return;
 	}

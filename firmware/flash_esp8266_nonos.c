@@ -7,7 +7,7 @@
 #include <spi_flash.h> // spi_flash_erase_sector, spi_flash_write, spi_flash_read, SPI_FLASH_RESULT_OK, spi_flash_get_id, SPI_FLASH_SEC_SIZE, wifi_set_event_handler_cb, system_restart
 
 #include "./debug.h" // DEBUG_ERR_PRINTF, DEBUG_HTTP_PRINTF
-#include "./flash.h" // struct config_t, struct cache_t
+#include "./flash.h" // struct flash_config, struct flash_cache
 
 /*
  * Sets configuration address for storing custom configurations.
@@ -24,7 +24,7 @@
 
 
 // Reads configuration from persistent storage
-bool flash_config_read(struct config_t* conf) {
+bool flash_config_read(struct flash_config* conf) {
 	if (spi_flash_read(CONFIG_START, (uint32_t*)conf, sizeof(*conf)) != SPI_FLASH_RESULT_OK) {
 		DEBUG_ERR_PRINTF("Failed to read device configuration\n");
 		return false;
@@ -33,7 +33,7 @@ bool flash_config_read(struct config_t* conf) {
 }
 
 // Reads flash configuration and other platform specific configurations for HTTP cache
-bool flash_cache_read(struct cache_t* cache) {
+bool flash_cache_read(struct flash_cache* cache) {
 	if (!wifi_station_get_config(&cache->wlan.station)) {
 		DEBUG_ERR_PRINTF("Failed to read station config\n");
 		return false;
@@ -46,7 +46,7 @@ bool flash_cache_read(struct cache_t* cache) {
 }
 
 // Writes flash configuration and other platform specific configurations for HTTP cache
-void flash_cache_write(struct cache_t* cache) {
+void flash_cache_write(struct flash_cache* cache) {
 	// Enables softap to commit device name
 	if (!wifi_set_opmode(STATIONAP_MODE)) {
 		DEBUG_ERR_PRINTF("Failed to set opcode\n");
@@ -65,7 +65,7 @@ void flash_cache_write(struct cache_t* cache) {
 	}
 
 	// Writes configuration to persistent storage if changed
-	struct config_t conf_current;
+	struct flash_config conf_current;
 	if (!flash_config_read(&conf_current)) {
 		return;
 	}

@@ -7,7 +7,7 @@
 #include <lwip/tcp.h> // struct tcp_pcb
 #include <lwip/pbuf.h> // struct pbuf
 
-#include "./flash.h" // struct cache_t
+#include "./flash.h" // struct flash_cache
 
 
 
@@ -62,7 +62,7 @@ struct http_ctx {
 		int string_escape_index;
 	};
 	union {
-		struct cache_t cache;
+		struct flash_cache cache;
 		struct {
 			const char* err_code;
 			const char* err_body;

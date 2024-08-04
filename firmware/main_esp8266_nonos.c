@@ -13,7 +13,7 @@
 #include "./debug.h" // DEBUG_PRINTF, DEBUG_ERR_PRINTF, WRAP, DEBUG_BOOT_INFO, DEBUG_WLAN
 #include "./atem_sock.h" // atem_init
 #include "./http.h" // http_init
-#include "./flash.h" // struct config_t, flash_config_read
+#include "./flash.h" // struct flash_config, flash_config_read
 #include "./dns.h" // captive_portal_init
 #include "./wlan.h" // wlan_station_dhcp_get
 
@@ -138,7 +138,7 @@ void waccat_init(void) {
 	wifi_set_event_handler_cb(network_callback);
 
 	// Reads configuration from non-volotile flash memory
-	struct config_t conf;
+	struct flash_config conf;
 	if (!flash_config_read(&conf)) {
 		return;
 	}
