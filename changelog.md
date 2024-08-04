@@ -8,9 +8,11 @@
 * Fixes configuration network not set correctly on ESP8266.
 * Deprecated single source header completely.
 
+### Documentation
+* Improved protocol documentation.
+
 ### Core
 * **BREAKING** Renamed core components.
-* Improved protocol documentation.
 * Added retransmit request when receiving out-of-order packets.
 * Added POSIX core API.
 * Refactored core API macro functions to inline functions.
