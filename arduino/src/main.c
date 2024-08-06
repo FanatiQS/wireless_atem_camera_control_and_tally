@@ -1,4 +1,5 @@
 #include "./lib_include.h"
+#include "./waccat.h"
 
 #ifdef ESP8266
 #include LIB_INCLUDE(firmware/main_esp8266_nonos.c)
