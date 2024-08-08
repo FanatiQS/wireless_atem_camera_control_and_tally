@@ -332,6 +332,11 @@ int main(void) {
 		test_code("POST / HTTP/1.1\r\nContent-Length: 2 147 483 648\r\n\r\n", 413);
 	}
 
+	// Tests content length value 9 under overflow for last digit to be above last digits max without overflowing
+	RUN_TEST() {
+		test_code("POST / HTTP/1.1\r\nContent-Length: 2 147 483 639\r\n\r\n", 200);
+	}
+
 	// Tests segmented overflowing content length value
 	RUN_TEST() {
 		test_code_segment("POST / HTTP/1.1\r\nContent-Length: 2 147 483", "648", 413);
