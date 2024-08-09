@@ -132,7 +132,7 @@ int main(void) {
 			atem_socket_recv(sock, packet);
 		} while (!(atem_header_flags_get(packet) & ATEM_FLAG_SYN));
 
-		atem_handshake_sessionid_get(packet, ATEM_OPCODE_CLOSING, session_id, false);
+		atem_handshake_sessionid_get_verify(packet, ATEM_OPCODE_CLOSING, false, session_id);
 		timediff_get_verify(timeout_start, 0, ATEM_TIMEOUT_MS);
 	}
 
