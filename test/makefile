@@ -33,14 +33,14 @@ EXECS_ATEM_SERVER += $(EXECS_ATEM_SERVER_EXTENDED)
 $(EXECS_ATEM_SERVER:%=$(BUILD_DIR)/%): $(BUILD_DIR)/%: atem_server/%.c
 EXECS += $(EXECS_ATEM_SERVER)
 
+# Ensures everything is ready for release
+$(BUILD_DIR)/release: release/main.c
+EXECS += release
+
 # Builds all tests and runs unit tests
 $(BUILD_DIR)/build: utils/main.c
 build: $(EXECS:%=$(BUILD_DIR)/%)
 EXECS += build
-
-# Ensures everything is ready for release
-$(BUILD_DIR)/release: release/main.c
-EXECS += release
 
 # Playgrounds for messing around in
 PLAYGROUNDS = $(patsubst playground/%.c,$(BUILD_DIR)/playground_%,$(wildcard playground/*.c))
