@@ -133,7 +133,7 @@ enum atem_status atem_parse(struct atem* atem) {
 			return ATEM_STATUS_WRITE;
 		}
 		// Sends retransmit request if received remote id is closer to being ahead than behind
-		else if (((remote_id_recved - remote_id_next) & 0x7fff) < 0x3fff) {
+		else if (((remote_id_recved - remote_id_next) & 0x7fff) < (0x7fff / 2)) {
 			// Sets RETX response to be sent as response
 			atem->write_buf = buf_retxreq;
 
