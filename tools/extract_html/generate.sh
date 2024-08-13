@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/usr/bin/env sh
 
 # Aborts on errors
 set -e
@@ -8,7 +8,7 @@ state=$1
 shift
 
 # Parses command line arguments
-while [[ $# -gt 0 ]]; do
+while [ $# -gt 0 ]; do
 	i=$1
 	case "$i" in
 		--http)
@@ -107,16 +107,17 @@ output=$(printf '%b ' $({
 		echo "#define HTTP_RESPONSE_CASE(fn) ) fn STRIP_ME("
 
 		# Strips out C conditional for DHCP if it is not enabled
-		[ "$dhcp" == 0 ] && echo "#define if #define DELETE_THIS_ROW"
+		[ "$dhcp" = 0 ] && echo "#define if #define DELETE_THIS_ROW"
 
 		sed -n "/case HTTP_RESPONSE_STATE_$state:/,/break;/p" ./firmware/http_respond.c | sed 's/http->//'
 	} | gcc -E -P -xc -
 	echo ")" # Closes last stripper
 } | gcc -E -P -xc - | sed 's/" "//g') | sed 's/\\"/"/g' | sed 's/" *$//' | sed 's/^"//')
 
-# Outputs HTTP or HTML
-if [[ "$http" == 1 ]]; then 
+# Outputs HTTP or HTML without trailing blank line
+if [ -n "$http" ]; then
 	printf '%s' "$output"
 else
-	printf '%s' "${output#*$'\r\n\r\n'}"
+	carriage_return=$(printf "\r")
+	printf '%s' "$output" | sed "1,/^$carriage_return$/d"
 fi
