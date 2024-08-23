@@ -4,6 +4,7 @@
 
 #include "../../core/atem_protocol.h"
 #include "../../core/atem.h"
+#include "../../core/atem_posix.h"
 #include "./atem_header.h"
 #include "./atem_sock.h"
 #include "./atem_acknowledge.h"

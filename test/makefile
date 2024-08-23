@@ -60,7 +60,8 @@ $(EXECS:%=$(BUILD_DIR)/%) $(PLAYGROUNDS): \
 	utils/atem_acknowledge.c \
 	utils/timediff.c \
 	utils/runner.c \
-	../core/atem.c
+	../core/atem.c \
+	../core/atem_posix.c
 
 # Includes dependency files for test executables
 -include $(EXECS:%=$(BUILD_DIR)/%.d)
