@@ -24,7 +24,7 @@ $(EXECS_ATEM_CLIENT:%=$(BUILD_DIR)/%): $(BUILD_DIR)/%: atem_client/%.c
 EXECS += $(EXECS_ATEM_CLIENT)
 
 # All ATEM server tests for both proxy server and official switchers
-EXECS_ATEM_SERVER = atem_server_open atem_server_close
+EXECS_ATEM_SERVER = atem_server_open atem_server_close atem_server_cc
 EXECS_ATEM_SERVER_EXTENDED += atem_server_open_extended
 .PHONY: atem_server atem_server_extended
 atem_server: $(EXECS_ATEM_SERVER)
