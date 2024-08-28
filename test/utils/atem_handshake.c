@@ -295,6 +295,23 @@ void atem_handshake_fill(int sock) {
 	}
 }
 
+// Flushes all data received from ATEM server after opening handshake up to first ping
+void atem_handshake_flush(int sock, uint16_t session_id) {
+	uint16_t remote_id = 0x0001;
+	uint8_t packet[ATEM_PACKET_LEN_MAX];
+	do {
+		atem_acknowledge_keepalive(sock, packet);
+		atem_header_flags_get_verify(packet, ATEM_FLAG_ACKREQ, ATEM_FLAG_ACK | ATEM_FLAG_RETX);
+		atem_header_sessionid_get_verify(packet, session_id);
+		atem_header_ackid_get_verify(packet, 0x0000);
+		atem_header_localid_get_verify(packet, 0x0000);
+		if (remote_id >= atem_header_remoteid_get(packet)) {
+			atem_header_remoteid_get_verify(packet, remote_id);
+			remote_id++;
+		}
+	} while (atem_header_len_get(packet) > ATEM_LEN_HEADER);
+}
+
 
 
 // Tests functions in this file

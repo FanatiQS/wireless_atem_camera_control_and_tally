@@ -130,6 +130,16 @@ bool atem_acknowledge_keepalive(int sock, uint8_t* packet) {
 	return true;
 }
 
+// Flushes all data until acknowledgement for specified remote id is received
+void atem_acknowledge_flush(int sock, uint16_t session_id, uint16_t remote_id) {
+	uint8_t packet[ATEM_PACKET_LEN_MAX];
+	do {
+		atem_acknowledge_keepalive(sock, packet);
+		atem_header_sessionid_get_verify(packet, session_id);
+	} while (!(atem_header_flags_get(packet) & ATEM_FLAG_ACK) || atem_header_ackid_get(packet) < remote_id);
+	atem_header_ackid_get_verify(packet, remote_id);
+}
+
 
 
 // Tests functions in this file
