@@ -1,5 +1,7 @@
-#!/usr/bin/env bash
+#!/usr/bin/env sh
 set -e
 cd $(dirname $0)
 echo "#define LIB_PATH $(cd .. && pwd)" > src/lib_path.h
-cp -n user_config.h waccat_config.h || true
+if [ ! -f "waccat_config.h" ]; then
+	cp "user_config.h" "waccat_config.h"
+fi
