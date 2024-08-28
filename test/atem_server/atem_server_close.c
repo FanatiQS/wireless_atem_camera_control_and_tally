@@ -5,13 +5,13 @@ static uint16_t test_connect_and_drop(int sock) {
 	uint8_t packet[ATEM_PACKET_LEN_MAX];
 
 	// Connects to ATEM server
-	uint16_t sessionId = atem_handshake_connect(sock, 0x1234);
+	uint16_t session_id = atem_handshake_connect(sock, 0x1234);
 
 	// Acknowledges ATEM state dump
 	do {
 		atem_acknowledge_keepalive(sock, packet);
 		atem_header_flags_get_verify(packet, ATEM_FLAG_ACKREQ, ATEM_FLAG_ACK);
-		atem_header_sessionid_get_verify(packet, sessionId);
+		atem_header_sessionid_get_verify(packet, session_id);
 		atem_header_ackid_get_verify(packet, 0x0000);
 		atem_header_localid_get_verify(packet, 0x0000);
 	} while (atem_header_len_get(packet) > ATEM_LEN_HEADER);
@@ -20,16 +20,17 @@ static uint16_t test_connect_and_drop(int sock) {
 	while (1) {
 		atem_socket_recv(sock, packet);
 		if (atem_header_flags_get(packet) & ATEM_FLAG_SYN) {
+			atem_handshake_sessionid_get_verify(packet, ATEM_OPCODE_CLOSING, false, session_id);
 			break;
 		}
 		atem_header_flags_get_verify(packet, ATEM_FLAG_ACKREQ, ATEM_FLAG_ACK | ATEM_FLAG_RETX);
-		atem_header_sessionid_get_verify(packet, sessionId);
+		atem_header_sessionid_get_verify(packet, session_id);
 		atem_header_ackid_get_verify(packet, 0x0000);
 		atem_header_localid_get_verify(packet, 0x0000);
 	}
-	atem_handshake_sessionid_get_verify(packet, ATEM_OPCODE_CLOSING, false, sessionId);
+	atem_handshake_sessionid_get_verify(packet, ATEM_OPCODE_CLOSING, false, session_id);
 
-	return sessionId;
+	return session_id;
 }
 
 int main(void) {
@@ -85,6 +86,14 @@ int main(void) {
 		atem_handshake_sessionid_recv_verify(sock, ATEM_OPCODE_CLOSED, false, serverSessionId);
 
 		atem_socket_norecv(sock);
+		atem_socket_close(sock);
+	}
+
+	// Ensures initiating closing handshake before opening handshake has completed works
+	RUN_TEST() {
+		int sock = atem_socket_create();
+		uint16_t session_id = atem_handshake_start_client(sock, 0x1234);
+		atem_handshake_close(sock, session_id | 0x8000);
 		atem_socket_close(sock);
 	}
 
@@ -218,6 +227,20 @@ int main(void) {
 
 		atem_handshake_close(sock, session_id_a);
 		atem_handshake_close(sock, session_id_b);
+	}
+
+
+
+	// Ensures out of order closing handshake works correctly (closes first connection first and second after)
+	RUN_TEST() {
+		int sock1 = atem_socket_create();
+		int sock2 = atem_socket_create();
+		uint16_t session_id1 = atem_handshake_connect(sock1, 0x1234);
+		uint16_t session_id2 = atem_handshake_connect(sock2, 0x5678);
+		atem_handshake_close(sock1, session_id1);
+		atem_handshake_close(sock2, session_id2);
+		atem_socket_close(sock1);
+		atem_socket_close(sock2);
 	}
 
 	return runner_exit();

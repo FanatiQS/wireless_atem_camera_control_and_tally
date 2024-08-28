@@ -185,6 +185,18 @@ int main(void) {
 		atem_socket_close(sock_fill);
 	}
 
+	// Out of order opening handshake, acknowledging the second opened session before the first
+	RUN_TEST() {
+		int sock = atem_socket_create();
+		uint16_t session_id1 = atem_handshake_start_client(sock, 0x1234);
+		uint16_t session_id2 = atem_handshake_start_client(sock, 0x5678);
+		atem_acknowledge_response_send(sock, 0x5678, 0x0000);
+
+		atem_acknowledge_response_send(sock, 0x1234, 0x0000);
+		atem_handshake_close(sock, session_id1 | 0x8000);
+		atem_handshake_close(sock, session_id2 | 0x8000);
+	}
+
 
 
 	// Ensures session id can not be hijacked from another socket
