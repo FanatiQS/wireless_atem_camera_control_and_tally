@@ -1,12 +1,14 @@
 #!/usr/bin/env bash
 
-if [[ "$1" == "" || "$2" == "" ]]; then
+if [[ -z "$1" ]] || [[ -z "$2" ]]; then
 	echo "Usage: $0 <ip-addr> key=value..."
 	exit
 fi
 
-args=("${@:2}")
-res=$(curl --silent --show-error --max-time 5 $1 ${args[@]/#/--data-urlencode })
+for arg in "${@:2}"; do
+	args+=("--data-urlencode" "$arg")
+done
+res=$(curl --silent --show-error --max-time 5 $1 "${args[@]}")
 
 if [[ "$res" == "<!DOCTYPE"* ]]; then
 	echo "Successfully commited configuration"
