@@ -25,12 +25,12 @@ struct atem_posix_ctx {
 };
 
 /**
- * @brief Status codes returnd from \ref atem_poll.
+ * @brief Status codes returnd from atem_poll().
  */
 enum atem_posix_status {
 	/**
-	 * A network error occured in either `atem_send` or `atem_recv`. `errno` will be set unless `atem_recv` got
-	 * a packet that was shorter than minimum size for an ATEM packet.
+	 * A network error occured in either atem_send() or atem_recv. `errno` will be set
+	 * unless atem_recv() got a packet that was shorter than minimum size for an ATEM packet.
 	 */
 	ATEM_POSIX_STATUS_ERROR_NETWORK = -2,
 	ATEM_POSIX_STATUS_ERROR_PARSE = ATEM_STATUS_ERROR,
@@ -44,7 +44,7 @@ enum atem_posix_status {
 	/**
 	 * The connection to the ATEM server was dropped.
 	 * This status will continuously be reported until the connection is re-established.
-	 * Call `atem_send` to automatically reconnect.
+	 * Call atem_send() to automatically reconnect.
 	 * It is recommended to wait a few hundred milliseconds before attempting a reconnect to not harass the ATEM.
 	 */
 	ATEM_POSIX_STATUS_DROPPED
@@ -56,38 +56,38 @@ extern "C" {
 #endif
 
 /**
- * @brief Creates UDP socket for communicating with ATEM server
- * @param atem ATEM POSIX context to use with the created socket
- * @param addr IP address of ATEM server to connect to
- * @return Indicates if initilization was successful or not, `errno` set on failure
+ * @brief Creates UDP socket for communicating with ATEM server.
+ * @param atem ATEM POSIX context to use with the created socket.
+ * @param addr IP address of ATEM server to connect to.
+ * @return Indicates if initilization was successful or not, `errno` set on failure.
  */
 bool atem_init(struct atem_posix_ctx* atem, in_addr_t addr);
 
 /**
- * @brief Sends cached ATEM UDP packet from ATEM context
- * @param atem ATEM POSIX context containing the data to send
- * @return Indicates if sending data was successful or not, `errno` is set on failure
+ * @brief Sends cached ATEM UDP packet from ATEM context.
+ * @param atem ATEM POSIX context containing the data to send.
+ * @return Indicates if sending data was successful or not, `errno` is set on failure.
  */
 bool atem_send(struct atem_posix_ctx* atem);
 
 /**
- * @brief Reads next UDP packet into ATEM context
- * @param atem ATEM POSIX context to read data into
- * @return Indicates if packet was read successful or not, `errno` is set unless received packet was too short
+ * @brief Reads next UDP packet into ATEM context.
+ * @param atem ATEM POSIX context to read data into.
+ * @return Indicates if packet was read successful or not, `errno` is set unless received packet was too short.
  */
 bool atem_recv(struct atem_posix_ctx* atem);
 
 /**
- * @brief Receives and parses ATEM packets
- * @param atem ATEM POSIX context to read data into
- * @return Status code describing the result from reading and parsing ATEM packet
+ * @brief Receives and parses ATEM packets.
+ * @param atem ATEM POSIX context to read data into.
+ * @return Status code describing the result from reading and parsing ATEM packet.
  */
 enum atem_posix_status atem_poll(struct atem_posix_ctx* atem);
 
 /**
- * @brief Reads ATEM packets and returns its status or commands
- * @param atem ATEM POSIX context to read data into
- * @return Status code from `atem_poll` or command in an ATEM packet
+ * @brief Reads ATEM packets and returns its status or commands.
+ * @param atem ATEM POSIX context to read data into.
+ * @return Status code from atem_poll() or command in an ATEM packet.
  */
 uint32_t atem_next(struct atem_posix_ctx* atem);
 
