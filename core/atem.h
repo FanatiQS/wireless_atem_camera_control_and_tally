@@ -204,7 +204,7 @@ void atem_connection_close(struct atem* atem);
  * calling this function with a max length of @ref ATEM_PACKET_LEN_MAX.
  *
  * @param[in,out] atem The atem connection context containing the data to parse.
- * @returns Describes the basic purpous of the received ATEM packet.
+ * @returns Describes the basic purpose of the received ATEM packet.
  */
 enum atem_status atem_parse(struct atem* atem);
 
@@ -230,7 +230,7 @@ static inline bool atem_cmd_available(struct atem* atem) {
  * 
  * If atem_parse() returns status code @ref ATEM_STATUS_WRITE, this function can
  * be used in combination with atem_cmd_available() to iterate through all
- * commands in ATEM the packet.
+ * commands in the ATEM packet.
  * Some commands are available in @ref atem_commands.
  * Command names can be constructed using ATEM_CMDNAME() macro function.
  * 
