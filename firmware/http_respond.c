@@ -181,18 +181,29 @@ static inline bool http_write_value_uint8(struct http_ctx* http, uint8_t value) 
 	return tcp_write(http->pcb, buf, len, TCP_WRITE_FLAG_COPY) == ERR_OK;
 }
 
-// Writes HTML input ip address value  to TCP PCB
+// Writes HTML input ip address value to TCP PCB
 static inline bool http_write_value_addr(struct http_ctx* http, uint32_t addr) {
 	char* buf = ipaddr_ntoa(&(const ip_addr_t)IPADDR4_INIT(addr));
 	return tcp_write(http->pcb, buf, strlen(buf), TCP_WRITE_FLAG_COPY) == ERR_OK;
 }
 
+// Writes HTML checkbox attribute to TCP PCB
+static inline bool http_write_value_bool(struct http_ctx* http, bool value) {
+	if (!value) return true;
+	const char* const buf = " checked";
+	return http_write(http, buf, strlen(buf));
+}
+
 
 
 // Creates state machine without having to specify case number for each state
-#define HTTP_RESPONSE_CASE_BODY(condition) if (!condition) { http->response_state = __LINE__; break; }
-#define HTTP_RESPONSE_CASE(condition) /* FALLTHROUGH */ case __LINE__: HTTP_RESPONSE_CASE_BODY(condition)
-#define HTTP_RESPONSE_CASE_STR(http, str) HTTP_RESPONSE_CASE(HTTP_SEND(http, str))
+#define HTTP_RESPONSE_CASE(n) /* FALLTHROUGH */ case n: { const int state = n;
+#define HTTP_RESPONSE_TRY(cond) if (!cond) { (http)->response_state = state; break; }
+#define HTTP_RESPONSE_START(n) HTTP_RESPONSE_CASE(n) const char* const str =
+#define HTTP_RESPONSE_END ; HTTP_RESPONSE_TRY(http_write(http, str, strlen(str))) }
+#define HTTP_RESPONSE_NEXT HTTP_RESPONSE_END HTTP_RESPONSE_CASE(__LINE__ + 1)
+#define HTTP_RESPONSE_CALL(cond) HTTP_RESPONSE_NEXT HTTP_RESPONSE_TRY(cond) } HTTP_RESPONSE_START(__LINE__)
+#define HTTP_RESPONSE_WRITE HTTP_RESPONSE_END HTTP_RESPONSE_START(__LINE__)
 
 // Resumable HTTP write state machine handling all responses
 bool http_respond(struct http_ctx* http) {
@@ -203,8 +214,7 @@ bool http_respond(struct http_ctx* http) {
 		}
 
 		// Writes HTTP response to root GET request
-		case HTTP_RESPONSE_STATE_ROOT:
-		HTTP_RESPONSE_CASE_STR(http,
+		HTTP_RESPONSE_START(HTTP_RESPONSE_STATE_ROOT)
 			"HTTP/1.1 200 OK\r\n"
 			"Access-Control-Allow-Origin: *\r\n"
 			"Content-Type: text/html\r\n\r\n"
@@ -262,82 +272,58 @@ bool http_respond(struct http_ctx* http) {
 			"<table>"
 			"<tr><td>Firmware Version:<td>" FIRMWARE_VERSION_STRING
 			"<tr><td>WiFi signal strength:<td>"
-		)
-		HTTP_RESPONSE_CASE(http_write_wifi(http))
-		HTTP_RESPONSE_CASE_STR(http,
+		HTTP_RESPONSE_CALL(http_write_wifi(http))
 			"<tr><td>ATEM connection status:<td>"
-		)
-		HTTP_RESPONSE_CASE_STR(http, atem_state)
-		HTTP_RESPONSE_CASE_STR(http,
+		HTTP_RESPONSE_WRITE
+			atem_state
+		HTTP_RESPONSE_WRITE
 			"<tr><td>Current address:<td>"
-		)
-		HTTP_RESPONSE_CASE(http_write_local_addr(http))
-		HTTP_RESPONSE_CASE_STR(http,
+		HTTP_RESPONSE_CALL(http_write_local_addr(http))
 			"<tr><td>Time since boot:<td>"
-		)
-		HTTP_RESPONSE_CASE(http_write_uptime(http))
-		HTTP_RESPONSE_CASE_STR(http,
+		HTTP_RESPONSE_CALL(http_write_uptime(http))
 			"<tr>"
 			"<tr><td>Name:<td>"
 			"<input maxlength=32 name=name value=\""
-		)
-		http->string_escape_index = 0;
-		HTTP_RESPONSE_CASE(http_write_value_string(http, (char*)http->cache.CACHE_NAME, sizeof(http->cache.CACHE_NAME)))
-		HTTP_RESPONSE_CASE_STR(http,
+		;http->string_escape_index = 0;
+		HTTP_RESPONSE_CALL(http_write_value_string(http, (char*)http->cache.CACHE_NAME, sizeof(http->cache.CACHE_NAME)))
 			"\"required>"
 			"<tr>"
 			"<tr><td>Network name (SSID):<td>"
 			"<input maxlength=32 name=ssid value=\""
-		)
-		http->string_escape_index = 0;
-		HTTP_RESPONSE_CASE(http_write_value_string(http, (char*)http->cache.CACHE_SSID, sizeof(http->cache.CACHE_SSID)))
-		HTTP_RESPONSE_CASE_STR(http,
+		;http->string_escape_index = 0;
+		HTTP_RESPONSE_CALL(http_write_value_string(http, (char*)http->cache.CACHE_SSID, sizeof(http->cache.CACHE_SSID)))
 			"\"required>"
 			"<tr><td>Network password (PSK):<td>"
 			"<input maxlength=64 name=psk value=\""
-		)
-		http->string_escape_index = 0;
-		HTTP_RESPONSE_CASE(http_write_value_string(http, (char*)http->cache.CACHE_PSK, sizeof(http->cache.CACHE_PSK)))
-		HTTP_RESPONSE_CASE_STR(http,
+		;http->string_escape_index = 0;
+		HTTP_RESPONSE_CALL(http_write_value_string(http, (char*)http->cache.CACHE_PSK, sizeof(http->cache.CACHE_PSK)))
 			"\"required>"
 			"<tr>"
 			"<tr><td>Camera number:<td>"
 			"<input required type=number min=1 max=254 name=dest value="
-		)
-		HTTP_RESPONSE_CASE(http_write_value_uint8(http, http->cache.config.dest))
-		HTTP_RESPONSE_CASE_STR(http,
+		HTTP_RESPONSE_CALL(http_write_value_uint8(http, http->cache.config.dest))
 			">"
 			"<tr><td>ATEM IP:<td>"
 			"<input required pattern=^((25[0-5]|(2[0-4]|1\\d|\\d|)\\d)(\\.(?!$)|$)){4}$ name=atem value="
-		)
-		HTTP_RESPONSE_CASE(http_write_value_addr(http, http->cache.config.atem_addr))
-		HTTP_RESPONSE_CASE_STR(http,
+		HTTP_RESPONSE_CALL(http_write_value_addr(http, http->cache.config.atem_addr))
 			">"
 			"<tr>"
 			"<tr><td>Use DHCP:<td>"
 			"<input type=hidden value=0 name=dhcp>"
 			"<input type=checkbox value=1 name=dhcp"
-		)
-		if (http->cache.config.flags & CONF_FLAG_DHCP) HTTP_RESPONSE_CASE_STR(http, " checked")
-		HTTP_RESPONSE_CASE_STR(http,
+		HTTP_RESPONSE_CALL(http_write_value_bool(http, http->cache.config.flags & CONF_FLAG_DHCP))
 			">"
 			"<tr><td>Local IP:<td>"
 			"<input required pattern=^((25[0-5]|(2[0-4]|1\\d|\\d|)\\d)(\\.(?!$)|$)){4}$ name=localip value="
-		)
-		HTTP_RESPONSE_CASE(http_write_value_addr(http, http->cache.config.localip))
-		HTTP_RESPONSE_CASE_STR(http,
+		HTTP_RESPONSE_CALL(http_write_value_addr(http, http->cache.config.localip))
 			">"
 			"<tr><td>Subnet mask:<td>"
 			"<input required pattern=^((25[0-5]|(2[0-4]|1\\d|\\d|)\\d)(\\.(?!$)|$)){4}$ name=netmask value="
-		)
-		HTTP_RESPONSE_CASE(http_write_value_addr(http, http->cache.config.netmask))
-		HTTP_RESPONSE_CASE_STR(http,
+		HTTP_RESPONSE_CALL(http_write_value_addr(http, http->cache.config.netmask))
 			">"
 			"<tr><td>Gateway:<td>"
 			"<input required pattern=^((25[0-5]|(2[0-4]|1\\d|\\d|)\\d)(\\.(?!$)|$)){4}$ name=gateway value="
-		)
-		HTTP_RESPONSE_CASE(http_write_value_addr(http, http->cache.config.gateway))
-		HTTP_RESPONSE_CASE_STR(http,
+		HTTP_RESPONSE_CALL(http_write_value_addr(http, http->cache.config.gateway))
 			">"
 			"</table><button>Submit</button></form>"
 			"<script>"
@@ -345,27 +331,28 @@ bool http_respond(struct http_ctx* http) {
 				"a.onchange=b=>['localip','netmask','gateway']"
 					".forEach(c=>document.querySelector(`[name=${c}]`)"
 					".disabled=a.checked);a.checked&&a.onchange()"
-			"</script>"		
-		)
+			"</script>"
+		HTTP_RESPONSE_END
 		http->response_state = HTTP_RESPONSE_STATE_NONE;
 		break;
 
 		// Writes HTTP error response
-		case HTTP_RESPONSE_STATE_ERR:
-		HTTP_RESPONSE_CASE_STR(http, "HTTP/1.1 ")
-		HTTP_RESPONSE_CASE_STR(http, http->err_code)
-		HTTP_RESPONSE_CASE_STR(http,
+		HTTP_RESPONSE_START(HTTP_RESPONSE_STATE_ERR)
+			"HTTP/1.1 "
+		HTTP_RESPONSE_WRITE
+			http->err_code
+		HTTP_RESPONSE_WRITE
 			"\r\n"
 			"Access-Control-Allow-Origin: *\r\n"
 			"Content-Type: text/plain\r\n\r\n"
-		)
-		HTTP_RESPONSE_CASE_STR(http, http->err_body)
+		HTTP_RESPONSE_WRITE
+			http->err_body
+		HTTP_RESPONSE_END
 		http->response_state = HTTP_RESPONSE_STATE_NONE;
 		break;
 
 		// Writes HTTP response to successful POST and restarts device
-		case HTTP_RESPONSE_STATE_POST_ROOT:
-		HTTP_RESPONSE_CASE_STR(http,
+		HTTP_RESPONSE_START(HTTP_RESPONSE_STATE_POST_ROOT)
 			"HTTP/1.1 200 OK\r\n"
 			"Access-Control-Allow-Origin: *\r\n"
 			"Content-Type: text/html\r\n\r\n"
@@ -388,7 +375,7 @@ bool http_respond(struct http_ctx* http) {
 				"If device is unable to connect to the ATEM switcher, "
 				"it will create its own wireless network for configuration."
 			"</p>"
-		)
+		HTTP_RESPONSE_END
 		http_reboot(http);
 		break;
 	}
