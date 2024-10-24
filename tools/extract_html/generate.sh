@@ -75,14 +75,13 @@ done
 cd "$(dirname $0)/../.."
 
 # Generates HTTP response
-output=$(printf '%b ' $({
+output=$(printf '%b' "$({
 	# Extracts only addr/value/str
 	echo "#define http_write_value_addr(http, ptr, addr) addr"
 	echo "#define http_write_value_uint8(http, ptr, value) value"
 	echo "#define http_write_value_string(http, ptr, str, size) str"
-	
-	echo "#define STRIP_ME(...)" # Defines stripping macro
-	echo "STRIP_ME(" # Strips all data up to first macro function call to keep content for
+	echo "#define http_write_value_bool(http, ptr, checked) checked"
+
 	{
 		echo "#include \"./firmware/version.h\" // FIRMWARE_VERSION_STRING"
 
@@ -96,23 +95,26 @@ output=$(printf '%b ' $({
 		echo "#define CACHE_NAME , \"${name-"waccat0"}\""
 		echo "#define dest , \"${dest-4}\""
 		echo "#define atem_addr , \"${atem_addr-"192.168.1.240"}\""
+		if [ "$dhcp" = 0 ]; then
+			echo "#define CONF_FLAG_DHCP ,"
+		else
+			echo "#define CONF_FLAG_DHCP , \" checked\""
+		fi
 		echo "#define localip , \"${localip-"192.168.1.69"}\""
 		echo "#define netmask , \"${netmask-"255.255.255.0"}\""
 		echo "#define gateway , \"${gateway-"192.168.1.1"}\""
 		echo "#define err_code \"${err_code-"400 Bad Request"}\""
 		echo "#define err_body \"${err_body-$err_code}\""
 
-		# HTTP_RESPONSE_CASE macro functions should close stripper, dumps its data and starts new stripper
-		echo "#define HTTP_RESPONSE_CASE_STR(http, str) ) str STRIP_ME("
-		echo "#define HTTP_RESPONSE_CASE(fn) ) fn STRIP_ME("
+		# Defines macros to strip out implementations
+		echo "#define HTTP_RESPONSE_CALL(fn) fn"
+		echo "#define HTTP_RESPONSE_START(label)"
+		echo "#define HTTP_RESPONSE_END"
+		echo "#define HTTP_RESPONSE_WRITE"
 
-		# Strips out C conditional for DHCP if it is not enabled
-		[ "$dhcp" = 0 ] && echo "#define if #define DELETE_THIS_ROW"
-
-		sed -n "/case HTTP_RESPONSE_STATE_$state:/,/break;/p" ./firmware/http_respond.c | sed 's/http->//'
-	} | gcc -E -P -xc -
-	echo ")" # Closes last stripper
-} | gcc -E -P -xc - | sed 's/" "//g') | sed 's/\\"/"/g' | sed 's/" *$//' | sed 's/^"//')
+		sed -n "/(HTTP_RESPONSE_STATE_$state)/,/HTTP_RESPONSE_END/p" ./firmware/http_respond.c
+	} | gcc -E -P -xc - | sed 's/http->//'
+} | gcc -E -P -xc - | sed -n 's/ *"\(.*\)" */\1/pg' | sed 's/" "//g' | sed 's/\\"/"/g' | tr -d '\n')")
 
 # Outputs HTTP or HTML without trailing blank line
 if [ -n "$http" ]; then
