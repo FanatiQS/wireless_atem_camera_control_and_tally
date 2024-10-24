@@ -121,5 +121,5 @@ if [ -n "$http" ]; then
 	printf '%s' "$output"
 else
 	carriage_return=$(printf "\r")
-	printf '%s' "$output" | sed "1,/^$carriage_return$/d"
+	printf '%s' "$output" | sed "1,/^$carriage_return$/d" | tr -d '\n'
 fi
