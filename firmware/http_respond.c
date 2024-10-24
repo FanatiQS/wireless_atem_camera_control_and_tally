@@ -205,7 +205,9 @@ bool http_respond(struct http_ctx* http) {
 		// Writes HTTP response to root GET request
 		case HTTP_RESPONSE_STATE_ROOT:
 		HTTP_RESPONSE_CASE_STR(http,
-			"HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n"
+			"HTTP/1.1 200 OK\r\n"
+			"Access-Control-Allow-Origin: *\r\n"
+			"Content-Type: text/html\r\n\r\n"
 			"<!DOCTYPEhtml>"
 				"<meta charset=utf-8>"
 				"<meta name=viewport content=width=device-width>"
@@ -352,7 +354,11 @@ bool http_respond(struct http_ctx* http) {
 		case HTTP_RESPONSE_STATE_ERR:
 		HTTP_RESPONSE_CASE_STR(http, "HTTP/1.1 ")
 		HTTP_RESPONSE_CASE_STR(http, http->err_code)
-		HTTP_RESPONSE_CASE_STR(http, "\r\nContent-Type: text/plain\r\n\r\n")
+		HTTP_RESPONSE_CASE_STR(http,
+			"\r\n"
+			"Access-Control-Allow-Origin: *\r\n"
+			"Content-Type: text/plain\r\n\r\n"
+		)
 		HTTP_RESPONSE_CASE_STR(http, http->err_body)
 		http->response_state = HTTP_RESPONSE_STATE_NONE;
 		break;
@@ -360,7 +366,9 @@ bool http_respond(struct http_ctx* http) {
 		// Writes HTTP response to successful POST and restarts device
 		case HTTP_RESPONSE_STATE_POST_ROOT:
 		HTTP_RESPONSE_CASE_STR(http,
-			"HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n"
+			"HTTP/1.1 200 OK\r\n"
+			"Access-Control-Allow-Origin: *\r\n"
+			"Content-Type: text/html\r\n\r\n"
 			"<!DOCTYPEhtml>"
 				"<meta charset=utf-8>"
 				"<meta name=viewport content=width=device-width>"
