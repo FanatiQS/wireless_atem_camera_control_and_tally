@@ -6,13 +6,18 @@ const { promisify } = require("util");
 const run = promisify(exec);
 
 // Gets path to configuration file
-const configFilePath = process.argv[2] || "./config.json";
-console.log("Using configuration file:", configFilePath);
+const configFilePath = process.argv[2];
+if (configFilePath) {
+	console.log("Using configuration file:", configFilePath);
+}
+else {
+	console.log("Not using configuration file");
+}
 
 // Reloads all connected clients when config file or source file changes
 const reloadingResponses = new Set();
 [
-	configFilePath,
+	...(configFilePath) ? [ configFilePath ] : [],
 	"../../firmware/http_respond.c",
 	"../../firmware/version.h"
 ].forEach((path) => {
@@ -36,7 +41,7 @@ http.createServer(async function (req, res) {
 	}
 	// Responds to request when a file is changed
 	else if (req.url == "/reload") {
-		console.log("Registers reload client:", req.socket.remoteAddress);
+		console.log("Registering reload client:", req.socket.remoteAddress);
 		reloadingResponses.add(res);
 		req.on("close", () => reloadingResponses.delete(res));
 	}
@@ -52,7 +57,7 @@ http.createServer(async function (req, res) {
 		// Creates generator script configuration arguments from config file
 		let generator_arguments = "";
 		try {
-			const config = JSON.parse(await readFile(configFilePath));
+			const config = (configFilePath) ? JSON.parse(await readFile(configFilePath)) : {};
 			generator_arguments = Object.entries(config).map(([ key, value ]) => `--${key}="${value}"`).join(" ");
 		}
 		catch (err) {
