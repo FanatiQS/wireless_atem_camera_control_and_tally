@@ -5,12 +5,19 @@ const { exec } = require("child_process");
 const { promisify } = require("util");
 const run = promisify(exec);
 
-// Reloads all connected clients when config file our source file changes
+// Gets path to configuration file
+const configFilePath = process.argv[2] || "./config.json";
+console.log("Using configuration file at:", configFilePath);
+
+// Reloads all connected clients when config file or source file changes
 const reloadingResponses = new Set();
-const configFilePath = "./config.json";
-[ watch(configFilePath), watch("../../firmware/http_respond.c") ].forEach((watcher) => {
-	watcher.on("change", () => {
-		console.log("Reloading");
+[
+	configFilePath,
+	"../../firmware/http_respond.c",
+	"../../firmware/version.h"
+].forEach((path) => {
+	watch(path).on("change", () => {
+		console.log(`Reloading ${reloadingResponses.size} client(s)`);
 		reloadingResponses.forEach((res) => res.writeHead(307, { Location: "/" }).end());
 	});
 });
