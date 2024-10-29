@@ -7,7 +7,7 @@ const run = promisify(exec);
 
 // Gets path to configuration file
 const configFilePath = process.argv[2] || "./config.json";
-console.log("Using configuration file at:", configFilePath);
+console.log("Using configuration file:", configFilePath);
 
 // Reloads all connected clients when config file or source file changes
 const reloadingResponses = new Set();
@@ -26,6 +26,7 @@ const reloadingResponses = new Set();
 http.createServer(async function (req, res) {
 	// Responds to POST request
 	if (req.method === "POST") {
+		console.log("Serving response for POST request");
 		req.socket.end((await run(`./generate.sh POST_ROOT --http`)).stdout);
 	}
 	// Only accepts GET method
@@ -35,6 +36,7 @@ http.createServer(async function (req, res) {
 	}
 	// Responds to request when a file is changed
 	else if (req.url == "/reload") {
+		console.log("Registers reload client:", req.socket.remoteAddress);
 		reloadingResponses.add(res);
 		req.on("close", () => reloadingResponses.delete(res));
 	}
@@ -44,6 +46,8 @@ http.createServer(async function (req, res) {
 		if (req.headers.referer) {
 			await new Promise((resolve) => setTimeout(resolve, 1000));
 		}
+
+		console.log("Serving response for root page");
 
 		// Creates generator script configuration arguments from config file
 		let generator_arguments = "";
@@ -57,13 +61,20 @@ http.createServer(async function (req, res) {
 		}
 
 		// Responds with generator response and appends automatic reload script on file change
-		req.socket.write((await run(`./generate.sh ROOT --http ${generator_arguments}`)).stdout);
-		req.socket.end('<script>fetch("/reload").then(() => location.reload())</script>');
+		try {
+			req.socket.write((await run(`./generate.sh ROOT --http ${generator_arguments}`)).stdout);
+			req.socket.end('<script>fetch("/reload").then(() => location.reload())</script>');
+		}
+		catch (err) {
+			console.error(err);
+			req.socket.end();
+		}
 	}
 	// Responds with error page from file
 	else {
 		try {
 			const fileName = req.url.slice(1);
+			console.log("Serving static page:", `${fileName}.http`);
 			req.socket.end(await readFile(`../../dist/extract_html/${fileName}.http`));
 		}
 		catch (err) {
