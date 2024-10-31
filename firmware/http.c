@@ -136,7 +136,7 @@ static bool http_find(struct http_ctx* http, const char* cmp) {
 static bool http_post_key(struct http_ctx* http, const char* key) {
 	if (!http_cmp(http, key)) return false;
 	http->remaining_body_len -= strlen(key);
-	DEBUG_HTTP_PRINTF("Found POST body key '%s' for %p\n", key, (void*)http->pcb);
+	DEBUG_HTTP_PRINTF("Found POST body key '%.*s' for %p\n", sizeof(key) - 1, key, (void*)http->pcb);
 	return true;
 }
 
@@ -185,7 +185,7 @@ static bool http_post_value_string(struct http_ctx* http, char* addr, size_t add
 		char c = http_char_consume(http);
 		http->remaining_body_len--;
 
-		// Processes hex encoded bytes
+		// Decodes percent encoded hex characters
 		if (http->hex != HEX_IDLE) {
 			if (http->hex == HEX_READY) {
 				http->hex = HEX_TO_DEC(c) << 4;
@@ -204,11 +204,11 @@ static bool http_post_value_string(struct http_ctx* http, char* addr, size_t add
 			http->state = HTTP_STATE_POST_ROOT_BODY_KEYS;
 			return true;
 		}
-		// Translates + sign to space
+		// Translates "+" sign to space
 		else if (c == '+') {
 			c = ' ';
 		}
-		// Activates hex parsing mode
+		// Starts decoding percent encoded hex characters
 		else if (c == '%') {
 			http->hex = HEX_READY;
 			continue;
