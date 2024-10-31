@@ -29,6 +29,9 @@ const reloadingResponses = new Set();
 
 // Launches HTTP server
 http.createServer(async function (req, res) {
+	// Gets request url and queryParams
+	const { pathname, searchParams } = new URL(req.url, "http://localhost");
+
 	// Responds to POST request
 	if (req.method === "POST") {
 		console.log("Serving response for POST request");
@@ -40,13 +43,13 @@ http.createServer(async function (req, res) {
 		req.socket.end();
 	}
 	// Responds to request when a file is changed
-	else if (req.url == "/reload") {
+	else if (pathname == "/reload") {
 		console.log("Registering reload client:", req.socket.remoteAddress);
 		reloadingResponses.add(res);
 		req.on("close", () => reloadingResponses.delete(res));
 	}
 	// Generates and serves configuration page that automatically reloads when changed
-	else if (req.url === "/") {
+	else if (pathname === "/") {
 		// Delays fetching after POST to simulate device rebooting
 		if (req.headers.referer) {
 			await new Promise((resolve) => setTimeout(resolve, 1000));
@@ -54,16 +57,11 @@ http.createServer(async function (req, res) {
 
 		console.log("Serving response for root page");
 
-		// Creates generator script configuration arguments from config file
-		let generator_arguments = "";
-		try {
-			const config = (configFilePath) ? JSON.parse(await readFile(configFilePath)) : {};
-			generator_arguments = Object.entries(config).map(([ key, value ]) => `--${key}="${value}"`).join(" ");
-		}
-		catch (err) {
-			if (err.code !== "ENOENT") throw err;
-			console.log("No config file found:", err.path);
-		}
+		// Creates generator script configuration arguments from config file and query params
+		const configFile = (configFilePath) ? JSON.parse(await readFile(configFilePath)) : {};
+		const configQuery = Object.fromEntries(searchParams.entries());
+		const config = { ...configFile, ...configQuery };
+		const generator_arguments = Object.entries(config).map(([ key, value ]) => `--${key}="${value}"`).join(" ");
 
 		// Responds with generator response and appends automatic reload script on file change
 		try {
@@ -78,7 +76,7 @@ http.createServer(async function (req, res) {
 	// Responds with error page from file
 	else {
 		try {
-			const fileName = req.url.slice(1);
+			const fileName = pathname.slice(1);
 			console.log("Serving static page:", `${fileName}.http`);
 			req.socket.end(await readFile(`../../dist/extract_html/${fileName}.http`));
 		}
