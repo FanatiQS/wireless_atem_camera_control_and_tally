@@ -33,9 +33,18 @@
 
 
 
-// Get/set 16bit value in DNS packet
-#define DNS_GET16(ptr) ntohs(*((uint16_t*)(ptr)))
-#define DNS_SET16(ptr, value) *((uint16_t*)(ptr)) = htons(value)
+// Gets 16bit value from DNS packet
+static uint16_t dns_u16_get(void* ptr) {
+	uint16_t value;
+	memcpy(&value, ptr, sizeof(value));
+	return ntohs(value);
+}
+
+// Sets 16bit value in DNS packet
+static void dns_u16_set(void* ptr, uint16_t value) {
+	uint16_t host_order_value = htons(value);
+	memcpy(ptr, &host_order_value, sizeof(host_order_value));
+}
 
 
 
@@ -47,80 +56,80 @@ static int dns_socket_create(void) {
 }
 
 // Sends binary DNS data request to server
-static void dns_socket_send(int sock, uint8_t* reqBuf, size_t reqLen) {
+static void dns_socket_send(int sock, uint8_t* req_buf, size_t req_len) {
 	if (logs_find("dns_send")) {
 		printf("Request packet:\n");
-		logs_print_buffer(stdout, reqBuf, reqLen);
+		logs_print_buffer(stdout, req_buf, req_len);
 	}
-	simple_socket_send(sock, reqBuf, reqLen);
+	simple_socket_send(sock, req_buf, req_len);
 }
 
 // Receives binary DNS data response from server
-static size_t dns_socket_recv(int sock, uint8_t* resBuf, size_t resSize) {
-	size_t resLen = simple_socket_recv(sock, resBuf, resSize);
+static size_t dns_socket_recv(int sock, uint8_t* res_buf, size_t res_size) {
+	size_t res_len = simple_socket_recv(sock, res_buf, res_size);
 	if (logs_find("dns_recv")) {
 		printf("Response packet:\n");
-		logs_print_buffer(stdout, resBuf, resLen);
+		logs_print_buffer(stdout, res_buf, res_len);
 	}
-	return resLen;
+	return res_len;
 }
 
 // Prints received DNS packet
 static void dns_socket_recv_print(int sock) {
 	uint8_t buf[DNS_LEN_MAX];
-	size_t recvLen = dns_socket_recv(sock, buf, sizeof(buf));
-	logs_print_buffer(stdout, buf, recvLen);
+	size_t recv_len = dns_socket_recv(sock, buf, sizeof(buf));
+	logs_print_buffer(stdout, buf, recv_len);
 }
 
 
 
 // Appends query name label to DNS request buffer
-static void dns_append_label(uint8_t* buf, size_t* bufLen, const char* label) {
-	size_t labelLen = strlen(label);
-	assert(labelLen < UINT8_MAX);
-	buf[*bufLen] = (uint8_t)labelLen;
-	*bufLen += 1;
-	memcpy(&buf[*bufLen], label, labelLen);
-	*bufLen += labelLen;
+static void dns_append_label(uint8_t* buf, size_t* buf_len, const char* label) {
+	size_t label_len = strlen(label);
+	assert(label_len < UINT8_MAX);
+	buf[*buf_len] = (uint8_t)label_len;
+	*buf_len += 1;
+	memcpy(&buf[*buf_len], label, label_len);
+	*buf_len += label_len;
 }
 
 // Completes DNS query after appended labels
-static void dns_append_complete(uint8_t* buf, size_t* bufLen, int qtype, int qclass) {
+static void dns_append_complete(uint8_t* buf, size_t* buf_len, uint16_t qtype, uint16_t qclass) {
 	// Terminates query name
-	buf[*bufLen] = 0x00;
-	*bufLen += 1;
+	buf[*buf_len] = 0x00;
+	*buf_len += 1;
 
 	// Sets qtype and qclass
-	DNS_SET16(&buf[*bufLen], qtype);
-	*bufLen += sizeof(uint16_t);
-	DNS_SET16(&buf[*bufLen], qclass);
-	*bufLen += sizeof(uint16_t);
+	dns_u16_set(&buf[*buf_len], qtype);
+	*buf_len += sizeof(uint16_t);
+	dns_u16_set(&buf[*buf_len], qclass);
+	*buf_len += sizeof(uint16_t);
 
 	// Increments qdcount in DNS buffer
-	DNS_SET16(&buf[DNS_INDEX_QDCOUNT], DNS_GET16(&buf[DNS_INDEX_QDCOUNT]) + 1);
+	dns_u16_set(&buf[DNS_INDEX_QDCOUNT], dns_u16_get(&buf[DNS_INDEX_QDCOUNT]) + 1);
 }
 
 // Appends query name for google.com without completing it
-static size_t dns_append_default_name(uint8_t* reqBuf, size_t reqLen) {
-	dns_append_label(reqBuf, &reqLen, "google");
-	dns_append_label(reqBuf, &reqLen, "com");
-	return reqLen;
+static size_t dns_append_default_name(uint8_t* req_buf, size_t req_len) {
+	dns_append_label(req_buf, &req_len, "google");
+	dns_append_label(req_buf, &req_len, "com");
+	return req_len;
 }
 
 // Appends query for google.com
-static size_t dns_append_default(uint8_t* reqBuf, size_t reqLen) {
-	reqLen = dns_append_default_name(reqBuf, reqLen);
-	dns_append_complete(reqBuf, &reqLen, DNS_QTYPE_A, DNS_QCLASS_IN);
-	return reqLen;
+static size_t dns_append_default(uint8_t* req_buf, size_t req_len) {
+	req_len = dns_append_default_name(req_buf, req_len);
+	dns_append_complete(req_buf, &req_len, DNS_QTYPE_A, DNS_QCLASS_IN);
+	return req_len;
 }
 
 
 
 // Ensures invalid DNS request is not responded to
-static void dns_expect_timeout(uint8_t* reqBuf, size_t reqLen) {
+static void dns_expect_timeout(uint8_t* req_buf, size_t req_len) {
 	// Sends DNS request
 	int sock = dns_socket_create();
-	dns_socket_send(sock, reqBuf, reqLen);
+	dns_socket_send(sock, req_buf, req_len);
 
 	// Expects timeout
 	if (simple_socket_poll(sock, 4000) == 1) {
@@ -132,19 +141,19 @@ static void dns_expect_timeout(uint8_t* reqBuf, size_t reqLen) {
 }
 
 // Validates DNS response against comparison buffer
-static void dns_expect_error_validate(int sock, uint8_t* cmpBuf, size_t cmpLen) {
+static void dns_expect_error_validate(int sock, uint8_t* cmp_buf, size_t cmp_len) {
 	// Reads DNS response buffer
-	uint8_t resBuf[DNS_LEN_MAX] = {0};
-	size_t resLen = dns_socket_recv(sock, resBuf, sizeof(resBuf));
-	
+	uint8_t res_buf[DNS_LEN_MAX] = {0};
+	size_t res_len = dns_socket_recv(sock, res_buf, sizeof(res_buf));
+
 	// Ensures response buffer matches length of compare buffer
-	if (resLen != cmpLen) {
-		fprintf(stderr, "Unexpected length: %zu, %zu\n", resLen, cmpLen);
+	if (res_len != cmp_len) {
+		fprintf(stderr, "Unexpected length: %zu, %zu\n", res_len, cmp_len);
 		abort();
 	}
 
 	// Ensures response buffers content matches compare buffers content
-	if (memcmp(resBuf, cmpBuf, cmpLen)) {
+	if (memcmp(res_buf, cmp_buf, cmp_len)) {
 		fprintf(stderr, "Response buffer not matching\n");
 		abort();
 	}
@@ -154,35 +163,35 @@ static void dns_expect_error_validate(int sock, uint8_t* cmpBuf, size_t cmpLen) 
 }
 
 // Sends DNS request expecting specific rcode error not including query
-static void dns_expect_error_short(uint8_t* reqBuf, size_t reqLen, uint8_t code) {
+static void dns_expect_error_short(uint8_t* req_buf, size_t req_len, uint8_t code) {
 	// Sends DNS request
 	int sock = dns_socket_create();
-	dns_socket_send(sock, reqBuf, reqLen);
+	dns_socket_send(sock, req_buf, req_len);
 
 	// Creates expected response
-	uint8_t cmpBuf[DNS_LEN_MIN] = {0};
-	memcpy(cmpBuf, reqBuf, 3);
-	cmpBuf[DNS_INDEX_FLAGS_HIGH] |= 0x80;
-	cmpBuf[DNS_INDEX_FLAGS_LOW] = code;
+	uint8_t cmp_buf[DNS_LEN_MIN] = {0};
+	memcpy(cmp_buf, req_buf, 3);
+	cmp_buf[DNS_INDEX_FLAGS_HIGH] |= 0x80;
+	cmp_buf[DNS_INDEX_FLAGS_LOW] = code;
 
 	// Validates response
-	dns_expect_error_validate(sock, cmpBuf, sizeof(cmpBuf));
+	dns_expect_error_validate(sock, cmp_buf, sizeof(cmp_buf));
 }
 
 // Sends DNS request expecting specific rcode error including query
-static void dns_expect_error_long(uint8_t* reqBuf, size_t reqLen, uint8_t code) {
+static void dns_expect_error_long(uint8_t* req_buf, size_t req_len, uint8_t code) {
 	// Sends DNS request
 	int sock = dns_socket_create();
-	dns_socket_send(sock, reqBuf, reqLen);
+	dns_socket_send(sock, req_buf, req_len);
 
 	// Creates expected response
-	uint8_t cmpBuf[DNS_LEN_MAX] = {0};
-	memcpy(cmpBuf, reqBuf, reqLen);
-	cmpBuf[DNS_INDEX_FLAGS_HIGH] |= 0x80;
-	cmpBuf[DNS_INDEX_FLAGS_LOW] = code;
+	uint8_t cmp_buf[DNS_LEN_MAX] = {0};
+	memcpy(cmp_buf, req_buf, req_len);
+	cmp_buf[DNS_INDEX_FLAGS_HIGH] |= 0x80;
+	cmp_buf[DNS_INDEX_FLAGS_LOW] = code;
 
 	// Validates reqsponse
-	dns_expect_error_validate(sock, cmpBuf, reqLen);
+	dns_expect_error_validate(sock, cmp_buf, req_len);
 }
 
 
@@ -191,67 +200,67 @@ static void dns_expect_error_long(uint8_t* reqBuf, size_t reqLen, uint8_t code) 
 int main(void) {
 	// Tests under minimum packet length
 	RUN_TEST() {
-		uint8_t buf[DNS_LEN_MAX] = {0};
-		dns_expect_timeout(buf, DNS_LEN_MIN - 1);
+		uint8_t req_buf[DNS_LEN_MAX] = {0};
+		dns_expect_timeout(req_buf, DNS_LEN_MIN - 1);
 	}
 
 	// Tests QR flag being set for request
 	RUN_TEST() {
-		uint8_t buf[DNS_LEN_MAX] = { [DNS_INDEX_FLAGS_HIGH] = 0x80 };
-		dns_expect_timeout(buf, DNS_LEN_MIN);
+		uint8_t req_buf[DNS_LEN_MAX] = { [DNS_INDEX_FLAGS_HIGH] = 0x80 };
+		dns_expect_timeout(req_buf, DNS_LEN_MIN);
 	}
 
 	// Tests unsupported opcodes
 	RUN_TEST() {
 		for (int i = 1; i < 16; i++) {
-			uint8_t buf[DNS_LEN_MAX] = { [DNS_INDEX_FLAGS_HIGH] = (uint8_t)(i << 3) };
-			dns_expect_error_short(buf, dns_append_default(buf, DNS_LEN_MIN), DNS_RCODE_NOTIMP);
+			uint8_t req_buf[DNS_LEN_MAX] = { [DNS_INDEX_FLAGS_HIGH] = (uint8_t)(i << 3) };
+			dns_expect_error_short(req_buf, dns_append_default(req_buf, DNS_LEN_MIN), DNS_RCODE_NOTIMP);
 		}
 	}
 
 	// Tests unsupported zero queries
 	RUN_TEST() {
-		uint8_t buf[DNS_LEN_MAX] = {0};
-		dns_expect_error_short(buf, DNS_LEN_MIN, DNS_RCODE_FORMERR);
+		uint8_t req_buf[DNS_LEN_MAX] = {0};
+		dns_expect_error_short(req_buf, DNS_LEN_MIN, DNS_RCODE_FORMERR);
 	}
 
 	// Tests unsupported more than 1 query
 	RUN_TEST() {
-		uint8_t buf[DNS_LEN_MAX] = {0};
-		size_t reqLen = dns_append_default(buf, DNS_LEN_MIN);
-		reqLen = dns_append_default(buf, reqLen);
-		dns_expect_error_short(buf, reqLen, DNS_RCODE_FORMERR);
+		uint8_t req_buf[DNS_LEN_MAX] = {0};
+		size_t req_len = dns_append_default(req_buf, DNS_LEN_MIN);
+		req_len = dns_append_default(req_buf, req_len);
+		dns_expect_error_short(req_buf, req_len, DNS_RCODE_FORMERR);
 	}
 
 	// Tests invalid query length
 	RUN_TEST() {
 		uint8_t buf[DNS_LEN_MAX] = {0};
-		size_t reqLen = dns_append_default(buf, DNS_LEN_MIN);
-		dns_expect_error_short(buf, reqLen - 1, DNS_RCODE_FORMERR);
+		size_t req_len = dns_append_default(buf, DNS_LEN_MIN);
+		dns_expect_error_short(buf, req_len - 1, DNS_RCODE_FORMERR);
 	}
 
 	// Tests label expanding out of packet
 	RUN_TEST() {
-		uint8_t buf[DNS_LEN_MAX] = {0};
-		size_t bufLen = dns_append_default(buf, DNS_LEN_MIN);
-		buf[bufLen - sizeof(uint16_t) * 2 - 2 - strlen("com")] += 1;
-		dns_expect_error_short(buf, bufLen, DNS_RCODE_FORMERR);
+		uint8_t req_buf[DNS_LEN_MAX] = {0};
+		size_t req_len = dns_append_default(req_buf, DNS_LEN_MIN);
+		req_buf[req_len - sizeof(uint16_t) * 2 - 2 - strlen("com")] += 1;
+		dns_expect_error_short(req_buf, req_len, DNS_RCODE_FORMERR);
 	}
 
 	// Ensures unsupported qclass is rejected
 	RUN_TEST() {
-		uint8_t buf[DNS_LEN_MAX] = {0,0,1};
-		size_t bufLen = dns_append_default_name(buf, DNS_LEN_MIN);
-		dns_append_complete(buf, &bufLen, 2, DNS_QCLASS_IN);
-		dns_expect_error_long(buf, bufLen, DNS_RCODE_NXDOMAIN);
+		uint8_t req_buf[DNS_LEN_MAX] = {0,0,1};
+		size_t req_len = dns_append_default_name(req_buf, DNS_LEN_MIN);
+		dns_append_complete(req_buf, &req_len, 2, DNS_QCLASS_IN);
+		dns_expect_error_long(req_buf, req_len, DNS_RCODE_NXDOMAIN);
 	}
 
 	// Ensures unsupported qtype is rejected
 	RUN_TEST() {
-		uint8_t buf[DNS_LEN_MAX] = {0};
-		size_t bufLen = dns_append_default_name(buf, DNS_LEN_MIN);
-		dns_append_complete(buf, &bufLen, DNS_QTYPE_A, 2);
-		dns_expect_error_long(buf, bufLen, DNS_RCODE_NXDOMAIN);
+		uint8_t req_buf[DNS_LEN_MAX] = {0};
+		size_t req_len = dns_append_default_name(req_buf, DNS_LEN_MIN);
+		dns_append_complete(req_buf, &req_len, DNS_QTYPE_A, 2);
+		dns_expect_error_long(req_buf, req_len, DNS_RCODE_NXDOMAIN);
 	}
 
 	return runner_exit();
