@@ -7,14 +7,14 @@
 #include "../utils/utils.h"
 
 // Camera control category and parameter combos from SDI Camera Control protocol to check
-uint16_t cc_params_to_check[] = {
+static uint16_t cc_params_to_check[] = {
 	0x0000, 0x0002, // Lens
 	0x0101, 0x0102, 0x0105, 0x0108, 0x010d, 0x0110, // Video
 	0x0404, // Display
 	0x0800, 0x0801, 0x0802, 0x0803, 0x0804, 0x0805, 0x0806, // Color Correction
 	0x0b00 // PTZ Control
 };
-const size_t cc_params_to_check_length = (sizeof(cc_params_to_check) / sizeof(cc_params_to_check[0]));
+static const size_t cc_params_to_check_length = (sizeof(cc_params_to_check) / sizeof(cc_params_to_check[0]));
 
 // Validates that a received category and parameter combo is expected and stores it it the checklist
 static void camera_control_check(uint8_t category, uint8_t parameter, size_t* checklist) {
