@@ -10,8 +10,10 @@
 #include <stdbool.h> // bool
 #include <stdint.h> // uint8_t, uint16_t
 
-// The Blackmagic bluetooth UUIDs
+/** Bluetooth service UUID for communicating with blackmagic cameras */
 #define ATEM_BLE_UUID_SERVICE "291D567A-6D75-11E6-8B77-86F30CA893D3"
+
+/** Bluetooth characteristic UUID for sending camera control data to blackmagic cameras */
 #define ATEM_BLE_UUID_CHARACTERISTIC "5DD3465F-1AEE-4299-8493-D2ECA2F8E1BB"
 
 // Gets thread local implementation
