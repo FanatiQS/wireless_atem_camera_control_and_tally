@@ -257,7 +257,7 @@ uint32_t atem_cmd_next(struct atem* atem);
  * @returns The major version of the ATEM protocol.
  */
 static inline uint16_t atem_protocol_major(struct atem* atem) {
-	return (atem->cmd_buf[0] << 8 | atem->cmd_buf[1]);
+	return (atem->cmd_buf[0] << 8 | atem->cmd_buf[1]) & 0xffff;
 }
 
 /**
@@ -271,7 +271,7 @@ static inline uint16_t atem_protocol_major(struct atem* atem) {
  * @returns The minor version of the ATEM protocol.
  */
 static inline uint16_t atem_protocol_minor(struct atem* atem) {
-	return (atem->cmd_buf[2] << 8 | atem->cmd_buf[3]);
+	return (atem->cmd_buf[2] << 8 | atem->cmd_buf[3]) & 0xffff;
 }
 
 /**
