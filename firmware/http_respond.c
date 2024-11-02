@@ -313,7 +313,11 @@ bool http_respond(struct http_ctx* http) {
 			"<tr>"
 			"<tr><td>Use DHCP:<td>"
 			"<input type=hidden value=0 name=dhcp>"
-			"<input type=checkbox value=1 name=dhcp"
+			"<input type=checkbox value=1 name=dhcp id=a onchange=\""
+				"['localip','netmask','gateway']"
+					".forEach(n=>document.querySelector(`[name=${n}]`)"
+					".disabled=this.checked)\""
+
 		HTTP_RESPONSE_CALL(http_write_value_bool(http, http->cache.config.flags & CONF_FLAG_DHCP))
 			">"
 			"<tr><td>Local IP:<td>"
@@ -329,12 +333,7 @@ bool http_respond(struct http_ctx* http) {
 		HTTP_RESPONSE_CALL(http_write_value_addr(http, http->cache.config.gateway))
 			">"
 			"</table><button>Submit</button></form>"
-			"<script>"
-				"let a=document.querySelector('[type=checkbox][name=dhcp]');"
-				"a.onchange=b=>['localip','netmask','gateway']"
-					".forEach(c=>document.querySelector(`[name=${c}]`)"
-					".disabled=a.checked);a.checked&&a.onchange()"
-			"</script>"
+			"<script>document.querySelector('#a').onchange()</script>"
 		HTTP_RESPONSE_END
 		http->response_state = HTTP_RESPONSE_STATE_NONE;
 		break;
