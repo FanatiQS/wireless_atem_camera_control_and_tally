@@ -22,7 +22,7 @@ The camera id
 ### category
 The category containing the parameter to edit
 
-##### Categories
+#### Categories
 	0: Lens
 	1: Video
 	4: Display
@@ -32,7 +32,7 @@ The category containing the parameter to edit
 ### param
 The parameter in the category to edit
 
-##### Parameters
+#### Parameters
 	Lens:
 		0: Focus
 		1: Instantaneous autofocus
@@ -62,7 +62,7 @@ The parameter in the category to edit
 ### type
 The data type used
 
-##### Data types
+#### Data types
 	0x00: void / boolean
 	0x01: 8bit signed byte
 	0x02: 16bit signed integer
