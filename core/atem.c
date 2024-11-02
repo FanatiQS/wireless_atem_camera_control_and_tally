@@ -103,8 +103,8 @@ enum atem_status atem_parse(struct atem* atem) {
 	if (atem->read_buf[ATEM_INDEX_FLAGS] & ATEM_FLAG_ACKREQ) {
 		// Gets remote id in this packet and next remote id in sequence
 		const uint16_t remote_id_next = (atem->remote_id_last + 1) & ATEM_LIMIT_REMOTEID;
-		const uint16_t remote_id_recved = (uint16_t)(atem->read_buf[ATEM_INDEX_REMOTEID_HIGH] << 8) |
-			atem->read_buf[ATEM_INDEX_REMOTEID_LOW];
+		const uint16_t remote_id_recved = ((atem->read_buf[ATEM_INDEX_REMOTEID_HIGH] << 8) |
+			atem->read_buf[ATEM_INDEX_REMOTEID_LOW]) & ATEM_LIMIT_REMOTEID;
 
 		// Acknowledges this packet if it is next in line
 		if (remote_id_recved == remote_id_next) {
@@ -123,7 +123,7 @@ enum atem_status atem_parse(struct atem* atem) {
 			buf_ack[ATEM_INDEX_ACKID_LOW] = atem->read_buf[ATEM_INDEX_REMOTEID_LOW];
 
 			// Sets length of read buffer
-			atem->read_len = (uint16_t)(atem->read_buf[ATEM_INDEX_LEN_HIGH] << 8 |
+			atem->read_len = (atem->read_buf[ATEM_INDEX_LEN_HIGH] << 8 |
 				atem->read_buf[ATEM_INDEX_LEN_LOW]) & ATEM_PACKET_LEN_MAX;
 
 			// Sets up for parsing ATEM commands in payload
@@ -209,7 +209,7 @@ uint32_t atem_cmd_next(struct atem* atem) {
 	const uint16_t index = atem->cmd_index;
 
 	// Increment start index of command with command length to get start index for next command
-	atem->cmd_len = (uint16_t)(atem->read_buf[index] << 8) | atem->read_buf[index + 1];
+	atem->cmd_len = ((atem->read_buf[index] << 8) | atem->read_buf[index + 1]) & 0xffff;
 	atem->cmd_index += atem->cmd_len;
 
 	// Sets pointer to command to start of command data

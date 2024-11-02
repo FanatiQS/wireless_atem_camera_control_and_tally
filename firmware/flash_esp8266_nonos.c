@@ -70,7 +70,7 @@ void flash_cache_write(struct flash_cache* cache) {
 		return;
 	}
 	if (memcmp(&conf_current, &cache->config, sizeof(conf_current)) != 0) {
-		if (spi_flash_erase_sector((uint16_t)(CONFIG_START / SPI_FLASH_SEC_SIZE))) {
+		if (spi_flash_erase_sector((CONFIG_START / SPI_FLASH_SEC_SIZE) & 0xffff)) {
 			DEBUG_ERR_PRINTF("Failed to erase flash sector\n");
 			return;
 		}
