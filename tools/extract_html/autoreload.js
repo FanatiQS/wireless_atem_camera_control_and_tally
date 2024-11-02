@@ -61,7 +61,7 @@ http.createServer(async function (req, res) {
 		const configFile = (configFilePath) ? JSON.parse(await readFile(configFilePath)) : {};
 		const configQuery = Object.fromEntries(searchParams.entries());
 		const config = { ...configFile, ...configQuery };
-		const generator_arguments = Object.entries(config).map(([ key, value ]) => `--${key}="${value}"`).join(" ");
+		const generator_arguments = Object.entries(config).map(([ key, value ]) => `--${key}='${value}'`).join(" ");
 
 		// Responds with generator response and appends automatic reload script on file change
 		try {
