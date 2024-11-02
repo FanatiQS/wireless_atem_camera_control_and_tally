@@ -59,6 +59,9 @@ while [ $# -gt 0 ]; do
 		--gateway=*)
 			gateway="${i#*=}"
 			;;
+		--no_animation=*)
+			no_animation="${i#*=}"
+			;;
 		-h|--help)
 			echo "Usage: $0 state [...opts]"
 			echo "	Read source code to see what arguments are available"
@@ -105,6 +108,9 @@ output=$(printf '%b' "$({
 		echo "#define gateway , \"${gateway-"192.168.1.1"}\""
 		echo "#define err_code \"${err_code-"400 Bad Request"}\""
 		echo "#define err_body \"${err_body-$err_code}\""
+
+		# Defines compile time configuration options
+		echo "#define NO_HTML_ENTRY_ANIMATION ${no_animation-"0"}"
 
 		# Defines macros to strip out implementations
 		echo "#define HTTP_RESPONSE_CALL(fn) fn"

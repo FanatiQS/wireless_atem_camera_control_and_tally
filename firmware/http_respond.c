@@ -225,10 +225,22 @@ bool http_respond(struct http_ctx* http) {
 				"<style>"
 					"body{"
 						"text-align:center;"
-						"font-family:system-ui;"
 						"margin:0"
 					"}"
+#if NO_HTML_ENTRY_ANIMATION != 1
+					"@media(prefers-reduced-motion:no-preference){"
+						"@keyframes e{"
+							"from{transform:translateY(calc(-100% - 2em))}"
+							"to{transform:translateY(0)}"
+						"}"
+					"}"
+#endif // !NO_HTML_ENTRY_ANIMATION
 					"form{"
+#if NO_HTML_ENTRY_ANIMATION != 1
+						"animation:e .8s;"
+						"position:relative;"
+#endif // !NO_HTML_ENTRY_ANIMATION
+						"font-family:system-ui;"
 						"margin:2em 1em;"
 						"display:inline-block;"
 						"background:#f8f8f8;"
