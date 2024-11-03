@@ -401,25 +401,23 @@ static inline void http_parse(struct http_ctx* http, struct pbuf* p) {
 
 		// Parses HTTP GET method
 		case HTTP_STATE_METHOD_GET: {
-			if (!http_cmp(http, "GET /")) {
-				if (http_cmp_incomplete(http)) return;
-				http->state = HTTP_STATE_METHOD_POST;
-				continue;
-			}
-			DEBUG_HTTP_PRINTF("Got a GET request from %p\n", (void*)http->pcb);
-		}
-		// Responds with root HTML to all HTTP GET requests
-		/* FALLTHROUGH */
-		case HTTP_STATE_GET_ROOT: {
-			if (!flash_cache_read(&http->cache)) {
-				http_err(http, "500 Internal Server Error");
+			if (http_cmp(http, "GET /")) {
+				DEBUG_HTTP_PRINTF("Got a GET request from %p\n", (void*)http->pcb);
+
+				// Responds with root HTML to all HTTP GET requests
+				if (!flash_cache_read(&http->cache)) {
+					http_err(http, "500 Internal Server Error");
+					return;
+				}
+				http->response_state = HTTP_RESPONSE_STATE_ROOT;
+				http->state = HTTP_STATE_DONE;
+				http_respond(http);
+				DEBUG_HTTP_PRINTF("Responding to unspecified GET request from %p\n", (void*)http->pcb);
 				return;
 			}
-			http->response_state = HTTP_RESPONSE_STATE_ROOT;
-			http->state = HTTP_STATE_DONE;
-			http_respond(http);
-			DEBUG_HTTP_PRINTF("Responding to unspecified GET request from %p\n", (void*)http->pcb);
-			return;
+
+			// Falls through to process POST request
+			if (http_cmp_incomplete(http)) return;
 		}
 
 // =====================================
@@ -427,6 +425,7 @@ static inline void http_parse(struct http_ctx* http, struct pbuf* p) {
 // =====================================
 
 		// Parses HTTP POST method
+		/* FALLTHROUGH */
 		case HTTP_STATE_METHOD_POST: {
 			if (!http_cmp(http, "POST /")) {
 				if (http_cmp_incomplete(http)) {
