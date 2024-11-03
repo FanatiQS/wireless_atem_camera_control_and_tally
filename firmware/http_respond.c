@@ -14,12 +14,12 @@
 #include <lwip/err.h> // err_t
 #include <lwip/pbuf.h> // struct pbuf
 #include <lwip/ip4_addr.h> // ip4_addr_t
-#include <lwip/netif.h> // struct netif, netif_ip_addr4
+#include <lwip/netif.h> // struct netif, netif_ip_addr4, netif_default
 
 #include "./debug.h" // DEBUG_ERR_PRINTF, DEBUG_HTTP_PRINTF
 #include "./http.h" // struct http_ctx
 #include "./version.h" // FIRMWARE_VERSION_STRING
-#include "./atem_sock.h" // atem_state, atem_netif_get
+#include "./atem_sock.h" // atem_state
 #include "./http_respond.h" // http_respond, http_err, http_post_err
 #include "./flash.h" // CACHE_NAME, CACHE_SSID, CACHE_PSK, CONF_FLAG_DHCP, flash_cache_write
 #include "./wlan.h" // wlan_station_rssi, WLAN_STATION_NOT_CONNECTED
@@ -120,14 +120,12 @@ static inline bool http_write_wifi(struct http_ctx* http) {
 	return tcp_write(http->pcb, buf, len, TCP_WRITE_FLAG_COPY) == ERR_OK;
 }
 
-// Writes current local ip on network where ATEM is available
+// Writes local ip address of default netif
 static inline bool http_write_local_addr(struct http_ctx* http) {
-	const ip4_addr_t addr = { http->cache.config.atem_addr };
-	struct netif* netif = atem_netif_get(&addr);
-	if (netif == NULL) {
-		return HTTP_SEND(http, "N/A");
+	if (netif_default == NULL) {
+		return true;
 	}
-	char* buf = ipaddr_ntoa(netif_ip_addr4(netif));
+	char* buf = ipaddr_ntoa(netif_ip_addr4(netif_default));
 	return tcp_write(http->pcb, buf, strlen(buf), TCP_WRITE_FLAG_COPY) == ERR_OK;
 }
 

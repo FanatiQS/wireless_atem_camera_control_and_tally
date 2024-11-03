@@ -263,7 +263,7 @@ static void atem_recv_callback(void* arg, struct udp_pcb* pcb, struct pbuf* p, c
 }
 
 // Gets netif ATEM server address should be available on
-struct netif* atem_netif_get(const ip4_addr_t* addr) {
+static struct netif* atem_netif_get(const ip4_addr_t* addr) {
 	struct netif *netif;
 	NETIF_FOREACH(netif) {
 		if (
