@@ -103,7 +103,7 @@ void http_socket_recv_cmp_status(int sock, int code) {
 	// Ensures HTTP version and status code
 	http_socket_recv_cmp(sock, "HTTP/1.1 ");
 	http_socket_recv_cmp(sock, http_status(code));
-	
+
 	bool logging = logs_find("http_recv");
 	if (logging) {
 		printf("HTTP receive:\n");

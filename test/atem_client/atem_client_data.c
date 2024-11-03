@@ -118,7 +118,7 @@ int main(void) {
 				assert(ack_id == local_id && i == local_id - 1);
 			}
 		}
-	
+
 		atem_acknowledge_request_send(sock, session_id, local_id);
 		atem_acknowledge_response_recv_verify(sock, session_id, local_id);
 

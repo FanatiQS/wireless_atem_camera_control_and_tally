@@ -59,7 +59,7 @@ int main(void) {
 		}
 	}
 
-	// Ensures restarting opening handshake after reject changes session id and port 
+	// Ensures restarting opening handshake after reject changes session id and port
 	RUN_TEST() {
 		uint8_t packet[ATEM_PACKET_LEN_MAX];
 		atem_handshake_resetpeer();

@@ -6,7 +6,7 @@
 #pragma GCC system_header
 
 // Includes standard header file
-#include_next <time.h> 
+#include_next <time.h>
 
 /*
  * Shims timespec_get for non-C11 platforms that has POSIX.1-2001 support.

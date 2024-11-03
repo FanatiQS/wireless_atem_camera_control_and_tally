@@ -81,7 +81,7 @@ bool ws2812_update(bool pgm, bool pvw) {
 
 	// Ensures RGB LED matrix is not updated until everything has latched
 	ets_delay_us(LED_RMT_RESET_US);
-	
+
 	return true;
 }
 
