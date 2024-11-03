@@ -227,7 +227,7 @@ bool http_respond(struct http_ctx* http) {
 						"text-align:center;"
 						"margin:0"
 					"}"
-#if NO_HTML_ENTRY_ANIMATION != 1
+#if !NO_HTML_ENTRY_ANIMATION
 					"@media(prefers-reduced-motion:no-preference){"
 						"@keyframes e{"
 							"from{transform:translateY(calc(-100% - 2em))}"
@@ -236,7 +236,7 @@ bool http_respond(struct http_ctx* http) {
 					"}"
 #endif // !NO_HTML_ENTRY_ANIMATION
 					"form{"
-#if NO_HTML_ENTRY_ANIMATION != 1
+#if !NO_HTML_ENTRY_ANIMATION
 						"animation:e .8s;"
 						"position:relative;"
 #endif // !NO_HTML_ENTRY_ANIMATION
