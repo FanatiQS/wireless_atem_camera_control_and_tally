@@ -18,7 +18,7 @@ static const size_t cc_params_to_check_length = (sizeof(cc_params_to_check) / si
 
 // Validates that a received category and parameter combo is expected and stores it it the checklist
 static void camera_control_check(uint8_t category, uint8_t parameter, size_t* checklist) {
-	uint16_t category_and_paramter = category << 8 | parameter;
+	uint16_t category_and_paramter = (category << 8 | parameter) & 0xffff;
 	for (size_t i = 0; i < cc_params_to_check_length; i++) {
 		if (cc_params_to_check[i] == category_and_paramter) {
 			*checklist &= ~(1 << i);
