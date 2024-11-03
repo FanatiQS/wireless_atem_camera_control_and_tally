@@ -25,28 +25,28 @@
 
 
 // Logging string for PGM tally pin
-#if PIN_PGM
+#ifdef PIN_PGM
 #define BOOT_INFO_PIN_PGM "Tally PGM pin: " WRAP(PIN_PGM) "\n"
 #else // PIN_PGM
 #define BOOT_INFO_PIN_PGM "Tally PGM: disabled\n"
 #endif // PIN_PGM
 
 // Logging string for PVW tally pin
-#if PIN_PVW
+#ifdef PIN_PVW
 #define BOOT_INFO_PIN_PVW "Tally PVW pin: " WRAP(PIN_PVW) "\n"
 #else // PIN_PVW
 #define BOOT_INFO_PIN_PVW "Tally PVW: disabled\n"
 #endif // PIN_PVW
 
 // Logging string for CONN LED pin
-#if PIN_CONN
+#ifdef PIN_CONN
 #define BOOT_INFO_PIN_CONN "CONN LED pin: " WRAP(PIN_CONN) "\n"
 #else // PIN_CONN
 #define BOOT_INFO_PIN_CONN "CONN LED: disabled\n"
 #endif // PIN_CONN
 
 // Logging string for RGB tally LED pin
-#if TALLY_RGB_PIN
+#ifdef TALLY_RGB_PIN
 #define BOOT_INFO_TALLY_RGB_PIN "RGB TALLY LED pin: " WRAP(TALLY_RGB_PIN) "\n"
 #else // TALLY_RGB_PIN
 #define BOOT_INFO_TALLY_RGB_PIN "RGB TALLY LED: disabled\n"
