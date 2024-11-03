@@ -543,118 +543,118 @@ static inline void http_parse(struct http_ctx* http, struct pbuf* p) {
 		case HTTP_STATE_POST_ROOT_BODY_KEYS:
 		// Checks if the next POST body key is for wlan ssid
 		/* FALLTHROUGH */
-		case HTTP_STATE_POST_ROOT_BODY_SSID_KEY: {
+		case HTTP_STATE_POST_ROOT_BODY_KEY_SSID: {
 			if (http_post_key_string(http, "ssid=")) {
-				http->state = HTTP_STATE_POST_ROOT_BODY_SSID_VALUE;
+				http->state = HTTP_STATE_POST_ROOT_BODY_VALUE_SSID;
 				continue;
 			}
 			if (http_post_key_incomplete(http)) {
-				http->state = HTTP_STATE_POST_ROOT_BODY_SSID_KEY;
+				http->state = HTTP_STATE_POST_ROOT_BODY_KEY_SSID;
 				return;
 			}
 		}
 		// Checks if the next POST body key is for wlan psk
 		/* FALLTHROUGH */
-		case HTTP_STATE_POST_ROOT_BODY_PSK_KEY: {
+		case HTTP_STATE_POST_ROOT_BODY_KEY_PSK: {
 			if (http_post_key_string(http, "psk=")) {
-				http->state = HTTP_STATE_POST_ROOT_BODY_PSK_VALUE;
+				http->state = HTTP_STATE_POST_ROOT_BODY_VALUE_PSK;
 				continue;
 			}
 			if (http_post_key_incomplete(http)) {
-				http->state = HTTP_STATE_POST_ROOT_BODY_PSK_KEY;
+				http->state = HTTP_STATE_POST_ROOT_BODY_KEY_PSK;
 				return;
 			}
 		}
 		// Checks if the next POST body key is for device name
 		/* FALLTHROUGH */
-		case HTTP_STATE_POST_ROOT_BODY_NAME_KEY: {
+		case HTTP_STATE_POST_ROOT_BODY_KEY_NAME: {
 			if (http_post_key_string(http, "name=")) {
-				http->state = HTTP_STATE_POST_ROOT_BODY_NAME_VALUE;
+				http->state = HTTP_STATE_POST_ROOT_BODY_VALUE_NAME;
 				continue;
 			}
 			if (http_post_key_incomplete(http)) {
-				http->state = HTTP_STATE_POST_ROOT_BODY_NAME_KEY;
+				http->state = HTTP_STATE_POST_ROOT_BODY_KEY_NAME;
 				return;
 			}
 		}
 		// Checks if the next POST body key is for ATEM camera id (dest)
 		/* FALLTHROUGH */
-		case HTTP_STATE_POST_ROOT_BODY_DEST_KEY: {
+		case HTTP_STATE_POST_ROOT_BODY_KEY_DEST: {
 			if (http_post_key(http, "dest=")) {
 				if (http->remaining_body_len <= 0) {
 					http_post_err(http, "Invalid empty integer");
 					return;
 				}
 				http->cache.config.dest = 0;
-				http->state = HTTP_STATE_POST_ROOT_BODY_DEST_VALUE;
+				http->state = HTTP_STATE_POST_ROOT_BODY_VALUE_DEST;
 				continue;
 			}
 			if (http_post_key_incomplete(http)) {
-				http->state = HTTP_STATE_POST_ROOT_BODY_DEST_KEY;
+				http->state = HTTP_STATE_POST_ROOT_BODY_KEY_DEST;
 				return;
 			}
 		}
 		// Checks if the next POST body key is for ATEM ip address
 		/* FALLTHROUGH */
-		case HTTP_STATE_POST_ROOT_BODY_ATEM_KEY: {
+		case HTTP_STATE_POST_ROOT_BODY_KEY_ATEM: {
 			if (http_post_key(http, "atem=")) {
 				http->cache.config.atem_addr = 0;
-				http->state = HTTP_STATE_POST_ROOT_BODY_ATEM_VALUE;
+				http->state = HTTP_STATE_POST_ROOT_BODY_VALUE_ATEM;
 				continue;
 			}
 			if (http_post_key_incomplete(http)) {
-				http->state = HTTP_STATE_POST_ROOT_BODY_ATEM_KEY;
+				http->state = HTTP_STATE_POST_ROOT_BODY_KEY_ATEM;
 				return;
 			}
 		}
 		// Checks if the next POST body key is for DHCP or static ip
 		/* FALLTHROUGH */
-		case HTTP_STATE_POST_ROOT_BODY_DHCP_KEY: {
+		case HTTP_STATE_POST_ROOT_BODY_KEY_DHCP: {
 			if (http_post_key(http, "dhcp=")) {
-				http->state = HTTP_STATE_POST_ROOT_BODY_DHCP_VALUE;
+				http->state = HTTP_STATE_POST_ROOT_BODY_VALUE_DHCP;
 				continue;
 			}
 			if (http_post_key_incomplete(http)) {
-				http->state = HTTP_STATE_POST_ROOT_BODY_DHCP_KEY;
+				http->state = HTTP_STATE_POST_ROOT_BODY_KEY_DHCP;
 				return;
 			}
 		}
 		// Checks if the next POST body key is for static ip local address
 		/* FALLTHROUGH */
-		case HTTP_STATE_POST_ROOT_BODY_LOCALIP_KEY: {
+		case HTTP_STATE_POST_ROOT_BODY_KEY_LOCALIP: {
 			if (http_post_key(http, "localip=")) {
 				http->cache.config.localip = 0;
-				http->state = HTTP_STATE_POST_ROOT_BODY_LOCALIP_VALUE;
+				http->state = HTTP_STATE_POST_ROOT_BODY_VALUE_LOCALIP;
 				continue;
 			}
 			if (http_post_key_incomplete(http)) {
-				http->state = HTTP_STATE_POST_ROOT_BODY_LOCALIP_KEY;
+				http->state = HTTP_STATE_POST_ROOT_BODY_KEY_LOCALIP;
 				return;
 			}
 		}
 		// Checks if the next POST body key is for static ip netmask
 		/* FALLTHROUGH */
-		case HTTP_STATE_POST_ROOT_BODY_NETMASK_KEY: {
+		case HTTP_STATE_POST_ROOT_BODY_KEY_NETMASK: {
 			if (http_post_key(http, "netmask=")) {
 				http->cache.config.netmask = 0;
-				http->state = HTTP_STATE_POST_ROOT_BODY_NETMASK_VALUE;
+				http->state = HTTP_STATE_POST_ROOT_BODY_VALUE_NETMASK;
 				continue;
 			}
 			if (http_post_key_incomplete(http)) {
-				http->state = HTTP_STATE_POST_ROOT_BODY_NETMASK_KEY;
+				http->state = HTTP_STATE_POST_ROOT_BODY_KEY_NETMASK;
 				return;
 			}
 		}
 		// Checks if the next POST body key is for static ip gateway
 		/* FALLTHROUGH */
-		case HTTP_STATE_POST_ROOT_BODY_GATEWAY_KEY: {
+		case HTTP_STATE_POST_ROOT_BODY_KEY_GATEWAY: {
 			if (http_post_key(http, "gateway=")) {
 				http->cache.config.gateway = 0;
-				http->state = HTTP_STATE_POST_ROOT_BODY_GATEWAY_VALUE;
+				http->state = HTTP_STATE_POST_ROOT_BODY_VALUE_GATEWAY;
 				continue;
 			}
 			if (http_post_key_incomplete(http)) {
-				http->state = HTTP_STATE_POST_ROOT_BODY_GATEWAY_KEY;
+				http->state = HTTP_STATE_POST_ROOT_BODY_KEY_GATEWAY;
 				return;
 			}
 		}
@@ -672,7 +672,7 @@ static inline void http_parse(struct http_ctx* http, struct pbuf* p) {
 // =====================================
 
 		// Transfers wlan ssid from POST body to client cache
-		case HTTP_STATE_POST_ROOT_BODY_SSID_VALUE: {
+		case HTTP_STATE_POST_ROOT_BODY_VALUE_SSID: {
 			if (!http_post_value_string(http, (char*)http->cache.CACHE_SSID, sizeof(http->cache.CACHE_SSID))) return;
 			DEBUG_HTTP_PRINTF(
 				"Updated 'ssid' to \"%.*s\" for %p\n",
@@ -682,7 +682,7 @@ static inline void http_parse(struct http_ctx* http, struct pbuf* p) {
 			continue;
 		}
 		// Transfers wlan psk from POST body to client cache
-		case HTTP_STATE_POST_ROOT_BODY_PSK_VALUE: {
+		case HTTP_STATE_POST_ROOT_BODY_VALUE_PSK: {
 			if (!http_post_value_string(http, (char*)http->cache.CACHE_PSK, sizeof(http->cache.CACHE_PSK))) return;
 			DEBUG_HTTP_PRINTF(
 				"Updated 'psk' to \"%.*s\" for %p\n",
@@ -692,7 +692,7 @@ static inline void http_parse(struct http_ctx* http, struct pbuf* p) {
 			continue;
 		}
 		// Transfers device name from POST body to client cache
-		case HTTP_STATE_POST_ROOT_BODY_NAME_VALUE: {
+		case HTTP_STATE_POST_ROOT_BODY_VALUE_NAME: {
 			if (!http_post_value_string(http, (char*)http->cache.CACHE_NAME, sizeof(http->cache.CACHE_NAME))) return;
 			DEBUG_HTTP_PRINTF(
 				"Updated 'name' to \"%.*s\" for %p\n",
@@ -702,7 +702,7 @@ static inline void http_parse(struct http_ctx* http, struct pbuf* p) {
 			continue;
 		}
 		// Transfers camera id (dest) from POST body to client cache
-		case HTTP_STATE_POST_ROOT_BODY_DEST_VALUE: {
+		case HTTP_STATE_POST_ROOT_BODY_VALUE_DEST: {
 			if (!http_post_value_uint8(http, &http->cache.config.dest, DEST_MIN, DEST_MAX)) return;
 			DEBUG_HTTP_PRINTF(
 				"Updated 'dest' to %d for %p\n",
@@ -712,7 +712,7 @@ static inline void http_parse(struct http_ctx* http, struct pbuf* p) {
 			continue;
 		}
 		// Transfers ATEM address from POST body to client cache
-		case HTTP_STATE_POST_ROOT_BODY_ATEM_VALUE: {
+		case HTTP_STATE_POST_ROOT_BODY_VALUE_ATEM: {
 			if (!http_post_value_ip(http, &http->cache.config.atem_addr)) return;
 			DEBUG_HTTP_PRINTF(
 				"Updated 'atem' to " IP_FMT " for %p\n",
@@ -722,7 +722,7 @@ static inline void http_parse(struct http_ctx* http, struct pbuf* p) {
 			continue;
 		}
 		// Transfers static ip flag from POST body to client cache
-		case HTTP_STATE_POST_ROOT_BODY_DHCP_VALUE: {
+		case HTTP_STATE_POST_ROOT_BODY_VALUE_DHCP: {
 			if (!http_post_value_flag(http, &http->cache.config.flags, CONF_FLAG_DHCP)) return;
 			DEBUG_HTTP_PRINTF(
 				"Updated 'dhcp' to %s for %p\n",
@@ -732,7 +732,7 @@ static inline void http_parse(struct http_ctx* http, struct pbuf* p) {
 			continue;
 		}
 		// Transfers static ip local address from POST body to client cache
-		case HTTP_STATE_POST_ROOT_BODY_LOCALIP_VALUE: {
+		case HTTP_STATE_POST_ROOT_BODY_VALUE_LOCALIP: {
 			if (!http_post_value_ip(http, &http->cache.config.localip)) return;
 			DEBUG_HTTP_PRINTF(
 				"Updated 'localip' to " IP_FMT " for %p\n",
@@ -742,7 +742,7 @@ static inline void http_parse(struct http_ctx* http, struct pbuf* p) {
 			continue;
 		}
 		// Transfers static ip netmask from POST body to client cache
-		case HTTP_STATE_POST_ROOT_BODY_NETMASK_VALUE: {
+		case HTTP_STATE_POST_ROOT_BODY_VALUE_NETMASK: {
 			if (!http_post_value_ip(http, &http->cache.config.netmask)) return;
 			DEBUG_HTTP_PRINTF(
 				"Updated 'netmask' to " IP_FMT " for %p\n",
@@ -752,7 +752,7 @@ static inline void http_parse(struct http_ctx* http, struct pbuf* p) {
 			continue;
 		}
 		// Transfers static ip gateway from POST body to client cache
-		case HTTP_STATE_POST_ROOT_BODY_GATEWAY_VALUE: {
+		case HTTP_STATE_POST_ROOT_BODY_VALUE_GATEWAY: {
 			if (!http_post_value_ip(http, &http->cache.config.gateway)) return;
 			DEBUG_HTTP_PRINTF(
 				"Updated 'gateway' to " IP_FMT " for %p\n",
