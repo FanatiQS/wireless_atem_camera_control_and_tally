@@ -439,42 +439,42 @@ static inline void http_parse(struct http_ctx* http, struct pbuf* p) {
 			}
 			DEBUG_HTTP_PRINTF("Got a POST request from %p\n", (void*)http->pcb);
 		}
-		// Flushes start line up to beginning of next header field
-		/* FALLTHROUGH */
-		case HTTP_STATE_POST_ROOT_HEADER_NEXT: {
-			if (!http_find(http, "\r\n")) {
-				http->state = HTTP_STATE_POST_ROOT_HEADER_NEXT;
-				return;
+		// Loops over all HTTP headers to get content length
+		while (true) {
+			// Flushes start line up to beginning of next header field
+			/* FALLTHROUGH */
+			case HTTP_STATE_POST_ROOT_HEADER_NEXT: {
+				if (!http_find(http, "\r\n")) {
+					http->state = HTTP_STATE_POST_ROOT_HEADER_NEXT;
+					return;
+				}
 			}
-		}
-		// Rejects client if content length header is missing from POST request
-		/* FALLTHROUGH */
-		case HTTP_STATE_POST_ROOT_HEADER_CONTENT_LENGTH_MISSING: {
-			if (http_cmp(http, "\r\n")) {
-				http_err(http, "411 Length Required");
-				DEBUG_HTTP_PRINTF("Missing content length header from %p\n", (void*)http->pcb);
-				return;
+			// Rejects client if content length header is missing from POST request
+			/* FALLTHROUGH */
+			case HTTP_STATE_POST_ROOT_HEADER_CONTENT_LENGTH_MISSING: {
+				if (http_cmp(http, "\r\n")) {
+					http_err(http, "411 Length Required");
+					DEBUG_HTTP_PRINTF("Missing content length header from %p\n", (void*)http->pcb);
+					return;
+				}
+				if (http_cmp_incomplete(http)) {
+					http->state = HTTP_STATE_POST_ROOT_HEADER_CONTENT_LENGTH_MISSING;
+					return;
+				}
 			}
-			if (http_cmp_incomplete(http)) {
-				http->state = HTTP_STATE_POST_ROOT_HEADER_CONTENT_LENGTH_MISSING;
-				return;
-			}
-		}
-		// Searches stream for HTTP content length header
-		/* FALLTHROUGH */
-		case HTTP_STATE_POST_ROOT_HEADER_CONTENT_LENGTH_KEY: {
-			if (!http_cmp_case_insensitive(http, "content-length:")) {
+			// Searches stream for HTTP content length header
+			/* FALLTHROUGH */
+			case HTTP_STATE_POST_ROOT_HEADER_CONTENT_LENGTH_KEY: {
+				if (http_cmp_case_insensitive(http, "content-length:")) {
+					http->remaining_body_len = 0;
+					break;
+				}
 				// Continues parsing here when getting more streamed HTTP data
 				if (http_cmp_incomplete(http)) {
 					http->state = HTTP_STATE_POST_ROOT_HEADER_CONTENT_LENGTH_KEY;
 					return;
 				}
-
-				// Jumps to beginning of next header row on failed header key comparison
-				http->state = HTTP_STATE_POST_ROOT_HEADER_NEXT;
-				continue;
 			}
-			http->remaining_body_len = 0;
 		}
 		// Gets content length value from HTTP stream
 		/* FALLTHROUGH */
