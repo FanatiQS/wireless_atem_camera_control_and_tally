@@ -324,17 +324,30 @@ int main(void) {
 
 	// Tests max content length value
 	RUN_TEST() {
+		test_timeout("POST / HTTP/1.1\r\nContent-Length: 2 147 483 638\r\n\r\n");
+		test_timeout("POST / HTTP/1.1\r\nContent-Length: 2 147 483 639\r\n\r\n");
+		test_timeout("POST / HTTP/1.1\r\nContent-Length: 2 147 483 640\r\n\r\n");
+		test_timeout("POST / HTTP/1.1\r\nContent-Length: 2 147 483 641\r\n\r\n");
+		test_timeout("POST / HTTP/1.1\r\nContent-Length: 2 147 483 642\r\n\r\n");
+		test_timeout("POST / HTTP/1.1\r\nContent-Length: 2 147 483 643\r\n\r\n");
+		test_timeout("POST / HTTP/1.1\r\nContent-Length: 2 147 483 644\r\n\r\n");
+		test_timeout("POST / HTTP/1.1\r\nContent-Length: 2 147 483 645\r\n\r\n");
+		test_timeout("POST / HTTP/1.1\r\nContent-Length: 2 147 483 646\r\n\r\n");
 		test_timeout("POST / HTTP/1.1\r\nContent-Length: 2 147 483 647\r\n\r\n");
 	}
 
 	// Tests overflowing content length value
 	RUN_TEST() {
 		test_code("POST / HTTP/1.1\r\nContent-Length: 2 147 483 648\r\n\r\n", 413);
-	}
-
-	// Tests content length value 9 under overflow for last digit to be above last digits max without overflowing
-	RUN_TEST() {
-		test_code("POST / HTTP/1.1\r\nContent-Length: 2 147 483 639\r\n\r\n", 200);
+		test_code("POST / HTTP/1.1\r\nContent-Length: 2 147 483 649\r\n\r\n", 413);
+		test_code("POST / HTTP/1.1\r\nContent-Length: 2 147 483 650\r\n\r\n", 413);
+		test_code("POST / HTTP/1.1\r\nContent-Length: 2 147 483 651\r\n\r\n", 413);
+		test_code("POST / HTTP/1.1\r\nContent-Length: 2 147 483 652\r\n\r\n", 413);
+		test_code("POST / HTTP/1.1\r\nContent-Length: 2 147 483 653\r\n\r\n", 413);
+		test_code("POST / HTTP/1.1\r\nContent-Length: 2 147 483 654\r\n\r\n", 413);
+		test_code("POST / HTTP/1.1\r\nContent-Length: 2 147 483 655\r\n\r\n", 413);
+		test_code("POST / HTTP/1.1\r\nContent-Length: 2 147 483 656\r\n\r\n", 413);
+		test_code("POST / HTTP/1.1\r\nContent-Length: 2 147 483 657\r\n\r\n", 413);
 	}
 
 	// Tests segmented overflowing content length value

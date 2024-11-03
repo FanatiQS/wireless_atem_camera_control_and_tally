@@ -487,7 +487,10 @@ static inline void http_parse(struct http_ctx* http, struct pbuf* p) {
 				char c = http_char_peek(http);
 				uint8_t num = (uint8_t)c - '0';
 				if (num < 10) {
-					if ((http->remaining_body_len + num) > ((INT32_MAX / 10) + (INT32_MAX % 10))) {
+					if (
+						http->remaining_body_len > (INT32_MAX / 10)
+						|| (http->remaining_body_len == (INT32_MAX / 10) && num > (INT32_MAX % 10))
+					) {
 						http_err(http, "413 Payload Too Large");
 						DEBUG_HTTP_PRINTF("Content length too large from %p\n", (void*)http->pcb);
 						return;
