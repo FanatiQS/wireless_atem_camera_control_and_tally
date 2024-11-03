@@ -119,8 +119,8 @@ output=$(printf '%b' "$({
 		echo "#define HTTP_RESPONSE_WRITE"
 
 		sed -n "/(HTTP_RESPONSE_STATE_$state)/,/HTTP_RESPONSE_END/p" ./firmware/http_respond.c
-	} | gcc -E -P -xc - | sed 's/http->//'
-} | gcc -E -P -xc - | sed -n 's/ *"\(.*\)" */\1/pg' | sed 's/" "//g' | sed 's/\\"/"/g' | tr -d '\n')")
+	} | cc -E -P -xc - | sed 's/http->//'
+} | cc -E -P -xc - | sed -n 's/ *"\(.*\)" */\1/pg' | sed 's/" "//g' | sed 's/\\"/"/g' | tr -d '\n')")
 
 # Outputs HTTP or HTML without trailing blank line
 if [ -n "$http" ]; then
