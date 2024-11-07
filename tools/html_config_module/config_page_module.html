@@ -53,15 +53,15 @@ globalThis.promise = new Promise(async (resolve, reject) => {
 		}
 
 		// Delay until wrapper iframe is displayed
-		if (frameElement.style.display === "none") {
+		if (frameElement.hidden) {
 			await new Promise((resolve) => {
 				const mutationObserver = new MutationObserver((mutations) => {
 					for (let i = mutations.length - 1; i >= 0; i--) {
-						if (frameElement.style.display === "none") continue;
+						if (frameElement.hidden) continue;
 						resolve();
 					}
 				});
-				mutationObserver.observe(frameElement, { attributes: true, attributeFilter: [ "style" ] });
+				mutationObserver.observe(frameElement, { attributes: true, attributeFilter: [ "hidden" ] });
 			});
 			if (!frameElement.hasAttribute("data-addr")) {
 				throw new Error("Attribute data-addr not set");
@@ -81,6 +81,7 @@ globalThis.promise = new Promise(async (resolve, reject) => {
 		}
 		document.documentElement.innerHTML = await deviceConfigPageResponse.text();
 		const form = document.querySelector("form");
+		frameElement.style.display = "block";
 		document.body.style.display = "block";
 
 		// Runs supressed script tags that were inserted through innerHTML write
