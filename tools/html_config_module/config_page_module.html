@@ -39,6 +39,19 @@
 <script> // @ts-check
 globalThis.promise = new Promise(async (resolve, reject) => {
 	try {
+		// Delay until data-addr attribute is set
+		if (!frameElement.hasAttribute("data-addr")) {
+			await new Promise((resolve) => {
+				const mutationObserver = new MutationObserver((mutations) => {
+					for (let i = mutations.length - 1; i >= 0; i--) {
+						if (!frameElement.hasAttribute("data-addr")) continue;
+						resolve();
+					}
+				});
+				mutationObserver.observe(frameElement, { attributes: true, attributeFilter: [ "data-addr" ]});
+			});
+		}
+
 		// Delay until wrapper iframe is displayed
 		if (frameElement.style.display === "none") {
 			await new Promise((resolve) => {
@@ -50,12 +63,12 @@ globalThis.promise = new Promise(async (resolve, reject) => {
 				});
 				mutationObserver.observe(frameElement, { attributes: true, attributeFilter: [ "style" ] });
 			});
+			if (!frameElement.hasAttribute("data-addr")) {
+				throw new Error("Attribute data-addr not set");
+			}
 		}
 
 		// Gets device address from attribute
-		if (!frameElement.hasAttribute("data-addr")) {
-			throw new Error("Attribute data-addr not set");
-		}
 		const deviceAddr = `http://${frameElement.getAttribute("data-addr")}`;
 
 		// Gets current nodes in DOM head before overwriting

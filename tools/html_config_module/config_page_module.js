@@ -1,20 +1,24 @@
 // @ts-check
 
-// Creates overlay iframe without rendering it in the DOM
-const iframe = document.createElement("iframe");
-const parentDir = import.meta.url.slice(0, import.meta.url.lastIndexOf("/") + 1);
-iframe.src = `${parentDir}config_page_module.html`;
+// Path to the module without file extension for including other files related to the module
+const sourcePath = import.meta.url.slice(0, import.meta.url.lastIndexOf("."));
 
 // Sets styling for overlay iframe to cover entire screen
-iframe.style.border = "0";
-iframe.style.width = "100%";
-iframe.style.height = "100%";
-iframe.style.position = "absolute";
-iframe.style.top = "0";
-iframe.style.left = "0";
+const style = document.createElement("link");
+style.rel = "stylesheet";
+style.href = `${sourcePath}.css`;
+document.head.appendChild(style);
 
-// Renders overlay iframe in DOM and execute its internal javascript
+// Creates overlay iframe without rendering it in the DOM
+const iframe = document.createElement("iframe");
+iframe.src = `${sourcePath}.html`;
+iframe.classList.add("waccat-config");
 document.body.appendChild(iframe);
+if (!iframe.contentWindow) {
+	throw new Error("Unable to access iframe contentWindow");
+}
+// @ts-ignore
+const iframeLoad = new Promise((resolve) => iframe.contentWindow.addEventListener("load", resolve));
 
 /**
  * Displayes the configuration page from a waccat device over the current DOM
@@ -24,11 +28,9 @@ document.body.appendChild(iframe);
 export async function displayConfigPage(addr) {
 	// Displays config page using address argument to capture and display configuration page from
 	iframe.setAttribute("data-addr", addr);
-	iframe.style.display = "block";
 
 	// Returns promise resolved when configuration is submitted or canceled
-	// @ts-ignore
-	await new Promise((resolve) => iframe.contentWindow.addEventListener("load", resolve));
+	await iframeLoad;
 	// @ts-ignore
 	return iframe.contentWindow.promise;
 }
