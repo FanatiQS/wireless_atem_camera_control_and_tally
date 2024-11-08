@@ -28,6 +28,7 @@ const iframeLoad = new Promise((resolve) => iframe.contentWindow.addEventListene
 export async function displayConfigPage(addr) {
 	// Displays config page using address argument to capture and display configuration page from
 	iframe.setAttribute("data-addr", addr);
+	iframe.hidden = false;
 
 	// Returns promise resolved when configuration is submitted or canceled
 	await iframeLoad;

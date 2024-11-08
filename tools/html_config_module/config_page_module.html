@@ -46,6 +46,7 @@ globalThis.promise = new Promise(async (resolve, reject) => {
 					for (let i = mutations.length - 1; i >= 0; i--) {
 						if (!frameElement.hasAttribute("data-addr")) continue;
 						resolve();
+						mutationObserver.disconnect();
 					}
 				});
 				mutationObserver.observe(frameElement, { attributes: true, attributeFilter: [ "data-addr" ]});
@@ -53,12 +54,15 @@ globalThis.promise = new Promise(async (resolve, reject) => {
 		}
 
 		// Delay until wrapper iframe is displayed
+		// @ts-ignore
 		if (frameElement.hidden) {
 			await new Promise((resolve) => {
 				const mutationObserver = new MutationObserver((mutations) => {
 					for (let i = mutations.length - 1; i >= 0; i--) {
+						// @ts-ignore
 						if (frameElement.hidden) continue;
 						resolve();
+						mutationObserver.disconnect();
 					}
 				});
 				mutationObserver.observe(frameElement, { attributes: true, attributeFilter: [ "hidden" ] });
@@ -81,7 +85,6 @@ globalThis.promise = new Promise(async (resolve, reject) => {
 		}
 		document.documentElement.innerHTML = await deviceConfigPageResponse.text();
 		const form = document.querySelector("form");
-		frameElement.style.display = "block";
 		document.body.style.display = "block";
 
 		// Runs supressed script tags that were inserted through innerHTML write
@@ -100,7 +103,8 @@ globalThis.promise = new Promise(async (resolve, reject) => {
 		// Disables host wrapper iframe when animation is done for cancel or submit
 		document.body.addEventListener("transitionend", () => {
 			if (!document.body.classList.contains("dying")) return;
-			frameElement.style.display = "none";
+			// @ts-ignore
+			frameElement.hidden = true;
 			location.reload();
 		});
 
@@ -147,7 +151,8 @@ globalThis.promise = new Promise(async (resolve, reject) => {
 		}
 
 		// Disables wrapper iframe
-		frameElement.style.display = "none";
+		// @ts-ignore
+		frameElement.hidden = true;
 		location.reload();
 	}
 });
