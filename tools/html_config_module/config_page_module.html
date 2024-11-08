@@ -55,7 +55,8 @@ globalThis.promise = new Promise(async (resolve, reject) => {
 
 		// Delay until wrapper iframe is displayed
 		// @ts-ignore
-		if (frameElement.hidden) {
+		const startHidden = frameElement.hidden;
+		if (startHidden) {
 			await new Promise((resolve) => {
 				const mutationObserver = new MutationObserver((mutations) => {
 					for (let i = mutations.length - 1; i >= 0; i--) {
@@ -103,8 +104,13 @@ globalThis.promise = new Promise(async (resolve, reject) => {
 		// Disables host wrapper iframe when animation is done for cancel or submit
 		document.body.addEventListener("transitionend", () => {
 			if (!document.body.classList.contains("dying")) return;
-			// @ts-ignore
-			frameElement.hidden = true;
+			if (!startHidden) {
+				frameElement.removeAttribute("data-addr");
+			}
+			else {
+				// @ts-ignore
+				frameElement.hidden = true;
+			}
 			location.reload();
 		});
 
