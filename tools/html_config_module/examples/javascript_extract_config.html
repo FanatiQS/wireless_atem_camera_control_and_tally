@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+</head>
+<body>
+	<!-- Extracts data -->
+	<script type="module">
+		import { displayConfigPage } from "/config_page_module.js";
+		displayConfigPage("localhost").then((submitted) => {
+			if (!submitted) return;
+			const form = document.querySelector("iframe").contentDocument.querySelector("form");
+			const config = Object.fromEntries((new FormData(form)).entries());
+			console.log(config);
+		});
+	</script>
+	Your code goes here!
+</body>
+</html>

@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="en">
+<head></head>
+<body>
+	<!-- Configuration page will be created on button click event -->
+	<!-- Errors will not be caught -->
+	<button id="show-config-page">Show Config Page</button>
+	<script type="module">
+		import { displayConfigPage } from "/config_page_module.js";
+		document.querySelector("#show-config-page").addEventListener("click", () => {
+			displayConfigPage("localhost/index");
+		});
+	</script>
+</body>
+</html>

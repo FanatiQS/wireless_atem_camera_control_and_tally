@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<link rel="stylesheet" href="/config_page_module.css">
+</head>
+<body>
+	<!-- Updates config page with address from input field but doesn't render until button is pressed -->
+	<iframe src="/config_page_module.html" data-alert-err hidden></iframe>
+	<span>Device IP address:</span>
+	<input onchange="document.querySelector('iframe').setAttribute('data-addr', this.value);">
+	<button onclick="document.querySelector('iframe').hidden = false;">Show Config Page</button>
+</body>
+</html>
