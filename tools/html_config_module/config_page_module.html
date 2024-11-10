@@ -133,6 +133,9 @@ globalThis.promise = new Promise(async (resolve, reject) => {
 		// Prevents submitting form since that updates the content of the page
 		(await new Promise((resolve) => form.onsubmit = resolve)).preventDefault();
 
+		// Animates page off screen
+		document.body.classList.add("dying");
+
 		// Prevent multiple resolves from running active at the same time
 		form.onsubmit = null;
 		document.body.onclick = null;
@@ -140,9 +143,6 @@ globalThis.promise = new Promise(async (resolve, reject) => {
 		// Manually submits form
 		const postResponse = await fetch(deviceAddr, { method: "POST", body: new FormData(form) });
 		if (!postResponse.ok) throw new Error(postResponse.statusText);
-
-		// Animates page off screen
-		document.body.classList.add("dying");
 
 		// Resolves promise indicating configuration was successfully sent
 		resolve(true);
