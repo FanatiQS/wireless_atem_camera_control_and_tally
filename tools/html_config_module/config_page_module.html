@@ -39,38 +39,40 @@
 <script> // @ts-check
 globalThis.promise = new Promise(async (resolve, reject) => {
 	try {
-		// Delay until data-addr attribute is set
-		if (!frameElement.hasAttribute("data-addr")) {
+		// Ensures host iframe has CSS class that hides iframe before it is activated
+		frameElement.classList.add("waccat-config");
+
+		// Delays until host iframe has data-addr attribute set and is not hidden
+		const startedWithAddressAttribure = frameElement.hasAttribute("data-addr");
+		// @ts-ignore
+		const startedHidden = frameElement.hidden;
+		if (!startedWithAddressAttribure || startedHidden) {
 			await new Promise((resolve) => {
 				const mutationObserver = new MutationObserver((mutations) => {
 					for (let i = mutations.length - 1; i >= 0; i--) {
 						if (!frameElement.hasAttribute("data-addr")) continue;
-						resolve();
-						mutationObserver.disconnect();
-					}
-				});
-				mutationObserver.observe(frameElement, { attributes: true, attributeFilter: [ "data-addr" ]});
-			});
-		}
-
-		// Delay until wrapper iframe is displayed
-		// @ts-ignore
-		const startHidden = frameElement.hidden;
-		if (startHidden) {
-			await new Promise((resolve) => {
-				const mutationObserver = new MutationObserver((mutations) => {
-					for (let i = mutations.length - 1; i >= 0; i--) {
 						// @ts-ignore
 						if (frameElement.hidden) continue;
 						resolve();
 						mutationObserver.disconnect();
 					}
 				});
-				mutationObserver.observe(frameElement, { attributes: true, attributeFilter: [ "hidden" ] });
+				mutationObserver.observe(frameElement, {
+					attributes: true,
+					attributeFilter: [ "data-addr", "hidden" ]
+				});
 			});
-			if (!frameElement.hasAttribute("data-addr")) {
-				throw new Error("Attribute data-addr not set");
-			}
+
+			// Restores data-addr and hidden attributes when reloading
+			window.onbeforeunload = () => {
+				if (!startedWithAddressAttribure) {
+					frameElement.removeAttribute("data-addr");
+				}
+				if (startedHidden) {
+					// @ts-ignore
+					frameElement.hidden = true;
+				}
+			};
 		}
 
 		// Gets device address from attribute
@@ -98,19 +100,17 @@ globalThis.promise = new Promise(async (resolve, reject) => {
 		// Inserts extra styles and script back to page after being overwritten
 		document.head.append(...oldHeadNodes);
 
-		// Delay events until after intro animation is finished
+		// Renders host iframe in DOM
+		frameElement.classList.add("waccat-config-active");
+
+		// Delays events until after intro animation is finished
 		await new Promise((resolve) => document.body.addEventListener("animationend", resolve, { once: true }));
 
 		// Disables host wrapper iframe when animation is done for cancel or submit
 		document.body.addEventListener("transitionend", () => {
 			if (!document.body.classList.contains("dying")) return;
-			if (!startHidden) {
-				frameElement.removeAttribute("data-addr");
-			}
-			else {
-				// @ts-ignore
-				frameElement.hidden = true;
-			}
+			frameElement.classList.remove("waccat-config-active");
+			if (startedWithAddressAttribure && !startedHidden) return;
 			location.reload();
 		});
 
@@ -157,8 +157,6 @@ globalThis.promise = new Promise(async (resolve, reject) => {
 		}
 
 		// Disables wrapper iframe
-		// @ts-ignore
-		frameElement.hidden = true;
 		location.reload();
 	}
 });

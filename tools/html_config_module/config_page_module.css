@@ -7,6 +7,6 @@ iframe[data-addr] {
 	left: 0;
 	z-index: 999999999999999999999999999;
 }
-.waccat-config:not([data-addr]) {
+.waccat-config:not(.waccat-config-active) {
 	display: none;
 }
