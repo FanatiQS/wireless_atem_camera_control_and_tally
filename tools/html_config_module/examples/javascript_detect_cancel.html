@@ -4,8 +4,8 @@
 <body>
 	<!-- Logs messages based on if the form was submitted or canceled -->
 	<script type="module">
-		import { displayConfigPage } from "/config_page_module.js";
-		displayConfigPage("localhost").then((submitted) => {
+		import { displayConfigPage } from "../config_page_module.js";
+		displayConfigPage("localhost/index").then((submitted) => {
 			if (submitted) {
 				console.log("Configuration was submitted");
 			}

@@ -5,7 +5,7 @@
 	<!-- Async handling of errors -->
 	<!-- Putting the try/catch block in a function is only required if top level await is not available -->
 	<script type="module">
-		import { displayConfigPage } from "/config_page_module.js";
+		import { displayConfigPage } from "../config_page_module.js";
 		async function main() {
 			try {
 				displayConfigPage("invalid-address");
