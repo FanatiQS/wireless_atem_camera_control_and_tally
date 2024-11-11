@@ -17,8 +17,7 @@ document.body.appendChild(iframe);
 if (!iframe.contentWindow) {
 	throw new Error("Unable to access iframe contentWindow");
 }
-// @ts-ignore
-const iframeLoad = new Promise((resolve) => iframe.contentWindow.addEventListener("load", resolve));
+const iframeLoad = new Promise((resolve) => iframe.addEventListener("load", resolve));
 
 /**
  * Displayes the configuration page from a waccat device over the current DOM
