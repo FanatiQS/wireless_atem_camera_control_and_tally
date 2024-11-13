@@ -118,7 +118,7 @@ uint32_t atem_next(struct atem_posix_ctx* atem_ctx) {
 					return ATEM_POSIX_STATUS_DROPPED;
 				}
 				default: {
-					return status;
+					return (uint32_t)status;
 				}
 			}
 		}
