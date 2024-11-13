@@ -25,9 +25,7 @@ void atem_command_append(uint8_t* packet, char* cmd_name, void* payload, uint16_
 
 	// Appends command header data
 	atem_packet_word_set(packet + offset, 0, 1, ATEM_LEN_CMDHEADER + len);
-	for (int i = 0; i < 4; i++) {
-		packet[offset + 4 + i] = cmd_name[i];
-	}
+	memcpy(packet + offset + 4, cmd_name, 4);
 
 	// Appends command payload data
 	memcpy(packet + offset + ATEM_LEN_CMDHEADER, payload, len);
