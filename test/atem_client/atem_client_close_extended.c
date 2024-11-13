@@ -132,7 +132,7 @@ int main(void) {
 
 			int timeout_diff = timediff_get(timeout_start);
 			if (timeout_diff > ATEM_TIMEOUT_MS) {
-				fprintf(stderr, "Client closed session later than expected: %ld\n", timeout_diff);
+				fprintf(stderr, "Client closed session later than expected: %d\n", timeout_diff);
 				abort();
 			}
 
