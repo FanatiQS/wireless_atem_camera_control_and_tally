@@ -130,7 +130,7 @@ int main(void) {
 			} while (!(atem_header_flags_get(packet) & ATEM_FLAG_SYN));
 			atem_handshake_sessionid_get_verify(packet, ATEM_OPCODE_CLOSING, false, session_id);
 
-			long timeout_diff = timediff_get(timeout_start);
+			int timeout_diff = timediff_get(timeout_start);
 			if (timeout_diff > ATEM_TIMEOUT_MS) {
 				fprintf(stderr, "Client closed session later than expected: %ld\n", timeout_diff);
 				abort();

@@ -95,7 +95,7 @@ struct sockaddr_in atem_socket_listen(int sock, uint8_t* packet) {
 	ssize_t recvLen;
 	do {
 		// Awaits first packet from ATEM client
-		if (simple_socket_poll(sock, TIMEOUT_LISTEN - (int)timediff_get(timeoutStart)) != 1) {
+		if (simple_socket_poll(sock, TIMEOUT_LISTEN - timediff_get(timeoutStart)) != 1) {
 			fprintf(stderr, "No client connected\n");
 			abort();
 		}

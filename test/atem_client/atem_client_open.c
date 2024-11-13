@@ -163,7 +163,7 @@ int main(void) {
 
 		uint8_t packet[ATEM_PACKET_LEN_MAX];
 		struct timespec timeout_start = timediff_mark();
-		while (simple_socket_poll(sock, ATEM_TIMEOUT_MS - (int)timediff_get(timeout_start))) {
+		while (simple_socket_poll(sock, ATEM_TIMEOUT_MS - timediff_get(timeout_start))) {
 			atem_socket_recv(sock, packet);
 			atem_header_sessionid_get_verify(packet, session_id);
 		}

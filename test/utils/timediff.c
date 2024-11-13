@@ -1,6 +1,8 @@
 #include <time.h> // struct timespec, timespec_get, TIME_UTC
 #include <stdio.h> // perror, printf, fprintf, stderr
 #include <stdlib.h> // abort
+#include <assert.h> // assert
+#include <limits.h> // INT_MAX
 
 #include "./logs.h" // logs_find
 #include "./timediff.h"
@@ -18,24 +20,28 @@ struct timespec timediff_mark(void) {
 }
 
 // Gets time delta from a previous timestamp
-long timediff_get(struct timespec startMark) {
+int timediff_get(struct timespec mark_start) {
 	struct timespec endMark = timediff_mark();
-	long diff = ((endMark.tv_sec - startMark.tv_sec) * 1000) + ((endMark.tv_nsec - startMark.tv_nsec) / 1000000);
+	long diff = ((endMark.tv_sec - mark_start.tv_sec) * 1000) + ((endMark.tv_nsec - mark_start.tv_nsec) / 1000000);
+	assert(diff >= 0);
+	assert(diff <= INT_MAX);
 
 	if (logs_find("timer")) {
-		printf("Timer difference: %lu\n", diff);
+		printf("Timer difference: %ld\n", diff);
 	}
 
-	return diff;
+	return diff & INT_MAX;
 }
 
-// Ensures time delta from a previous timestamp is baseDiff ms and not more than lateAllowed ms late
-void timediff_get_verify(struct timespec startMark, long baseDiff, long lateAllowed) {
-	long diff = timediff_get(startMark);
-	if ((diff < baseDiff) || (diff > (baseDiff + lateAllowed))) {
+// Ensures time delta from a previous timestamp is diff_base ms and not more than late_allowed ms late
+void timediff_get_verify(struct timespec mark_start, int diff_base, int late_allowed) {
+	assert(diff_base >= 0);
+	assert(late_allowed >= 0);
+	int diff = timediff_get(mark_start);
+	if ((diff < diff_base) || (diff > (diff_base + late_allowed))) {
 		fprintf(stderr,
-			"Expected timer delta between %lu and %lu, but got %lu\n",
-			baseDiff, baseDiff + lateAllowed, diff
+			"Expected timer delta between %d and %d, but got %d\n",
+			diff_base, diff_base + late_allowed, diff
 		);
 		abort();
 	}
