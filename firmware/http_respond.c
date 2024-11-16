@@ -214,8 +214,8 @@ bool http_respond(struct http_ctx* http) {
 		// Writes HTTP response to root GET request
 		HTTP_RESPONSE_START(HTTP_RESPONSE_STATE_ROOT)
 			"HTTP/1.1 200 OK\r\n"
-			"Access-Control-Allow-Origin: *\r\n"
-			"Content-Type: text/html\r\n\r\n"
+			"Access-Control-Allow-Origin:*\r\n"
+			"Content-Type:text/html\r\n\r\n"
 			"<!DOCTYPE html>"
 				"<meta charset=utf-8>"
 				"<meta name=viewport content=width=device-width>"
@@ -355,8 +355,8 @@ bool http_respond(struct http_ctx* http) {
 			http->err_code
 		HTTP_RESPONSE_WRITE
 			"\r\n"
-			"Access-Control-Allow-Origin: *\r\n"
-			"Content-Type: text/plain\r\n\r\n"
+			"Access-Control-Allow-Origin:*\r\n"
+			"Content-Type:text/plain\r\n\r\n"
 		HTTP_RESPONSE_WRITE
 			http->err_body
 		HTTP_RESPONSE_END
@@ -366,8 +366,8 @@ bool http_respond(struct http_ctx* http) {
 		// Writes HTTP response to successful POST and restarts device
 		HTTP_RESPONSE_START(HTTP_RESPONSE_STATE_POST_ROOT)
 			"HTTP/1.1 200 OK\r\n"
-			"Access-Control-Allow-Origin: *\r\n"
-			"Content-Type: text/html\r\n\r\n"
+			"Access-Control-Allow-Origin:*\r\n"
+			"Content-Type:text/html\r\n\r\n"
 			"<!DOCTYPE html>"
 				"<meta charset=utf-8>"
 				"<meta name=viewport content=width=device-width>"
