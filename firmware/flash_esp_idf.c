@@ -1,5 +1,6 @@
 #include <stdbool.h> // bool, true, false
 #include <string.h> // memcmp
+#include <assert.h> // _Static_assert
 
 #include "./flash.h" // struct flash_config
 
@@ -18,6 +19,20 @@
 
 // Configuration is located in the first flash sector after second OTA partition
 #define CONFIG_START (0x290000)
+
+// Asserts union pointer addresses
+_Static_assert(
+	offsetof(struct flash_cache_wlan, name) == offsetof(struct flash_cache_wlan, softap.ap.ssid),
+	"Config union pointer mismatch on name"
+);
+_Static_assert(
+	offsetof(struct flash_cache_wlan, ssid) == offsetof(struct flash_cache_wlan, station.sta.ssid),
+	"Config union pointer mismatch on ssid"
+);
+_Static_assert(
+	offsetof(struct flash_cache_wlan, psk) == offsetof(struct flash_cache_wlan, station.sta.password),
+	"Config union pointer mismatch on psk"
+);
 
 // Reads configuration from persistent storage
 bool flash_config_read(struct flash_config* conf) {

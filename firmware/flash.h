@@ -11,27 +11,41 @@
 
 // Cached wifi station and softap configurations for HTTP configuration
 struct flash_cache_wlan {
-	struct station_config station;
-	struct softap_config softap;
+	union {
+		struct {
+			struct station_config station;
+			struct softap_config softap;
+		};
+		struct {
+			char ssid[sizeof(((struct station_config*)0)->ssid)];
+			char psk[sizeof(((struct station_config*)0)->password)];
+		};
+		struct {
+			char padding[sizeof(struct station_config)];
+			char name[sizeof(((struct station_config*)0)->ssid)];
+		};
+	};
 };
-
-// Linkers to ESP8266 specific wlan data structure in cache
-#define CACHE_SSID wlan.station.ssid
-#define CACHE_PSK wlan.station.password
-#define CACHE_NAME wlan.softap.ssid
 
 #elif defined(ESP_PLATFORM) /* ESP-IDF */
 #include <esp_wifi.h> // wifi_config_t
 
 struct flash_cache_wlan {
-	wifi_config_t station;
-	wifi_config_t softap;
+	union {
+		struct {
+			wifi_config_t station;
+			wifi_config_t softap;
+		};
+		struct {
+			char ssid[sizeof(((wifi_config_t*)0)->sta.ssid)];
+			char psk[sizeof(((wifi_config_t*)0)->sta.password)];
+		};
+		struct {
+			char padding[sizeof(wifi_config_t)];
+			char name[sizeof(((wifi_config_t*)0)->ap.ssid)];
+		};
+	};
 };
-
-// Linkers to ESP8266 specific wlan data structure in cache
-#define CACHE_SSID wlan.station.sta.ssid
-#define CACHE_PSK wlan.station.sta.password
-#define CACHE_NAME wlan.softap.ap.ssid
 
 #endif
 

@@ -14,7 +14,7 @@
 
 #include "./user_config.h" // DEBUG_HTTP
 #include "./debug.h" // DEBUG_PRINTF, DEBUG_ERR_PRINTF, DEBUG_HTTP_PRINTF
-#include "./flash.h" // CACHE_SSID, CACHE_PSK, CACHE_NAME, flash_cache_read
+#include "./flash.h" // flash_cache_read
 #include "./http.h" // enum http_state, struct http_ctx, http_init
 #include "./http_respond.h" // http_respond, http_err, http_post_err, enum http_response_state, http_post_completed
 
@@ -673,30 +673,30 @@ static inline void http_parse(struct http_ctx* http, struct pbuf* p) {
 
 		// Transfers wlan ssid from POST body to client cache
 		case HTTP_STATE_POST_ROOT_BODY_VALUE_SSID: {
-			if (!http_post_value_string(http, (char*)http->cache.CACHE_SSID, sizeof(http->cache.CACHE_SSID))) return;
+			if (!http_post_value_string(http, http->cache.wlan.ssid, sizeof(http->cache.wlan.ssid))) return;
 			DEBUG_HTTP_PRINTF(
 				"Updated 'ssid' to \"%.*s\" for %p\n",
-				sizeof(http->cache.CACHE_SSID), http->cache.CACHE_SSID,
+				sizeof(http->cache.wlan.ssid), http->cache.wlan.ssid,
 				(void*)http->pcb
 			);
 			continue;
 		}
 		// Transfers wlan psk from POST body to client cache
 		case HTTP_STATE_POST_ROOT_BODY_VALUE_PSK: {
-			if (!http_post_value_string(http, (char*)http->cache.CACHE_PSK, sizeof(http->cache.CACHE_PSK))) return;
+			if (!http_post_value_string(http, http->cache.wlan.psk, sizeof(http->cache.wlan.psk))) return;
 			DEBUG_HTTP_PRINTF(
 				"Updated 'psk' to \"%.*s\" for %p\n",
-				sizeof(http->cache.CACHE_PSK), http->cache.CACHE_PSK,
+				sizeof(http->cache.wlan.psk), http->cache.wlan.psk,
 				(void*)http->pcb
 			);
 			continue;
 		}
 		// Transfers device name from POST body to client cache
 		case HTTP_STATE_POST_ROOT_BODY_VALUE_NAME: {
-			if (!http_post_value_string(http, (char*)http->cache.CACHE_NAME, sizeof(http->cache.CACHE_NAME))) return;
+			if (!http_post_value_string(http, http->cache.wlan.name, sizeof(http->cache.wlan.name))) return;
 			DEBUG_HTTP_PRINTF(
 				"Updated 'name' to \"%.*s\" for %p\n",
-				sizeof(http->cache.CACHE_NAME), http->cache.CACHE_NAME,
+				sizeof(http->cache.wlan.name), http->cache.wlan.name,
 				(void*)http->pcb
 			);
 			continue;

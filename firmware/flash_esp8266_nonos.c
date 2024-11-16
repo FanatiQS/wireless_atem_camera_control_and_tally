@@ -1,6 +1,7 @@
 #include <stdbool.h> // bool true, false
 #include <string.h> // memcmp
 #include <stdint.h> // uint16_t, uint32_t
+#include <assert.h> // _Static_assert
 
 #include <lwip/ip_addr.h> // required by user_interface for lwip2 link layer to not warn about struct ip_info
 #include <user_interface.h> // wifi_station_get_config, wifi_softap_get_config, wifi_station_set_config, wifi_softap_set_config
@@ -20,6 +21,20 @@
  */
 #define FLASH_SIZE (1 << ((spi_flash_get_id() >> 16) & 0xff))
 #define CONFIG_START (FLASH_SIZE - (12 + 4 + 4) * 1024)
+
+// Asserts union pointer addresses
+_Static_assert(
+	offsetof(struct flash_cache_wlan, name) == offsetof(struct flash_cache_wlan, softap.ssid),
+	"Config union pointer mismatch on name"
+);
+_Static_assert(
+	offsetof(struct flash_cache_wlan, ssid) == offsetof(struct flash_cache_wlan, station.ssid),
+	"Config union pointer mismatch on ssid"
+);
+_Static_assert(
+	offsetof(struct flash_cache_wlan, psk) == offsetof(struct flash_cache_wlan, station.password),
+	"Config union pointer mismatch on psk"
+);
 
 
 

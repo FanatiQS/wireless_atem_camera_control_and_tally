@@ -21,7 +21,7 @@
 #include "./version.h" // FIRMWARE_VERSION_STRING
 #include "./atem_sock.h" // atem_state
 #include "./http_respond.h" // http_respond, http_err, http_post_err
-#include "./flash.h" // CACHE_NAME, CACHE_SSID, CACHE_PSK, CONF_FLAG_DHCP, flash_cache_write
+#include "./flash.h" // CONF_FLAG_DHCP, flash_cache_write
 #include "./wlan.h" // wlan_station_rssi, WLAN_STATION_NOT_CONNECTED
 
 
@@ -298,18 +298,18 @@ bool http_respond(struct http_ctx* http) {
 			"<tr><td>Name:<td>"
 			"<input maxlength=32 name=name value=\""
 		;http->string_escape_index = 0;
-		HTTP_RESPONSE_CALL(http_write_value_string(http, (char*)http->cache.CACHE_NAME, sizeof(http->cache.CACHE_NAME)))
+		HTTP_RESPONSE_CALL(http_write_value_string(http, http->cache.wlan.name, sizeof(http->cache.wlan.name)))
 			"\"required>"
 			"<tr>"
 			"<tr><td>Network name (SSID):<td>"
 			"<input maxlength=32 name=ssid value=\""
 		;http->string_escape_index = 0;
-		HTTP_RESPONSE_CALL(http_write_value_string(http, (char*)http->cache.CACHE_SSID, sizeof(http->cache.CACHE_SSID)))
+		HTTP_RESPONSE_CALL(http_write_value_string(http, http->cache.wlan.ssid, sizeof(http->cache.wlan.ssid)))
 			"\"required>"
 			"<tr><td>Network password (PSK):<td>"
 			"<input maxlength=64 name=psk value=\""
 		;http->string_escape_index = 0;
-		HTTP_RESPONSE_CALL(http_write_value_string(http, (char*)http->cache.CACHE_PSK, sizeof(http->cache.CACHE_PSK)))
+		HTTP_RESPONSE_CALL(http_write_value_string(http, http->cache.wlan.psk, sizeof(http->cache.wlan.psk)))
 			"\"required>"
 			"<tr>"
 			"<tr><td>Camera number:<td>"

@@ -93,9 +93,9 @@ output=$(printf '%b' "$({
 		echo "#define atem_state \"${atem_status-"Connected"}\""
 		echo "#define http_write_uptime(http) \"${uptime-"0h 13m 37s"}\""
 		echo "#define http_write_local_addr(http) \"${current_addr-"192.168.1.69"}\""
-		echo "#define CACHE_SSID , \"${ssid-"myWiFi"}\""
-		echo "#define CACHE_PSK , \"${psk-"password123"}\""
-		echo "#define CACHE_NAME , \"${name-"waccat0"}\""
+		echo "#define ssid , \"${ssid-"myWiFi"}\""
+		echo "#define psk , \"${psk-"password123"}\""
+		echo "#define name , \"${name-"waccat0"}\""
 		echo "#define dest , \"${dest-4}\""
 		echo "#define atem_addr , \"${atem_addr-"192.168.1.240"}\""
 		if [ "$dhcp" = 0 ]; then
