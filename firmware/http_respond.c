@@ -216,7 +216,7 @@ bool http_respond(struct http_ctx* http) {
 			"HTTP/1.1 200 OK\r\n"
 			"Access-Control-Allow-Origin: *\r\n"
 			"Content-Type: text/html\r\n\r\n"
-			"<!DOCTYPEhtml>"
+			"<!DOCTYPE html>"
 				"<meta charset=utf-8>"
 				"<meta name=viewport content=width=device-width>"
 				"<title>Configure Device</title>"
@@ -299,18 +299,18 @@ bool http_respond(struct http_ctx* http) {
 			"<input maxlength=32 name=name value=\""
 		;http->string_escape_index = 0;
 		HTTP_RESPONSE_CALL(http_write_value_string(http, http->cache.wlan.name, sizeof(http->cache.wlan.name)))
-			"\"required>"
+			"\" required>"
 			"<tr>"
 			"<tr><td>Network name (SSID):<td>"
 			"<input maxlength=32 name=ssid value=\""
 		;http->string_escape_index = 0;
 		HTTP_RESPONSE_CALL(http_write_value_string(http, http->cache.wlan.ssid, sizeof(http->cache.wlan.ssid)))
-			"\"required>"
+			"\" required>"
 			"<tr><td>Network password (PSK):<td>"
 			"<input maxlength=64 name=psk value=\""
 		;http->string_escape_index = 0;
 		HTTP_RESPONSE_CALL(http_write_value_string(http, http->cache.wlan.psk, sizeof(http->cache.wlan.psk)))
-			"\"required>"
+			"\" required>"
 			"<tr>"
 			"<tr><td>Camera number:<td>"
 			"<input required type=number min=1 max=254 name=dest value="
@@ -368,7 +368,7 @@ bool http_respond(struct http_ctx* http) {
 			"HTTP/1.1 200 OK\r\n"
 			"Access-Control-Allow-Origin: *\r\n"
 			"Content-Type: text/html\r\n\r\n"
-			"<!DOCTYPEhtml>"
+			"<!DOCTYPE html>"
 				"<meta charset=utf-8>"
 				"<meta name=viewport content=width=device-width>"
 				"<title>Rebooting...</title>"
