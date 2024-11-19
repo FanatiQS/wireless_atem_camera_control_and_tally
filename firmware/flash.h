@@ -47,6 +47,14 @@ struct flash_cache_wlan {
 	};
 };
 
+#else
+
+struct flash_cache_wlan {
+	char name[32];
+	char ssid[32];
+	char psk[64];
+};
+
 #endif
 
 
