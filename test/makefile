@@ -100,12 +100,12 @@ lldb_%: $(BUILD_DIR)/%
 	lldb $<
 
 # Removes all compiled tests
-RMRF = rm -rf
 .PHONY: clean
 clean:
 	$(RM) $(EXECS:%=$(BUILD_DIR)/%) $(PLAYGROUNDS)
 	$(RM) $(EXECS:%=$(BUILD_DIR)/%.d) $(PLAYGROUNDS:%=%.d)
-	$(RMRF) $(EXECS:%=$(BUILD_DIR)/%.dSYM) $(PLAYGROUNDS:%=%.dSYM)
+	$(RM) -r $(EXECS:%=$(BUILD_DIR)/%.dSYM) $(PLAYGROUNDS:%=%.dSYM)
+	rmdir $(BUILD_DIR)
 
 # Lists all tests except playgrounds
 .PHONY: list
