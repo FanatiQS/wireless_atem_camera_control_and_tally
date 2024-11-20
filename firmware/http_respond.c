@@ -372,7 +372,7 @@ bool http_respond(struct http_ctx* http) {
 			"<!DOCTYPE html>"
 				"<meta charset=utf-8>"
 				"<meta name=viewport content=width=device-width>"
-				"<title>Rebooting...</title>"
+				"<title>Configuration success</title>"
 				"<style>"
 					"body{"
 						"text-align:center;"
@@ -381,13 +381,15 @@ bool http_respond(struct http_ctx* http) {
 					"}"
 				"</style>"
 				"<meta http-equiv=refresh content=1>"
-			"<p>Device is rebooting...</p>"
+			"<p>"
+				"Successfully configured device"
 			"<p style=font-size:.8em>"
+				"Device is rebooting..."
+				"<br>"
 				"Configuration page will automatically reload if device is reachable after reboot."
 				"<br>"
 				"If device is unable to connect to the ATEM switcher, "
 				"it will create its own wireless network for configuration."
-			"</p>"
 		HTTP_RESPONSE_END
 		http_reboot(http);
 		break;

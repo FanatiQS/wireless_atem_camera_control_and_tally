@@ -8,10 +8,4 @@ fi
 for arg in "${@:2}"; do
 	args+=("--data-urlencode" "$arg")
 done
-res=$(curl --silent --show-error --max-time 5 $1 "${args[@]}")
-
-if [[ "$res" == "<!DOCTYPE"* ]]; then
-	echo "Successfully commited configuration"
-elif [[ "$res" != "" ]]; then
-	echo $res
-fi
+curl --silent --show-error --max-time 5 $1 "${args[@]}" | sed 's/.*<p>\([^<]*\).*/\1/'
