@@ -46,11 +46,11 @@
 #endif // PIN_CONN
 
 // Logging string for RGB tally LED pin
-#ifdef TALLY_RGB_PIN
-#define BOOT_INFO_TALLY_RGB_PIN "RGB TALLY LED pin: " WRAP(TALLY_RGB_PIN) "\n"
-#else // TALLY_RGB_PIN
-#define BOOT_INFO_TALLY_RGB_PIN "RGB TALLY LED: disabled\n"
-#endif // TALLY_RGB_PIN
+#ifdef PIN_TALLY_RGB
+#define BOOT_INFO_PIN_TALLY_RGB "RGB TALLY LED pin: " WRAP(PIN_TALLY_RGB) "\n"
+#else // PIN_TALLY_RGB
+#define BOOT_INFO_PIN_TALLY_RGB "RGB TALLY LED: disabled\n"
+#endif // PIN_TALLY_RGB
 
 // Logging string for I2C pins
 #ifdef SDI_ENABLED
@@ -334,7 +334,7 @@ struct udp_pcb* atem_init(uint32_t addr, uint8_t dest) {
 		BOOT_INFO_PIN_PGM
 		BOOT_INFO_PIN_PVW
 		BOOT_INFO_PIN_CONN
-		BOOT_INFO_TALLY_RGB_PIN
+		BOOT_INFO_PIN_TALLY_RGB
 		BOOT_INFO_PIN_I2C
 	);
 
