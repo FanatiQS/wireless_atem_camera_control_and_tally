@@ -75,8 +75,9 @@ int main(void) {
 			DEBUG_ERR_PRINTF("Failed to initialize netif with DHCP\n");
 			return EXIT_FAILURE;
 		}
-		if (dhcp_start(&netif) != ERR_OK) {
-			DEBUG_ERR_PRINTF("Failed to start DHCP server\n");
+		err_t err = dhcp_start(&netif);
+		if (err != ERR_OK) {
+			DEBUG_ERR_PRINTF("Failed to start DHCP server: %d\n", (int)err);
 			return EXIT_FAILURE;
 		}
 	}
