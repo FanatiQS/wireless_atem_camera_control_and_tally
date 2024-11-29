@@ -21,5 +21,5 @@ export async function displayConfigPage(addr) {
 	// Returns promise resolved when configuration is submitted or canceled
 	await new Promise((resolve) => iframe.addEventListener("load", resolve));
 	// @ts-ignore
-	return iframe.contentWindow.promise;
+	return iframe.contentWindow.waccatPromise;
 }
