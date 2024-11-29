@@ -38,50 +38,24 @@
 </style>
 <script> // @ts-check
 globalThis.promise = new Promise(async (resolve, reject) => {
-	// Gets initial state
-	const startedWithAddressAttribure = frameElement.hasAttribute("data-addr");
-	// @ts-ignore
-	let startedHidden = frameElement.hidden;
+	// Gets query parameters
+	const queryParams = new URLSearchParams(location.search);
 
 	try {
-		// Ensures host iframe has CSS class that hides iframe before it is activated
-		frameElement.classList.add("waccat-config");
+		// Adds CSS styling without requiring external file
+		/** @type {HTMLIFrameElement} */(frameElement).style.border = "0";
+		/** @type {HTMLIFrameElement} */(frameElement).style.width = "100%";
+		/** @type {HTMLIFrameElement} */(frameElement).style.height = "100%";
+		/** @type {HTMLIFrameElement} */(frameElement).style.position = "absolute";
+		/** @type {HTMLIFrameElement} */(frameElement).style.top = "0";
+		/** @type {HTMLIFrameElement} */(frameElement).style.left = "0";
+		/** @type {HTMLIFrameElement} */(frameElement).style.zIndex = Number.MAX_SAFE_INTEGER.toString();
 
-		// Delays until host iframe has data-addr attribute set and is not hidden
-		if (!startedWithAddressAttribure || startedHidden) {
-			await new Promise((resolve) => {
-				const mutationObserver = new MutationObserver((mutations) => {
-					for (let i = mutations.length - 1; i >= 0; i--) {
-						// @ts-ignore
-						if (frameElement.hidden) continue;
-						if (!frameElement.hasAttribute("data-addr")) {
-							startedHidden = false;
-							continue;
-						}
-						resolve();
-						mutationObserver.disconnect();
-					}
-				});
-				mutationObserver.observe(frameElement, {
-					attributes: true,
-					attributeFilter: [ "data-addr", "hidden" ]
-				});
-			});
-
-			// Restores data-addr and hidden attributes when reloading
-			window.onbeforeunload = () => {
-				if (startedHidden) {
-					// @ts-ignore
-					frameElement.hidden = true;
-				}
-				else if (!startedWithAddressAttribure) {
-					frameElement.removeAttribute("data-addr");
-				}
-			};
+		// Gets device address from query parameters
+		if (!queryParams.has("addr")) {
+			return undefined;
 		}
-
-		// Gets device address from attribute
-		const deviceAddr = `http://${frameElement.getAttribute("data-addr")}`;
+		const deviceAddr = `http://${queryParams.get("addr")}`;
 
 		// Gets current nodes in DOM head before overwriting
 		const oldHeadNodes = document.head.childNodes;
@@ -106,7 +80,7 @@ globalThis.promise = new Promise(async (resolve, reject) => {
 		document.head.append(...oldHeadNodes);
 
 		// Renders host iframe in DOM
-		frameElement.classList.add("waccat-config-active");
+		/** @type {HTMLIFrameElement} */(frameElement).style.display = "block";
 
 		// Delays events until after intro animation is finished
 		await new Promise((resolve) => document.body.addEventListener("animationend", resolve, { once: true }));
@@ -114,9 +88,7 @@ globalThis.promise = new Promise(async (resolve, reject) => {
 		// Disables host wrapper iframe when animation is done for cancel or submit
 		document.body.addEventListener("transitionend", () => {
 			if (!document.body.classList.contains("dying")) return;
-			frameElement.classList.remove("waccat-config-active");
-			if (startedWithAddressAttribure && !startedHidden) return;
-			location.reload();
+			/** @type {HTMLIFrameElement} */(frameElement).style.display = "none";
 		});
 
 		// Disables overlay form when clicked outside form element
@@ -156,14 +128,10 @@ globalThis.promise = new Promise(async (resolve, reject) => {
 		// Rejects promise with caught error
 		reject(err);
 
-		// Opens alert box with error message if attribute is set
-		if (frameElement.hasAttribute("data-alert-err")) {
+		// Opens alert box with error message if query parameter is set to alert
+		if (queryParams.get("err") === "alert") {
 			alert(err.message);
 		}
-
-		// Disables wrapper iframe
-		if (startedWithAddressAttribure && !startedHidden) return;
-		location.reload();
 	}
 });
 </script>

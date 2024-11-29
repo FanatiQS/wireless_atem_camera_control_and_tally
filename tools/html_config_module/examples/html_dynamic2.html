@@ -5,12 +5,15 @@
 </head>
 <body>
 	<!-- Updates config page with address from input field when button is pressed -->
-	<!-- The class waccat-config is required here to hide the iframe before it gets the data-addr -->
-	<iframe class="waccat-config" src="../config_page_module.html" data-alert-err></iframe>
+	<iframe class="waccat-config" id="waccat-overlay"></iframe>
 	<span>Device IP address:</span>
-	<input>
-	<button 
-		onclick="document.querySelector('iframe').setAttribute('data-addr', document.querySelector('input').value);"
-	>Show Config Page</button>
+	<input id="waccat-addr-input">
+	<button id="waccat-addr-button">Show Config Page</button>
+	<script>
+		document.querySelector("#waccat-addr-button").addEventListener("click", () => {
+			const addr = encodeURIComponent(document.querySelector("#waccat-addr-input").value);
+			document.querySelector("#waccat-overlay").src = `../config_page_module.html?err=alert&addr=${addr}`;
+		});
+	</script>
 </body>
 </html>

@@ -4,8 +4,8 @@
 	<link rel="stylesheet" href="../config_page_module.css">
 </head>
 <body>
-	<!-- Nothing will render until iframe is unhidden by button click event -->
-	<iframe src="../config_page_module.html" data-addr="localhost/index" data-alert-err hidden></iframe>
-	<button onclick="document.querySelector('iframe').hidden = false;">Show Config Page</button>
+	<!-- Nothing will render until iframe is loaded/reloaded from link tag -->
+	<iframe class="waccat-config" name="waccat-overlay"></iframe>
+	<a href="../config_page_module.html?err=alert&addr=localhost/index" target="waccat-overlay">Show Config Page</a>
 </body>
 </html>
