@@ -15,7 +15,8 @@ if (!iframe.contentWindow) {
  */
 export async function displayConfigPage(addr) {
 	// Displays config page using address argument to capture and display configuration page from
-	iframe.src = `${import.meta.url.slice(0, import.meta.url.lastIndexOf("."))}.html?addr=${addr}`;
+	const path = import.meta.url.slice(0, import.meta.url.lastIndexOf("."));
+	iframe.src = `${path}.html?addr=${encodeURIComponent(addr)}`;
 
 	// Returns promise resolved when configuration is submitted or canceled
 	await new Promise((resolve) => iframe.addEventListener("load", resolve));
