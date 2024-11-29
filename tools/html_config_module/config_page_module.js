@@ -19,7 +19,7 @@ export async function displayConfigPage(addr) {
 	iframe.src = `${path}.html?addr=${encodeURIComponent(addr)}`;
 
 	// Returns promise resolved when configuration is submitted or canceled
-	await new Promise((resolve) => iframe.addEventListener("load", resolve));
+	await new Promise((resolve) => iframe.addEventListener("load", resolve, { once: true }));
 	// @ts-ignore
 	return iframe.contentWindow.waccatPromise;
 }
