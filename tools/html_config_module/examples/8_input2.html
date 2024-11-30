@@ -1,17 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-	<link rel="stylesheet" href="../config_page_module.css">
-</head>
+	<script src="../config_overlay.js"></script>
+</head>	
 <body>
 	<!-- Updates config page with address from input field -->
-	<iframe class="waccat-config" id="waccat-overlay"></iframe>
 	<span>Device IP address:</span>
 	<input id="waccat-addr-input">
 	<script>
 		document.querySelector("#waccat-addr-input").addEventListener("change", (event) => {
-			const addr = encodeURIComponent(event.target.value);
-			document.querySelector("#waccat-overlay").src = `../config_page_module.html?err=alert&addr=${addr}`;
+			displayConfigPage(event.target.value, true);
 		});
 	</script>
 </body>

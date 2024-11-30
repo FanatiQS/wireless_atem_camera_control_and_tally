@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-	<link rel="stylesheet" href="../config_page_module.css">
+	<script src="../config_overlay.js"></script>
 </head>
 <body>
 	<!-- Automatically handles errors by serving them to the user as alerts -->
-	<iframe class="waccat-config" src="../config_page_module.html?err=alert&addr=invalid-address"></iframe>
+	<script>
+		displayConfigPage("invalid-address", true);
+	</script>
 	Your code goes here!
 </body>
 </html>

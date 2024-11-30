@@ -1,11 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-	<link rel="stylesheet" href="../config_page_module.css">
-</head>	
+	<script src="../config_overlay.js"></script>
+</head>
 <body>
 	<!-- Configuration page will display right away and can not be re-enabled -->
-	<iframe class="waccat-config" src="../config_page_module.html?addr=localhost/index"></iframe>
+	<!-- Errors will not be caught -->
+	<script>
+		displayConfigPage("localhost/index");
+	</script>
 	Your code goes here!
 </body>
 </html>

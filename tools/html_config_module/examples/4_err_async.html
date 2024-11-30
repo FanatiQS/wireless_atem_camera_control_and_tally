@@ -1,17 +1,18 @@
 <!DOCTYPE html>
 <html lang="en">
-<head></head>
+<head>
+	<script src="../config_overlay.js"></script>
+</head>
 <body>
 	<!-- Async handling of errors -->
 	<!-- Putting the try/catch block in a function is only required if top level await is not available -->
-	<script type="module">
-		import { displayConfigPage } from "../config_page_module.js";
+	<script>
 		async function main() {
 			try {
-				displayConfigPage("invalid-address");
+				await displayConfigPage("invalid-address");
 			}
 			catch (err) {
-				console.error(err.message);
+				console.error("ERROR:", err.message);
 			}
 		}
 		main();

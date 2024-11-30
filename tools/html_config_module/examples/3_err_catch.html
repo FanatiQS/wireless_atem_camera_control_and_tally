@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<script src="../config_overlay.js"></script>
+</head>
+<body>
+	<!-- Catches errors through promise -->
+	<script>
+		displayConfigPage("invalid-address").catch((err) => console.error("ERROR:", err.message));
+	</script>
+	Your code goes here!
+</body>
+</html>

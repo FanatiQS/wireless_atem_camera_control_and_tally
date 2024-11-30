@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<script src="../config_overlay.js"></script>
+</head>
+<body>
+	<!-- Extracts data -->
+	<script>
+		displayConfigPage("localhost/index", true).then((formData) => {
+			if (!formData) return;
+			console.log(Object.fromEntries((formData).entries()));
+		});
+	</script>
+	Your code goes here!
+</body>
+</html>
