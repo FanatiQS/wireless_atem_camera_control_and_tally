@@ -116,7 +116,7 @@ return async function displayConfigPage(addr, alertErrors) {
 		body.addEventListener("transitionend", () => iframe.style.display = "none", { once: true });
 
 		// Returns form data after submit or null if canceled
-		return returnValue;
+		return await returnValue;
 	}
 	catch (err) {
 		// Opens alert box with error message if query parameter is set to alert
