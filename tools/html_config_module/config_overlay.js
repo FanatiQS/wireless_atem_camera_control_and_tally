@@ -18,7 +18,7 @@ window.addEventListener("load", () => document.body.appendChild(iframe), { once:
 /**
  * Displayes the configuration page from a waccat device on top of the current DOM
  * @param {string} addr The ip address of the waccat device to display configuration for
- * @param {[boolean]} alertErrors If errors should be alerted to the user
+ * @param {boolean=} alertErrors If errors should be alerted to the user
  * @returns {Promise<FormData|null>} Submitted data on submit or null on cancel/error
  */
 return async function displayConfigPage(addr, alertErrors) {
