@@ -30,6 +30,7 @@
 #define PIN_PGM           D5
 #define PIN_PVW           D6
 #define PIN_CONN          LED_BUILTIN
+#define PIN_CONN_INVERTED 1
 
 /**
  * To use a "Blackamgic 3G SDI shield for arduino" for tally and camera control over SDI,
