@@ -1,4 +1,4 @@
-#include <stdio.h> // FILE, fprintf, stderr, printf
+#include <stdio.h> // FILE, fprintf, stdout, stderr
 #include <stdint.h> // uint8_t
 #include <stddef.h> // size_t, NULL
 #include <string.h> // strlen, strncmp, strchr
@@ -63,7 +63,7 @@ void logs_print_buffer(FILE* pipe, uint8_t* buf, size_t bufLen) {
 	}
 
 	if (bufLen > clampIndex) {
-		printf("\n\t... (%zu)\n", bufLen - len);
+		fprintf(pipe, "\n\t... (%zu)\n", bufLen - len);
 	}
 	else {
 		fprintf(pipe, "\n");
