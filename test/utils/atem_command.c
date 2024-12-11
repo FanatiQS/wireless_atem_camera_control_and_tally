@@ -21,6 +21,7 @@ void atem_command_append(uint8_t* packet, char* cmd_name, void* payload, uint16_
 
 	// Increments packet length
 	uint16_t offset = atem_header_len_get(packet);
+	assert((ATEM_PACKET_LEN_MAX - offset - ATEM_LEN_CMDHEADER) > len);
 	atem_header_len_set(packet, offset + ATEM_LEN_CMDHEADER + len);
 
 	// Appends command header data
