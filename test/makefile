@@ -8,6 +8,13 @@ CFLAGS += -Wmissing-variable-declarations -Wmissing-prototypes
 # Defaults to running all tests
 all:
 
+# All core API tests
+EXECS_CORE = core
+.PHONY: core
+core: $(EXECS_CORE)
+$(EXECS_CORE:%=$(BUILD_DIR)/%): $(BUILD_DIR)/%: core/%.c
+EXECS += $(EXECS_CORE)
+
 # All tests specific to device configuration
 EXECS_DEVICE = http_parser http_close http_connect dns_parser
 $(EXECS_DEVICE:%=$(BUILD_DIR)/%): $(BUILD_DIR)/%: http/%.c http/http_sock.c
