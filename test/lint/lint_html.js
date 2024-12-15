@@ -44,7 +44,7 @@ rules["tag-self-close"] = false;
 // Lints files not ignored by gitignore
 let errors = 0;
 const rootDir = `${import.meta.dirname}/../..`;
-const gitignore = ignore().add(readFileSync("../../.gitignore").toString());
+const gitignore = ignore().add(readFileSync(`${rootDir}/.gitignore`).toString());
 for (const dirent of readdirSync(rootDir, { withFileTypes: true, recursive: true })) {
 	// Reads file content
 	const path = `${dirent.path}/${dirent.name}`;
