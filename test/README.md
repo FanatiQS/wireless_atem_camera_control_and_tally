@@ -1,4 +1,41 @@
-# Tests
+# Test
+
+## ATEM protocol
+Test understanding of ATEM protocol on official client and server.
+
+### Prerequisites
+* C compiler with POSIX and C11 support (gcc/clang)
+* GNUMake
+* ATEM switcher (any model)
+* ATEM Software Control
+
+### Usage
+Launch the ATEM Software Control and set the "Manual IP Address" to the address of the test runner machine.
+
+Execute the tests with the IP addresses set for the ATEM Software Control machine and ATEM switcher.
+
+```sh
+make atem_server atem_server_extended atem_client atem_client_extended ATEM_SERVER_ADDR=192.168.1.240 ATEM_CLIENT_ADDR=127.0.0.1
+```
+
+## Wireless device
+Test ATEM communication and HTTP configuration for a wireless WACCAT device.
+
+### Prerequisites
+* C compiler with POSIX and C11 support (gcc/clang)
+* GNUMake
+* Wireless device
+
+### Usage
+Configure the ATEM address on the wireless device to the address of the test runner machine.
+
+Execute the tests with the IP addresses set for wireless device address.
+
+```sh
+make atem_client config_device ATEM_CLIENT_ADDR=192.168.1.66 DEVICE_ADDR=192.168.1.66
+```
+
+# Manual tests (@todo needs update)
 This file contains a list of tests to perform to make sure that everything works correctly.
 It is recommended to run these tests if either the camera model or the protocol version the switcher uses is not confirmed to work yet.
 A list of all confirmed camera models and protocol version can be found in the main readme.
@@ -13,16 +50,6 @@ A list of all confirmed camera models and protocol version can be found in the m
 
 
 ## Switcher tests
-
-### Handshake and heartbeat
-This tests that the client can connect to the switcher correctly and keep the connection.
-
-1. Launch the test client with the flags: --printProtocolVersion
-2. The protocol version used by the switcher should be printed.
-3. Wait for something like 10 seconds to ensure the connection is not dropped.
-4. Exit the test client manually.
-
-
 
 ### Stress test on stabile connection
 This tests that the connection is kept even during times with lots traffic.
@@ -46,71 +73,12 @@ This tests that the connection is kept even during times with lots of traffic wi
 
 
 
-### Packet resends
-This tests that resent packets are not processed if already received and processed once before.
-
-1. Launch the test client with the flags: --printProtocolVersion --packetDropStartSend 2 --packetDropChanceSend 100
-2. The protocol version should be printed once.
-3. The test client is going to close itself automatically.
-
-
-
-### Packets out of order
-This tests that the connection is kept even if packets arrive out of order.
-
-1. Open the ATEM Software Control and set its fade-to-black speed to 1 second.
-2. Launch the test client with the flags: --printLastRemoteId --packetDropStartSend 1 --packetDropChanceRecv 50
-3. Switch over to the ATEM Software Control and do a fade to black transition.
-4. The printed remote ids should take a few seconds to catch up before calmly printing remote ids about twice a second again.
-5. Repeat step 3 and 4 a few times to ensure the expected result. If the connection to the server is timed out, it is okay to restart the test as long as it does not keep happening.
-6. Exit the test client manually.
-
-
-
 ### Delayed packets
 This tests that delayed packets arriving after connection is restarted does not mess up the connection.
 
 1. Launch the test client with the flags: --printProtocolVersion --packetTimeoutAt 10
 2. Wait for the client to connect (print protocol version), time out and reconnect.
 3. Wait an aditional 10 seconds to ensure the connection is not going to drop.
-4. Exit the test client manually.
-
-
-
-### Dropped connection
-This tests that the client detects when connection to the server has been lost.
-
-1. Launch the test client with the flags: --packetDropStartRecv 10 --packetDropChanceSend 100 --packetResetDropAtTimeout --printProtocolVersion --autoReconnect
-2. Wait for the client to both connect and timeout a few time to ensure reconnection works.
-3. Exit the test client manually.
-
-
-
-### Closing connection by client
-This tests that the server closes the connection if client initiates a close.
-
-1. Launch the test client with the flags: --printProtocolVersion --closeConnectionAt 10
-2. Wait for the client to connect and then the connection should be closed as initiated by the client.
-3. The client exits after connection is closed.
-
-
-
-### Closing dropped connection
-This tests that the server closes the connection after assuming it has dropped completely.
-
-1. Launch the test client with the flags: --printProtocolVersion --packetDropChanceSend 100 --packetDropStartSend 10 --packetResetDropAtTimeout --autoReconnect
-2. Wait for the client to connect (print protocol version), get closed by the server, timed out and connected again (print protocol version again).
-3. Wait something like 10 seconds to ensure the connection is not going to drop.
-4. Exit the test client manually.
-
-
-
-### Unavailable server
-This tests that the client repeatedly tries to reconnect if unable to reach server.
-
-1. Launch the test client with the flags: --packetDropChanceSend 100 --packetDropStartSend 10 --packetDropChanceRecv 100 --packetDropStartRecv 10 --autoReconnect --printProtocolVersion
-2. The client should connect (print protocol version) and then repeatedly time out.
-3. Wait for it to time out a few times.
 4. Exit the test client manually.
 
 
@@ -177,7 +145,7 @@ This tests that all known camera control parameters are still available and no n
 5. Adjust these parameters manually from a control panel on camera 2 and make sure they are printed:
 	* Zoom should be printed as "Lens - Set continuous zoom (speed)"
 	* Auto focus should be printed as "Lens - Instantaneous autofocus"
-	* Auto aperture (not available from the software, requires hardware panel) should be printed as "Lens - Instantaneous auto aperture ]"
+	* Auto aperture (not available from the software, requires hardware panel) should be printed as "Lens - Instantaneous auto aperture"
 
 
 
@@ -231,17 +199,6 @@ This tests that the translation of the tally data is done correctly
 5. Switch the camera to PVW on the switcher and make sure the camera shows green tally
 6. Switch the camera to PGM on the switcher and make sure the camera shows red tally
 7. Increment cameras ATEM ID by 1 and repeat from step 4 until all inputs have been checked
-
-
-
-## Not important
-
-### Resend flag
-This tests that the resend flag is set when retrying to connect after timeout on SYN packet
-
-1. Launch test client with flags: --packetDropChanceRecv 99 --packetDropChanceSeed 2580 --autoReconnect --printSend
-2. The first bytes of the packets should be: first 10, then 30, then a few 80, then 10
-3. Exit manually.
 
 
 
