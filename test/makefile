@@ -55,16 +55,20 @@ EXECS += $(EXECS_ATEM_SERVER)
 $(BUILD_DIR)/release: release/main.c
 EXECS += release
 
-# Builds all tests and runs unit tests
-$(BUILD_DIR)/build: utils/main.c
-build: $(EXECS:%=$(BUILD_DIR)/%)
-EXECS += build
-
 # Playgrounds for messing around in
 PLAYGROUNDS = $(patsubst playground/%.c,$(BUILD_DIR)/playground_%,$(wildcard playground/*.c))
 $(PLAYGROUNDS): $(BUILD_DIR)/playground_%: playground/%.c http/http_sock.c
 
 
+
+# Runs unit tests on utilities for every compilation
+$(BUILD_DIR)/utilsmain: utils/main.c
+$(EXECS:%=$(BUILD_DIR)/%): utilsmain
+EXECS += utilsmain
+
+# Builds all tests
+.PHONY: build
+build: $(EXECS:%=$(BUILD_DIR)/%)
 
 # Shared source files
 $(EXECS:%=$(BUILD_DIR)/%) $(PLAYGROUNDS): \
