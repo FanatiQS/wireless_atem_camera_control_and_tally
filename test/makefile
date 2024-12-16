@@ -8,6 +8,13 @@ CFLAGS += -Wmissing-variable-declarations -Wmissing-prototypes
 # Defaults to running all tests
 all:
 
+# Test for tools/configure.sh script
+EXECS_CONFIGURE_SCRIPT = configure_script
+.PHONY: configure_script
+configure_script: $(EXECS_CONFIGURE_SCRIPT)
+$(EXECS_CONFIGURE_SCRIPT:%=$(BUILD_DIR)/%): $(BUILD_DIR)/%: configure_script/%.c http/http_sock.c
+EXECS += $(EXECS_CONFIGURE_SCRIPT)
+
 # All core API tests
 EXECS_CORE = core
 .PHONY: core
