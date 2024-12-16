@@ -21,8 +21,8 @@ struct timespec timediff_mark(void) {
 
 // Gets time delta from a previous timestamp
 int timediff_get(struct timespec mark_start) {
-	struct timespec endMark = timediff_mark();
-	long diff = ((endMark.tv_sec - mark_start.tv_sec) * 1000) + ((endMark.tv_nsec - mark_start.tv_nsec) / 1000000);
+	struct timespec mark_end = timediff_mark();
+	long diff = ((mark_end.tv_sec - mark_start.tv_sec) * 1000) + ((mark_end.tv_nsec - mark_start.tv_nsec) / 1000000);
 	assert(diff >= 0);
 	assert(diff <= INT_MAX);
 
