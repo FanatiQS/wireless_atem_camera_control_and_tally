@@ -15,6 +15,7 @@ size_t http_socket_recv_len(int sock);
 
 void http_socket_recv_cmp(int sock, const char* cmpBuf);
 char* http_status(int code);
+void http_socket_recv_until(int sock, char* match);
 void http_socket_recv_cmp_status(int sock, int code);
 
 void http_socket_recv_print(int sock);

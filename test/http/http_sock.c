@@ -64,21 +64,22 @@ size_t http_socket_recv_len(int sock) {
 
 
 // Ensures data in stream is the same as string
-void http_socket_recv_cmp(int sock, const char* cmpBuf) {
-	char recvBuf[BUF_LEN];
-	size_t cmpLen = strlen(cmpBuf);
-	size_t recvLen = http_socket_recv(sock, recvBuf, cmpLen + 1);
+void http_socket_recv_cmp(int sock, const char* cmp_buf) {
+	char recv_buf[BUF_LEN];
+	size_t cmp_len = strlen(cmp_buf);
+	assert(cmp_len < sizeof(recv_buf));
+	size_t recv_len = http_socket_recv(sock, recv_buf, cmp_len + 1);
 
-	if (recvLen != cmpLen) {
-		fprintf(stderr, "Received data does not have the same length: %zu %zu\n", recvLen, cmpLen);
+	if (recv_len != cmp_len) {
+		fprintf(stderr, "Received data does not have the same length: %zu %zu\n", recv_len, cmp_len);
 	}
 	else {
-		if (memcmp(cmpBuf, recvBuf, cmpLen) == 0) return;
+		if (memcmp(cmp_buf, recv_buf, cmp_len) == 0) return;
 		fprintf(stderr, "Buffer mismatch\n");
 	}
 
-	fprintf(stderr, "====RECV====\n%s\n====END====\n", recvBuf);
-	fprintf(stderr, "====CMP====\n%s\n====END====\n", cmpBuf);
+	fprintf(stderr, "====RECV====\n%s\n====END====\n", recv_buf);
+	fprintf(stderr, "====CMP====\n%s\n====END====\n", cmp_buf);
 	abort();
 }
 
@@ -98,32 +99,39 @@ char* http_status(int code) {
 	}
 }
 
-// Ensures data in stream is a valid HTTP 1.1 status line
-void http_socket_recv_cmp_status(int sock, int code) {
-	// Ensures HTTP version and status code
-	http_socket_recv_cmp(sock, "HTTP/1.1 ");
-	http_socket_recv_cmp(sock, http_status(code));
-
+// Flushes HTTP stream data until match is reached
+void http_socket_recv_until(int sock, char* match) {
 	bool logging = logs_find("http_recv");
 	if (logging) {
 		printf("HTTP receive:\n");
 	}
 
-	// Ensures double CRLF after potential headers
 	char buf[BUF_LEN];
 	size_t offset = 0;
 	size_t index = 0;
 	do {
 		assert(offset < sizeof(buf));
 		assert(simple_socket_recv(sock, buf + offset, 1) == 1);
-		index = (buf[offset] == "\r\n\r\n"[index]) ? index + 1 : 0;
+		if (buf[offset] == match[index]) {
+			index++;
+		 }
+		 else {
+			index = 0;
+		 }
 		offset++;
-	} while (index < 4);
+	} while (index < strlen(match));
 
 	if (logging) {
 		buf[offset] = '\0';
 		logs_print_string(stdout, buf);
 	}
+}
+
+// Ensures data in stream is a valid HTTP 1.1 status line
+void http_socket_recv_cmp_status(int sock, int code) {
+	http_socket_recv_cmp(sock, "HTTP/1.1 ");
+	http_socket_recv_cmp(sock, http_status(code));
+	http_socket_recv_until(sock, "\r\n\r\n");
 }
 
 
@@ -156,13 +164,13 @@ void http_socket_recv_flush(int sock) {
 // Ensures the next recv gets an error
 void http_socket_recv_error(int sock, int err) {
 	char buf[BUF_LEN];
-	size_t buflen = sizeof(buf);
-	if (simple_socket_recv_error(sock, err, buf, &buflen)) return;
-	if (buflen == 0) {
+	size_t buf_len = sizeof(buf);
+	if (simple_socket_recv_error(sock, err, buf, &buf_len)) return;
+	if (buf_len == 0) {
 		fprintf(stderr, "Socket unexpectedly closed when expecting err: %d\n", err);
 	}
 	else {
-		fprintf(stderr, "Socket unexpectedly got response data: %zd\n", buflen);
+		fprintf(stderr, "Socket unexpectedly got response data: %zd\n", buf_len);
 		logs_print_string(stderr, buf);
 	}
 	abort();
@@ -184,12 +192,17 @@ void http_socket_close(int sock) {
 
 
 // Sends HTTP POST buffer body to server
-void http_socket_body_send_buffer(int sock, const char* body, size_t bodyLen) {
-	char reqBuf[BUF_LEN];
-	int reqLen = snprintf(reqBuf, sizeof(reqBuf), "POST / HTTP/1.1\r\nContent-Length: %zu\r\n\r\n%s", bodyLen, body);
-	assert((size_t)reqLen < sizeof(reqBuf));
-	assert(reqLen > 0);
-	http_socket_send_buffer(sock, reqBuf, (size_t)reqLen);
+void http_socket_body_send_buffer(int sock, const char* body, size_t body_len) {
+	char req_buf[BUF_LEN];
+	int req_len = snprintf(
+		req_buf,
+		sizeof(req_buf),
+		"POST / HTTP/1.1\r\nContent-Length: %zu\r\n\r\n%s",
+		body_len, body
+	);
+	assert((size_t)req_len < sizeof(req_buf));
+	assert(req_len > 0);
+	http_socket_send_buffer(sock, req_buf, (size_t)req_len);
 }
 
 // Sends HTTP POST string body to server
