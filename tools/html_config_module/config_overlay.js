@@ -70,6 +70,12 @@ return async function displayConfigPage(addr, alertErrors) {
 		`;
 		contentDocument.head.appendChild(styles);
 
+		// Gets form element before revealing iframe to ensure form exists
+		const form = contentDocument.querySelector("form");
+		if (form == null) {
+			throw new Error("Invalid configuration page");
+		}
+
 		// Renders host iframe in DOM
 		iframe.style.display = "block";
 
@@ -77,7 +83,6 @@ return async function displayConfigPage(addr, alertErrors) {
 		await new Promise((resolve) => body.addEventListener("animationend", resolve, { once: true }));
 
 		let returnValue = null;
-		const form = /** @type {HTMLFormElement} */(contentDocument.querySelector("form"));
 		await new Promise((/** @type {any} */resolve) => {
 			// Disables overlay form when clicked outside form element
 			body.onclick = (event) => {
