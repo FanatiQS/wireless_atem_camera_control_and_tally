@@ -1,7 +1,7 @@
 // @ts-check
 
 "use strict";
-globalThis.displayConfigPage = (() => {
+(() => {
 
 // Creates overlay iframe without rendering it in the DOM just yet
 const iframe = document.createElement("iframe");
@@ -21,7 +21,7 @@ window.addEventListener("load", () => document.body.appendChild(iframe), { once:
  * @param {boolean=} alertErrors If errors should be alerted to the user
  * @returns {Promise<FormData|null>} Submitted data on submit or null on cancel/error
  */
-return async function displayConfigPage(addr, alertErrors) {
+globalThis.displayConfigPage = async function displayConfigPage(addr, alertErrors) {
 	try {
 		// Sets iframe content to device config page without CORS being an issue
 		const deviceConfigPageResponse = await fetch(`http://${addr}`);
