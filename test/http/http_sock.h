@@ -13,7 +13,7 @@ void http_socket_send_string(int sock, const char* str);
 size_t http_socket_recv(int sock, char* buf, size_t size);
 size_t http_socket_recv_len(int sock);
 
-void http_socket_recv_cmp(int sock, const char* cmpBuf);
+void http_socket_recv_cmp(int sock, const char* cmp_buf);
 char* http_status(int code);
 void http_socket_recv_until(int sock, char* match);
 void http_socket_recv_cmp_status(int sock, int code);
@@ -26,7 +26,7 @@ void http_socket_recv_error(int sock, int err);
 
 void http_socket_close(int sock);
 
-void http_socket_body_send_buffer(int sock, const char* body, size_t bodyLen);
+void http_socket_body_send_buffer(int sock, const char* body, size_t body_len);
 void http_socket_body_send_string(int sock, const char* body);
 
 #endif // HTTP_SOCK_H
