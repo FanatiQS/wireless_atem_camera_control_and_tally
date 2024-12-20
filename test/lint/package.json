@@ -3,7 +3,6 @@
 	"dependencies": {
 		"html-minifier": "^4.0.0",
 		"html-validate": "^8.25.0",
-		"htmlhint": "^1.1.4",
-		"ignore": "^6.0.2"
+		"htmlhint": "^1.1.4"
 	}
 }
