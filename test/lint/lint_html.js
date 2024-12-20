@@ -44,7 +44,8 @@ rules["tag-self-close"] = false;
 
 // Lints files not ignored by gitignore
 let errors = 0;
-for (const path of listFiles([ ".html" ])) {
+const files = [ "index.html", "post.html" ].map((name) => `${import.meta.dirname}/../../dist/extract_html/${name}`);
+for (const path of [ ...listFiles([ ".html" ]), ...files ]) {
 	console.log(path);
 
 	// Examples does not have to include a title
