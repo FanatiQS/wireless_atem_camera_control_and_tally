@@ -233,8 +233,8 @@ static bool http_post_value_string(struct http_ctx* http, char* addr, size_t add
 	http_post_completed(http);
 	return false;
 #else // !DEBUG_HTTP
- 	// Goes back through HTTP state machine again to print cached address
- 	return http_post_completed(http);
+	// Goes back through HTTP state machine again to print cached address
+	return http_post_completed(http);
 #endif // !DEBUG_HTTP
 }
 
