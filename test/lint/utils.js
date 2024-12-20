@@ -1,3 +1,5 @@
+// @ts-check
+
 import { execSync } from "node:child_process";
 
 export function* listFiles(suffixes) {

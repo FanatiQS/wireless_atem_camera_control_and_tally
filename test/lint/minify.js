@@ -1,3 +1,5 @@
+// @ts-check
+
 import htmlMinifier from "html-minifier";
 import { execSync } from "child_process";
 
