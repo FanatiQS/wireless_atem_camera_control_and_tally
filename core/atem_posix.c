@@ -2,16 +2,15 @@
 #include <errno.h> // errno, EFAULT
 #include <assert.h> // assert
 #include <stdint.h> // uint32_t
-#include <string.h> // memset
 
 #include <sys/socket.h> // socket, AF_INET, SOCK_DGRAM, connect, recv, send, struct sockaddr
 #include <netinet/in.h> // in_addr_t, struct sockaddr_in
 #include <arpa/inet.h> // htons
 #include <poll.h> // poll, struct pollfd, POLLIN
-#include <unistd.h> // close, sleep
+#include <unistd.h> // close
 #include <sys/types.h> // ssize_t
 
-#include "./atem.h" // struct atem, ATEM_PORT, atem_connection_reset, ATEM_TIMEOUT_MS, ATEM_PACKET_LEN_MAX, enum atem_status, atem_parse, ATEM_STATUS_WRITE, atem_cmd_available
+#include "./atem.h" // struct atem, ATEM_PORT, atem_connection_reset, ATEM_TIMEOUT_MS, ATEM_PACKET_LEN_MAX, enum atem_status, atem_parse, atem_cmd_available
 #include "./atem_protocol.h" // ATEM_LEN_HEADER
 #include "./atem_posix.h" // enum atem_posix_status, ATEM_POSIX_STATUS_ERROR_NETWORK, ATEM_POSIX_STATUS_DROPPED
 
