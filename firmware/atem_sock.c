@@ -262,9 +262,13 @@ static void atem_recv_callback(void* arg, struct udp_pcb* pcb, struct pbuf* p, c
 	pbuf_free(p);
 }
 
-// Gets netif ATEM server address should be available on
-static struct netif* atem_netif_get(const ip4_addr_t* addr) {
-	struct netif *netif;
+// Connects to ATEM when network interface is available
+static void atem_netif_poll(void* arg) {
+	struct netif* netif;
+	struct udp_pcb* pcb = arg;
+	const ip4_addr_t* addr = ip_2_ip4(&pcb->remote_ip);
+
+	// Waits for netif where ATEM could be found to become available
 	NETIF_FOREACH(netif) {
 		if (
 			netif_is_up(netif)
@@ -272,36 +276,27 @@ static struct netif* atem_netif_get(const ip4_addr_t* addr) {
 			&& !ip4_addr_isany_val(*netif_ip4_addr(netif))
 			&& ip4_addr_netcmp(addr, netif_ip4_addr(netif), netif_ip4_netmask(netif))
 		) {
-			return netif;
+			DEBUG_IP(
+				"Connected to network interface",
+				netif_ip4_addr(netif)->addr,
+				netif_ip4_netmask(netif)->addr,
+				netif_ip4_gw(netif)->addr
+			);
+			DEBUG_PRINTF("Connecting to ATEM\n");
+
+			// Sends ATEM handshake
+			atem_send(pcb);
+
+			// Enables ATEM timeout callback function
+			sys_timeout(ATEM_TIMEOUT_MS, atem_timeout_callback, pcb);
+
+			// Returns when initilization is complete
+			return;
 		}
 	}
-	return NULL;
-}
-
-// Connects to ATEM when network interface is available
-static void atem_netif_poll(void* arg) {
-	struct udp_pcb* pcb = arg;
 
 	// Keeps waiting until network is connected
-	struct netif* netif = atem_netif_get(ip_2_ip4(&pcb->remote_ip));
-	if (netif == NULL) {
-		sys_timeout(20, atem_netif_poll, pcb);
-		return;
-	}
-
-	DEBUG_IP(
-		"Connected to network interface",
-		netif_ip4_addr(netif)->addr,
-		netif_ip4_netmask(netif)->addr,
-		netif_ip4_gw(netif)->addr
-	);
-	DEBUG_PRINTF("Connecting to ATEM\n");
-
-	// Sends ATEM handshake
-	atem_send(pcb);
-
-	// Enables ATEM timeout callback function
-	sys_timeout(ATEM_TIMEOUT_MS, atem_timeout_callback, pcb);
+	sys_timeout(20, atem_netif_poll, pcb);
 }
 
 // Initializes UDP connection to ATEM
