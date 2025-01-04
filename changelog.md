@@ -16,17 +16,39 @@
 * Added retransmit request when receiving out-of-order packets.
 * Added POSIX core API.
 * Refactored core API macro functions to inline functions.
+* Improved code documentation.
 
 ### Firmware
 * Fixed firefox popup error on HTTP form submit.
 * Added experimental esp-idf support for ESP32.
+* Renamed and restructured internal components related to percistent storage.
+* Allows cross origin configuration.
+* Updated configuration page.
+* Updated HTML generation.
+* Updated HTTP parser.
+* Fix pin 0 being logged incorrectly.
+* Added virtual tapif network interface as a compilation target.
+* Fixed default configuration inverted ESP8266 built-in LED.
 
 ### Test Suite
 * Added more tests for atem_server and atem_client.
 * Restructured make rules.
+* Added test for existence of camera control parameters.
+* Updated test utilities.
+* Add HTML and HTTP linters.
+* Check for warnings in arduino sketch for ESP8266 and ESP32.
+* Added tests for core API.
+* Add usage instructions for test suite.
+* Added test for `tools/configure.sh` script.
+* Test utils on every test run.
 
 ### Tools
 * Added HTTP server for generated HTML to auto-reload browser on file change.
+* Extract HTML tool now works on POSIX shells other than bash.
+* Fix issue with spaces in arguments when using `tools/configure.sh`.
+* Added script module to overlay device configuration over existing webpage.
+
+
 
 ## Version 0.8.0
 
@@ -82,6 +104,8 @@
 ### Tools
 * Added tool to generate HTML and HTTP on host.
 
+
+
 ## Version 0.7.1
 
 ### Firmware
@@ -117,6 +141,8 @@
 
 ### Tools
 * Added shim for `timespec_get` function for use with systems not supporting C11.
+
+
 
 ## Version 0.7.0
 
@@ -172,6 +198,7 @@
 
 ### Tools
 * Added simple configuration bash script.
+
 
 
 ## Version 0.6.2
