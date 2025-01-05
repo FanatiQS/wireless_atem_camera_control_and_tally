@@ -411,6 +411,7 @@ static inline void http_parse(struct http_ctx* http, struct pbuf* p) {
 				}
 				http->response_state = HTTP_RESPONSE_STATE_ROOT;
 				http->state = HTTP_STATE_DONE;
+				http->string_escape_index = 0;
 				http_respond(http);
 				DEBUG_HTTP_PRINTF("Responding to unspecified GET request from %p\n", (void*)http->pcb);
 				return;

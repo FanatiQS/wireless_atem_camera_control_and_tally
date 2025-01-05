@@ -168,6 +168,7 @@ static bool http_write_value_string(struct http_ctx* http, char* str, size_t max
 		http->string_escape_index += 1;
 		len = 0;
 	}
+	http->string_escape_index = 0;
 
 	// Writes remaining string
 	return http_write(http, str, len);
@@ -298,18 +299,15 @@ bool http_respond(struct http_ctx* http) {
 			"<tr>"
 			"<tr><td>Name:<td>"
 			"<input maxlength=32 name=name value=\""
-		;http->string_escape_index = 0;
 		HTTP_RESPONSE_CALL(http_write_value_string(http, http->cache.wlan.name, sizeof(http->cache.wlan.name)))
 			"\" required>"
 			"<tr>"
 			"<tr><td>Network name (SSID):<td>"
 			"<input maxlength=32 name=ssid value=\""
-		;http->string_escape_index = 0;
 		HTTP_RESPONSE_CALL(http_write_value_string(http, http->cache.wlan.ssid, sizeof(http->cache.wlan.ssid)))
 			"\" required>"
 			"<tr><td>Network password (PSK):<td>"
 			"<input maxlength=64 name=psk value=\""
-		;http->string_escape_index = 0;
 		HTTP_RESPONSE_CALL(http_write_value_string(http, http->cache.wlan.psk, sizeof(http->cache.wlan.psk)))
 			"\" required>"
 			"<tr>"
