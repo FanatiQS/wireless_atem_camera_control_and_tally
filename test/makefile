@@ -61,7 +61,7 @@ $(PLAYGROUNDS): $(BUILD_DIR)/playground_%: playground/%.c http/http_sock.c
 
 # Runs unit tests on utilities for every compilation
 $(BUILD_DIR)/utilsmain: utils/main.c
-$(EXECS:%=$(BUILD_DIR)/%): utilsmain
+$(EXECS:%=$(BUILD_DIR)/%): | utilsmain
 EXECS += utilsmain
 
 # Builds all tests
