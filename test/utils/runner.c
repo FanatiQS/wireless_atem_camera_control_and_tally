@@ -4,7 +4,8 @@
 #include <stdlib.h> // abort, getenv, EXIT_SUCCESS, atoi
 #include <string.h> // strcmp
 #include <stddef.h> // NULL
-#include <stdbool.h> // bool, true
+#include <stdbool.h> // bool, true, false
+#include <assert.h> // assert
 
 #include <unistd.h> // close, sleep
 
@@ -36,16 +37,84 @@ static void runner_fail(int sig) {
 	longjmp(_runner_jmp, 0);
 }
 
+// Ensures path matches all required patterns
+bool runner_filter(const char* path) {
+	const char delimiter = ';';
+
+	// Gets pattern filters
+	const char* filter = getenv("RUNNER_FILTER");
+	if (filter == NULL) {
+		return true;
+	}
+
+	bool matched = false;
+	while (*filter != '\0') {
+		// Checks if pattern is inclusive or exclusive
+		bool exclude = *filter == '-';
+		if (exclude) {
+			filter++;
+		}
+		// Only has to match one inclusive pattern
+		else if (matched) {
+			while (*filter != delimiter && *filter != '\0') {
+				filter++;
+			}
+			continue;
+		}
+
+		// Checks if path matches pattern
+		const char* match = path;
+		const char* wildcard = NULL;
+		while (*match != '\0') {
+			// Moves to next character in pattern on character match
+			if (*filter == *match) {
+				filter++;
+			}
+			// Wildcard character sets checkpoint to restart
+			else if (*filter == '*') {
+				filter++;
+				wildcard = filter;
+			}
+			// Fails pattern match if no wildcard checkpoint has been set
+			else if (wildcard == NULL) {
+				break;
+			}
+			// Resets back to wildcard checkpoint on character mismatch
+			else {
+				filter = wildcard;
+			}
+			match++;
+		}
+
+		// Handles successful pattern matching
+		if (*filter == delimiter || *filter == '\0') {
+			if (exclude) {
+				return false;
+			}
+			matched = true;
+		}
+
+		// Flushes remaining pattern string
+		while (*filter != delimiter && *filter != '\0') {
+			filter++;
+		}
+		if (*filter == delimiter) {
+			filter++;
+		}
+	}
+	return matched;
+}
+
 // Sets up for a new test to run
-bool _runner_init(const char* file, int line) {
-	// Ignores all tests not matching line number if environment variable is defined
-	char* singleTest = getenv("RUNNER_SINGLE");
-	if (singleTest && atoi(singleTest) != line) {
+bool _runner_init(const char* path) {
+	// Ignores all tests not matching filter pattern
+	if (!runner_filter(path)) {
+		printf("Test skipped: %s\n", path);
 		return false;
 	}
 
 	// Document test started
-	printf("Test started: %s:%d\n", file, line);
+	printf("Test started: %s\n", path);
 	runner_all++;
 
 	// Sets test to abort on failure
