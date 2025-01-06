@@ -17,8 +17,6 @@ EXECS += $(EXECS_CONFIGURE_SCRIPT)
 
 # All core API tests
 EXECS_CORE = core
-.PHONY: core
-core: $(EXECS_CORE)
 $(EXECS_CORE:%=$(BUILD_DIR)/%): $(BUILD_DIR)/%: core/%.c
 EXECS += $(EXECS_CORE)
 
