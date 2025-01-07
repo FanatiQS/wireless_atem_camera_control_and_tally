@@ -83,12 +83,21 @@ void simple_socket_connect_env(int sock, int port, const char* envKey) {
 
 // Binds server socket for listening to clients
 void simple_socket_listen(int sock, int port) {
-	struct sockaddr_in sockAddr = {
+	char* addr_str = getenv("LISTEN_ADDR");
+	in_addr_t addr = INADDR_ANY;
+	if (addr_str != NULL) {
+		addr = inet_addr(addr_str);
+		if (addr == 0) {
+			fprintf(stderr, "Invalid value for LISTEN_ADDR: %s\n", addr_str);
+			abort();
+		}
+	}
+	struct sockaddr_in sock_addr = {
 		.sin_family = AF_INET,
 		.sin_port = htons(port),
-		.sin_addr.s_addr = INADDR_ANY
+		.sin_addr.s_addr = addr
 	};
-	if (bind(sock, (struct sockaddr*)&sockAddr, sizeof(sockAddr))) {
+	if (bind(sock, (struct sockaddr*)&sock_addr, sizeof(sock_addr))) {
 		perror("Failed to bind server socket");
 		abort();
 	}
