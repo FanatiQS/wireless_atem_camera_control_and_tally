@@ -36,7 +36,7 @@ static void config_script_test(const char* request, const char* request_expected
 	char cmd_buf[BUF_LEN] = "../tools/configure.sh 127.0.0.1 ";
 	assert((strlen(cmd_buf) + strlen(request)) < sizeof(cmd_buf));
 	strcat(cmd_buf, request);
-	FILE* cmd = popen(cmd_buf, "r");
+	FILE* cmd_pipe = popen(cmd_buf, "r");
 
 	// Accepts HTTP client from configuration script
 	int sock_accepted = accept(sock_listen, NULL, NULL);
@@ -53,8 +53,9 @@ static void config_script_test(const char* request, const char* request_expected
 
 	// Closes HTTP communication correctly for curl to be happy
 	http_socket_send_string(sock_accepted, "HTTP/1.1 200 OK\r\n\r\n");
-	assert(fread(NULL, 0, 0, cmd) == 0);
+	assert(fread(NULL, 0, 0, cmd_pipe) == 0);
 	http_socket_close(sock_accepted);
+	pclose(cmd_pipe);
 
 	// Delay to allow listening port to become available
 	usleep(2000);
