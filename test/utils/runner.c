@@ -60,8 +60,9 @@ bool runner_filter(const char* path) {
 				filter++;
 			}
 			if (*filter == delimiter) {
-				filter++;
+				return matched;
 			}
+			filter++;
 			continue;
 		}
 
@@ -105,7 +106,7 @@ bool runner_filter(const char* path) {
 			filter++;
 		}
 	}
-	return matched;
+	return true;
 }
 
 // Sets up for a new test to run
