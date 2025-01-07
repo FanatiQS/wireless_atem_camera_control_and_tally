@@ -10,7 +10,8 @@ import { execSync } from "node:child_process";
 export function listFiles(suffixes) {
 	const flags = "--cached --others --exclude-standard";
 	const cmd = `git ls-files ${flags} ${suffixes.map((suffix) => `'*${suffix}'`).join(" ")}`;
-	return execSync(cmd).toString().split("\n").slice(0, -1).map((path) => {
+	const paths = execSync(cmd, { cwd: `${import.meta.dirname}/../..`}).toString().split("\n").slice(0, -1);
+	return paths.map((path) => {
 		return `${import.meta.dirname}/../../${path}`;
 	});
 }
