@@ -59,6 +59,9 @@ bool runner_filter(const char* path) {
 			while (*filter != delimiter && *filter != '\0') {
 				filter++;
 			}
+			if (*filter == delimiter) {
+				filter++;
+			}
 			continue;
 		}
 
