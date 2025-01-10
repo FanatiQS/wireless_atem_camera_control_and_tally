@@ -197,13 +197,13 @@ static inline bool http_write_value_bool(struct http_ctx* http, bool value) {
 
 
 // Creates state machine without having to specify case number for each state
-#define HTTP_RESPONSE_CASE(n) /* FALLTHROUGH */ case n: { const int state = n;
-#define HTTP_RESPONSE_TRY(cond) if (!cond) { (http)->response_state = state; break; }
-#define HTTP_RESPONSE_START(n) HTTP_RESPONSE_CASE(n) const char* const str =
-#define HTTP_RESPONSE_END ; HTTP_RESPONSE_TRY(http_write(http, str, strlen(str))) }
-#define HTTP_RESPONSE_NEXT HTTP_RESPONSE_END HTTP_RESPONSE_CASE(__LINE__ + 1)
-#define HTTP_RESPONSE_CALL(cond) HTTP_RESPONSE_NEXT HTTP_RESPONSE_TRY(cond) } HTTP_RESPONSE_START(__LINE__)
-#define HTTP_RESPONSE_WRITE HTTP_RESPONSE_END HTTP_RESPONSE_START(__LINE__)
+#define HTTP_RESPONSE_CASE(n) /* FALLTHROUGH */ case n: {
+#define HTTP_RESPONSE_TRY(done, n) if (!done) { (http)->response_state = n; break; }
+#define HTTP_RESPONSE_START(n) HTTP_RESPONSE_CASE(n) const int state_current = n; const char* const str =
+#define HTTP_RESPONSE_END ; HTTP_RESPONSE_TRY(http_write(http, str, strlen(str)), state_current) }
+#define HTTP_RESPONSE_WRITE(done) HTTP_RESPONSE_CASE(__LINE__) HTTP_RESPONSE_TRY(done, __LINE__) }
+#define HTTP_RESPONSE_CALL(done) HTTP_RESPONSE_END HTTP_RESPONSE_WRITE(done) HTTP_RESPONSE_START(__LINE__ + 1)
+#define HTTP_RESPONSE_FLUSH HTTP_RESPONSE_END HTTP_RESPONSE_START(__LINE__)
 
 // Resumable HTTP write state machine handling all responses
 bool http_respond(struct http_ctx* http) {
@@ -289,9 +289,9 @@ bool http_respond(struct http_ctx* http) {
 			"<tr><td>WiFi signal strength:<td>"
 		HTTP_RESPONSE_CALL(http_write_wifi(http))
 			"<tr><td>ATEM connection status:<td>"
-		HTTP_RESPONSE_WRITE
+		HTTP_RESPONSE_FLUSH
 			atem_state
-		HTTP_RESPONSE_WRITE
+		HTTP_RESPONSE_FLUSH
 			"<tr><td>Current address:<td>"
 		HTTP_RESPONSE_CALL(http_write_local_addr(http))
 			"<tr><td>Time since boot:<td>"
@@ -350,13 +350,13 @@ bool http_respond(struct http_ctx* http) {
 		// Writes HTTP error response
 		HTTP_RESPONSE_START(HTTP_RESPONSE_STATE_ERR)
 			"HTTP/1.1 "
-		HTTP_RESPONSE_WRITE
+		HTTP_RESPONSE_FLUSH
 			http->err_code
-		HTTP_RESPONSE_WRITE
+		HTTP_RESPONSE_FLUSH
 			"\r\n"
 			"Access-Control-Allow-Origin:*\r\n"
 			"Content-Type:text/plain\r\n\r\n"
-		HTTP_RESPONSE_WRITE
+		HTTP_RESPONSE_FLUSH
 			http->err_body
 		HTTP_RESPONSE_END
 		http->response_state = HTTP_RESPONSE_STATE_NONE;
