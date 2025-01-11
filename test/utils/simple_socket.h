@@ -10,9 +10,9 @@
 #define SIMPLE_SOCKET_MAX_FD (65535)
 
 int simple_socket_create(int sockType);
-void simple_socket_connect(int sock, int port, in_addr_t addr);
-void simple_socket_connect_env(int sock, int port, const char* envKey);
-void simple_socket_listen(int sock, int port);
+void simple_socket_connect(int sock, uint16_t port, in_addr_t addr);
+void simple_socket_connect_env(int sock, uint16_t port, const char* envKey);
+void simple_socket_listen(int sock, uint16_t port);
 
 void simple_socket_send(int sock, const void* buf, size_t len);
 size_t simple_socket_recv(int sock, void* buf, size_t size);

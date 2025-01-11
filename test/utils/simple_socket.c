@@ -49,7 +49,7 @@ int simple_socket_create(int type) {
 }
 
 // Connects client socket to server address and port
-void simple_socket_connect(int sock, int port, in_addr_t addr) {
+void simple_socket_connect(int sock, uint16_t port, in_addr_t addr) {
 	struct sockaddr_in sockAddr = {
 		.sin_family = AF_INET,
 		.sin_port = htons(port),
@@ -62,7 +62,7 @@ void simple_socket_connect(int sock, int port, in_addr_t addr) {
 }
 
 // Connects socket to device address from environment variable
-void simple_socket_connect_env(int sock, int port, const char* envKey) {
+void simple_socket_connect_env(int sock, uint16_t port, const char* envKey) {
 	// Gets ip address from environment variable
 	char* addrStr = getenv(envKey);
 	if (addrStr == NULL) {
@@ -82,7 +82,7 @@ void simple_socket_connect_env(int sock, int port, const char* envKey) {
 }
 
 // Binds server socket for listening to clients
-void simple_socket_listen(int sock, int port) {
+void simple_socket_listen(int sock, uint16_t port) {
 	char* addr_str = getenv("LISTEN_ADDR");
 	in_addr_t addr = INADDR_ANY;
 	if (addr_str != NULL) {
