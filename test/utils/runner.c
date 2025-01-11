@@ -16,7 +16,7 @@
 static int runner_all = 0;
 static int runner_fails = 0;
 
-jmp_buf _runner_jmp;
+jmp_buf runner_jmp;
 
 // Trap callback to exit failing test and continue with next
 static void runner_fail(int sig) {
@@ -34,7 +34,7 @@ static void runner_fail(int sig) {
 	sleep(ATEM_TIMEOUT);
 
 	// Jumps back out and escapes RUN_TEST call
-	longjmp(_runner_jmp, 0);
+	longjmp(runner_jmp, 0);
 }
 
 // Ensures path matches all required patterns
@@ -110,7 +110,7 @@ bool runner_filter(const char* path) {
 }
 
 // Sets up for a new test to run
-bool _runner_init(const char* path) {
+bool runner_start(const char* path) {
 	// Ignores all tests not matching filter pattern
 	if (!runner_filter(path)) {
 		printf("Test skipped: %s\n", path);
@@ -139,7 +139,7 @@ bool _runner_init(const char* path) {
 }
 
 // Runs when a test runs successfully without any errors
-void _runner_success(void) {
+void runner_success(void) {
 	printf("Test successful\n\n");
 }
 
