@@ -4,6 +4,7 @@
 
 #include <stddef.h> // size_t
 #include <stdbool.h> // bool
+#include <stdint.h> // uint16_t
 
 #include <netinet/in.h> // in_addr_t
 

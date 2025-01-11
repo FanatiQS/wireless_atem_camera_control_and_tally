@@ -3,6 +3,7 @@
 #include <stdio.h> // fprintf, stderr, perror
 #include <stdbool.h> // bool, true, false
 #include <errno.h> // errno, EINPROGRESS
+#include <stdint.h> // uint16_t
 
 #include <sys/socket.h> // socket, AF_INET, connect, struct sockaddr, setsockopt, SOL_SOCKET, SO_RCVTIMEO, SO_SNDTIMEO, ssize_t, send, recv, bind
 #include <poll.h> // struct pollfd, poll, nfds_t
