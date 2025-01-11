@@ -72,7 +72,6 @@ void logs_print_buffer(FILE* pipe, uint8_t* buf, size_t bufLen) {
 
 // Clearly prints multiline string
 void logs_print_string(FILE* pipe, const char* str) {
-	assert(pipe == stdout || pipe == stderr);
 	assert(str != NULL);
 
 	if (*str == '\0') {
