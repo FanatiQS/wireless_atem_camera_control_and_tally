@@ -19,6 +19,11 @@ static int runner_fails = 0;
 jmp_buf runner_jmp;
 
 // Trap callback to exit failing test and continue with next
+#if __STDC_VERSION__ >= 202311 // >= C23
+[[noreturn]]
+#elif __STDC_VERSION__ >= 201112 // C11
+_Noreturn
+#endif // __STDC__VERSION
 static void runner_fail(int sig) {
 	// Prevents unused argument compiler warning
 	(void)sig;
