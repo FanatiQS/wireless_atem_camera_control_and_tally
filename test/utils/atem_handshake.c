@@ -62,7 +62,8 @@ uint8_t atem_handshake_opcode_get(uint8_t* packet) {
 	for (size_t i = 0; i < (sizeof(expectClear) / sizeof(expectClear[0])); i++) {
 		uint8_t byte = packet[expectClear[i]];
 		if (byte == 0x00) continue;
-		fprintf(stderr,
+		fprintf(
+			stderr,
 			"Expected packet[%d] to be clear but it had the value 0x%02x\n",
 			expectClear[i], packet[expectClear[i]]
 		);
@@ -281,18 +282,23 @@ void atem_handshake_close(int sock, uint16_t sessionId) {
 
 
 
-// Connects sessions until ATEM server is full
-void atem_handshake_fill(int sock) {
+// Connects sessions until ATEM server is full and returns how many could connect
+uint16_t atem_handshake_fill(int sock) {
 	bool logsEnabled = logs_find("atem_recv") || logs_find("atem_send");
 	if (logsEnabled) {
 		printf("Filling up server\n");
 	}
 
-	for (uint16_t i = 0; atem_handshake_tryconnect(sock, i); i++);
+	uint16_t count = 0;
+	while (atem_handshake_tryconnect(sock, count)) {
+		count++;
+	}
 
 	if (logsEnabled) {
 		printf("Server filled\n");
 	}
+
+	return count;
 }
 
 // Flushes all data received from ATEM server after opening handshake up to first ping
