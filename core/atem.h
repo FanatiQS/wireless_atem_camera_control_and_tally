@@ -114,7 +114,7 @@ enum atem_status {
 	 */
 	ATEM_STATUS_CLOSING = 0x04,
 	/**
-	 * Client has been successfully disconnected from the ATEM swithcer
+	 * Client has been successfully disconnected from the ATEM switcher
 	 * and no further action is needed. Reconnecting can be done right
 	 * away.
 	 */
@@ -198,7 +198,7 @@ void atem_connection_close(struct atem* atem);
  * The statuses @ref ATEM_STATUS_WRITE, @ref ATEM_STATUS_WRITE_ONLY,
  * @ref ATEM_STATUS_ACCEPTED and @ref ATEM_STATUS_CLOSING all require sending
  * a response that is put in @ref atem.write_buf.
- * These statues are all represented by even numbers, so detemining if a status
+ * These statues are all represented by even numbers, so determining if a status
  * requires sending data or not is as easy as checking if the status is odd or
  * even.
  * 
@@ -279,7 +279,7 @@ static inline uint16_t atem_protocol_minor(struct atem* atem) {
  * 
  * Call this function when receiving a @ref ATEM_CMDNAME_TALLY command to update
  * the values at @ref atem.tally_pvw and @ref atem.tally_pgm based on the
- * camera idenfifier in @ref atem.dest.
+ * camera identifier in @ref atem.dest.
  * 
  * @attention This function can ONLY be called when atem_cmd_next() returns
  * the command name @ref ATEM_CMDNAME_TALLY.

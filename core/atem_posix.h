@@ -25,11 +25,11 @@ struct atem_posix_ctx {
 };
 
 /**
- * @brief Status codes returnd from atem_poll().
+ * @brief Status codes returned from atem_poll().
  */
 enum atem_posix_status {
 	/**
-	 * A network error occured in either atem_send() or atem_recv. `errno` will be set
+	 * A network error occurred in either atem_send() or atem_recv. `errno` will be set
 	 * unless atem_recv() got a packet that was shorter than minimum size for an ATEM packet.
 	 */
 	ATEM_POSIX_STATUS_ERROR_NETWORK = -2,
@@ -59,7 +59,7 @@ extern "C" {
  * @brief Creates UDP socket for communicating with ATEM server.
  * @param atem ATEM POSIX context to use with the created socket.
  * @param addr IP address of ATEM server to connect to.
- * @return Indicates if initilization was successful or not, `errno` set on failure.
+ * @return Indicates if initialization was successful or not, `errno` set on failure.
  */
 bool atem_init(struct atem_posix_ctx* atem, in_addr_t addr);
 

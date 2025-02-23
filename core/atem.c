@@ -92,7 +92,7 @@ enum atem_status atem_parse(struct atem* atem) {
 			}
 		}
 
-		// Copies over session id from incomming packet to close packet
+		// Copies over session id from incoming packet to close packet
 		buf_close[ATEM_INDEX_SESSIONID_HIGH] = atem->read_buf[ATEM_INDEX_SESSIONID_HIGH];
 		buf_close[ATEM_INDEX_SESSIONID_LOW] = atem->read_buf[ATEM_INDEX_SESSIONID_LOW];
 
@@ -114,11 +114,11 @@ enum atem_status atem_parse(struct atem* atem) {
 			// Sets ACK response to be sent as response
 			atem->write_buf = buf_ack;
 
-			// Copies over session id from incomming packet to ACK response
+			// Copies over session id from incoming packet to ACK response
 			buf_ack[ATEM_INDEX_SESSIONID_HIGH] = atem->read_buf[ATEM_INDEX_SESSIONID_HIGH];
 			buf_ack[ATEM_INDEX_SESSIONID_LOW] = atem->read_buf[ATEM_INDEX_SESSIONID_LOW];
 
-			// Copies over remote id from incomming packets to ACK responses ack id
+			// Copies over remote id from incoming packets to ACK responses ack id
 			buf_ack[ATEM_INDEX_ACKID_HIGH] = atem->read_buf[ATEM_INDEX_REMOTEID_HIGH];
 			buf_ack[ATEM_INDEX_ACKID_LOW] = atem->read_buf[ATEM_INDEX_REMOTEID_LOW];
 
@@ -137,7 +137,7 @@ enum atem_status atem_parse(struct atem* atem) {
 			// Sets RETX response to be sent as response
 			atem->write_buf = buf_retxreq;
 
-			// Copies over session id from incomming packet to RETX response
+			// Copies over session id from incoming packet to RETX response
 			buf_retxreq[ATEM_INDEX_SESSIONID_HIGH] = atem->read_buf[ATEM_INDEX_SESSIONID_HIGH];
 			buf_retxreq[ATEM_INDEX_SESSIONID_LOW] = atem->read_buf[ATEM_INDEX_SESSIONID_LOW];
 
@@ -150,7 +150,7 @@ enum atem_status atem_parse(struct atem* atem) {
 			// Sets ACK response to be sent as response
 			atem->write_buf = buf_ack;
 
-			// Copies over session id from incomming packet to ACK response
+			// Copies over session id from incoming packet to ACK response
 			buf_ack[ATEM_INDEX_SESSIONID_HIGH] = atem->read_buf[ATEM_INDEX_SESSIONID_HIGH];
 			buf_ack[ATEM_INDEX_SESSIONID_LOW] = atem->read_buf[ATEM_INDEX_SESSIONID_LOW];
 
@@ -168,7 +168,7 @@ enum atem_status atem_parse(struct atem* atem) {
 	}
 	// Responds to accept SYN/ACK packet to complete opening handshake
 	else if (atem->read_buf[ATEM_INDEX_OPCODE] == ATEM_OPCODE_ACCEPT) {
-		// Copies over session id from incomming packet to ACK response and clears ack id
+		// Copies over session id from incoming packet to ACK response and clears ack id
 		buf_ack[ATEM_INDEX_SESSIONID_HIGH] = atem->read_buf[ATEM_INDEX_SESSIONID_HIGH];
 		buf_ack[ATEM_INDEX_SESSIONID_LOW] = atem->read_buf[ATEM_INDEX_SESSIONID_LOW];
 		buf_ack[ATEM_INDEX_ACKID_HIGH] = 0x00;
@@ -242,7 +242,7 @@ bool atem_tally_updated(struct atem* atem) {
 	return tally_old != (atem->tally_pgm | atem->tally_pvw << 1);
 }
 
-// Translates camera control data from ATEMs protocol to Blackmagis SDI camera control protocol
+// Translates camera control data from ATEMs protocol to Blackmagics SDI camera control protocol
 void atem_cc_translate(struct atem* atem) {
 	// Gets length of available data
 	const uint8_t len = atem->cmd_buf[5] + atem->cmd_buf[7] * 2 + atem->cmd_buf[9] * 4;
