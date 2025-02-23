@@ -244,7 +244,7 @@ uint16_t atem_handshake_tryconnect(int sock, uint16_t clientSessionId) {
 	atem_header_sessionid_get_verify(packet, clientSessionId);
 	atem_header_flags_isnotset(packet, ATEM_FLAG_RETX);
 
-	// Returns falsey on rejected since all valid server assigned session ids have MSB set
+	// Returns falsy on rejected since all valid server assigned session ids have MSB set
 	if (atem_handshake_opcode_get(packet) == ATEM_OPCODE_REJECT) {
 		return 0x0000;
 	}

@@ -190,7 +190,7 @@ static void dns_expect_error_long(uint8_t* req_buf, size_t req_len, uint8_t code
 	cmp_buf[DNS_INDEX_FLAGS_HIGH] |= 0x80;
 	cmp_buf[DNS_INDEX_FLAGS_LOW] = code;
 
-	// Validates reqsponse
+	// Validates response
 	dns_expect_error_validate(sock, cmp_buf, req_len);
 }
 
