@@ -15,6 +15,7 @@
 
 static int runner_all = 0;
 static int runner_fails = 0;
+static int runner_skipped = 0;
 
 jmp_buf runner_jmp;
 
@@ -126,6 +127,7 @@ bool runner_start(const char* path) {
 	// Ignores all tests not matching filter pattern
 	if (!runner_filter(path)) {
 		printf("Test skipped: %s\n", path);
+		runner_skipped++;
 		return false;
 	}
 
@@ -159,10 +161,10 @@ void runner_success(void) {
 int runner_exit(void) {
 	char* mode = getenv("RUNNER_MODE");
 	if (mode == NULL || !strcmp(mode, "abort")) {
-		printf("Number of tests competed: %d\n", runner_all);
+		printf("Number of tests competed: %d (%d skipped)\n", runner_all, runner_skipped);
 		return EXIT_SUCCESS;
 	}
 
-	printf("Tests failed: %d/%d\n", runner_fails, runner_all);
+	printf("Tests failed: %d/%d (%d skipped)\n", runner_fails, runner_all, runner_skipped);
 	return runner_fails;
 }
