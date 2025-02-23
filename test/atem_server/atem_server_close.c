@@ -109,7 +109,7 @@ int main(void) {
 		atem_socket_close(sock);
 	}
 
-	// Ensures server resends closing request only once after client not acknowleding pings
+	// Ensures server resends closing request only once after client not acknowledging pings
 	RUN_TEST() {
 		int sock = atem_socket_create();
 		uint16_t sessionId = test_connect_and_drop(sock);
@@ -130,7 +130,7 @@ int main(void) {
 		atem_socket_close(sock);
 	}
 
-	// Ensures server starts closing handshake within expected timeframe
+	// Ensures server starts closing handshake within expected time frame
 	RUN_TEST() {
 		int sock = atem_socket_create();
 		uint16_t session_id = atem_handshake_connect(sock, 0x4334);

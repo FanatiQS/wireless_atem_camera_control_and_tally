@@ -228,7 +228,7 @@ int main(void) {
 		test_code("GO", 405);
 	}
 
-	// Tests segmented invlaid POST back compare method short
+	// Tests segmented invalid POST back compare method short
 	RUN_TEST() {
 		test_code_segment("G", "O", 405);
 	}
@@ -652,7 +652,7 @@ int main(void) {
 		test_body_err("dhcp=2", "Invalid boolean value, only accepts '1' or '0'");
 	}
 
-	// Tests invlaid character in segmented boolean value
+	// Tests invalid character in segmented boolean value
 	RUN_TEST() {
 		test_body_err_segment("dhcp=", "2", "Invalid boolean value, only accepts '1' or '0'");
 	}

@@ -39,7 +39,7 @@ void atem_acknowledge_request_get_verify(uint8_t* packet, uint16_t sessionId, ui
 	atem_header_remoteid_get_verify(packet, remoteId);
 }
 
-// Sends acknowledge request packet with speficied remote id and session id
+// Sends acknowledge request packet with specified remote id and session id
 void atem_acknowledge_request_send(int sock, uint16_t sessionId, uint16_t remoteId) {
 	uint8_t packet[ATEM_PACKET_LEN_MAX] = {0};
 	atem_acknowledge_request_set(packet, sessionId, remoteId);
@@ -90,7 +90,7 @@ void atem_acknowledge_response_get_verify(uint8_t* packet, uint16_t sessionId, u
 	atem_header_remoteid_get_verify(packet, 0x0000);
 }
 
-// Sends acknowledge packet with speficied ack id and session id
+// Sends acknowledge packet with specified ack id and session id
 void atem_acknowledge_response_send(int sock, uint16_t sessionId, uint16_t ackId) {
 	uint8_t packet[ATEM_PACKET_LEN_MAX] = {0};
 	atem_acknowledge_response_set(packet, sessionId, ackId);

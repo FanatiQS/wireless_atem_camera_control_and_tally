@@ -98,10 +98,10 @@ int main(void) {
 		}
 	}
 
-	// @todo ESP8266 Ardunio segfaults (only lwip2), causing closing to fail with connection reset by peer
-	// Ensures max number of simultanious connections does not cause memory segfaults
+	// @todo ESP8266 Arduino segfaults (only lwip2), causing closing to fail with connection reset by peer
+	// Ensures max number of simultaneous connections does not cause memory segfaults
 	RUN_TEST() {
-		printf("Test simultanious sockets\n");
+		printf("Test simultaneous sockets\n");
 		int* socks = malloc(sizeof(int) * (unsigned int)iters);
 
 		// Creates client connections to server

@@ -13,7 +13,7 @@
 struct timespec timediff_mark(void) {
 	struct timespec marker;
 	if (timespec_get(&marker, TIME_UTC) != TIME_UTC) {
-		perror("Faield to create timer");
+		perror("Failed to create timer");
 		abort();
 	}
 	return marker;

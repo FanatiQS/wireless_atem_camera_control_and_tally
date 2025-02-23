@@ -15,7 +15,7 @@
 #include "./simple_socket.h" // SIMPLE_SOCKET_MAX_FD
 
 // Number of seconds a send or recv call waits before timing out
-#ifndef SOCKET_TIMOEUT
+#ifndef SOCKET_TIMEOUT
 #define SOCKET_TIMEOUT (20)
 #endif // SOCKET_TIMEOUT
 

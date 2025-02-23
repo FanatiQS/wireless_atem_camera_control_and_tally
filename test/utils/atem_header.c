@@ -79,7 +79,7 @@ void atem_header_flags_isnotset(uint8_t* packet, uint8_t flags) {
 
 
 
-// Sets lenght of packet
+// Sets length of packet
 void atem_header_len_set(uint8_t* packet, uint16_t len) {
 	len |= atem_header_flags_get(packet) << 8;
 	atem_packet_word_set(packet, ATEM_INDEX_LEN_HIGH, ATEM_INDEX_LEN_LOW, len);

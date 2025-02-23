@@ -156,7 +156,7 @@ int main(void) {
 
 
 
-	// Ensures the client reconnects when connection is dropped within timeframe
+	// Ensures the client reconnects when connection is dropped within time frame
 	RUN_TEST() {
 		int sock = atem_socket_create();
 		uint16_t session_id = atem_handshake_listen(sock, 0x0001);
