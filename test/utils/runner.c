@@ -52,6 +52,7 @@ bool runner_filter(const char* path) {
 		return true;
 	}
 
+	bool filtered = false;
 	bool matched = false;
 	while (*filter != '\0') {
 		// Checks if pattern is inclusive or exclusive
@@ -59,16 +60,20 @@ bool runner_filter(const char* path) {
 		if (exclude) {
 			filter++;
 		}
-		// Only has to match one inclusive pattern
+		// Flushes when there has already been a successful inclusive match since all exclusive patterns has to pass
 		else if (matched) {
 			while (*filter != delimiter && *filter != '\0') {
 				filter++;
 			}
-			if (*filter == delimiter) {
-				return matched;
+			if (*filter == '\0') {
+				break;
 			}
 			filter++;
 			continue;
+		}
+		// Filters if inclusive match is provided
+		else {
+			filtered = true;
 		}
 
 		// Checks if path matches pattern
@@ -111,7 +116,9 @@ bool runner_filter(const char* path) {
 			filter++;
 		}
 	}
-	return true;
+
+	// Succeeds for matched inclusive pattern or no inclusive patterns present
+	return !filtered || matched;
 }
 
 // Sets up for a new test to run
