@@ -44,7 +44,7 @@ static void runner_fail(int sig) {
 
 // Ensures path matches all required patterns
 bool runner_filter(const char* path) {
-	const char delimiter = ';';
+	const char delimiter = ',';
 
 	// Gets pattern filters
 	const char* filter = getenv("RUNNER_FILTER");
