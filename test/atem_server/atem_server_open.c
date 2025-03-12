@@ -185,6 +185,8 @@ int main(void) {
 		atem_socket_close(sock_fill);
 	}
 
+
+
 	// Out of order opening handshake, acknowledging the second opened session before the first
 	RUN_TEST() {
 		int sock = atem_socket_create();
@@ -195,6 +197,93 @@ int main(void) {
 		atem_acknowledge_response_send(sock, 0x1234, 0x0000);
 		atem_handshake_close(sock, session_id1 | 0x8000);
 		atem_handshake_close(sock, session_id2 | 0x8000);
+		atem_socket_close(sock);
+	}
+
+	// Connect session while another is in the process of closing
+	RUN_TEST() {
+		// Connects 2 sessions that can be dropped
+		int sock1 = atem_socket_create();
+		int sock2 = atem_socket_create();
+		uint16_t session_id1 = atem_handshake_connect(sock1, 0x0001);
+		uint16_t session_id2 = atem_handshake_connect(sock2, 0x0002);
+
+		// Drops the 2 sessions
+		uint8_t packet[ATEM_PACKET_LEN_MAX];
+		do {
+			atem_socket_recv(sock1, packet);
+		} while (!(atem_header_flags_get(packet) & ATEM_FLAG_SYN));
+		atem_handshake_sessionid_get_verify(packet, ATEM_OPCODE_CLOSING, false, session_id1);
+		do {
+			atem_socket_recv(sock2, packet);
+		} while (!(atem_header_flags_get(packet) & ATEM_FLAG_SYN));
+		atem_handshake_sessionid_get_verify(packet, ATEM_OPCODE_CLOSING, false, session_id2);
+
+		// Connects another session while the previous 2 are actively being dropped
+		int sock3 = atem_socket_create();
+		uint16_t session_id3 = atem_handshake_connect(sock3, 0x0003);
+
+		// Cleans up sessions
+		atem_handshake_close(sock1, session_id1);
+		atem_handshake_close(sock2, session_id2);
+		atem_handshake_close(sock3, session_id3);
+		atem_socket_close(sock1);
+		atem_socket_close(sock2);
+		atem_socket_close(sock3);
+	}
+
+	// Ensures closing packet that was not last to connect does not mix up packet assignments
+	RUN_TEST() {
+		int sock1 = atem_socket_create();
+		int sock2 = atem_socket_create();
+		uint16_t session_id1 = atem_handshake_connect(sock1, 0x0001);
+		uint16_t session_id2 = atem_handshake_connect(sock2, 0x0002);
+
+		// Drops client 1 with client2 having packet(s) in flight
+		atem_acknowledge_keepalive(sock2, NULL);
+		uint8_t packet[ATEM_PACKET_LEN_MAX];
+		do {
+			atem_socket_recv(sock1, packet);
+		} while (!(atem_header_flags_get(packet) & ATEM_FLAG_SYN));
+
+		// Client 1 should be dropped and client 2 should still be connected
+		atem_handshake_sessionid_get(packet, ATEM_OPCODE_CLOSING, false);
+		atem_handshake_sessionid_send(sock1, ATEM_OPCODE_CLOSED, false, session_id1);
+		atem_acknowledge_request_recv(sock2, session_id2);
+
+		atem_handshake_close(sock2, session_id2);
+		atem_socket_norecv(sock1);
+		atem_socket_close(sock1);
+		atem_socket_close(sock2);
+	}
+
+	// Ensures opening session during drop does not mix up packet assignments
+	RUN_TEST() {
+		uint16_t session_id1_request = 0x0007;
+		int sock1 = atem_socket_create();
+		uint16_t session_id1 = atem_handshake_start_client(sock1, session_id1_request) | 0x8000;
+
+		int sock2 = atem_socket_create();
+		uint16_t session_id2 = atem_handshake_connect(sock2, 0x0008);
+
+		uint8_t packet[ATEM_PACKET_LEN_MAX];
+		while (1) {
+			atem_socket_recv(sock1, packet);
+			atem_header_flags_isset(packet, ATEM_FLAG_SYN);
+			if (atem_handshake_opcode_get(packet) != ATEM_OPCODE_ACCEPT) break;
+			atem_header_sessionid_get_verify(packet, session_id1_request);
+		}
+		atem_handshake_sessionid_get_verify(packet, ATEM_OPCODE_CLOSING, false, session_id1);
+
+		do {
+			atem_socket_recv(sock1, packet);
+			atem_header_sessionid_get_verify(packet, session_id1);
+		} while (!(atem_header_flags_get(packet) & ATEM_FLAG_SYN));
+
+		atem_handshake_close(sock1, session_id1);
+		atem_handshake_close(sock2, session_id2);
+		atem_socket_close(sock1);
+		atem_socket_close(sock2);
 	}
 
 

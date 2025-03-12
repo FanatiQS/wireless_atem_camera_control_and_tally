@@ -243,5 +243,68 @@ int main(void) {
 		atem_socket_close(sock2);
 	}
 
+	// Ensures closing response to never sent request is ignored correctly while session is connected
+	RUN_TEST() {
+		int sock = atem_socket_create();
+		uint16_t session_id = atem_handshake_connect(sock, 0x0001);
+		atem_handshake_sessionid_send(sock, ATEM_OPCODE_CLOSED, false, session_id);
+
+		uint8_t packet[ATEM_PACKET_LEN_MAX];
+		do {
+			atem_socket_recv(sock, packet);
+		} while (atem_header_flags_get(packet) & ATEM_FLAG_ACKREQ);
+		atem_handshake_sessionid_get_verify(packet, ATEM_OPCODE_CLOSING, false, session_id);
+
+		atem_handshake_close(sock, session_id);
+		atem_socket_close(sock);
+	}
+
+	// Ensures closing response to never sent request is ignored correctly during opening handshake
+	RUN_TEST() {
+		int sock = atem_socket_create();
+		uint16_t session_id = atem_handshake_start_client(sock, session_id) | 0x8000;
+		atem_handshake_sessionid_send(sock, ATEM_OPCODE_CLOSED, false, session_id);
+
+		uint8_t packet[ATEM_PACKET_LEN_MAX];
+		do {
+			atem_socket_recv(sock, packet);
+			atem_header_flags_get(packet);
+		} while (atem_handshake_opcode_get(packet) & ATEM_OPCODE_ACCEPT);
+		atem_handshake_sessionid_get_verify(packet, ATEM_OPCODE_CLOSING, false, session_id);
+
+		atem_handshake_close(sock, session_id);
+		atem_socket_close(sock);
+	}
+
+	// Drops multiple sessions at the same time with one remaining connected
+	RUN_TEST() {
+		uint8_t packet[ATEM_PACKET_LEN_MAX];
+
+		// Connects session and fills remaining session slots
+		int sock = atem_socket_create();
+		uint16_t session_id = atem_handshake_connect(sock, 0x0001);
+		uint16_t fill_count = atem_handshake_fill(sock);
+
+		// Acknowledges all packets from first session but drops all filler sessions packets until disconnected
+		while (fill_count > 0) {
+			atem_socket_recv(sock, packet);
+			if (atem_header_sessionid_get(packet) == session_id) {
+				atem_acknowledge_keepalive_send(sock, packet);
+			}
+			else if (atem_header_flags_get(packet) & ATEM_FLAG_SYN) {
+				atem_handshake_opcode_get_verify(packet, ATEM_OPCODE_CLOSING);
+				atem_handshake_sessionid_send(sock, ATEM_OPCODE_CLOSED, false, atem_header_sessionid_get(packet));
+				fill_count--;
+			}
+		}
+
+		// First session should still be connected
+		atem_acknowledge_keepalive(sock, packet);
+		atem_header_sessionid_get_verify(packet, session_id);
+
+		atem_handshake_close(sock, session_id);
+		atem_socket_norecv(sock);
+	}
+
 	return runner_exit();
 }
