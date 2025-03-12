@@ -13,7 +13,7 @@
 #define DEBUG_PRINTF(...) fprintf(stderr, "[ DEBUG ] " __VA_ARGS__)
 #define DEBUG_PRINT_BUF(buf, len) atem_debug_print_buf(buf, len)
 
-void atem_debug_print_buf(uint8_t* buf, uint16_t len);
+void atem_debug_print_buf(const uint8_t* buf, uint16_t len);
 
 // These functions are meant to be used in a debugger or temporarily in code
 void atem_debug_print_packet(struct atem_packet* packet);

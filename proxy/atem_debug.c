@@ -13,7 +13,7 @@
 #if DEBUG
 
 // Prints buffer to stderr
-void atem_debug_print_buf(uint8_t* buf, uint16_t len) {
+void atem_debug_print_buf(const uint8_t* buf, uint16_t len) {
 	for (uint16_t i = 0; i < len; i++) {
 		if (i != 0 && !(i % 32)) {
 			fprintf(stderr, "\n\t");
