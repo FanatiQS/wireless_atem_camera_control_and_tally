@@ -31,7 +31,7 @@ static void atem_send(uint8_t* buf, struct sockaddr_in* peer_addr) {
 	assert(peer_addr != NULL);
 	assert(peer_addr->sin_family == AF_INET);
 
-	uint8_t len = (buf[ATEM_INDEX_LEN_HIGH] << 8 | buf[ATEM_INDEX_LEN_LOW]) & ATEM_PACKET_LEN_MAX;
+	uint16_t len = (buf[ATEM_INDEX_LEN_HIGH] << 8 | buf[ATEM_INDEX_LEN_LOW]) & ATEM_PACKET_LEN_MAX;
 	assert(len >= ATEM_LEN_HEADER);
 	assert(len <= ATEM_PACKET_LEN_MAX);
 
