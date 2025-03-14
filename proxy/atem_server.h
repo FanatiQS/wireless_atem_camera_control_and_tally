@@ -28,11 +28,10 @@ struct atem_server {
 
 extern struct atem_server atem_server;
 
-void atem_server_release(void);
-
 bool atem_server_init(void);
 void atem_server_recv(void);
 void atem_server_close(void);
 bool atem_server_closed(void);
+void atem_server_release(void);
 
 #endif // ATEM_SERVER_H

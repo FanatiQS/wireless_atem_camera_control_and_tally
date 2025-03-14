@@ -46,19 +46,22 @@ struct atem_packet {
 	uint8_t resends_remaining;
 	// Flags for packet, refer to enum for more details
 	uint8_t flags;
-	// Timestamp for when this packet should be retransmitted
+	// Timestamp for when this packet was registered to be retransmitted
 	struct timespec timeout;
 	// Flexible array for all sessions connected to this packet
 	struct atem_packet_session sessions[];
 };
 
 struct atem_packet_session* atem_packet_session_get(struct atem_packet* packet, uint16_t packet_session_index);
+
 struct atem_packet* atem_packet_create(uint8_t* buf, uint16_t sessions_count);
 void atem_packet_enqueue(struct atem_packet* packet, uint8_t flags);
 void atem_packet_flush(struct atem_packet* packet, uint16_t packet_session_index);
 void atem_packet_release(struct atem_packet* packet);
 void atem_packet_disassociate(struct atem_packet* packet, uint16_t packet_session_index);
 void atem_packet_retransmit(void);
-void atem_packet_ping(void);
+
+void atem_packet_broadcast_close(void);
+void atem_packet_broadcast_ping(void);
 
 #endif // ATEM_PACKET_H

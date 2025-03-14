@@ -1,22 +1,21 @@
-#include <stdlib.h> // malloc, free, abort
+#include <stdlib.h> // malloc, free
 #include <assert.h> // assert
 #include <stdbool.h> // bool, false, true
 #include <stddef.h> // NULL
-#include <time.h> // struct timespec, timespec_get, TIME_UTC
-#include <string.h> // memset
 #include <stdint.h> // uint8_t, uint16_t, int16_t
+#include <stdio.h> // perror
 
-#include <sys/socket.h> // socket, AF_INET, SOCK_DGRAM, bind, struct sockaddr
+#include <sys/socket.h> // socket, AF_INET, SOCK_DGRAM, bind, struct sockaddr, recvfrom
 #include <netinet/in.h> // struct sockaddr_in
 #include <arpa/inet.h> // htons, INADDR_ANY
 #include <unistd.h> // close
 
-#include "./atem_debug.h" // DEBUG_PRINTF
-#include "./atem_server.h" // struct atem_server, atem_session_get
-#include "./atem_session.h" // struct atem_session, atem_session_send
-#include "./atem_packet.h" // struct atem_packet, atem_packet_create, struct atem_packet_session
-#include "../core/atem.h" // ATEM_PORT
-#include "../core/atem_protocol.h" // ATEM_INDEX_REMOTEID_HIGH, ATEM_INDEX_REMOTEID_LOW, ATEM_RESEND_TIME, ATEM_PORT
+#include "./atem_debug.h" // DEBUG_PRINTF, DEBUG_PRINT_BUF
+#include "./atem_server.h" // struct atem_server, atem_session_get, atem_session_lookup_get, atem_session_lookup_clear
+#include "./atem_session.h" // struct atem_session
+#include "./atem_packet.h" // struct atem_packet, atem_packet_release, atem_packet_close
+#include "../core/atem.h" // ATEM_PORT, ATEM_PACKET_LEN_MAX
+#include "../core/atem_protocol.h" // ATEM_RESEND_TIME, ATEM_PING_INTERVAL
 
 // Initializes server context with default configuration
 struct atem_server atem_server = {
@@ -25,28 +24,6 @@ struct atem_server atem_server = {
 	.retransmit_delay = ATEM_RESEND_TIME,
 	.ping_interval = ATEM_PING_INTERVAL
 };
-
-// Releases all resources server has allocated
-void atem_server_release(void) {
-	assert(atem_server.packet_queue_head == NULL);
-	assert(atem_server.sessions_connected == 0);
-	assert(atem_server.sessions_len == 0);
-
-	// Releases UDP socket
-	int close_err = close(atem_server.sock);
-	if (close_err != 0) {
-		assert(close_err == -1);
-		perror("Error during closing of ATEM servers UDP socket");
-	}
-
-	// Releases session array
-	assert(atem_server.sessions != NULL);
-	free(atem_server.sessions);
-	atem_server.sessions = NULL;
-
-	assert(atem_server.closing == true);
-	atem_server.closing = false;
-}
 
 
 
@@ -190,4 +167,79 @@ void atem_server_recv(void) {
 	if (flags & ~(ATEM_FLAG_SYN | ATEM_FLAG_ACK | ATEM_FLAG_RETX | ATEM_FLAG_ACKREQ)) {
 		printf("Unsupported flags: 0x%02x\n", flags);
 	}
+}
+
+
+
+// Disconnects all sessions and closes the server
+void atem_server_close(void) {
+	assert(atem_server.sessions != NULL);
+
+	DEBUG_PRINTF("Closing ATEM server\n");
+
+	// Disallows any more sessions to connect
+	atem_server.closing = true;
+
+	// Completes closing right away if no sessions need to be closed
+	if (atem_server.sessions_len == 0) {
+		return;
+	}
+
+	// Puts all connecting and connected sessions in closing state
+	for (int16_t i = atem_server.sessions_connected; i < atem_server.sessions_len; i++) {
+		struct atem_session* session = atem_session_get(i);
+		assert(atem_session_lookup_get(session->session_id) == i);
+		assert(session->packet_head->sessions_remaining == 1);
+
+		// Uses server assigned session id for closing handshake for sessions in opening handshake
+		uint16_t request_session_id = session->session_id_high << 8 | session->session_id_low;
+		assert(atem_session_lookup_get(request_session_id) == i);
+		if (request_session_id != session->session_id) {
+			atem_session_lookup_clear(request_session_id);
+			session->session_id_high = session->session_id >> 8;
+			session->session_id_low = session->session_id & 0xff;
+		}
+	}
+	atem_server.sessions_connected = 0;
+
+	// Releases all packets since all sessions are going to get single closing packet anyway
+	struct atem_packet* packet = atem_server.packet_queue_head;
+	while (packet != NULL) {
+		struct atem_packet* packet_next = packet->next;
+		atem_packet_release(packet);
+		packet = packet_next;
+	}
+
+	// Sends close request to all sessions
+	atem_packet_broadcast_close();
+}
+
+// Checks if the ATEM server has fully closed
+bool atem_server_closed(void) {
+	assert(atem_server.closing);
+	return atem_server.sessions_len == 0;
+}
+
+// Releases all resources server has allocated
+void atem_server_release(void) {
+	assert(atem_server.packet_queue_head == NULL);
+	assert(atem_server.sessions_connected == 0);
+	assert(atem_server.sessions_len == 0);
+
+	DEBUG_PRINTF("Closed ATEM server\n");
+
+	// Releases UDP socket
+	int close_err = close(atem_server.sock);
+	if (close_err != 0) {
+		assert(close_err == -1);
+		perror("Error during closing of ATEM servers UDP socket");
+	}
+
+	// Releases session array
+	assert(atem_server.sessions != NULL);
+	free(atem_server.sessions);
+	atem_server.sessions = NULL;
+
+	assert(atem_server.closing == true);
+	atem_server.closing = false;
 }

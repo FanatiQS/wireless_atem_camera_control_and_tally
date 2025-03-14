@@ -3,7 +3,7 @@
 #include <stdint.h> // uint32_t
 
 #include "./atem_server.h" // atem_server
-#include "./atem_packet.h" // atem_packet_ping
+#include "./atem_packet.h" // atem_packet_broadcast_ping
 #include "./atem_debug.h" // DEBUG_PRINTF
 #include "./timeout.h"
 
@@ -61,7 +61,7 @@ int timeout_get(void) {
 			atem_server.ping_interval
 		);
 		if (timeout_ping == 0) {
-			atem_packet_ping();
+			atem_packet_broadcast_ping();
 		}
 		if (timeout_ping < timeout) {
 			assert(timeout_ping >= 0);
@@ -100,7 +100,7 @@ void timeout_dispatch(void) {
 			break;
 		}
 		case TIMEOUT_INDEX_PING: {
-			atem_packet_ping();
+			atem_packet_broadcast_ping();
 			break;
 		}
 	}

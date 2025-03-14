@@ -221,7 +221,7 @@ void atem_packet_flush(struct atem_packet* packet, uint16_t packet_session_index
 	}
 }
 
-// Retransmits packet or drops sessions if not acknowledged after retransmits run out
+// Retransmits oldest ATEM packet or drops sessions not having acknowledged it after retransmits run out
 void atem_packet_retransmit(void) {
 	struct atem_packet* packet = atem_server.packet_queue_head;
 	assert(packet != NULL);
@@ -260,6 +260,7 @@ void atem_packet_retransmit(void) {
 			assert(session->packet_head == packet);
 			assert(session->packet_tail == packet);
 
+			DEBUG_PRINTF("Dropping session 0x%04x\n", session->session_id);
 			atem_session_terminate(session_index);
 		}
 
@@ -274,11 +275,6 @@ void atem_packet_retransmit(void) {
 
 		// Releases packet memory without releasing preallocated buffer
 		free(packet);
-
-		// Cleans up server when last session is dropped
-		if (atem_server.closing && atem_server.sessions_len == 0) {
-			atem_server_release();
-		}
 
 		return;
 	}
@@ -323,8 +319,42 @@ void atem_packet_retransmit(void) {
 	atem_packet_requeue();
 }
 
+
+
+// Sends closing request to all sessions, assumes existing packets has been flushes and sessions ready for closing
+void atem_packet_broadcast_close(void) {
+	assert(atem_server.sessions_connected == 0);
+	assert(atem_server.sessions_len > 0);
+	assert(atem_server.packet_queue_head == NULL);
+	assert(atem_server.packet_queue_tail == NULL);
+
+	// Creates, broadcasts and enqueues closing handshake packet
+	buf_closing[ATEM_INDEX_FLAGS] = ATEM_FLAG_SYN;
+	struct atem_packet* packet = atem_packet_create(buf_closing, atem_server.sessions_len);
+	for (int16_t session_index = atem_server.sessions_len - 1; session_index >= 0; session_index--) {
+		struct atem_session* session = atem_session_get(session_index);
+		assert(atem_session_lookup_get(session->session_id) == session_index);
+		assert((session->session_id_high << 8 | session->session_id_low) == session->session_id);
+		session->packet_head = packet;
+		session->packet_tail = packet;
+		session->packet_session_index_head = session_index;
+
+		struct atem_packet_session* packet_session = atem_packet_session_get(packet, session_index);
+		packet_session->session_id = session->session_id;
+		packet_session->packet_next = NULL;
+		packet_session->packet_session_index = session_index;
+		packet_session->remote_id_high = 0;
+		packet_session->remote_id_low = 0;
+
+		atem_session_send(session, packet->buf);
+	}
+	atem_packet_enqueue(packet, ATEM_PACKET_FLAG_CLOSING);
+	assert(atem_server.packet_queue_head == packet);
+	assert(atem_server.packet_queue_tail == packet);
+}
+
 // Pings all connected sessions
-void atem_packet_ping(void) {
+void atem_packet_broadcast_ping(void) {
 	assert(atem_server.sessions_connected > 0);
 
 	DEBUG_PRINTF("Pings all %d connected clients\n", atem_server.sessions_connected);

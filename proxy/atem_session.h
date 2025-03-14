@@ -28,6 +28,7 @@ struct atem_session {
 };
 
 int16_t atem_session_lookup_get(uint16_t session_id);
+void atem_session_lookup_clear(uint16_t session_id);
 struct atem_session* atem_session_get(int16_t session_index);
 bool atem_session_peer_validate(struct atem_session* session, struct sockaddr_in* peer_addr);
 void atem_session_send(struct atem_session* session, uint8_t* buf);

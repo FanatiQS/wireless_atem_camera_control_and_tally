@@ -55,12 +55,6 @@ static inline void atem_session_lookup_set(uint16_t session_id, int16_t session_
 	atem_server.session_lookup_table[session_id] = session_index + 1;
 }
 
-// Clears session id lookup
-static void atem_session_lookup_clear(uint16_t session_id) {
-	assert(session_id < (sizeof(atem_server.session_lookup_table) / sizeof(*atem_server.session_lookup_table)));
-	atem_server.session_lookup_table[session_id] = 0;
-}
-
 // Figures out if a session is connected or not based on its index
 static inline bool atem_session_connected(int16_t session_index) {
 	assert(session_index >= 0);
@@ -156,6 +150,12 @@ static void atem_session_release(int16_t session_index) {
 int16_t atem_session_lookup_get(uint16_t session_id) {
 	assert(session_id < (sizeof(atem_server.session_lookup_table) / sizeof(*atem_server.session_lookup_table)));
 	return atem_server.session_lookup_table[session_id] - 1;
+}
+
+// Clears session id lookup
+void atem_session_lookup_clear(uint16_t session_id) {
+	assert(session_id < (sizeof(atem_server.session_lookup_table) / sizeof(*atem_server.session_lookup_table)));
+	atem_server.session_lookup_table[session_id] = 0;
 }
 
 // Gets session pointer from session index
@@ -413,6 +413,7 @@ void atem_session_drop(int16_t session_index) {
 	assert(session->packet_tail == packet);
 	uint16_t packet_session_index = session->packet_session_index_head;
 	assert(atem_packet_session_get(packet, packet_session_index)->session_id == session->session_id);
+
 	DEBUG_PRINTF("Dropping session 0x%04x\n", session->session_id);
 
 	// Moves session to slot outside connected sessions to remove from broadcast targets if session is connected
@@ -564,11 +565,6 @@ void atem_session_closed(int16_t session_index) {
 
 	// Removes session from server
 	atem_session_terminate(session_index);
-
-	// Cleans up server when last session is disconnected
-	if (atem_server.closing && atem_server.sessions_len == 0) {
-		atem_server_release();
-	}
 }
 
 
