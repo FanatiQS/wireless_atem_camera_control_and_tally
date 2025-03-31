@@ -51,7 +51,12 @@
 // Byte offset from start of command block to command name
 #define ATEM_OFFSET_CMDNAME 4
 
-#define ATEM_RESENDS     10
-#define ATEM_RESEND_TIME 200
+// ATEM resends
+#define ATEM_RESENDS         10
+#define ATEM_RESENDS_CLOSING 1
+
+// ATEM timings
+#define ATEM_RESEND_TIME   200
+#define ATEM_PING_INTERVAL 500
 
 #endif // ATEM_PROTOCOL_H
