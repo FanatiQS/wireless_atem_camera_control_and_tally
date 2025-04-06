@@ -20,6 +20,7 @@ void atem_packet_clear(uint8_t* packet) {
 
 // Sets 16bit word in packet
 void atem_packet_word_set(uint8_t* packet, uint8_t high, uint8_t low, uint16_t word) {
+	assert(high + 1 == low);
 	packet[high] = (uint8_t)(word >> 8);
 	packet[low] = (uint8_t)(word & 0xff);
 }
@@ -48,17 +49,17 @@ uint8_t atem_header_flags_get(uint8_t* packet) {
 }
 
 // Ensures ATEM packet has all required flags set without any illegal flag
-void atem_header_flags_get_verify(uint8_t* packet, uint8_t requiredFlags, uint8_t optionalFlags) {
+void atem_header_flags_get_verify(uint8_t* packet, uint8_t flags_required, uint8_t flags_optional) {
 	uint8_t flags = atem_header_flags_get(packet);
 
 	// Verifies required flags are all set
-	if ((flags & requiredFlags) != requiredFlags) {
-		fprintf(stderr, "Missing required flag(s) 0x%02x from 0x%02x\n", requiredFlags, flags);
+	if ((flags & flags_required) != flags_required) {
+		fprintf(stderr, "Missing required flag(s) 0x%02x from 0x%02x\n", flags_required, flags);
 		abort();
 	}
 
 	// Verifies only required or optional flags are set
-	uint8_t illegalFlags = ~(requiredFlags | optionalFlags);
+	uint8_t illegalFlags = ~(flags_required | flags_optional);
 	if (flags & illegalFlags) {
 		fprintf(stderr, "Unexpected illegal flag(s) 0x%02x\n", illegalFlags & flags);
 		abort();
@@ -97,18 +98,18 @@ uint16_t atem_header_len_get(uint8_t* packet) {
 }
 
 // Ensures length of packet matches expected length
-void atem_header_len_get_verify(uint8_t* packet, size_t expectedLen) {
+void atem_header_len_get_verify(uint8_t* packet, size_t len_expected) {
 	uint16_t len = atem_header_len_get(packet);
-	if (len == expectedLen) return;
-	fprintf(stderr, "Expected packet length %zu, but got %d\n", expectedLen, len);
+	if (len == len_expected) return;
+	fprintf(stderr, "Expected packet length %zu, but got %d\n", len_expected, len);
 	abort();
 }
 
 
 
 // Sets session id in packet
-void atem_header_sessionid_set(uint8_t* packet, uint16_t sessionId) {
-	atem_packet_word_set(packet, ATEM_INDEX_SESSIONID_HIGH, ATEM_INDEX_SESSIONID_LOW, sessionId);
+void atem_header_sessionid_set(uint8_t* packet, uint16_t session_id) {
+	atem_packet_word_set(packet, ATEM_INDEX_SESSIONID_HIGH, ATEM_INDEX_SESSIONID_LOW, session_id);
 }
 
 // Gets session id from packet
@@ -117,28 +118,28 @@ uint16_t atem_header_sessionid_get(uint8_t* packet) {
 }
 
 // Ensures session id in packet matches expected session id
-void atem_header_sessionid_get_verify(uint8_t* packet, uint16_t expectedSessionId) {
-	uint16_t sessionId = atem_header_sessionid_get(packet);
-	if (sessionId == expectedSessionId) return;
-	fprintf(stderr, "Expected session id 0x%04x, but got 0x%04x\n", expectedSessionId, sessionId);
+void atem_header_sessionid_get_verify(uint8_t* packet, uint16_t session_id_expected) {
+	uint16_t session_id = atem_header_sessionid_get(packet);
+	if (session_id == session_id_expected) return;
+	fprintf(stderr, "Expected session id 0x%04x, but got 0x%04x\n", session_id_expected, session_id);
 	abort();
 }
 
 
 
 // Sets ack id in packet
-void atem_header_ackid_set(uint8_t* packet, uint16_t ackId) {
-	atem_packet_word_set(packet, ATEM_INDEX_ACKID_HIGH, ATEM_INDEX_ACKID_LOW, ackId);
+void atem_header_ackid_set(uint8_t* packet, uint16_t ack_id) {
+	atem_packet_word_set(packet, ATEM_INDEX_ACKID_HIGH, ATEM_INDEX_ACKID_LOW, ack_id);
 }
 
 // Gets ack id from packet
 uint16_t atem_header_ackid_get(uint8_t* packet) {
-	uint16_t ackId = atem_packet_word_get(packet, ATEM_INDEX_ACKID_HIGH, ATEM_INDEX_ACKID_LOW);
-	if (ackId & 0x8000) {
-		fprintf(stderr, "Expected ack id to never have MSB set: %04x\n", ackId);
+	uint16_t ack_id = atem_packet_word_get(packet, ATEM_INDEX_ACKID_HIGH, ATEM_INDEX_ACKID_LOW);
+	if (ack_id & 0x8000) {
+		fprintf(stderr, "Expected ack id to never have MSB set: %04x\n", ack_id);
 		abort();
 	}
-	return ackId;
+	return ack_id;
 }
 
 // Ensures ack id in packet matches expected ack id
@@ -152,33 +153,33 @@ void atem_header_ackid_get_verify(uint8_t* packet, uint16_t expectedAckId) {
 
 
 // Sets local id in packet
-void atem_header_localid_set(uint8_t* packet, uint16_t localId) {
-	atem_packet_word_set(packet, ATEM_INDEX_LOCALID_HIGH, ATEM_INDEX_LOCALID_LOW, localId);
+void atem_header_localid_set(uint8_t* packet, uint16_t local_id) {
+	atem_packet_word_set(packet, ATEM_INDEX_LOCALID_HIGH, ATEM_INDEX_LOCALID_LOW, local_id);
 }
 
 // Gets local id from packet
 uint16_t atem_header_localid_get(uint8_t* packet) {
-	uint16_t localId = atem_packet_word_get(packet, ATEM_INDEX_LOCALID_HIGH, ATEM_INDEX_LOCALID_LOW);
-	if (localId & 0x8000) {
-		fprintf(stderr, "Expected local id to never have MSB set: %04x\n", localId);
+	uint16_t local_id = atem_packet_word_get(packet, ATEM_INDEX_LOCALID_HIGH, ATEM_INDEX_LOCALID_LOW);
+	if (local_id & 0x8000) {
+		fprintf(stderr, "Expected local id to never have MSB set: %04x\n", local_id);
 		abort();
 	}
-	return localId;
+	return local_id;
 }
 
 // Ensures local id in packet matches expected local id
-void atem_header_localid_get_verify(uint8_t* packet, uint16_t expectedLocalId) {
-	uint16_t localId = atem_header_localid_get(packet);
-	if (localId == expectedLocalId) return;
-	fprintf(stderr, "Expected local id 0x%04x, but got 0x%04x\n", expectedLocalId, localId);
+void atem_header_localid_get_verify(uint8_t* packet, uint16_t local_id_expected) {
+	uint16_t local_id = atem_header_localid_get(packet);
+	if (local_id == local_id_expected) return;
+	fprintf(stderr, "Expected local id 0x%04x, but got 0x%04x\n", local_id_expected, local_id);
 	abort();
 }
 
 
 
 // Sets unknown id in packet
-void atem_header_unknownid_set(uint8_t* packet, uint16_t unknownId) {
-	atem_packet_word_set(packet, ATEM_INDEX_UNKNOWNID_HIGH, ATEM_INDEX_UNKNOWNID_LOW, unknownId);
+void atem_header_unknownid_set(uint8_t* packet, uint16_t unknown_id) {
+	atem_packet_word_set(packet, ATEM_INDEX_UNKNOWNID_HIGH, ATEM_INDEX_UNKNOWNID_LOW, unknown_id);
 }
 
 // Gets unknown id from packet
@@ -187,35 +188,35 @@ uint16_t atem_header_unknownid_get(uint8_t* packet) {
 }
 
 // Ensures unknown id in packet matches expected unknown id
-void atem_header_unknownid_get_verify(uint8_t* packet, uint16_t expectedUnknownId) {
-	uint16_t unknownId = atem_header_unknownid_get(packet);
-	if (unknownId == expectedUnknownId) return;
-	fprintf(stderr, "Expected unknown id 0x%04x, but got 0x%04x\n", expectedUnknownId, unknownId);
+void atem_header_unknownid_get_verify(uint8_t* packet, uint16_t unknown_id_expected) {
+	uint16_t unknown_id = atem_header_unknownid_get(packet);
+	if (unknown_id == unknown_id_expected) return;
+	fprintf(stderr, "Expected unknown id 0x%04x, but got 0x%04x\n", unknown_id_expected, unknown_id);
 	abort();
 }
 
 
 
 // Sets remote id in packet
-void atem_header_remoteid_set(uint8_t* packet, uint16_t remoteId) {
-	atem_packet_word_set(packet, ATEM_INDEX_REMOTEID_HIGH, ATEM_INDEX_REMOTEID_LOW, remoteId);
+void atem_header_remoteid_set(uint8_t* packet, uint16_t remote_id) {
+	atem_packet_word_set(packet, ATEM_INDEX_REMOTEID_HIGH, ATEM_INDEX_REMOTEID_LOW, remote_id);
 }
 
 // Gets remote id from packet
 uint16_t atem_header_remoteid_get(uint8_t* packet) {
-	uint16_t remoteId = atem_packet_word_get(packet, ATEM_INDEX_REMOTEID_HIGH, ATEM_INDEX_REMOTEID_LOW);
-	if (remoteId & 0x8000) {
-		fprintf(stderr, "Expected remote id to never have MSB set: %04x\n", remoteId);
+	uint16_t remote_id = atem_packet_word_get(packet, ATEM_INDEX_REMOTEID_HIGH, ATEM_INDEX_REMOTEID_LOW);
+	if (remote_id & 0x8000) {
+		fprintf(stderr, "Expected remote id to never have MSB set: %04x\n", remote_id);
 		abort();
 	}
-	return remoteId;
+	return remote_id;
 }
 
 // Ensures remote id in packet matches expected unknown id
-void atem_header_remoteid_get_verify(uint8_t* packet, uint16_t expectedRemoteId) {
-	uint16_t remoteId = atem_header_remoteid_get(packet);
-	if (remoteId == expectedRemoteId) return;
-	fprintf(stderr, "Expected remote id 0x%04x, but got 0x%04x\n", expectedRemoteId, remoteId);
+void atem_header_remoteid_get_verify(uint8_t* packet, uint16_t remote_id_expected) {
+	uint16_t remote_id = atem_header_remoteid_get(packet);
+	if (remote_id == remote_id_expected) return;
+	fprintf(stderr, "Expected remote id 0x%04x, but got 0x%04x\n", remote_id_expected, remote_id);
 	abort();
 }
 
@@ -224,7 +225,7 @@ void atem_header_remoteid_get_verify(uint8_t* packet, uint16_t expectedRemoteId)
 // Tests functions in this file
 void atem_header_init(void) {
 	uint8_t packet[ATEM_PACKET_LEN_MAX];
-	const uint8_t allFlags = 0xff & ~(ATEM_PACKET_LEN_MAX >> 8);
+	const uint8_t flags_all = 0xff & ~(ATEM_PACKET_LEN_MAX >> 8);
 
 	// Tests atem_packet_word_set and atem_packet_word_get
 	atem_packet_clear(packet);
@@ -239,24 +240,24 @@ void atem_header_init(void) {
 	// Tests atem_header_flags_get and atem_header_flags_set
 	atem_packet_clear(packet);
 	assert(atem_header_flags_get(packet) == 0);
-	atem_header_flags_set(packet, allFlags);
-	assert(atem_header_flags_get(packet) == allFlags);
+	atem_header_flags_set(packet, flags_all);
+	assert(atem_header_flags_get(packet) == flags_all);
 	atem_header_len_set(packet, ATEM_LEN_HEADER);
 	assert(atem_header_len_get(packet) == ATEM_LEN_HEADER);
 
 	// Tests atem_header_flags_get_verify
 	atem_packet_clear(packet);
 	atem_header_flags_get_verify(packet, 0, 0);
-	atem_header_flags_set(packet, allFlags);
-	atem_header_flags_get_verify(packet, allFlags, 0);
-	atem_header_flags_get_verify(packet, 0, allFlags);
+	atem_header_flags_set(packet, flags_all);
+	atem_header_flags_get_verify(packet, flags_all, 0);
+	atem_header_flags_get_verify(packet, 0, flags_all);
 
 	// Tests atem_header_flags_clear
 	atem_packet_clear(packet);
 	assert(atem_header_flags_get(packet) == 0);
-	atem_header_flags_set(packet, allFlags);
+	atem_header_flags_set(packet, flags_all);
 	atem_header_len_set(packet, ATEM_LEN_HEADER);
-	assert(atem_header_flags_get(packet) == allFlags);
+	assert(atem_header_flags_get(packet) == flags_all);
 	assert(atem_header_len_get(packet) == ATEM_LEN_HEADER);
 	atem_header_flags_clear(packet);
 	assert(atem_header_flags_get(packet) == 0x00);
