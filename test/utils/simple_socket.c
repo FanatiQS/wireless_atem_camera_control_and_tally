@@ -6,7 +6,7 @@
 #include <stdint.h> // uint16_t
 
 #include <sys/socket.h> // socket, AF_INET, connect, struct sockaddr, setsockopt, SOL_SOCKET, SO_RCVTIMEO, SO_SNDTIMEO, ssize_t, send, recv, bind
-#include <poll.h> // struct pollfd, poll, nfds_t
+#include <poll.h> // struct pollfd, poll, POLLIN
 #include <sys/time.h> // struct timeval
 #include <netinet/in.h> // struct sockaddr_in, INADDR_ANY, in_addr_t
 #include <arpa/inet.h> // htons, inet_addr
@@ -31,7 +31,6 @@ int simple_socket_create(int type) {
 	// Ensures socket is within SIMPLE_SOCKET_MAX_FD so it will be closed on caught abort for runner mode all
 	if (sock >= SIMPLE_SOCKET_MAX_FD) {
 		fprintf(stderr, "Socket was assigned too high: %d\n", sock);
-		close(sock);
 		abort();
 	}
 
@@ -51,30 +50,30 @@ int simple_socket_create(int type) {
 
 // Connects client socket to server address and port
 void simple_socket_connect(int sock, uint16_t port, in_addr_t addr) {
-	struct sockaddr_in sockAddr = {
+	struct sockaddr_in sock_addr = {
 		.sin_family = AF_INET,
 		.sin_port = htons(port),
 		.sin_addr.s_addr = addr
 	};
-	if (connect(sock, (struct sockaddr*)&sockAddr, sizeof(sockAddr)) && errno != EINPROGRESS) {
+	if (connect(sock, (struct sockaddr*)&sock_addr, sizeof(sock_addr)) && errno != EINPROGRESS) {
 		perror("Failed to connect client socket to server");
 		abort();
 	}
 }
 
 // Connects socket to device address from environment variable
-void simple_socket_connect_env(int sock, uint16_t port, const char* envKey) {
+void simple_socket_connect_env(int sock, uint16_t port, const char* env_key) {
 	// Gets ip address from environment variable
-	char* addrStr = getenv(envKey);
-	if (addrStr == NULL) {
-		fprintf(stderr, "Environment variable %s not defined\n", envKey);
+	char* addr_str = getenv(env_key);
+	if (addr_str == NULL) {
+		fprintf(stderr, "Environment variable %s not defined\n", env_key);
 		abort();
 	}
 
 	// Gets ip address type from environment variable value
-	in_addr_t addr = inet_addr(addrStr);
+	in_addr_t addr = inet_addr(addr_str);
 	if (addr == (in_addr_t)(-1)) {
-		fprintf(stderr, "Invalid IP address '%s' from %s\n", addrStr, envKey);
+		fprintf(stderr, "Invalid IP address '%s' from %s\n", addr_str, env_key);
 		abort();
 	}
 
@@ -113,15 +112,15 @@ void simple_socket_send(int sock, const void* buf, size_t len) {
 	}
 
 	// Sends the data
-	ssize_t sendLen = send(sock, buf, len, 0);
-	if (sendLen == -1) {
+	ssize_t send_len = send(sock, buf, len, 0);
+	if (send_len == -1) {
 		perror("Failed to send data");
 		abort();
 	}
 
 	// Rejects if sent length does not match length of buffer
-	if (sendLen != (ssize_t)len) {
-		fprintf(stderr, "Unexpected return value from send: %zd, %zu\n", sendLen, len);
+	if (send_len != (ssize_t)len) {
+		fprintf(stderr, "Unexpected return value from send: %zd, %zu\n", send_len, len);
 		abort();
 	}
 }
@@ -135,20 +134,20 @@ size_t simple_socket_recv(int sock, void* buf, size_t size) {
 	}
 
 	// Receives data to the buffer
-	ssize_t recvLen = recv(sock, buf, size, 0);
-	if (recvLen == -1) {
+	ssize_t recv_len = recv(sock, buf, size, 0);
+	if (recv_len == -1) {
 		perror("Failed to recv data");
 		abort();
 	}
 
 	// Rejects on invalid return value from recv call
-	if (recvLen < 0) {
-		fprintf(stderr, "Unexpected return value from recv: %zd\n", recvLen);
+	if (recv_len < 0) {
+		fprintf(stderr, "Unexpected return value from recv: %zd\n", recv_len);
 		abort();
 	}
 
 	// Returns number of bytes received
-	return (size_t)recvLen;
+	return (size_t)recv_len;
 }
 
 // Receives data expecting specific error
@@ -160,9 +159,9 @@ bool simple_socket_recv_error(int sock, int err, void* buf, size_t* len) {
 	}
 
 	// Receives potential data to the buffer expecting error
-	ssize_t recvLen = recv(sock, buf, *len, 0);
-	if (recvLen != -1) {
-		*len = (size_t)recvLen;
+	ssize_t recv_len = recv(sock, buf, *len, 0);
+	if (recv_len != -1) {
+		*len = (size_t)recv_len;
 		return false;
 	}
 
@@ -186,7 +185,7 @@ bool simple_socket_poll(int sock, int timeout) {
 		perror("Poll got an error");
 		abort();
 	}
-	if (poll_len < 0 || poll_len > 1) {
+	if (poll_len != 0 && poll_len != 1) {
 		fprintf(stderr, "Unexpected return value from poll: %d\n", poll_len);
 		abort();
 	}

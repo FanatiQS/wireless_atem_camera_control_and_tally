@@ -8,11 +8,11 @@
 
 #include <netinet/in.h> // in_addr_t
 
-#define SIMPLE_SOCKET_MAX_FD (65535)
+#define SIMPLE_SOCKET_MAX_FD (0xffff)
 
-int simple_socket_create(int sockType);
+int simple_socket_create(int type);
 void simple_socket_connect(int sock, uint16_t port, in_addr_t addr);
-void simple_socket_connect_env(int sock, uint16_t port, const char* envKey);
+void simple_socket_connect_env(int sock, uint16_t port, const char* env_key);
 void simple_socket_listen(int sock, uint16_t port);
 
 void simple_socket_send(int sock, const void* buf, size_t len);
