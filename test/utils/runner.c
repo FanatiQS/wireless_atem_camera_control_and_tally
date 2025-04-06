@@ -137,7 +137,7 @@ bool runner_start(const char* path) {
 
 	// Sets test to abort on failure
 	char* mode = getenv("RUNNER_MODE");
-	if (mode == NULL || !strcmp(mode, "abort")) {
+	if (mode == NULL || strcmp(mode, "abort") == 0) {
 		return true;
 	}
 
@@ -160,11 +160,13 @@ void runner_success(void) {
 // Prints and returns number of failed tests if not running in abort mode
 int runner_exit(void) {
 	char* mode = getenv("RUNNER_MODE");
-	if (mode == NULL || !strcmp(mode, "abort")) {
+	if (mode == NULL || strcmp(mode, "abort") == 0) {
+		assert(runner_fails == 0);
 		printf("Number of tests competed: %d (%d skipped)\n", runner_all, runner_skipped);
 		return EXIT_SUCCESS;
 	}
 
+	assert(strcmp(mode, "all") == 0);
 	printf("Tests failed: %d/%d (%d skipped)\n", runner_fails, runner_all, runner_skipped);
 	return runner_fails;
 }
