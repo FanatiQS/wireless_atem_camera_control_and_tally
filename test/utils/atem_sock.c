@@ -22,10 +22,10 @@
 
 
 // Verifies ATEM packet length and unknown id
-void atem_packet_verify(uint8_t* packet, size_t recvLen) {
+void atem_packet_verify(uint8_t* packet, size_t recv_len) {
 	if (logs_find("atem_recv")) {
 		printf("Received packet:\n");
-		logs_print_buffer(stdout, packet, recvLen);
+		logs_print_buffer(stdout, packet, recv_len);
 	}
 
 	// Verifies unknown id
@@ -54,7 +54,7 @@ void atem_packet_verify(uint8_t* packet, size_t recvLen) {
 	}
 
 	// Verifies packet length
-	atem_header_len_get_verify(packet, recvLen);
+	atem_header_len_get_verify(packet, recv_len);
 }
 
 
@@ -82,53 +82,53 @@ struct sockaddr_in atem_socket_listen(int sock, uint8_t* packet) {
 	simple_socket_listen(sock, ATEM_PORT);
 
 	// Gets ip address to allow client connections from
-	const char* envKey = "ATEM_CLIENT_ADDR";
-	const char* cmpAddrEnv = getenv(envKey);
-	if (cmpAddrEnv == NULL) {
-		fprintf(stderr, "Environment variable %s not defined\n", envKey);
+	const char* env_key = "ATEM_CLIENT_ADDR";
+	const char* env_value = getenv(env_key);
+	if (env_value == NULL) {
+		fprintf(stderr, "Environment variable %s not defined\n", env_key);
 		abort();
 	}
-	const in_addr_t cmpAddr = inet_addr(cmpAddrEnv);
+	const in_addr_t cmp_addr = inet_addr(env_value);
 
-	struct timespec timeoutStart = timediff_mark();
-	struct sockaddr_in peerAddr;
-	ssize_t recvLen;
+	struct timespec timeout_start = timediff_mark();
+	struct sockaddr_in peer_addr;
+	ssize_t recv_len;
 	do {
 		// Awaits first packet from ATEM client
-		if (simple_socket_poll(sock, TIMEOUT_LISTEN - timediff_get(timeoutStart)) != 1) {
+		if (simple_socket_poll(sock, TIMEOUT_LISTEN - timediff_get(timeout_start)) != 1) {
 			fprintf(stderr, "No client connected\n");
 			abort();
 		}
 
 		// Receives first packet
-		socklen_t peerAddrLen = sizeof(peerAddr);
-		recvLen = recvfrom(sock, packet, ATEM_PACKET_LEN_MAX, 0, (struct sockaddr*)&peerAddr, &peerAddrLen);
-		assert(peerAddrLen == sizeof(peerAddr));
-		if (recvLen <= 0) {
-			if (recvLen == -1) {
+		socklen_t peer_addr_len = sizeof(peer_addr);
+		recv_len = recvfrom(sock, packet, ATEM_PACKET_LEN_MAX, 0, (struct sockaddr*)&peer_addr, &peer_addr_len);
+		assert(peer_addr_len == sizeof(peer_addr));
+		if (recv_len <= 0) {
+			if (recv_len == -1) {
 				perror("Failed to recvfrom packet");
 			}
-			else if (recvLen == 0) {
+			else if (recv_len == 0) {
 				fprintf(stderr, "Received empty packet from client\n");
 			}
 			else {
-				fprintf(stderr, "Failed to recvfrom: %zu\n", recvLen);
+				fprintf(stderr, "Failed to recvfrom: %zu\n", recv_len);
 			}
 			abort();
 		}
-	} while (peerAddr.sin_addr.s_addr != cmpAddr);
+	} while (peer_addr.sin_addr.s_addr != cmp_addr);
 
 	// Verifies received ATEM packet
-	atem_packet_verify(packet, (size_t)recvLen);
+	atem_packet_verify(packet, (size_t)recv_len);
 
 	// Connects socket to ATEM client
-	if (connect(sock, (struct sockaddr*)&peerAddr, sizeof(peerAddr))) {
+	if (connect(sock, (struct sockaddr*)&peer_addr, sizeof(peer_addr))) {
 		perror("Failed to connect socket");
 		abort();
 	}
 
 	// Returns connection information for connected client
-	return peerAddr;
+	return peer_addr;
 }
 
 
@@ -150,14 +150,14 @@ void atem_socket_send(int sock, uint8_t* packet) {
 // Receives ATEM packet
 void atem_socket_recv(int sock, uint8_t* packet) {
 	// Receives packet
-	size_t recvLen = simple_socket_recv(sock, packet, ATEM_PACKET_LEN_MAX);
-	if (recvLen < ATEM_LEN_HEADER) {
+	size_t recv_len = simple_socket_recv(sock, packet, ATEM_PACKET_LEN_MAX);
+	if (recv_len < ATEM_LEN_HEADER) {
 		fprintf(stderr, "Received packet from client smaller than ATEM header\n");
 		abort();
 	}
 
 	// Verifies received ATEM packet
-	atem_packet_verify(packet, recvLen);
+	atem_packet_verify(packet, recv_len);
 }
 
 // Receives and prints ATEM packet

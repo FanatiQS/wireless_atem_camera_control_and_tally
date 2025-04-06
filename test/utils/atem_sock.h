@@ -7,7 +7,7 @@
 
 #include <netinet/in.h> // struct sockaddr_in
 
-void atem_packet_verify(uint8_t* packet, size_t recvLen);
+void atem_packet_verify(uint8_t* packet, size_t recv_len);
 
 int atem_socket_create(void);
 void atem_socket_close(int sock);
