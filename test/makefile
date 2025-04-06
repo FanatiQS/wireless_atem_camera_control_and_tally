@@ -3,7 +3,7 @@ BUILD_DIR = ../build/test
 
 # Add compiler flags
 CFLAGS += -Wall -Wextra -Wpedantic
-CFLAGS += -Wmissing-variable-declarations -Wmissing-prototypes
+CFLAGS += -Wswitch -Wshadow -Wconversion -Wimplicit-fallthrough -Wmissing-prototypes
 
 # Defaults to running all tests
 all:
