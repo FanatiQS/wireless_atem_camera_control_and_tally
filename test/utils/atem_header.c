@@ -4,6 +4,7 @@
 #include <stdio.h> // fprintf, stderr
 #include <stdlib.h> // abort
 #include <stddef.h> // size_t
+#include <stdbool.h> // bool
 
 #include "../../core/atem.h" // ATEM_PACKET_LEN_MAX
 #include "../../core/atem_protocol.h" // ATEM_MASK_LEN_HIGH, ATEM_INDEX_FLAGS, ATEM_INDEX_LEN_HIGH, ATEM_INDEX_LEN_LOW, ATEM_INDEX_SESSIONID_HIGH, ATEM_INDEX_SESSIONID_LOW, ATEM_INDEX_ACKID_HIGH, ATEM_INDEX_ACKID_LOW, ATEM_INDEX_LOCALID_HIGH, ATEM_INDEX_LOCALID_LOW, ATEM_INDEX_REMOTEID_HIGH, ATEM_INDEX_REMOTEID_LOW
@@ -106,6 +107,15 @@ void atem_header_len_get_verify(uint8_t* packet, size_t len_expected) {
 }
 
 
+
+/**
+ * Gets the next session id to help give every request gets its own session id
+ * @param msb Defines if session id is a server assigned session id or client assigned session id
+ */
+uint16_t atem_header_sessionid_next(bool msb) {
+	static uint16_t session_id = 0;
+	return (++session_id & 0x7fff) | ((msb << 15) & 0xffff);
+}
 
 // Sets session id in packet
 void atem_header_sessionid_set(uint8_t* packet, uint16_t session_id) {
@@ -280,6 +290,18 @@ void atem_header_init(void) {
 	assert(atem_header_len_get(packet) == ATEM_LEN_HEADER);
 	atem_header_len_set(packet, 100);
 	assert(atem_header_len_get(packet) == 100);
+
+	// Tests atem_header_sessionid_next
+	for (uint16_t i = 1; i < 0x8000; i++) {
+		assert(atem_header_sessionid_next(false) == i);
+	}
+	assert(atem_header_sessionid_next(false) == 0x0000);
+	for (uint16_t i = 1; i < 0x8000; i++) {
+		assert(atem_header_sessionid_next(true) == (i | 0x8000));
+	}
+	assert(atem_header_sessionid_next(true) == 0x8000);
+	assert(atem_header_sessionid_next(true) == 0x8001);
+
 
 	// Tests atem_header_sessionid_get and atem_header_sessionid_set
 	atem_packet_clear(packet);
