@@ -21,8 +21,8 @@ EXECS += $(EXECS_CORE)
 EXECS_DEVICE = http_parser http_close http_connect dns_parser
 $(EXECS_DEVICE:%=$(BUILD_DIR)/%): $(BUILD_DIR)/%: http/%.c http/http_sock.c
 SCRIPTS_DEVICE += config/test_conf http/dns_lookup
-.PHONY: config_device
-config_device: $(EXECS_DEVICE) $(SCRIPTS_DEVICE)
+.PHONY: device_config
+device_config: $(EXECS_DEVICE) $(SCRIPTS_DEVICE)
 EXECS += $(EXECS_DEVICE)
 SCRIPTS += $(SCRIPTS_DEVICE)
 
