@@ -289,7 +289,8 @@ int main(void) {
 		while (fill_count > 0) {
 			atem_socket_recv(sock, packet);
 			if (atem_header_sessionid_get(packet) == session_id) {
-				atem_acknowledge_keepalive_send(sock, packet);
+				atem_header_flags_get_verify(packet, ATEM_FLAG_ACKREQ, ATEM_FLAG_ACK | ATEM_FLAG_RETX);
+				atem_acknowledge_response_send(sock, session_id, atem_header_remoteid_get(packet));
 			}
 			else if (atem_header_flags_get(packet) & ATEM_FLAG_SYN) {
 				atem_handshake_opcode_get_verify(packet, ATEM_OPCODE_CLOSING);
