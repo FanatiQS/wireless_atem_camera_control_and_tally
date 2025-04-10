@@ -390,10 +390,10 @@ void atem_session_connect(uint8_t session_id_high, uint8_t session_id_low, struc
 	assert(packet->sessions[0].remote_id_high == 0);
 	assert(packet->sessions[0].remote_id_low == 0);
 
+	DEBUG_PRINTF("Session connected 0x%04x\n", session->session_id);
+
 	// Dumps cached state to client
 	atem_cache_dump(session, packet);
-
-	DEBUG_PRINTF("Session connected 0x%04x\n", session->session_id);
 }
 
 
