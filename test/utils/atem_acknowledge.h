@@ -20,7 +20,8 @@ uint16_t atem_acknowledge_response_recv(int sock, uint16_t session_id);
 void atem_acknowledge_response_recv_verify(int sock, uint16_t session_id, uint16_t ack_id);
 
 bool atem_acknowledge_keepalive(int sock, uint8_t* packet);
-void atem_acknowledge_flush(int sock, uint16_t session_id, uint16_t remote_id);
+uint16_t atem_acknowledge_request_flush(int sock, uint16_t session_id);
+void atem_acknowledge_response_flush(int sock, uint16_t session_id, uint16_t remote_id);
 
 void atem_acknowledge_init(void);
 
