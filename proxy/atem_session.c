@@ -66,7 +66,6 @@ static inline bool atem_session_connected(int16_t session_index) {
 /**
  * Swaps session at session_index with first session after connected sessions in memory, including session id
  * @attention Does not update potential request session id for either session
- * @attention Does not update potential sessions packet session index
  * @attention Should only swap session slots if required
  */
 static void atem_session_swap(int16_t session_index) {
@@ -96,7 +95,6 @@ static void atem_session_swap(int16_t session_index) {
 /**
  * Removes session from sessions array after it has been unregistered from the lookup table
  * @attention Might move sessions in memory, invalidating all session pointers
- * @attention Session moved to session_index has its session id updated and single packet relinked to it's new index
  */
 static void atem_session_release(int16_t session_index) {
 	assert(session_index >= atem_server.sessions_connected);
@@ -124,10 +122,11 @@ static void atem_session_release(int16_t session_index) {
 	}
 
 	// Reduces session slots when size is more than 1 multiplication away
-	uint16_t sessions_size_reduced = (uint16_t)(atem_server.sessions_size / SESSIONS_ARRAY_MULTIPLIER);
-	uint16_t sessions_size_resize_limit = (uint16_t)(sessions_size_reduced / SESSIONS_ARRAY_MULTIPLIER);
+	const float resize_multiplier = 1.0f / SESSIONS_ARRAY_MULTIPLIER;
+	const float limit_multiplier = resize_multiplier / SESSIONS_ARRAY_MULTIPLIER;
+	uint16_t sessions_size_resize_limit = (uint16_t)(atem_server.sessions_size * limit_multiplier);
 	if (atem_server.sessions_len < sessions_size_resize_limit && sessions_size_resize_limit > 1) {
-		atem_server.sessions_size = sessions_size_reduced;
+		atem_server.sessions_size = (uint16_t)(atem_server.sessions_size * resize_multiplier);
 		DEBUG_PRINTF("Reducing sessions memory to %d\n", atem_server.sessions_size);
 
 		assert(atem_server.sessions != NULL);
