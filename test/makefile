@@ -53,6 +53,8 @@ EXECS += release
 # Playgrounds for messing around in
 PLAYGROUNDS = $(patsubst playground/%.c,$(BUILD_DIR)/playground_%,$(wildcard playground/*.c))
 $(PLAYGROUNDS): $(BUILD_DIR)/playground_%: playground/%.c http/http_sock.c
+$(PLAYGROUNDS:$(BUILD_DIR)/playground_%=playground/%): playground/%: $(BUILD_DIR)/playground_%
+	./$<
 
 
 
@@ -95,7 +97,7 @@ $(EXECS:%=$(BUILD_DIR)/%) $(PLAYGROUNDS): | $(BUILD_DIR)
 
 # Runs test
 .PHONY: $(EXECS)
-$(EXECS) $(PLAYGROUNDS:$(BUILD_DIR)/%=%): %: $(BUILD_DIR)/%
+$(EXECS): %: $(BUILD_DIR)/%
 	./$<
 
 # Runs script
