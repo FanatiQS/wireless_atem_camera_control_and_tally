@@ -172,7 +172,6 @@ bool atem_session_peer_validate(struct atem_session* session, struct sockaddr_in
 	assert(peer_addr != NULL);
 	assert(session->peer_addr.sin_family == AF_INET);
 	assert(peer_addr->sin_family == AF_INET);
-	assert(session->peer_addr.sin_len == peer_addr->sin_len);
 
 	// Ensures that both address and port in peer_addr match what is stored in session
 	bool cmp_addr = (session->peer_addr.sin_addr.s_addr == peer_addr->sin_addr.s_addr);
