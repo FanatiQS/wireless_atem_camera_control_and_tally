@@ -172,6 +172,22 @@ void atem_server_recv(void) {
 	}
 }
 
+// Broadcasts ATEM buffer to all connected sessions
+void atem_server_broadcast(uint8_t* buf, uint8_t flags) {
+	struct atem_packet* packet = atem_packet_create(buf, atem_server.sessions_connected);
+	assert(packet != NULL);
+
+	for (int16_t session_index = 0; session_index < atem_server.sessions_connected; session_index++) {
+		struct atem_session* session = atem_session_get(session_index);
+		assert(session != NULL);
+		assert(atem_session_lookup_get(session->session_id) == session_index);
+
+		atem_session_packet_push(packet, session, session_index);
+	}
+
+	atem_packet_enqueue(packet, flags);
+}
+
 
 
 // Disconnects all sessions and closes the server

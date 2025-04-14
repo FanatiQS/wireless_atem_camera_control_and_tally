@@ -602,49 +602,34 @@ void atem_session_acknowledge(int16_t session_index, uint16_t ack_id) {
 	}
 }
 
+// Sends packet to session peer and puts 
+void atem_session_packet_push(struct atem_session* session, struct atem_packet* packet, uint16_t packet_session_index) {
+	// Initializes packet session for session related data located in packet queue
+	struct atem_packet_session* packet_session = atem_packet_session_get(packet, packet_session_index);
+	packet_session->packet_next = NULL;
+	packet_session->session_id = session->session_id;
+	packet_session->packet_session_index = packet_session_index;
 
+	// Assigns next session remote id to packet
+	session->remote_id++;
+	session->remote_id &= 0x7fff;
+	packet_session->remote_id_high = session->remote_id >> 8;
+	packet_session->remote_id_low = session->remote_id & 0xff;
 
-// Broadcasts ATEM buffer to all connected sessions
-void atem_session_broadcast(uint8_t* buf, uint8_t flags) {
-	struct atem_packet* packet = atem_packet_create(buf, atem_server.sessions_connected);
-	assert(packet != NULL);
+	// Sends packet to client
+	atem_packet_send(packet, packet_session);
 
-	for (int16_t session_index = 0; session_index < atem_server.sessions_connected; session_index++) {
-		struct atem_session* session = atem_session_get(session_index);
-		assert(session != NULL);
-		assert(atem_session_lookup_get(session->session_id) == session_index);
-
-		// Assigns next session remote id to packet
-		session->remote_id++;
-		session->remote_id &= 0x7fff;
-		buf[ATEM_INDEX_REMOTEID_HIGH] = session->remote_id >> 8;
-		buf[ATEM_INDEX_REMOTEID_LOW] = session->remote_id & 0xff;
-
-		// Sends packet to client
-		atem_session_send(session, buf);
-
-		// Enqueues packet at beginning of sessions packet queue if empty
-		if (session->packet_head == NULL) {
-			session->packet_head = packet;
-			session->packet_session_index_head = session_index;
-		}
-		// Enqueues packet at end of sessions queue if it is not empty
-		else {
-			int16_t packet_session_index = session->packet_session_index_tail;
-			session->packet_tail->sessions[packet_session_index].packet_next = packet;
-			session->packet_tail->sessions[packet_session_index].packet_session_index_next = session_index;
-		}
-		session->packet_tail = packet;
-		session->packet_session_index_tail = session_index;
-
-		// Initializes packet session for session related data located in packet queue
-		struct atem_packet_session* packet_session = &packet->sessions[session_index];
-		packet_session->packet_next = NULL;
-		packet_session->session_id = session->session_id;
-		packet_session->packet_session_index = session_index;
-		packet_session->remote_id_high = session->remote_id >> 8;
-		packet_session->remote_id_low = session->remote_id & 0xff;
+	// Enqueues packet at beginning of sessions packet queue if empty
+	if (session->packet_head == NULL) {
+		session->packet_head = packet;
+		session->packet_session_index_head = packet_session_index;
 	}
-
-	atem_packet_enqueue(packet, flags);
+	// Enqueues packet at end of sessions queue if it is not empty
+	else {
+		int16_t packet_session_index_tail = session->packet_session_index_tail;
+		session->packet_tail->sessions[packet_session_index_tail].packet_next = packet;
+		session->packet_tail->sessions[packet_session_index_tail].packet_session_index_next = packet_session_index;
+	}
+	session->packet_tail = packet;
+	session->packet_session_index_tail = packet_session_index;
 }

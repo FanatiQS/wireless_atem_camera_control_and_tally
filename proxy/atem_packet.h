@@ -55,7 +55,9 @@ struct atem_packet {
 struct atem_packet_session* atem_packet_session_get(struct atem_packet* packet, uint16_t packet_session_index);
 
 struct atem_packet* atem_packet_create(uint8_t* buf, uint16_t sessions_count);
+void atem_packet_send(struct atem_packet* packet, struct atem_packet_session* packet_session);
 void atem_packet_enqueue(struct atem_packet* packet, uint8_t flags);
+void atem_packet_dequeue(struct atem_packet* packet);
 void atem_packet_flush(struct atem_packet* packet, uint16_t packet_session_index);
 void atem_packet_release(struct atem_packet* packet);
 void atem_packet_disassociate(struct atem_packet* packet, uint16_t packet_session_index);

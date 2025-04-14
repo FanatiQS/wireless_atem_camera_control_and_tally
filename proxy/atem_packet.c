@@ -25,19 +25,6 @@ static uint8_t buf_ping[ATEM_LEN_HEADER] = {
 
 
 
-// Transmits the ATEM packet to the session peer
-static void atem_packet_session_send(struct atem_packet* packet, struct atem_packet_session* packet_session) {
-	assert(packet != NULL);
-	assert(packet_session != NULL);
-	struct atem_session* session = atem_session_get(atem_session_lookup_get(packet_session->session_id));
-	assert(session != NULL);
-	assert(session->session_id == packet_session->session_id);
-
-	packet->buf[ATEM_INDEX_REMOTEID_HIGH] = packet_session->remote_id_high;
-	packet->buf[ATEM_INDEX_REMOTEID_LOW] = packet_session->remote_id_low;
-	atem_session_send(session, packet->buf);
-}
-
 // Requeues packet at the top of the queue to the end and updates its timestamp
 static void atem_packet_requeue(void) {
 	struct atem_packet* packet = atem_server.packet_queue_head;
@@ -77,6 +64,15 @@ static void atem_packet_requeue(void) {
 
 
 
+// Gets packets packet session at specified index
+struct atem_packet_session* atem_packet_session_get(struct atem_packet* packet, uint16_t packet_session_index) {
+	assert(packet != NULL);
+	assert(packet_session_index < packet->sessions_len);
+	return &packet->sessions[packet_session_index];
+}
+
+
+
 // Creates an ATEM packet, ready to be sent to sessions and enqueued. Buffer will be released along with packet
 struct atem_packet* atem_packet_create(uint8_t* buf, uint16_t sessions_count) {
 	assert(buf != NULL);
@@ -108,11 +104,17 @@ struct atem_packet* atem_packet_create(uint8_t* buf, uint16_t sessions_count) {
 	return packet;
 }
 
-// Gets packets packet session at specified index
-struct atem_packet_session* atem_packet_session_get(struct atem_packet* packet, uint16_t packet_session_index) {
+// Transmits the ATEM packet to the session peer
+void atem_packet_send(struct atem_packet* packet, struct atem_packet_session* packet_session) {
 	assert(packet != NULL);
-	assert(packet_session_index < packet->sessions_len);
-	return &packet->sessions[packet_session_index];
+	assert(packet_session != NULL);
+	struct atem_session* session = atem_session_get(atem_session_lookup_get(packet_session->session_id));
+	assert(session != NULL);
+	assert(session->session_id == packet_session->session_id);
+
+	packet->buf[ATEM_INDEX_REMOTEID_HIGH] = packet_session->remote_id_high;
+	packet->buf[ATEM_INDEX_REMOTEID_LOW] = packet_session->remote_id_low;
+	atem_session_send(session, packet->buf);
 }
 
 // Enqueues packet to ATEM server for retransmission
@@ -140,8 +142,9 @@ void atem_packet_enqueue(struct atem_packet* packet, uint8_t flags) {
 	packet->next = NULL;
 }
 
-// Releases packet from packet queue and its memory
-void atem_packet_release(struct atem_packet* packet) {
+// Removes packet from server packet queue
+void atem_packet_dequeue(struct atem_packet* packet) {
+	assert(packet != NULL);
 	assert(atem_server.packet_queue_head != NULL);
 	assert(atem_server.packet_queue_head->prev == NULL);
 	assert(atem_server.packet_queue_tail != NULL);
@@ -168,6 +171,11 @@ void atem_packet_release(struct atem_packet* packet) {
 		assert(atem_server.packet_queue_head->prev == NULL);
 		assert(atem_server.packet_queue_tail->next == NULL);
 	}
+}
+
+// Releases packet from packet queue and its memory
+void atem_packet_release(struct atem_packet* packet) {
+	atem_packet_dequeue(packet);
 
 	DEBUG_PRINTF("Releasing packet: %p\n", (void*)packet);
 
@@ -240,7 +248,7 @@ void atem_packet_retransmit(void) {
 				(void*)packet,
 				packet_session->session_id
 			);
-			atem_packet_session_send(packet, packet_session);
+			atem_packet_send(packet, packet_session);
 		}
 		atem_packet_requeue();
 		packet->resends_remaining--;
@@ -309,7 +317,7 @@ void atem_packet_retransmit(void) {
 		packet_session->remote_id_low = 0;
 
 		// Sends closing request to session
-		atem_packet_session_send(packet, packet_session);
+		atem_packet_send(packet, packet_session);
 	}
 
 	// Re-initializes packet for closing request
@@ -359,7 +367,7 @@ void atem_packet_broadcast_ping(void) {
 
 	DEBUG_PRINTF("Pings all %d connected clients\n", atem_server.sessions_connected);
 	buf_ping[ATEM_INDEX_FLAGS] = ATEM_FLAG_ACKREQ;
-	atem_session_broadcast(buf_ping, 0);
+	atem_server_broadcast(buf_ping, 0);
 
 	// Sets timeout for next ping
 	int timespec_result = timespec_get(&atem_server.ping_timeout, TIME_UTC);
