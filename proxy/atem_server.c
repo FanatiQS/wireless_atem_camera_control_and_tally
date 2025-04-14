@@ -11,7 +11,7 @@
 #include <unistd.h> // close
 
 #include "./atem_debug.h" // DEBUG_PRINTF, DEBUG_PRINT_BUF
-#include "./atem_server.h" // struct atem_server, atem_session_get, atem_session_lookup_get, atem_session_lookup_clear
+#include "./atem_server.h" // struct atem_server, atem_session_get, atem_session_lookup_get, atem_session_lookup_clear, ATEM_SERVER_SESSIONS_MULTIPLIER
 #include "./atem_session.h" // struct atem_session
 #include "./atem_packet.h" // struct atem_packet, atem_packet_release, atem_packet_close
 #include "../core/atem.h" // ATEM_PORT, ATEM_PACKET_LEN_MAX
@@ -19,7 +19,10 @@
 
 // Initializes server context with default configuration
 struct atem_server atem_server = {
-	.sessions_size = 5,
+	// Smallest sessions size that can not be reduced further
+	.sessions_size = (uint16_t)(2.0f * ATEM_SERVER_SESSIONS_MULTIPLIER * ATEM_SERVER_SESSIONS_MULTIPLIER),
+
+	// Customizable configurations
 	.sessions_limit = 5, // @todo create macro in atem_protocol.h for this value and use in tests
 	.retransmit_delay = ATEM_RESEND_TIME,
 	.ping_interval = ATEM_PING_INTERVAL

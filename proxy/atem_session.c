@@ -15,13 +15,10 @@
 #include "../core/atem_protocol.h" // ATEM_LEN_HEADER, ATEM_INDEX_LEN_HIGH, ATEM_INDEX_LEN_LOW,ATEM_INDEX_SESSIONID_HIGH, ATEM_INDEX_SESSIONID_LOW, ATEM_INDEX_FLAGS, ATEM_FLAG_RETX, ATEM_FLAG_SYN, ATEM_LEN_SYN, ATEM_INDEX_OPCODE, ATEM_OPCODE_REJECT, ATEM_OPCODE_ACCEPT, ATEM_INDEX_NEWSESSIONID_HIGH, ATEM_INDEX_NEWSESSIONID_LOW, ATEM_OPCODE_CLOSED
 #include "../core/atem.h" // ATEM_PACKET_LEN_MAX
 #include "./atem_debug.h" // DEBUG_PRINTF, DEBUG_PRINT_BUF
-#include "./atem_server.h" // atem_server, atem_server_release
+#include "./atem_server.h" // atem_server, atem_server_release, ATEM_SERVER_SESSIONS_MULTIPLIER
 #include "./atem_packet.h" // struct atem_packet, struct atem_packet_session, atem_packet_create, atem_packet_enqueue, atem_packet_release, atem_packet_session_update, atem_packet_disassociate, atem_packet_flush, ATEM_PACKET_FLAG_CLOSING
 #include "./atem_cache.h" // atem_cache_dump
 #include "./atem_session.h" // struct atem_session
-
-// How much to grow the sessions array by when it runs out of slots
-#define SESSIONS_ARRAY_MULTIPLIER 1.6f
 
 
 
@@ -122,8 +119,8 @@ static void atem_session_release(int16_t session_index) {
 	}
 
 	// Reduces session slots when size is more than 1 multiplication away
-	const float multiplier_resize = 1.0f / SESSIONS_ARRAY_MULTIPLIER;
-	const float multiplier_limit = multiplier_resize / SESSIONS_ARRAY_MULTIPLIER;
+	const float multiplier_resize = 1.0f / ATEM_SERVER_SESSIONS_MULTIPLIER;
+	const float multiplier_limit = multiplier_resize / ATEM_SERVER_SESSIONS_MULTIPLIER;
 	uint16_t sessions_size_resize_limit = (uint16_t)(atem_server.sessions_size * multiplier_limit);
 	if (atem_server.sessions_len < sessions_size_resize_limit && sessions_size_resize_limit > 1) {
 		atem_server.sessions_size = (uint16_t)(atem_server.sessions_size * multiplier_resize);
@@ -245,7 +242,7 @@ void atem_session_create(uint8_t session_id_high, uint8_t session_id_low, struct
 	session_index = atem_server.sessions_len++;
 	assert(session_index <= atem_server.sessions_size);
 	if (session_index == atem_server.sessions_size) {
-		atem_server.sessions_size *= SESSIONS_ARRAY_MULTIPLIER;
+		atem_server.sessions_size *= ATEM_SERVER_SESSIONS_MULTIPLIER;
 		if (atem_server.sessions_size > atem_server.sessions_limit) {
 			atem_server.sessions_size = atem_server.sessions_limit;
 		}

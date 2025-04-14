@@ -9,6 +9,9 @@
 #include "./atem_packet.h" // struct atem_packet_t
 #include "./atem_session.h" // struct atem_session_t
 
+// How much to grow the sessions array by when it runs out of slots
+#define ATEM_SERVER_SESSIONS_MULTIPLIER (1.6f)
+
 struct atem_server {
 	struct atem_packet* packet_queue_head;
 	struct atem_packet* packet_queue_tail;
