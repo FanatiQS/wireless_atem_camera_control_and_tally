@@ -133,7 +133,8 @@ void atem_debug_print_table(void) {
 	printf("======== Lookup Table ========\n");
 	const size_t size = sizeof(atem_server.session_lookup_table) / sizeof(atem_server.session_lookup_table[0]);
 	for (size_t i = 0; i < size; i++) {
-		int16_t session_index = atem_session_lookup_get(i);
+		assert(i <= 0xffff);
+		int16_t session_index = atem_session_lookup_get(i & 0xffff);
 		if (session_index != -1) {
 			printf("0x%04zx: %d\n", i, session_index);
 		}
