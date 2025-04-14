@@ -122,11 +122,11 @@ static void atem_session_release(int16_t session_index) {
 	}
 
 	// Reduces session slots when size is more than 1 multiplication away
-	const float resize_multiplier = 1.0f / SESSIONS_ARRAY_MULTIPLIER;
-	const float limit_multiplier = resize_multiplier / SESSIONS_ARRAY_MULTIPLIER;
-	uint16_t sessions_size_resize_limit = (uint16_t)(atem_server.sessions_size * limit_multiplier);
+	const float multiplier_resize = 1.0f / SESSIONS_ARRAY_MULTIPLIER;
+	const float multiplier_limit = multiplier_resize / SESSIONS_ARRAY_MULTIPLIER;
+	uint16_t sessions_size_resize_limit = (uint16_t)(atem_server.sessions_size * multiplier_limit);
 	if (atem_server.sessions_len < sessions_size_resize_limit && sessions_size_resize_limit > 1) {
-		atem_server.sessions_size = (uint16_t)(atem_server.sessions_size * resize_multiplier);
+		atem_server.sessions_size = (uint16_t)(atem_server.sessions_size * multiplier_resize);
 		DEBUG_PRINTF("Reducing sessions memory to %d\n", atem_server.sessions_size);
 
 		assert(atem_server.sessions != NULL);
