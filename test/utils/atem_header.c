@@ -60,9 +60,9 @@ void atem_header_flags_get_verify(uint8_t* packet, uint8_t flags_required, uint8
 	}
 
 	// Verifies only required or optional flags are set
-	uint8_t illegalFlags = ~(flags_required | flags_optional);
-	if (flags & illegalFlags) {
-		fprintf(stderr, "Unexpected illegal flag(s) 0x%02x\n", illegalFlags & flags);
+	uint8_t flags_illegal = ~(flags_required | flags_optional);
+	if (flags & flags_illegal) {
+		fprintf(stderr, "Unexpected illegal flag(s) 0x%02x\n", flags_illegal & flags);
 		abort();
 	}
 }
@@ -153,10 +153,10 @@ uint16_t atem_header_ackid_get(uint8_t* packet) {
 }
 
 // Ensures ack id in packet matches expected ack id
-void atem_header_ackid_get_verify(uint8_t* packet, uint16_t expectedAckId) {
-	uint16_t ackId = atem_header_ackid_get(packet);
-	if (ackId == expectedAckId) return;
-	fprintf(stderr, "Expected ack id 0x%04x, but got 0x%04x\n", expectedAckId, ackId);
+void atem_header_ackid_get_verify(uint8_t* packet, uint16_t ack_id_expected) {
+	uint16_t ack_id = atem_header_ackid_get(packet);
+	if (ack_id == ack_id_expected) return;
+	fprintf(stderr, "Expected ack id 0x%04x, but got 0x%04x\n", ack_id_expected, ack_id);
 	abort();
 }
 
