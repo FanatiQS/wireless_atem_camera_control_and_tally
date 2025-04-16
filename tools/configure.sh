@@ -1,11 +1,12 @@
-#!/usr/bin/env bash
+#!/usr/bin/env sh
 
-if [[ -z "$1" ]] || [[ -z "$2" ]]; then
+if [ -z "$1" ] || [ -z "$2" ]; then
 	echo "Usage: $0 <ip-addr> key=value..."
 	exit
 fi
 
-for arg in "${@:2}"; do
-	args+=("--data-urlencode" "$arg")
-done
-curl --silent --show-error --max-time 5 $1 "${args[@]}" | sed 's/.*<p>\([^<]*\).*/\1/'
+url=$1
+shift
+for arg in "$@"; do
+	echo "--data-urlencode \"$arg\""
+done | curl $url --silent --show-error --max-time 5 --config - | sed 's/.*<p>\([^<]*\).*/\1/'
