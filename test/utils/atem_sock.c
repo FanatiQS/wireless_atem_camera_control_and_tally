@@ -28,10 +28,28 @@ void atem_packet_verify(uint8_t* packet, size_t recv_len) {
 		logs_print_buffer(stdout, packet, recv_len);
 	}
 
+	// Verifies packet length
+	atem_header_len_get_verify(packet, recv_len);
+
+	// Verifies that the correct IDs are set or not set for flags
+	uint8_t flags = atem_header_flags_get(packet);
+	if (flags & ATEM_FLAG_SYN) {
+		atem_header_flags_get_verify(packet, ATEM_FLAG_SYN, ATEM_FLAG_RETX);
+		atem_header_len_get_verify(packet, ATEM_LEN_SYN);
+	}
+	if (!(flags & ATEM_FLAG_ACK)) {
+		atem_header_ackid_get_verify(packet, 0x0000);
+	}
+	if (!(flags & ATEM_FLAG_ACKREQ)) {
+		atem_header_remoteid_get_verify(packet, 0x0000);
+	}
+	if (!(flags & ATEM_FLAG_RETXREQ)) {
+		atem_header_localid_get_verify(packet, 0x0000);
+	}
+
 	// Verifies unknown id
 	int checkUnknownId = 0;
 	if (checkUnknownId) {
-		uint8_t flags = atem_header_flags_get(packet);
 		uint16_t unknownId = atem_header_unknownid_get(packet);
 		if (flags == ATEM_FLAG_SYN) {
 			if (unknownId != 0x003a) {
@@ -52,9 +70,6 @@ void atem_packet_verify(uint8_t* packet, size_t recv_len) {
 			}
 		}
 	}
-
-	// Verifies packet length
-	atem_header_len_get_verify(packet, recv_len);
 }
 
 
