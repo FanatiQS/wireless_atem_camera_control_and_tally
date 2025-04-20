@@ -235,8 +235,14 @@ void atem_server_close(void) {
 
 // Checks if the ATEM server has fully closed
 bool atem_server_closed(void) {
-	assert(atem_server.closing);
+	assert(atem_server.closing == true);
 	return atem_server.sessions_len == 0;
+}
+
+// Reopens server after being closed to allow new connections
+void atem_server_restart(void) {
+	assert(atem_server_closed() == true);
+	atem_server.closing = false;
 }
 
 // Releases all resources server has allocated
