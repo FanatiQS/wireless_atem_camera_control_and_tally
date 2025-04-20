@@ -182,7 +182,7 @@ void atem_server_broadcast(uint8_t* buf, uint8_t flags) {
 		assert(session != NULL);
 		assert(atem_session_lookup_get(session->session_id) == session_index);
 
-		atem_session_packet_push(packet, session, session_index);
+		atem_session_packet_push(session, packet, session_index);
 	}
 
 	atem_packet_enqueue(packet, flags);
