@@ -2,7 +2,7 @@
 #ifndef ATEM_SERVER_H
 #define ATEM_SERVER_H
 
-#include <stdint.h> // uint16_t, int16_t, UINT16_MAX
+#include <stdint.h> // uint8_t, uint16_t, int16_t, UINT16_MAX
 #include <time.h> // struct timespec
 #include <stdbool.h> // bool
 
@@ -33,8 +33,11 @@ extern struct atem_server atem_server;
 
 bool atem_server_init(void);
 void atem_server_recv(void);
+void atem_server_broadcast(uint8_t* buf, uint8_t flags);
+
 void atem_server_close(void);
 bool atem_server_closed(void);
+void atem_server_restart(void);
 void atem_server_release(void);
 
 #endif // ATEM_SERVER_H

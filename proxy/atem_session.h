@@ -41,6 +41,6 @@ void atem_session_closing(int16_t session_index);
 void atem_session_closed(int16_t session_index);
 
 void atem_session_acknowledge(int16_t session_index, uint16_t ack_id);
-void atem_session_broadcast(uint8_t* buf, uint8_t flags);
+void atem_session_packet_push(struct atem_session* session, struct atem_packet* packet, uint16_t packet_session_index);
 
 #endif // ATEM_SESSION_H
