@@ -41,6 +41,7 @@ void atem_handshake_newsessionid_get_verify(uint8_t* packet, uint16_t session_id
 
 // Sets opcode in handshake packet, does not set session ids, retransmit flag or unknown id
 void atem_handshake_opcode_set(uint8_t* packet, uint8_t opcode) {
+	atem_header_flags_clear(packet);
 	atem_header_flags_set(packet, ATEM_FLAG_SYN);
 	atem_header_len_set(packet, ATEM_LEN_SYN);
 	packet[ATEM_INDEX_OPCODE] = opcode;

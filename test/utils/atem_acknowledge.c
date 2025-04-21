@@ -13,6 +13,7 @@
 
 // Sets ackreq flag, length, session id and remote id for acknowledgement request
 void atem_acknowledge_request_set(uint8_t* packet, uint16_t session_id, uint16_t remote_id) {
+	atem_header_flags_clear(packet);
 	atem_header_flags_set(packet, ATEM_FLAG_ACKREQ);
 	atem_header_len_set(packet, ATEM_LEN_ACK);
 	atem_header_sessionid_set(packet, session_id);
@@ -60,6 +61,7 @@ void atem_acknowledge_request_recv_verify(int sock, uint16_t session_id, uint16_
 
 // Sets ack flag, length, session id and ack id for acknowledgement response
 void atem_acknowledge_response_set(uint8_t* packet, uint16_t session_id, uint16_t ack_id) {
+	atem_header_flags_clear(packet);
 	atem_header_flags_set(packet, ATEM_FLAG_ACK);
 	atem_header_len_set(packet, ATEM_LEN_ACK);
 	atem_header_sessionid_set(packet, session_id);
