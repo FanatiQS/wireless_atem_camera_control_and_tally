@@ -34,23 +34,23 @@ bool logs_find(const char* match) {
 }
 
 // Prints binary buffer in hex
-void logs_print_buffer(FILE* pipe, uint8_t* buf, size_t bufLen) {
-	size_t clampIndex;
+void logs_print_buffer(FILE* pipe, uint8_t* buf, size_t buf_len) {
+	size_t clamp_index;
 	size_t len;
 
 	// Gets clamp index if defined
-	char* clampLen = getenv("LOGS_BUFFER_CLAMP");
-	if (clampLen) {
-		clampIndex = (size_t)atoi(clampLen) * PRINT_BYTE_LEN;
-		if (clampIndex == 0) {
-			fprintf(stderr, "Invalid LOGS_BUFFER_CLAMP value: %s\n", clampLen);
+	char* clamp_len = getenv("LOGS_BUFFER_CLAMP");
+	if (clamp_len) {
+		clamp_index = (size_t)atoi(clamp_len) * PRINT_BYTE_LEN;
+		if (clamp_index == 0) {
+			fprintf(stderr, "Invalid LOGS_BUFFER_CLAMP value: %s\n", clamp_len);
 			abort();
 		}
-		len = (bufLen < clampIndex) ? bufLen : clampIndex;
+		len = (buf_len < clamp_index) ? buf_len : clamp_index;
 	}
 	else {
-		clampIndex = bufLen;
-		len = bufLen;
+		clamp_index = buf_len;
+		len = buf_len;
 	}
 
 	// Prints buffer to clamp index or end of buffer
@@ -62,8 +62,8 @@ void logs_print_buffer(FILE* pipe, uint8_t* buf, size_t bufLen) {
 		fprintf(pipe, "%02x ", buf[i]);
 	}
 
-	if (bufLen > clampIndex) {
-		fprintf(pipe, "\n\t... (%zu)\n", bufLen - len);
+	if (buf_len > clamp_index) {
+		fprintf(pipe, "\n\t... (%zu)\n", buf_len - len);
 	}
 	else {
 		fprintf(pipe, "\n");
