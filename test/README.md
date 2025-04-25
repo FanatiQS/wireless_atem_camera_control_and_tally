@@ -35,6 +35,87 @@ Execute the tests with the IP addresses set for wireless device address.
 make atem_client config_device ATEM_CLIENT_ADDR=192.168.1.66 DEVICE_ADDR=192.168.1.66
 ```
 
+## Usage
+
+### Environment Variables
+Environment variables are heavily used in the test suite for configuration.
+
+#### DEVICE_ADDR
+The IP address of the waccat device to test.
+
+#### ATEM_SERVER_ADDR
+The IP address of the ATEM switcher or proxy server to test.
+
+#### ATEM_CLIENT_ADDR
+The IP address of the ATEM client to test.
+
+#### LOGS
+Comma separated list (without spaces) of logging types:
+| Command     | Description                       |
+| ----------- | --------------------------------- |
+| `atem_send` | Prints all ATEM packets sent      |
+| `atem_recv` | Prints all ATEM packets received  |
+| `http_send` | Prints all HTTP messages sent     |
+| `http_recv` | Prints all HTTP messages received |
+| `dns_send`  | Prints all DNS packets sent       |
+| `dns_recv`  | Prints all DNS packets received   |
+| `timer`     | Prints all timer deltas           |
+
+#### LOGS_BUFFER_CLAMP
+Limits the number of rows to print when logging buffers.
+Value has to be an integer, if it is anything else execution will abort.
+
+#### RUNNER_MODE
+Determines how failing tests should be handled:
+
+| Command | Description                                          |
+| ------- | ---------------------------------------------------- |
+| `all`   | Continues running remaining tests after a test fails |
+| `abort` | Aborts entire execution if one test fails            |
+Defaults to `abort`.
+
+#### RUNNER_FILTER
+To filter what tests will run, patterns can be used to define either inclusive or exclusive filters.
+A pattern is exclusive if it starts with `-` and an inclusive pattern otherwise.
+A test will be prevented from running when it matches an exclusive patterns or at least 1 inclusive patterns is provided but not matched.
+The `*` character is a wildcard for one or more characters.
+Each pattern defines a file with a line number, separated by a comma.
+Only use this for debugging or temporarily running specific tests as the line number will change whenever tests are updated.
+
+Example:
+
+`make atem_client RUNNER_FILTER=*open.c:5`
+
+#### HTTP_CONNECTION_ITERS
+Number of times to run each test for `http_connect`.
+
+### Playgrounds
+Playgrounds is a way to easily write tests or experiments using the test tooling.
+It has full access to all test utilities along with the core API.
+
+A playground is simply a `.c` file located in `/test/playground/`.
+This directory does not exist by default and will have to be created.
+To execute a playground test, simply run `make playground_mytest`
+An example of a playground file is something like this:
+
+```c
+#include "../utils/utils.h"
+
+int main(void) {
+	// My first playground test
+	RUN_TEST() {
+		// put any test code here
+	}
+
+	return runner_exit();
+}
+
+```
+
+### Debugger
+Tests can run through a debugger simply by prepending `lldb_` before the test to run.
+This obviously requires LLDB to be installed.
+
 # Manual tests (@todo needs update)
 This file contains a list of tests to perform to make sure that everything works correctly.
 It is recommended to run these tests if either the camera model or the protocol version the switcher uses is not confirmed to work yet.
