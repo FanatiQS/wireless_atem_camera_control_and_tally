@@ -142,7 +142,7 @@ typedef struct atem {
 	uint16_t read_len;
 	uint16_t write_len;
 	uint16_t cmd_len;
-	uint16_t cmd_index;
+	uint16_t cmd_index_next;
 	uint16_t remote_id_last;
 	uint8_t dest;
 	uint8_t read_buf[ATEM_PACKET_LEN_MAX];
@@ -224,7 +224,7 @@ enum atem_status atem_parse(struct atem* atem);
  * @returns Indicates if there are commands available to process.
  */
 static inline bool atem_cmd_available(struct atem* atem) {
-	return (atem->cmd_index < atem->read_len);
+	return (atem->cmd_index_next < atem->read_len);
 }
 
 /**

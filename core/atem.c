@@ -28,7 +28,6 @@
 
 // Buffer to send to ATEM when establishing connection
 static ATEM_THREAD_LOCAL uint8_t buf_open[ATEM_LEN_SYN] = {
-	[ATEM_INDEX_FLAGS] = ATEM_FLAG_SYN,
 	[ATEM_INDEX_LEN_LOW] = ATEM_LEN_SYN,
 	[ATEM_INDEX_SESSIONID_HIGH] = 0x13,
 	[ATEM_INDEX_SESSIONID_LOW] = 0x37,
@@ -127,7 +126,7 @@ enum atem_status atem_parse(struct atem* atem) {
 				atem->read_buf[ATEM_INDEX_LEN_LOW]) & ATEM_PACKET_LEN_MAX;
 
 			// Sets up for parsing ATEM commands in payload
-			atem->cmd_index = ATEM_LEN_HEADER;
+			atem->cmd_index_next = ATEM_LEN_HEADER;
 
 			// Process payload if available
 			return ATEM_STATUS_WRITE;
@@ -205,21 +204,19 @@ enum atem_status atem_parse(struct atem* atem) {
 
 // Gets next command name and sets command buffer to a pointer to its data
 uint32_t atem_cmd_next(struct atem* atem) {
-	// Gets start index of command in read buffer
-	const uint16_t index = atem->cmd_index;
+	// Gets pointer to command in read buffer
+	uint8_t* const buf = &atem->read_buf[atem->cmd_index_next];
 
-	// Increment start index of command with command length to get start index for next command
-	atem->cmd_len = ((atem->read_buf[index] << 8) | atem->read_buf[index + 1]) & 0xffff;
-	atem->cmd_index += atem->cmd_len;
+	// Sets index of next command
+	uint16_t cmd_len = (uint16_t)(buf[0] << 8 | buf[1]);
+	atem->cmd_index_next += cmd_len;
 
-	// Sets pointer to command to start of command data
-	atem->cmd_buf = atem->read_buf + index + ATEM_LEN_CMDHEADER;
+	// Sets command buffer and length
+	atem->cmd_len = cmd_len - ATEM_LEN_CMDHEADER;
+	atem->cmd_buf = buf + ATEM_LEN_CMDHEADER;
 
 	// Converts command name to a 32 bit integer for easy comparison
-	return (uint32_t)((atem->read_buf[index + ATEM_OFFSET_CMDNAME + 0] << 24) |
-		(atem->read_buf[index + ATEM_OFFSET_CMDNAME + 1] << 16) |
-		(atem->read_buf[index + ATEM_OFFSET_CMDNAME + 2] << 8) |
-		atem->read_buf[index + ATEM_OFFSET_CMDNAME + 3]);
+	return (uint32_t)(buf[4] << 24 | buf[5] << 16 | buf[6] << 8 | buf[7]);
 }
 
 
@@ -232,14 +229,15 @@ bool atem_tally_updated(struct atem* atem) {
 	}
 
 	// Stores old states for PGM and PVW tally
-	const uint8_t tally_old = (uint8_t)(atem->tally_pgm | atem->tally_pvw << 1);
+	const bool tally_pgm_old = atem->tally_pgm;
+	const bool tally_pvw_old = atem->tally_pvw;
 
 	// Updates states for PGM and PVW tally
 	atem->tally_pgm = atem->cmd_buf[TALLY_OFFSET + atem->dest] & TALLY_FLAG_PGM;
 	atem->tally_pvw = atem->cmd_buf[TALLY_OFFSET + atem->dest] == TALLY_FLAG_PVW;
 
 	// Returns boolean indicating if tally was updated or not
-	return tally_old != (atem->tally_pgm | atem->tally_pvw << 1);
+	return (tally_pgm_old != atem->tally_pgm) || (tally_pvw_old != atem->tally_pvw);
 }
 
 // Translates camera control data from ATEMs protocol to Blackmagics SDI camera control protocol
