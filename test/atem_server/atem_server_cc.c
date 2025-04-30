@@ -39,7 +39,7 @@ int main(void) {
 		uint16_t session_id = atem_handshake_connect(sock, 0x1234);
 
 		struct atem atem = { .dest = 1 };
-		atem_connection_reset(&atem);
+		atem_connection_open(&atem);
 		atem_handshake_opcode_set(atem.read_buf, ATEM_OPCODE_ACCEPT);
 		assert(atem_parse(&atem) == ATEM_STATUS_ACCEPTED);
 

@@ -52,8 +52,9 @@ static ATEM_THREAD_LOCAL uint8_t buf_retxreq[ATEM_LEN_ACK] = {
 };
 
 
+
 // Resets write buffer to be a SYN packet for starting handshake
-void atem_connection_reset(struct atem* atem) {
+void atem_connection_open(struct atem* atem) {
 	buf_open[ATEM_INDEX_FLAGS] = ATEM_FLAG_SYN | ((atem->write_buf == buf_open) ? ATEM_FLAG_RETX : 0);
 	atem->write_buf = buf_open;
 	atem->write_len = ATEM_LEN_SYN;

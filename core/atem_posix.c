@@ -10,7 +10,7 @@
 #include <unistd.h> // close
 #include <sys/types.h> // ssize_t
 
-#include "./atem.h" // struct atem, ATEM_PORT, atem_connection_reset, ATEM_TIMEOUT_MS, ATEM_PACKET_LEN_MAX, enum atem_status, atem_parse, atem_cmd_available
+#include "./atem.h" // struct atem, ATEM_PORT, atem_connection_open, ATEM_TIMEOUT_MS, ATEM_PACKET_LEN_MAX, enum atem_status, atem_parse, atem_cmd_available
 #include "./atem_protocol.h" // ATEM_LEN_HEADER
 #include "./atem_posix.h" // enum atem_posix_status, ATEM_POSIX_STATUS_ERROR_NETWORK, ATEM_POSIX_STATUS_DROPPED
 
@@ -44,7 +44,7 @@ bool atem_init(struct atem_posix_ctx* atem_ctx, in_addr_t addr) {
 	// Initializes context and starts opening handshake
 	atem_ctx->atem.tally_pgm = 0;
 	atem_ctx->atem.tally_pvw = 0;
-	atem_connection_reset(&atem_ctx->atem);
+	atem_connection_open(&atem_ctx->atem);
 
 	return true;
 }
@@ -52,11 +52,11 @@ bool atem_init(struct atem_posix_ctx* atem_ctx, in_addr_t addr) {
 // Sens buffered packet in context using ATEM UDP socket
 bool atem_send(struct atem_posix_ctx* atem_ctx) {
 	assert(atem_ctx != NULL);
-
 	struct atem* atem = &atem_ctx->atem;
 	assert(atem->write_buf != NULL);
 	assert(atem->write_len > 0);
 	assert(((atem->write_buf[0] << 8 | atem->write_buf[1]) & ATEM_PACKET_LEN_MAX) == atem->write_len);
+
 	ssize_t sent = send(atem_ctx->sock, atem->write_buf, atem->write_len, 0);
 	assert(sent == -1 || sent == atem->write_len);
 	return sent == atem->write_len;
@@ -84,7 +84,7 @@ enum atem_posix_status atem_poll(struct atem_posix_ctx* atem_ctx) {
 
 		// Resets to send new opening handshake if connection is dropped
 		assert(poll_len == 0);
-		atem_connection_reset(&atem_ctx->atem);
+		atem_connection_open(&atem_ctx->atem);
 		return ATEM_POSIX_STATUS_DROPPED;
 	}
 

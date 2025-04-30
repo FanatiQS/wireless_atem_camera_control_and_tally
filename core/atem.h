@@ -173,7 +173,7 @@ extern "C" {
  *
  * @param[in,out] atem The atem connection context to reset the connection for.
  */
-void atem_connection_reset(struct atem* atem);
+void atem_connection_open(struct atem* atem);
 
 /**
  * @brief Requests the ATEM connection to close.
@@ -184,7 +184,7 @@ void atem_connection_reset(struct atem* atem);
  * @ref ATEM_STATUS_CLOSED and should continue to be sent for every packet
  * in case the first close request packet was dropped. The connection is
  * completely closed when receiving the @ref ATEM_STATUS_CLOSED, a new
- * connection can be restarted by calling atem_connection_reset() again.
+ * connection can be restarted by calling atem_connection_open() again.
  *
  * @param[in,out] atem The atem connection context to close the connection for.
  */

@@ -15,7 +15,7 @@ int main(void) {
 	// Ensures accepted handshake returns ATEM_STATUS_ACCEPTED once
 	RUN_TEST() {
 		struct atem atem = {0};
-		atem_connection_reset(&atem);
+		atem_connection_open(&atem);
 		atem_handshake_sessionid_set(atem.read_buf, ATEM_OPCODE_ACCEPT, true, atem_header_sessionid_next(false));
 		assert(atem_parse(&atem) == ATEM_STATUS_ACCEPTED);
 		assert(atem_parse(&atem) == ATEM_STATUS_WRITE_ONLY);
@@ -24,7 +24,7 @@ int main(void) {
 	// Ensures rejected handshake returns ATEM_STATUS_REJECTED
 	RUN_TEST() {
 		struct atem atem = {0};
-		atem_connection_reset(&atem);
+		atem_connection_open(&atem);
 		atem_handshake_sessionid_set(atem.read_buf, ATEM_OPCODE_REJECT, true, atem_header_sessionid_next(false));
 		assert(atem_parse(&atem) == ATEM_STATUS_REJECTED);
 		assert(atem_parse(&atem) == ATEM_STATUS_REJECTED);
@@ -95,7 +95,7 @@ int main(void) {
 			len_remaining -= atem.cmd_len;
 		}
 		assert(len_remaining == ATEM_LEN_HEADER);
-		assert(atem.cmd_index == atem.read_len);
+		assert(atem.cmd_index_next == atem.read_len);
 	}
 
 	// Ensures stored remote id is incremented and reset correctly
@@ -111,7 +111,7 @@ int main(void) {
 		}
 
 		// Ensures remote id is reset when with new connection
-		atem_connection_reset(&atem);
+		atem_connection_open(&atem);
 		atem_packet_clear(atem.read_buf);
 		atem_handshake_sessionid_set(atem.read_buf, ATEM_OPCODE_ACCEPT, false, 0x7832);
 		assert(atem_parse(&atem) == ATEM_STATUS_ACCEPTED);

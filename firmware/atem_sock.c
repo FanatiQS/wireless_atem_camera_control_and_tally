@@ -12,7 +12,7 @@
 #include <lwip/ip4.h> // ip4_route
 #include <lwip/ip4_addr.h> // ip4_addr_isany_val, ip4_addr_netcmp, ip4_addr_t
 
-#include "../core/atem.h" // struct atem atem_connection_reset, atem_parse, ATEM_STATUS_WRITE, ATEM_STATUS_CLOSING, ATEM_STATUS_REJECTED, ATEM_STATUS_WRITE_ONLY, ATEM_STATUS_CLOSED, ATEM_STATUS_ACCEPTED, ATEM_STATUS_ERROR, ATEM_STATUS_NONE, ATEM_TIMEOUT, ATEM_PORT, atem_cmd_available, atem_cmd_next, ATEM_CMDNAME_VERSION, ATEM_CMDNAME_TALLY, ATEM_CMDNAME_CAMERACONTROL, atem_protocol_major, atem_protocol_minor, ATEM_TIMEOUT_MS
+#include "../core/atem.h" // struct atem atem_connection_open, atem_parse, ATEM_STATUS_WRITE, ATEM_STATUS_CLOSING, ATEM_STATUS_REJECTED, ATEM_STATUS_WRITE_ONLY, ATEM_STATUS_CLOSED, ATEM_STATUS_ACCEPTED, ATEM_STATUS_ERROR, ATEM_STATUS_NONE, ATEM_TIMEOUT, ATEM_PORT, atem_cmd_available, atem_cmd_next, ATEM_CMDNAME_VERSION, ATEM_CMDNAME_TALLY, ATEM_CMDNAME_CAMERACONTROL, atem_protocol_major, atem_protocol_minor, ATEM_TIMEOUT_MS
 #include "../core/atem_protocol.h" // ATEM_INDEX_FLAGS, ATEM_INDEX_REMOTEID_HIGH, ATEM_INDEX_REMOTEID_LOW, ATEM_FLAG_ACK
 #include "./user_config.h" // DEBUG_TALLY, DEBUG_CC, DEBUG_ATEM, PIN_CONN, PIN_PGM, PIN_PVW, PIN_SCL, PIN_SDA
 #include "./led.h" // LED_TALLY, LED_CONN, led_init
@@ -220,7 +220,7 @@ static void atem_timeout_callback(void* arg) {
 	sys_timeout(ATEM_TIMEOUT_MS, atem_timeout_callback, arg);
 
 	// Sends handshake to ATEM
-	atem_connection_reset(&atem);
+	atem_connection_open(&atem);
 	atem_send(arg);
 
 	// Indicates connection lost with LEDs, SDI, HTML and serial
@@ -237,7 +237,7 @@ static void atem_timeout_callback(void* arg) {
 	}
 }
 
-// Reads and processces received ATEM packet
+// Reads and processes received ATEM packet
 static void atem_recv_callback(void* arg, struct udp_pcb* pcb, struct pbuf* p, const ip_addr_t* addr, uint16_t port) {
 	// Prevents compiler warnings for unused argument
 	LWIP_UNUSED_ARG(arg);
@@ -290,7 +290,7 @@ static void atem_netif_poll(void* arg) {
 			// Enables ATEM timeout callback function
 			sys_timeout(ATEM_TIMEOUT_MS, atem_timeout_callback, pcb);
 
-			// Returns when initilization is complete
+			// Returns when initialization is complete
 			return;
 		}
 	}
@@ -350,7 +350,7 @@ struct udp_pcb* atem_init(uint32_t addr, uint8_t dest) {
 	ws2812_init();
 
 	// Initializes ATEM struct for handshake
-	atem_connection_reset(&atem);
+	atem_connection_open(&atem);
 
 	// Tries to connect to SDI shield
 	if (!sdi_init(dest)) {
