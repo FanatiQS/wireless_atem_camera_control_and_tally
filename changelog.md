@@ -21,7 +21,7 @@
 ### Firmware
 * Fixed firefox popup error on HTTP form submit.
 * Added experimental esp-idf support for ESP32.
-* Renamed and restructured internal components related to percistent storage.
+* Renamed and restructured internal components related to persistent storage.
 * Allows cross origin configuration.
 * Updated configuration page.
 * Updated HTML generation.
@@ -69,12 +69,12 @@
 * Prints DNS debug state at boot.
 * Fixed crash on HTTP client close before server sent response.
 * Fixed empty `dest=` causing successful configuration of invalid 0 value.
-* Updated successul HTTP configuration response message.
+* Updated successful HTTP configuration response message.
 * Fixed `DEBUG_ATEM` message prefix.
 * Reworked configuration page mobile scaling.
 * Added experimental ESP32 support.
 * Added compiler flag to invert `PIN_CONN`, previously was always inverted.
-* Do not abort on non critical initilization errors (for example captive portal or hostname).
+* Do not abort on non critical initialization errors (for example captive portal or hostname).
 * Changed order or debug boot messages.
 * Added ws2812 (neopixel) support on ESP32.
 * Deprecated compiler macro `VERSIONS_ANY` (uses warnings instead).
@@ -96,7 +96,7 @@
 * Added MSVC shims for posix APIs.
 * Added environment variable for clamping buffer prints.
 * Added more HTTP tests.
-* Overhauled `logs_print_string` output styling (uses ancii escape codes).
+* Overhauled `logs_print_string` output styling (uses ansi escape codes).
 * Separated make rule `device` into `config_device` and `atem_client_device`.
 * Added tests for closing before HTTP response.
 * Locks ATEM server tests to specified client address.
@@ -133,7 +133,7 @@
 * Uses environment variables to enable different log types.
 * Added test to ensure everything is ready for release.
 * Environment variables `CFLAGS`, `CPPFLAGS` and `LDFLAGS` are now used when compiling tests.
-* Renamed enviroment variable specifying address of ATEM switcher to connect to.
+* Renamed environment variable specifying address of ATEM switcher to connect to.
 * Added rule to run test in LLDB.
 * Added rule to build all tests.
 * Reworked playground structure to handle multiple playground files.
@@ -157,7 +157,7 @@
 * Added optional single source include file
 * Moved HTTP POST parser to custom streaming parser (available on port 8080 until GET parser is moved as well).
 * Changed HTTP POST keys.
-* HTML input fileds for IP addresses are now a single text box rather than 4 individual ones.
+* HTML input fields for IP addresses are now a single text box rather than 4 individual ones.
 * Configuration properties are only updated if available in HTTP POST (static ip is switched to '1' or '0' instead of 'on' or undefined).
 * Validates HTTP POST data before updating.
 * Added HTTP debug flag.
@@ -205,7 +205,7 @@
 
 ### Firmware
 * Fixed platforms not implementing LED driver not having LED macro function defined.
-* Enabled fix for unstabile configuration access point when debug is not enabled.
+* Enabled fix for unstable configuration access point when debug is not enabled.
 * Fixed compiler failure for ESP8266 Arduino framework version 3.0.0 and newer.
 
 
