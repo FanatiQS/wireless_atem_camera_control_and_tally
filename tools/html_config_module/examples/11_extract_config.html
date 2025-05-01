@@ -8,7 +8,7 @@
 	<script>
 		displayConfigPage("localhost/index", true).then((formData) => {
 			if (!formData) return;
-			console.log(Object.fromEntries((formData).entries()));
+			console.log(Object.fromEntries(formData.entries()));
 		});
 	</script>
 	Your code goes here!
