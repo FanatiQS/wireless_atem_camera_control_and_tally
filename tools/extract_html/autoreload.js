@@ -70,7 +70,7 @@ http.createServer(async function (req, res) {
 		}
 		catch (err) {
 			console.error(err);
-			req.socket.end();
+			res.end(err.message);
 		}
 	}
 	// Responds with error page from file
@@ -88,4 +88,4 @@ http.createServer(async function (req, res) {
 	}
 }).listen(80);
 
-console.log("Autoreload server running...");
+console.log("Auto-reload server running...");
