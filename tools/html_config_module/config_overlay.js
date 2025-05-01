@@ -16,12 +16,12 @@ iframe.style.zIndex = Number.MAX_SAFE_INTEGER.toString();
 window.addEventListener("load", () => document.body.appendChild(iframe), { once: true });
 
 /**
- * Displayes the configuration page from a waccat device on top of the current DOM
+ * Displays the configuration page from a waccat device on top of the current DOM
  * @param {string} addr The ip address of the waccat device to display configuration for
  * @param {boolean=} alertErrors If errors should be alerted to the user
  * @returns {Promise<FormData|null>} Submitted data on submit or null on cancel/error
  */
-globalThis.displayConfigPage = async function displayConfigPage(addr, alertErrors) {
+window["displayConfigPage"] = async function displayConfigPage(addr, alertErrors) {
 	try {
 		// Sets iframe content to device config page without CORS being an issue
 		const deviceConfigPageResponse = await fetch(`http://${addr}`);
@@ -83,7 +83,7 @@ globalThis.displayConfigPage = async function displayConfigPage(addr, alertError
 		await new Promise((resolve) => body.addEventListener("animationend", resolve, { once: true }));
 
 		let returnValue = null;
-		await new Promise((/** @type {any} */resolve) => {
+		await new Promise(/** @type {() => void} */(resolve) => {
 			// Disables overlay form when clicked outside form element
 			body.onclick = (event) => {
 				// Ignores bubbling events
