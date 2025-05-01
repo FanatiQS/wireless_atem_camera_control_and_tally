@@ -2,6 +2,7 @@
 #include <stdint.h> // uint8_t, uint16_t, int16_t
 #include <time.h> // time_t, struct timespec, timespec_get
 #include <stddef.h> // size_t, NULL
+#include <assert.h> // assert
 
 #include "./atem_packet.h" // struct atem_packet, struct atem_packet_session
 #include "./atem_server.h" // atem_server
