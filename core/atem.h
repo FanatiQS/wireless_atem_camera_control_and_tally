@@ -54,6 +54,11 @@
 #define ATEM_PACKET_LEN_MAX 2047
 
 /**
+ * Soft limit of an ATEM packet sent or received by official Blackmagic hardware/software.
+ */
+#define ATEM_PACKET_LEN_MAX_SOFT (1422)
+
+/**
  * Converts a command name from 4 characters to a 32bit integer
  */
 #define ATEM_CMDNAME(a, b, c, d) ((a << 24) | (b << 16) | (c << 8) | (d))

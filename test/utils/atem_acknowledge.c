@@ -2,11 +2,14 @@
 #include <assert.h> // assert
 #include <stdbool.h> // bool, true, false
 #include <stddef.h> // NULL
+#include <stdio.h> // fprintf, stderr
+#include <stdlib.h> // abort
 
 #include "../../core/atem.h" // ATEM_PACKET_LEN_MAX
 #include "../../core/atem_protocol.h" // ATEM_FLAG_ACK, ATEM_FLAG_ACKREQ, ATEM_LEN_ACK
 #include "./atem_header.h" // atem_header_flags_set, atem_header_len_set, atem_header_sessionid_set, atem_header_remoteid_set, atem_header_flags_get_verify, atem_header_sessionid_get_verify, atem_header_localid_get_verify, atem_header_ackid_get_verify, atem_header_remoteid_get, atem_header_flags_remoteid_get_verify, atem_header_len_get_verify, atem_header_ackid_set, atem_header_ackid_get, atem_packet_clear, atem_header_flags_get, ATEM_FLAG_RETX, atem_header_sessionid_get
 #include "./atem_sock.h" // atem_socket_send, atem_socket_recv
+#include "./timediff.h" // timediff_mark, timediff_get
 #include "./atem_acknowledge.h"
 
 
@@ -135,7 +138,12 @@ uint16_t atem_acknowledge_request_flush(int sock, uint16_t session_id) {
 // Flushes all data until acknowledgement for specified remote id is received
 void atem_acknowledge_response_flush(int sock, uint16_t session_id, uint16_t remote_id) {
 	uint8_t packet[ATEM_PACKET_LEN_MAX];
+	struct timespec mark = timediff_mark();
 	do {
+		if (timediff_get(mark) >= 2000) {
+			fprintf(stderr, "Did not get acknowledgement for max size packet\n");
+			abort();
+		}
 		atem_acknowledge_keepalive(sock, packet);
 		atem_header_sessionid_get_verify(packet, session_id);
 	} while (!(atem_header_flags_get(packet) & ATEM_FLAG_ACK) || atem_header_ackid_get(packet) < remote_id);
