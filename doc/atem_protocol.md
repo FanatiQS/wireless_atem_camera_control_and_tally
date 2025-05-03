@@ -8,9 +8,10 @@ It uses a constant and frequent [heartbeat](#heartbeat) to ensure the clients ar
 
 ## Other resources
 Since it is a proprietary protocol it has been very helpful to read what others have found and documented while reverse engineering it.
+Even though their documentation is at times incorrect, it has been a good starting point to build on top of.
 Here I have listed the resources that have been the most helpful to me.
 * [Skaarhojs Arduino library](https://github.com/kasperskaarhoj/SKAARHOJ-Open-Engineering/tree/master/ArduinoLibs/ATEMbase)
-* [Skaarhojs command documentation](https://www.skaarhoj.com/discover/blackmagic-atem-switcher-protocol)
+* [Skaarhojs command documentation](https://www.skaarhoj.com/discover/blackmagic-atem-switcher-protocol)*(source removed in 2025, available through internet archive)*
 * [NRKs NodeJS library](https://github.com/nrkno/tv-automation-atem-connection)
 * [Documentation on openswitcher.org](https://docs.openswitcher.org/udptransport.html)
 * [Documentation on node-atem](https://github.com/miyukki/node-atem/blob/master/specification.md)
@@ -45,8 +46,9 @@ The first 5 bits of the ATEM protocol are flags that play a vital role in identi
 Undocumented
 
 #### SYN flag: *0x10*
-The SYN flag is set for SYN packets used in the [opening handshake](#opening-handshake) and [closing handshake](#closing-handshake) and can only be combined with the [retransmit flag](#retransmit-flag-0x20).
-A SYN packet has an 8 byte payload, giving it a total [length](#length) of 20 bytes including the header, where the first byte of the payload is the [opcode](#opcode).
+The SYN flag is exclusively used in the [opening handshake](#opening-handshake) and [closing handshake](#closing-handshake).
+It can only be combined with the [retransmit flag](#retransmit-flag-0x20) and always has an 8 byte payload, giving it a total packet [length](#length) of 20 bytes when including the required header.
+The first byte of the payload indicates the [opcode](#opcode).
 
 #### Retransmit flag: *0x20*
 The retransmit flag is an additive flag that gets added to a packet that is being [retransmitted](#retransmitting-packets), indicating to the receiving side that this is not the first time this packet is sent.
@@ -60,22 +62,25 @@ Undocumented
 
 ### Length
 This indicates the length of the packet.
-It is defined with 11 bits, giving it a maximum packet length of 2047 bytes, including the 12 byte header.
-The minimum packet length is 12 bytes when no payload is available.
+It is defined with 11 bits, giving it a theoretical maximum packet length of 2047 bytes including the 12 byte header.
+However, the maximum accepted length by both official ATEM hardware and software is only 1422 bytes including the header.
+The minimum packet length is 12 bytes when no payload is available because of the required header.
 
 ### Session id
 The ATEM protocol uses a session id to be connection-oriented.
 This is necessary since it operates over [UDP](https://en.wikipedia.org/wiki/User_Datagram_Protocol), which is inherently connectionless at the [transport level](https://en.wikipedia.org/wiki/Transport_layer), unlike [TCP](https://en.wikipedia.org/wiki/Transmission_Control_Protocol).
 
-The session id is used slighly differently during the [opening handshake](#opening-handshake) and for all furtuer communication.
+The session id is used slightly differently during the [opening handshake](#opening-handshake) and for all further communication.
 During the opening handshake, the session id is randomly assigned by the client to any value between 0x0000 and 0x7fff.
 Since the [MSB](https://en.wikipedia.org/wiki/Bit_numbering) is clear for these values, this indicates that it is a session id assigned by the client.
 In the [opening handshake](#opening-handshake), the server assigns the client a server assigned session id, also with a value between between 0x0000 and 0x7fff, that should always be used with the [MSB](https://en.wikipedia.org/wiki/Bit_numbering) set to indicate it was assigned by the server.
 This results in a practical server assigned session id value between 0x8000 and 0xffff.
 All further communication after the [opening handshake](#opening-handshake) is completed should use the new server assigned session id.
 
-When the server assignes a session id, it uses a continuously incrementing counter, wrapping around after 0x7fff back to 0x0000.
+When the server assigns a session id, it uses a continuously incrementing counter, wrapping around after 0x7fff back to 0x0000.
 The server assigned session id counter starts at 0x0001 instead of 0x0000 and is not persistent, so if the switcher looses power or is rebooted the counter resets.
+
+Each server assigned session id can only be assigned to a single client, the client assigned session ids however can be used for multiple clients at the same time without issues.
 
 ### Acknowledgement packet id
 Undocumented
@@ -97,21 +102,20 @@ A packet is allowed to have a payload length of 0 (total packet [length](#length
 The data the payload contains depends on the [flags](#flags) that are set.
 
 ### Opcode
-Opcodes are available in SYN packets that are defined by the [SYN flag](#syn-flag-0x10) being set.
-It is located at the first byte of the SYN packets payload.
+The opcode is located in the first byte of the payload and is only available when the [SYN flag](#syn-flag-0x10) is set.
 
 #### Opening opcode 0x01
 This opcode is sent by the client to initiate an [opening handshake](#opening-handshake) and is always used with a [client assigned session id](#session-id).
 
 #### Accepted opcode 0x02
-This opcode, together with the [rejected](#rejected-opcode-0x03) opcode, is one of two possible opcodes received from the server during an [opening handshake](#opening-handshake).
+This opcode, together with the [rejected](#rejected-opcode-0x03) opcode, is one of two possible values received from the server during an [opening handshake](#opening-handshake).
 It indicates that the client was successfully connected to the ATEM switcher.
 The third and fourth byte of the payload is a 16 bit integer indicates the [server assigned session id](#session-id) that should be used for everything other than the [opening handshake](#opening-handshake).
 The [server assigned session id](#session-id) has the [MSB](https://en.wikipedia.org/wiki/Bit_numbering) clear when received during the [opening handshake](#opening-handshake), but when used for future communication with the server, the bit should always be set.
 
 #### Rejected opcode 0x03
-This opcode, together with the [accepted](#accepted-opcode-0x02) opcode, is one of two possible opcodes received from the server during an [opening handshake](#opening-handshake).
-It indicates that the clients request to connect to the server has failed failed.
+This opcode, together with the [accepted](#accepted-opcode-0x02) opcode, is one of two possible values received from the server during an [opening handshake](#opening-handshake).
+It indicates that the clients request to connect to the server has failed.
 
 #### Closing opcode 0x04
 This opcode is used when initiating a [closing handshake](#closing-handshake).
@@ -170,7 +174,7 @@ When the other side receives the closing request, it needs to respond to it with
 Only after receiving either of these opcodes should the session be considered terminated.
 In the case that the initiator does not receive a response in a timely manner, it is allowed to [resend](#retransmit-flag-0x20) the packet.
 The ATEM server [resends](#retransmit-flag-0x20) its closing request a maximum of one time while the [ATEM software control](https://www.blackmagicdesign.com/se/products/atemmini/software) doesn't [resend](#retransmit-flag-0x20) at all.
-If the response packet is lost, the peer will have closed the session while the initiater is still allowed to [retransmit](#retransmit-flag-0x20) the closing request, resulting in the closing response not being completely dependable.
+If the response packet is lost, the peer will have closed the session while the initiator is still allowed to [retransmit](#retransmit-flag-0x20) the closing request, resulting in the closing response not being completely dependable.
 
 The [session id](#session-id) in a closing handshake always uses the [server assigned session id](#session-id), even if the connection is closed during the [opening handshake](#opening-handshake).
 This means that the session can not be closed before the opening handshake accept response is received.
