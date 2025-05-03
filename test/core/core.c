@@ -16,7 +16,7 @@ int main(void) {
 	RUN_TEST() {
 		struct atem atem = {0};
 		atem_connection_open(&atem);
-		atem_handshake_sessionid_set(atem.read_buf, ATEM_OPCODE_ACCEPT, true, atem_header_sessionid_next(false));
+		atem_handshake_sessionid_set(atem.read_buf, ATEM_OPCODE_ACCEPT, true, atem_header_sessionid_rand(false));
 		assert(atem_parse(&atem) == ATEM_STATUS_ACCEPTED);
 		assert(atem_parse(&atem) == ATEM_STATUS_WRITE_ONLY);
 	}
@@ -25,7 +25,7 @@ int main(void) {
 	RUN_TEST() {
 		struct atem atem = {0};
 		atem_connection_open(&atem);
-		atem_handshake_sessionid_set(atem.read_buf, ATEM_OPCODE_REJECT, true, atem_header_sessionid_next(false));
+		atem_handshake_sessionid_set(atem.read_buf, ATEM_OPCODE_REJECT, true, atem_header_sessionid_rand(false));
 		assert(atem_parse(&atem) == ATEM_STATUS_REJECTED);
 		assert(atem_parse(&atem) == ATEM_STATUS_REJECTED);
 	}
@@ -33,7 +33,7 @@ int main(void) {
 	// Ensures received command returns ATEM_STATUS_WRITE once per packet
 	RUN_TEST() {
 		struct atem atem = {0};
-		atem_acknowledge_request_set(atem.read_buf, atem_header_sessionid_next(true), 0x0001);
+		atem_acknowledge_request_set(atem.read_buf, atem_header_sessionid_rand(true), 0x0001);
 		assert(atem_parse(&atem) == ATEM_STATUS_WRITE);
 		assert(atem_parse(&atem) == ATEM_STATUS_WRITE_ONLY);
 	}
@@ -41,7 +41,7 @@ int main(void) {
 	// Ensures unexpected flags returns ATEM_STATUS_NONE
 	RUN_TEST() {
 		struct atem atem = {0};
-		atem_acknowledge_response_set(atem.read_buf, atem_header_sessionid_next(true), 0x0001);
+		atem_acknowledge_response_set(atem.read_buf, atem_header_sessionid_rand(true), 0x0001);
 		assert(atem_parse(&atem) == ATEM_STATUS_NONE);
 		assert(atem_parse(&atem) == ATEM_STATUS_NONE);
 	}
@@ -49,7 +49,7 @@ int main(void) {
 	// Ensures closing handshake request returns ATEM_STATUS_CLOSING once
 	RUN_TEST() {
 		struct atem atem = {0};
-		atem_handshake_sessionid_set(atem.read_buf, ATEM_OPCODE_CLOSING, false, atem_header_sessionid_next(true));
+		atem_handshake_sessionid_set(atem.read_buf, ATEM_OPCODE_CLOSING, false, atem_header_sessionid_rand(true));
 		assert(atem_parse(&atem) == ATEM_STATUS_CLOSING);
 		assert(atem_parse(&atem) == ATEM_STATUS_WRITE_ONLY);
 	}
@@ -58,7 +58,7 @@ int main(void) {
 	RUN_TEST() {
 		struct atem atem = {0};
 		atem_connection_close(&atem);
-		atem_handshake_sessionid_set(atem.read_buf, ATEM_OPCODE_CLOSED, false, atem_header_sessionid_next(true));
+		atem_handshake_sessionid_set(atem.read_buf, ATEM_OPCODE_CLOSED, false, atem_header_sessionid_rand(true));
 		assert(atem_parse(&atem) == ATEM_STATUS_CLOSED);
 		assert(atem_parse(&atem) == ATEM_STATUS_CLOSED);
 	}
@@ -66,7 +66,7 @@ int main(void) {
 	// Ensures invalid client opcode returns ATEM_STATUS_ERROR
 	RUN_TEST() {
 		struct atem atem = {0};
-		atem_handshake_sessionid_set(atem.read_buf, ATEM_OPCODE_OPEN, false, atem_header_sessionid_next(false));
+		atem_handshake_sessionid_set(atem.read_buf, ATEM_OPCODE_OPEN, false, atem_header_sessionid_rand(false));
 		assert(atem_parse(&atem) == ATEM_STATUS_ERROR);
 		assert(atem_parse(&atem) == ATEM_STATUS_ERROR);
 	}
@@ -75,7 +75,7 @@ int main(void) {
 	RUN_TEST() {
 		// Creates ATEM context with read buffer filled with commands
 		struct atem atem = {0};
-		atem_acknowledge_request_set(atem.read_buf, atem_header_sessionid_next(false), 0x0001);
+		atem_acknowledge_request_set(atem.read_buf, atem_header_sessionid_rand(false), 0x0001);
 		char* payload_buf = "this is a test payload";
 		const uint16_t payload_len = strlen(payload_buf) & ATEM_PACKET_LEN_MAX;
 		for (int i = 0; i < (ATEM_PACKET_LEN_MAX / (payload_len + ATEM_LEN_CMDHEADER) - 1); i++) {

@@ -23,7 +23,7 @@ void atem_header_len_set(uint8_t* packet, uint16_t len);
 uint16_t atem_header_len_get(uint8_t* packet);
 void atem_header_len_get_verify(uint8_t* packet, size_t len_expected);
 
-uint16_t atem_header_sessionid_next(bool msb);
+uint16_t atem_header_sessionid_rand(bool msb);
 void atem_header_sessionid_set(uint8_t* packet, uint16_t session_id);
 uint16_t atem_header_sessionid_get(uint8_t* packet);
 void atem_header_sessionid_get_verify(uint8_t* packet, uint16_t session_id_expected);

@@ -112,7 +112,7 @@ void atem_header_len_get_verify(uint8_t* packet, size_t len_expected) {
  * Gets the next session id to help give every request gets its own session id
  * @param msb Defines if session id is a server assigned session id or client assigned session id
  */
-uint16_t atem_header_sessionid_next(bool msb) {
+uint16_t atem_header_sessionid_rand(bool msb) {
 	static uint16_t session_id = 0;
 	return (++session_id & 0x7fff) | ((msb << 15) & 0xffff);
 }
@@ -291,16 +291,16 @@ void atem_header_init(void) {
 	atem_header_len_set(packet, 100);
 	assert(atem_header_len_get(packet) == 100);
 
-	// Tests atem_header_sessionid_next
+	// Tests atem_header_sessionid_rand
 	for (uint16_t i = 1; i < 0x8000; i++) {
-		assert(atem_header_sessionid_next(false) == i);
+		assert(atem_header_sessionid_rand(false) == i);
 	}
-	assert(atem_header_sessionid_next(false) == 0x0000);
+	assert(atem_header_sessionid_rand(false) == 0x0000);
 	for (uint16_t i = 1; i < 0x8000; i++) {
-		assert(atem_header_sessionid_next(true) == (i | 0x8000));
+		assert(atem_header_sessionid_rand(true) == (i | 0x8000));
 	}
-	assert(atem_header_sessionid_next(true) == 0x8000);
-	assert(atem_header_sessionid_next(true) == 0x8001);
+	assert(atem_header_sessionid_rand(true) == 0x8000);
+	assert(atem_header_sessionid_rand(true) == 0x8001);
 
 
 	// Tests atem_header_sessionid_get and atem_header_sessionid_set
