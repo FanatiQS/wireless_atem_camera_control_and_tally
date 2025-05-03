@@ -48,7 +48,7 @@ void atem_command_send(
 void atem_command_queue(int sock, uint8_t* packet, char* cmd_name, void* payload, uint16_t len) {
 	// Sends current packet if command can not fit
 	assert(len < ATEM_PACKET_LEN_MAX);
-	if (atem_header_len_get(packet) + len > ATEM_PACKET_LEN_MAX) {
+	if ((atem_header_len_get(packet) + ATEM_LEN_CMDHEADER + len) > ATEM_PACKET_LEN_MAX_SOFT) {
 		atem_socket_send(sock, packet);
 		atem_header_remoteid_set(packet, atem_header_remoteid_get(packet) + 1);
 		atem_header_len_set(packet, ATEM_LEN_HEADER);
