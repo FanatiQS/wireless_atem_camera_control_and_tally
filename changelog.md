@@ -29,6 +29,7 @@
 * Fix pin 0 being logged incorrectly.
 * Added virtual tapif network interface as a compilation target.
 * Fixed default configuration inverted ESP8266 built-in LED.
+* Refactored HTTP template engine.
 
 ### Test Suite
 * Added more tests for atem_server and atem_client.
@@ -41,12 +42,21 @@
 * Add usage instructions for test suite.
 * Added test for `tools/configure.sh` script.
 * Test utils on every test run.
+* Replaced environment variable `SINGLE_RUNNER` with more powerful `RUNNER_FILTER`.
+* Added `LISTEN_ADDR` environment variable.
+* `atem_handshake_fill` returns number of connected sessions.
+* Renamed build rule `config_device` to `device_config`.
+* Document available environment variables.
+* Document playground build rule.
+* Document debugger build rule.
 
 ### Tools
 * Added HTTP server for generated HTML to auto-reload browser on file change.
 * Extract HTML tool now works on POSIX shells other than bash.
 * Fix issue with spaces in arguments when using `tools/configure.sh`.
 * Added script module to overlay device configuration over existing webpage.
+* Make `/tools/configure.sh` work in any POSIX compliant shell.
+* Extract html tool now returns errors to client instead of blank page.
 
 
 
