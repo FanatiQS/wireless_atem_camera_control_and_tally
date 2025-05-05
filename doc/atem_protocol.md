@@ -126,20 +126,29 @@ This opcode is used during the [closing handshake](#closing-handshake) as a resp
 ## Opening handshake
 When connecting to an ATEM switcher, it all starts with an opening handshake.
 The ATEM protocol uses a 3-way opening handshake, very similar to the [TCP handshake](https://developer.mozilla.org/en-US/docs/Glossary/TCP_handshake), consisting of a SYN packet, a SYN/ACK packet and lastly an ACK packet.
-This section goes through these packets in detail and explains how an opening handshake is performed.
+This section goes through these packets in detail, explaining how an opening handshake is performed.
 
-The first packet in the handshake, the [SYN packet](#syn-flag-0x10), is sent by the client with the [opcode](#opcode) set to indicate it wants to [open](#opening-opcode-0x01) a new session.
-It uses a randomly generated [client assigned session id](#session-id) that should be used for all packets during the opening handshake.
-The ATEM server responds to that request with a SYNACK packet (also has the [SYN flag](#syn-flag-0x10) set like the SYN packet) where the [opcode](#opcode) either indicates that the connection was a [success](#successful-opcode-0x02) or that it was [rejected](rejected-opcode-0x03).
-In the case that the client does not receive a response in a timely manner, it should [resend](#retransmit-flag-0x20) the packet, normally a maximum of 10 times before [closing the session](#closing-handshake).
-If a handshake is rejected, it is not going to receive any more data and does not require sending anything in response.
-A successful handshake on the other hand has to be responded to with an ACK packet to complete the 3-way handshake.
-It is also here, in the success response, we get the [server assigned session id](#session-id).
-The ACK for the SYNACK is the last packet to use the [client assigned session id](#session-id) and all future packets should use the new [server assigned session id](#session-id).
-Normally, [ACK packets](#ack-flag-0x80) are only sent as a response to packets [requesting acknowledgement](#ack-request-flag-0x80), but during the handshake it is sent without specifically being requested as a response to the [success opcode](#success-opcode-0x02).
-The [ACK packet](#ack-flag-0x80) does not have a payload, giving it a packet [length](#length) of only 12 bytes for the required header.
-If the client does not acknowledge the SYNACK by sending the ACK in a timely manner, or the packet gets lost on the way, the ATEM server will resend the SYNACK packet again, this time with the [resend flag](#retransmit-flag-0x20) set.
-The ATEM server will resend the SYNACK packet 10 times before trying to [close the connection](#closing-handshake).
+The opening handshake is always initiated by the client.
+It starts off with a SYN packet where the [SYN flags](#syn-flag-0x10) is set and the [opcode](#opcode) indicates a request to [open](#opening-opcode-0x01) a new session.
+It uses a randomly generated [client assigned session id](#session-id) that will be used for all 3 packets in the opening handshake.
+
+The ATEM server responds to that SYN packet with a SYN/ACK packet.
+This packet also has the [SYN flag](#syn-flag-0x10) set like the SYN packet did, but this time the [opcode](#opcode) either indicates that the connection request was [accepted](#accepted-opcode-0x02) or [rejected](#rejected-opcode-0x03).
+In the case that the client does not receive a response in a timely manner, it should [resend](#retransmit-flag-0x20) the SYN packet.
+Normally a packet is resent a maximum of 10 times before a completely new opening handshake is started instead.
+
+A handshake can be [rejected](#rejected-opcode-0x03) if the ATEM switcher is not capable of handling more sessions.
+The switchers have a very limited number of concurrent connections.
+Depending on the exact switcher model, it can handle either 5 or 8 connections concurrently before starting to reject new requests.
+The reject response is considered the last packet in the handshake and the client should retry connecting by restarting the opening handshake from the beginning after a small delay.
+
+A successful handshake is indicated by the [accept](#accepted-opcode-0x02) opcode and has to be responded to with an [ACK packet](#acknowledge-flag-0x80) to complete the 3-way handshake.
+It is also here, in the accept response, where we get the [server assigned session id](#session-id).
+The response ACK for the SYN/ACK is the last packet to use the [client assigned session id](#session-id) and all future packets should use the new [server assigned session id](#session-id).
+Normally, [ACK packets](#acknowledge-flag-0x80) are only sent as a response to packets [requesting acknowledgement](#acknowledge-request-flag-0x08), but during the handshake it is also sent as a response to an [accepted](#accepted-opcode-0x02) opening handshake.
+The [ACK packet](#acknowledge-flag-0x80) does not have a payload, giving it a [packet length](#length) of only 12 bytes.
+If the client does not acknowledge the SYN/ACK packet by sending the ACK in a timely manner or the packet gets lost on the way, the ATEM server will resend the SYN/ACK packet again, this time with the [retransmit flag](#retransmit-flag-0x20) set.
+The ATEM server will resend the SYN/ACK packet up to 10 times before closing the session with a [closing handshake](#closing-handshake).
 
 After these 3 packets, the opening handshake is considered complete.
 From this point forward, the [client assigned session id](#session-id) should not be used.
