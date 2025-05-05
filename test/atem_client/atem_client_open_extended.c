@@ -28,6 +28,8 @@ int main(void) {
 		atem_socket_close(sock);
 	}
 
+
+
 	// Ensures opening handshake restarts correctly after ATEM_RESENDS failed retries with new session id and port
 	RUN_TEST() {
 		uint8_t packet[ATEM_PACKET_LEN_MAX];
@@ -98,6 +100,27 @@ int main(void) {
 			fprintf(stderr, "Expected UDP client port to change: %d, %d", port1, port2);
 			abort();
 		}
+	}
+
+
+
+	// Ensures opening handshake response with incorrect session id is not acknowledged
+	// This could happen if response to previously sent request is received
+	RUN_TEST() {
+		// Gets opening handshake request
+		atem_handshake_resetpeer();
+		int sock = atem_socket_create();
+		uint16_t session_id = atem_handshake_start_server(sock);
+
+		// Sends opening handshake response with incorrect session id
+		atem_handshake_sessionid_send(sock, ATEM_OPCODE_ACCEPT, false, (session_id + 1) & 0x7fff);
+
+		// Incorrect session id should not be acknowledged
+		for (int i = 0; i < ATEM_RESENDS; i++) {
+			atem_handshake_sessionid_recv_verify(sock, ATEM_OPCODE_OPEN, true, session_id);
+		}
+
+		atem_socket_close(sock);
 	}
 
 	return runner_exit();
