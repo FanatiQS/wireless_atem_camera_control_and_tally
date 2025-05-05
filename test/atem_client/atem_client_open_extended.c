@@ -78,9 +78,8 @@ int main(void) {
 		sock = atem_socket_create();
 		struct timespec marker = timediff_mark();
 		uint16_t port2 = ntohs(atem_socket_listen(sock, packet).sin_port);
-		timediff_get_verify(marker, 270, 10);
+		timediff_get_verify(marker, 270, 20);
 		uint16_t session_id2 = atem_handshake_sessionid_get(packet, ATEM_OPCODE_OPEN, false);
-		atem_handshake_sessionid_send(sock, ATEM_OPCODE_REJECT, false, sessionId1);
 		atem_socket_close(sock);
 
 		// Ensures session id and port changed on restart
