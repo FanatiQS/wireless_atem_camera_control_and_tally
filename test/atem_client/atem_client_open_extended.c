@@ -1,5 +1,8 @@
-#include <stdio.h> // perror
+#include <stdio.h> // fprintf, stderr
 #include <stdlib.h> // abort
+#include <stdint.h> // uint8_t, uint16_t
+#include <time.h> // struct timespec
+#include <stdbool.h> // true, false
 
 #include <arpa/inet.h> // ntohs
 
@@ -89,6 +92,7 @@ int main(void) {
 				session_id1,
 				session_id2
 			);
+			abort();
 		}
 		if (port1 == port2) {
 			fprintf(stderr, "Expected UDP client port to change: %d, %d", port1, port2);
