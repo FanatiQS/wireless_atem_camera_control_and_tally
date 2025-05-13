@@ -1,22 +1,18 @@
 // Include guard
-#ifndef USER_CONFIG_H
-#define USER_CONFIG_H
-
-#include <stdint.h> // used but not included in pins_arduino for ESP8266
-#include <pins_arduino.h>
+#ifndef WACCAT_CONFIG_H
+#define WACCAT_CONFIG_H
 
 /**
+ * Documentation for the configuration parameters can be found in `/firmware/user_config.h`.
  * All macros defined in this file are optional.
  * If a pin is not defined, commented out or removed, that feature is going to be disabled.
  * All macros starting with "PIN_" define the GPIO pin to use.
  */
 
-/**
- * Enables or disables debugging.
- * DEBUG is general debugging.
- * DEBUG_TALLY prints tally state when updated.
- * DEBUG_CC prints camera control data when updated (for the selected camera only).
- */
+#include <stdint.h> // used but not included in pins_arduino for ESP8266
+#include <pins_arduino.h>
+
+// Debugging flags
 #define DEBUG             1
 #define DEBUG_TALLY       DEBUG
 #define DEBUG_CC          0
@@ -24,16 +20,16 @@
 #define DEBUG_ATEM        0
 #define DEBUG_DNS         DEBUG
 
-/**
- * The pins to use for PGM tally, PVW tally and/or ATEM connection indicator LEDs.
- */
+// Pins to use for PGM tally, PVW tally and/or ATEM connection indicator LEDs
+#ifdef ESP8266
 #define PIN_PGM           D5
 #define PIN_PVW           D6
 #define PIN_CONN          LED_BUILTIN
 #define PIN_CONN_INVERTED 1
+#endif // ESP8266
 
 /**
- * To use a "Blackamgic 3G SDI shield for arduino" for tally and camera control over SDI,
+ * To use a "Blackmagic 3G SDI shield for arduino" for tally and camera control over SDI,
  * define the SCL and SDA pins to use for I2C communication and install the BMDSDIControl library
  * available for download from their website.
  *
@@ -54,4 +50,4 @@
  */
 // #define PIN_BATTREAD      A0
 
-#endif // USER_CONFIG_H
+#endif // WACCAT_CONFIG_H
