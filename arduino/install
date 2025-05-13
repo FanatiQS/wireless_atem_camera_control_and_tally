@@ -3,5 +3,5 @@ set -e
 cd $(dirname $0)
 echo "#define LIB_PATH $(cd .. && pwd)" > src/lib_path.h
 if [ ! -f "waccat_config.h" ]; then
-	cp "user_config.h" "waccat_config.h"
+	cp "default_config.h" "waccat_config.h"
 fi
