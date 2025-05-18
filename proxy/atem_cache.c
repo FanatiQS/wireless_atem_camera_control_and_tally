@@ -164,7 +164,7 @@ static void atem_cache_update_cc(uint8_t* buf_req, uint16_t len) {
 	res_buf[1] = res_len;
 	memset(res_buf + 4, 0, 6);
 	memcpy(res_buf + ATEM_LEN_HEADER, cc_cache, sizeof(*cc_cache));
-	atem_server_broadcast(res_buf, 0);
+	atem_server_broadcast(res_buf, ATEM_PACKET_FLAG_RELEASE);
 }
 
 // Initializes ATEM cache data based on input source count
