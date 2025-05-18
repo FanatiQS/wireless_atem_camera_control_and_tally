@@ -9,8 +9,8 @@
 #include "../core/atem.h" // ATEM_PACKET_LEN_MAX, ATEM_PACKET_LEN_MAX_SOFT
 #include "../core/atem_protocol.h" // ATEM_LEN_HEADER
 #include "./atem_session.h" // struct atem_session, atem_session_send
-#include "./atem_packet.h" // struct atem_packet, atem_packet_dequeue, atem_packet_enqueue
-#include "./atem_server.h" // atem_server
+#include "./atem_packet.h" // struct atem_packet, atem_packet_dequeue, atem_packet_enqueue, ATEM_PACKET_FLAG_NONE
+#include "./atem_server.h" // atem_server, atem_server_broadcast
 #include "./atem_cache.h"
 
 

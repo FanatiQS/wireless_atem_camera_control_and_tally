@@ -7,6 +7,8 @@
 
 // ATEM packet flags
 enum {
+	// Packet does not have any special flags
+	ATEM_PACKET_FLAG_NONE = 0,
 	// Packet should free its buffer when releasing the packet (it is heap allocated)
 	ATEM_PACKET_FLAG_RELEASE = 1,
 	// Packet is performing a closing handshake

@@ -16,7 +16,7 @@
 #include "../core/atem.h" // ATEM_PACKET_LEN_MAX
 #include "./atem_debug.h" // DEBUG_PRINTF, DEBUG_PRINT_BUF
 #include "./atem_server.h" // atem_server, atem_server_release, ATEM_SERVER_SESSIONS_MULTIPLIER
-#include "./atem_packet.h" // struct atem_packet, struct atem_packet_session, atem_packet_create, atem_packet_enqueue, atem_packet_release, atem_packet_session_update, atem_packet_disassociate, atem_packet_flush, ATEM_PACKET_FLAG_CLOSING
+#include "./atem_packet.h" // struct atem_packet, struct atem_packet_session, atem_packet_create, atem_packet_enqueue, atem_packet_release, atem_packet_session_update, atem_packet_disassociate, atem_packet_flush, ATEM_PACKET_FLAG_CLOSING, ATEM_PACKET_FLAG_RELEASE
 #include "./atem_cache.h" // atem_cache_dump
 #include "./atem_session.h" // struct atem_session
 

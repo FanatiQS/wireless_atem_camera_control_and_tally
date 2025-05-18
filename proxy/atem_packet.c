@@ -7,9 +7,9 @@
 #include <string.h> // memset
 
 #include "../core/atem_protocol.h" // ATEM_INDEX_REMOTEID_HIGH, ATEM_INDEX_REMOTEID_LOW, ATEM_LEN_HEADER, ATEM_INDEX_FLAGS, ATEM_FLAG_RETX, ATEM_LEN_SYN, ATEM_FLAG_SYN, ATEM_INDEX_LEN_LOW, ATEM_INDEX_OPCODE, ATEM_OPCODE_CLOSING, ATEM_RESENDS_CLOSING
-#include "./atem_server.h" // atem_server, atem_server_release
+#include "./atem_server.h" // atem_server, atem_server_release, atem_server_broadcast
 #include "./atem_session.h" // struct atem_session, atem_session_send, atem_session_get, atem_session_lookup_get, atem_session_release, atem_session_terminate
-#include "./atem_packet.h" // struct atem_packet_session, struct atem_packet
+#include "./atem_packet.h" // struct atem_packet_session, struct atem_packet, ATEM_PACKET_FLAG_NONE
 #include "./atem_debug.h" // DEBUG_PRINTF
 
 // Preallocated closing request buffer
@@ -367,7 +367,7 @@ void atem_packet_broadcast_ping(void) {
 
 	DEBUG_PRINTF("Pings all %d connected clients\n", atem_server.sessions_connected);
 	buf_ping[ATEM_INDEX_FLAGS] = ATEM_FLAG_ACKREQ;
-	atem_server_broadcast(buf_ping, 0);
+	atem_server_broadcast(buf_ping, ATEM_PACKET_FLAG_NONE);
 
 	// Sets timeout for next ping
 	int timespec_result = timespec_get(&atem_server.ping_timeout, TIME_UTC);

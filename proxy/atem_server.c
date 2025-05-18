@@ -14,7 +14,7 @@
 #include "./atem_server.h" // struct atem_server, atem_session_get, atem_session_lookup_get, atem_session_lookup_clear, ATEM_SERVER_SESSIONS_MULTIPLIER
 #include "./atem_cache.h" // atem_cache_update
 #include "./atem_session.h" // struct atem_session
-#include "./atem_packet.h" // struct atem_packet, atem_packet_release, atem_packet_close
+#include "./atem_packet.h" // struct atem_packet, atem_packet_release, atem_packet_close, atem_packet_enqueue
 #include "../core/atem.h" // ATEM_PORT, ATEM_PACKET_LEN_MAX
 #include "../core/atem_protocol.h" // ATEM_RESEND_TIME, ATEM_PING_INTERVAL, ATEM_INDEX_SESSIONID_HIGH, ATEM_INDEX_FLAGS, ATEM_FLAG_SYN, ATEM_LEN_SYN, ATEM_INDEX_OPCODE, ATEM_OPCODE_OPEN
 
