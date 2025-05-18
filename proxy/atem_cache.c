@@ -154,8 +154,8 @@ static void atem_cache_update_cc(uint8_t* buf_req, uint16_t len) {
 	}
 
 	// Updates assignable parameter value in cache for future connecting clients
-	assert(*cc_cache->cc_payload == *cc_recv->cc_payload);
-	memcpy(cc_cache->cc_payload, cc_recv->cc_payload, sizeof(*cc_recv->cc_payload));
+	assert(sizeof(cc_cache->cc_payload) == sizeof(cc_recv->cc_payload));
+	memcpy(cc_cache->cc_payload, cc_recv->cc_payload, sizeof(cc_recv->cc_payload));
 
 	// Broadcasts parameter update to all connected clients
 	uint8_t res_len = sizeof(*cc_cache) + ATEM_LEN_HEADER;
