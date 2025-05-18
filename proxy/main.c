@@ -7,6 +7,7 @@
 #include <stdbool.h> // true
 
 #include "./atem_server.h" // atem_server_init
+#include "./atem_cache.h" // atem_cache_init
 #include "./atem_assert.h" // atem_assert
 #include "./timeout.h" // timeout_get, timeout_dispatch
 
@@ -71,6 +72,9 @@ int main(int argc, char** argv) {
 			return EXIT_FAILURE;
 		}
 	}
+
+	// Initializes the ATEM cache
+	atem_cache_init(8);
 
 	// Initializes ATEM proxy server
 	if (!atem_server_init()) {

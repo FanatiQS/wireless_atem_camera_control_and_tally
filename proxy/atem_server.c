@@ -12,10 +12,11 @@
 
 #include "./atem_debug.h" // DEBUG_PRINTF, DEBUG_PRINT_BUF
 #include "./atem_server.h" // struct atem_server, atem_session_get, atem_session_lookup_get, atem_session_lookup_clear, ATEM_SERVER_SESSIONS_MULTIPLIER
+#include "./atem_cache.h" // atem_cache_update
 #include "./atem_session.h" // struct atem_session
 #include "./atem_packet.h" // struct atem_packet, atem_packet_release, atem_packet_close
 #include "../core/atem.h" // ATEM_PORT, ATEM_PACKET_LEN_MAX
-#include "../core/atem_protocol.h" // ATEM_RESEND_TIME, ATEM_PING_INTERVAL
+#include "../core/atem_protocol.h" // ATEM_RESEND_TIME, ATEM_PING_INTERVAL, ATEM_INDEX_SESSIONID_HIGH, ATEM_INDEX_FLAGS, ATEM_FLAG_SYN, ATEM_LEN_SYN, ATEM_INDEX_OPCODE, ATEM_OPCODE_OPEN
 
 // Initializes server context with default configuration
 struct atem_server atem_server = {
@@ -164,6 +165,21 @@ void atem_server_recv(void) {
 		else if (opcode == ATEM_OPCODE_CLOSED) {
 			atem_session_closed(session_index);
 		}
+	}
+
+	// @todo
+	if (flags & ATEM_FLAG_ACKREQ) {
+		// @todo
+		atem_cache_update(buf, len);
+
+		// Acknowledges request
+		uint8_t buf_ack[ATEM_LEN_HEADER] = {
+			[ATEM_INDEX_FLAGS] = ATEM_FLAG_ACK,
+			[ATEM_INDEX_LEN_LOW] = ATEM_LEN_HEADER,
+			[ATEM_INDEX_ACKID_HIGH] = buf[ATEM_INDEX_REMOTEID_HIGH],
+			[ATEM_INDEX_ACKID_LOW] = buf[ATEM_INDEX_REMOTEID_LOW]
+		};
+		atem_session_send(session, buf_ack);
 	}
 
 	// @todo
