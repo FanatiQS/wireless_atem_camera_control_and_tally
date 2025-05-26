@@ -9,7 +9,7 @@
 #include "../core/atem.h" // ATEM_PACKET_LEN_MAX, ATEM_PACKET_LEN_MAX_SOFT
 #include "../core/atem_protocol.h" // ATEM_LEN_HEADER
 #include "./atem_session.h" // struct atem_session, atem_session_send
-#include "./atem_packet.h" // struct atem_packet, atem_packet_dequeue, atem_packet_enqueue, ATEM_PACKET_FLAG_NONE
+#include "./atem_packet.h" // struct atem_packet, atem_packet_dequeue, atem_packet_enqueue, ATEM_PACKET_FLAG_NONE, ATEM_PACKET_FLAG_RELEASE
 #include "./atem_server.h" // atem_server, atem_server_broadcast
 #include "./atem_cache.h"
 
@@ -22,6 +22,8 @@ struct cc_data {
 			uint8_t dest;
 			uint8_t category;
 			uint8_t parameter;
+			bool relative;
+			uint8_t type;
 		};
 		uint8_t cc_head[16];
 	};
@@ -154,8 +156,58 @@ static void atem_cache_update_cc(uint8_t* buf_req, uint16_t len) {
 	}
 
 	// Updates assignable parameter value in cache for future connecting clients
-	assert(sizeof(cc_cache->cc_payload) == sizeof(cc_recv->cc_payload));
-	memcpy(cc_cache->cc_payload, cc_recv->cc_payload, sizeof(cc_recv->cc_payload));
+	if (!cc_recv->relative) {
+		assert(sizeof(cc_cache->cc_payload) == sizeof(cc_recv->cc_payload));
+		memcpy(cc_cache->cc_payload, cc_recv->cc_payload, sizeof(cc_recv->cc_payload));
+	}
+	// Updates relative parameter value
+	else {
+		switch (cc_recv->type) {
+			// Updates int8 type
+			case 0x01: {
+				uint8_t count = cc_recv->cc_head[7];
+				int8_t* data_recv = (void*)cc_recv->cc_payload;
+				int8_t* data_cache = (void*)cc_cache->cc_payload;
+				for (uint8_t i = 0; i < count; i++) {
+					int8_t value_cache = data_cache[i];
+					int8_t value_recv = data_recv[i];
+					data_cache[i] = value_cache + value_recv;
+				}
+				break;
+			}
+			// Updates fixed point 5.11 type
+			case 0x80:
+			// Updates int16 type
+			case 0x02: {
+				uint8_t count = cc_recv->cc_head[9];
+				int16_t* data_recv = (void*)cc_recv->cc_payload;
+				int16_t* data_cache = (void*)cc_cache->cc_payload;
+				for (uint8_t i = 0; i < count; i++) {
+					int16_t value_cache = ntohs(data_cache[i]);
+					int16_t value_recv = ntohs(data_recv[i]);
+					data_cache[i] = htons(value_cache + value_recv);
+				}
+				break;
+			}
+			// Updates int32 type
+			case 0x03: {
+				uint8_t count = cc_recv->cc_head[11];
+				int32_t* data_recv = (void*)cc_recv->cc_payload;
+				int32_t* data_cache = (void*)cc_cache->cc_payload;
+				for (uint8_t i = 0; i < count; i++) {
+					int32_t value_cache = ntohl(data_cache[i]);
+					int32_t value_recv = ntohl(data_recv[i]);
+					data_cache[i] = htonl(value_cache + value_recv);
+				}
+				break;
+			}
+			// Rejects relative update with unknown data type
+			default: {
+				fprintf(stderr, "Unsupported data type: %x\n", cc_recv->type);
+				return;
+			}
+		}
+	}
 
 	// Broadcasts parameter update to all connected clients
 	uint8_t res_len = sizeof(*cc_cache) + ATEM_LEN_HEADER;
