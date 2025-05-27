@@ -12,20 +12,34 @@
 // How much to grow the sessions array by when it runs out of slots
 #define ATEM_SERVER_SESSIONS_MULTIPLIER (1.6f)
 
+// ATEM server containing information about sessions and in transit packets
 struct atem_server {
+	// Global packet queue for retransmits
 	struct atem_packet* packet_queue_head;
 	struct atem_packet* packet_queue_tail;
+	// Dynamic array of all available session contexts
 	struct atem_session* sessions;
+	// ATEM server UDP socket
 	int sock;
+	// Number of slots available in the sessions array
 	uint16_t sessions_size;
+	// Number of available sessions in the sessions array
 	uint16_t sessions_len;
+	// Number of connected sessions at the head of the sessions array
 	uint16_t sessions_connected;
+	// Configurable max number of sessions allowed
 	uint16_t sessions_limit;
+	// Last session id assigned
 	uint16_t session_id_last;
+	// Configurable number of milliseconds without acknowledgement before retransmitting packet
 	uint16_t retransmit_delay;
+	// Configurable number of milliseconds between pings
 	uint16_t ping_interval;
+	// Timestamp for next ping
 	struct timespec ping_timeout;
+	// Indicates if the server has started closing
 	bool closing;
+	// Lookup table for translating session id to sessions array index
 	int16_t session_lookup_table[UINT16_MAX + 1];
 };
 
