@@ -73,6 +73,7 @@ int main(void) {
 
 	// Ensures there is no limit to number of retransmits allowed
 	RUN_TEST() {
+		// Waits for ATEM client to connect
 		int sock = atem_socket_create();
 		uint16_t session_id = atem_handshake_listen(sock, atem_header_sessionid_rand(false));
 
@@ -98,6 +99,7 @@ int main(void) {
 
 	// Ensures last packet is acknowledged when old packet is received
 	RUN_TEST() {
+		// Waits for ATEM client to connect
 		int sock = atem_socket_create();
 		uint16_t session_id = atem_handshake_listen(sock, atem_header_sessionid_rand(false));
 
@@ -121,6 +123,7 @@ int main(void) {
 
 	// Ensures client requests packets it has not received when remote id is ahead in the sequence
 	RUN_TEST() {
+		// Waits for ATEM client to connect
 		int sock = atem_socket_create();
 		uint16_t session_id = atem_handshake_listen(sock, atem_header_sessionid_rand(false));
 
@@ -148,6 +151,7 @@ int main(void) {
 
 	// Ensures remote id closer to being behind than ahead in sequence is responded to with last acknowledged ack id
 	RUN_TEST() {
+		// Waits for ATEM client to connect
 		int sock = atem_socket_create();
 		uint16_t session_id = atem_handshake_listen(sock, atem_header_sessionid_rand(false));
 
@@ -167,6 +171,7 @@ int main(void) {
 
 	// Ensures remote id closer to being ahead than behind in sequence is responded to with retransmit request
 	RUN_TEST() {
+		// Waits for ATEM client to connect
 		int sock = atem_socket_create();
 		uint16_t session_id = atem_handshake_listen(sock, atem_header_sessionid_rand(false));
 
@@ -180,6 +185,24 @@ int main(void) {
 
 		atem_acknowledge_request_send(sock, session_id, 0x4000);
 		retransmit_request_recv_verify(sock, session_id, 0x0002);
+
+		atem_handshake_close(sock, session_id);
+		atem_socket_close(sock);
+	}
+
+	// Ensures packet with soft max size is acknowledged
+	RUN_TEST() {
+		// Waits for ATEM client to connect
+		int sock = atem_socket_create();
+		uint16_t session_id = atem_handshake_listen(sock, atem_header_sessionid_rand(false));
+
+		// Sends packet with soft max size
+		uint16_t remote_id = 0x0001;
+		uint8_t payload[ATEM_PACKET_LEN_MAX_SOFT - ATEM_LEN_HEADER - ATEM_LEN_CMDHEADER] = {0};
+		atem_command_send(sock, session_id, remote_id, "test", payload, sizeof(payload));
+
+		// Receives acknowledgement for soft max size request
+		atem_acknowledge_response_flush(sock, session_id, remote_id);
 
 		atem_handshake_close(sock, session_id);
 		atem_socket_close(sock);
