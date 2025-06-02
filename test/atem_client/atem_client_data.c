@@ -14,13 +14,16 @@ static void retransmit_request_recv_verify(int sock, uint16_t session_id, uint16
 }
 
 int main(void) {
-	// Ensures client acknowledges ping correctly
+	// Ensures acknowledge request is acknowledged correctly
 	RUN_TEST() {
+		// Waits for ATEM client to connect
 		int sock = atem_socket_create();
-		uint16_t session_id = atem_handshake_listen(sock, 0x1337);
+		uint16_t session_id = atem_handshake_listen(sock, atem_header_sessionid_rand(false));
 
-		atem_acknowledge_request_send(sock, session_id, 0x0001);
-		atem_acknowledge_response_recv_verify(sock, session_id, 0x0001);
+		// Sends packet requiring acknowledges and waits for that acknowledgement
+		uint16_t remote_id = 0x0001;
+		atem_acknowledge_request_send(sock, session_id, remote_id);
+		atem_acknowledge_response_recv_verify(sock, session_id, remote_id);
 
 		atem_handshake_close(sock, session_id);
 		atem_socket_close(sock);
@@ -28,14 +31,17 @@ int main(void) {
 
 	// Ensures a retransmitted packet is acknowledged if initial packet was dropped
 	RUN_TEST() {
+		// Waits for ATEM client to connect
 		int sock = atem_socket_create();
-		uint16_t session_id = atem_handshake_listen(sock, 0x5678);
+		uint16_t session_id = atem_handshake_listen(sock, atem_header_sessionid_rand(false));
 
+		// Sends packet requiring acknowledgement with retransmit flag set and waits for that acknowledgment
+		uint16_t remote_id = 0x0001;
 		uint8_t packet[ATEM_PACKET_LEN_MAX] = {0};
-		atem_acknowledge_request_set(packet, session_id, 0x0001);
+		atem_acknowledge_request_set(packet, session_id, remote_id);
 		atem_header_flags_set(packet, ATEM_FLAG_RETX);
 		atem_socket_send(sock, packet);
-		atem_acknowledge_response_recv_verify(sock, session_id, 0x0001);
+		atem_acknowledge_response_recv_verify(sock, session_id, remote_id);
 
 		atem_handshake_close(sock, session_id);
 		atem_socket_close(sock);
@@ -43,13 +49,16 @@ int main(void) {
 
 	// Ensures a retransmitted packet is acknowledged even if initial packet was received and acknowledged too
 	RUN_TEST() {
+		// Waits for ATEM client to connect
 		int sock = atem_socket_create();
-		uint16_t session_id = atem_handshake_listen(sock, 0x5678);
-		uint16_t remote_id = 0x0001;
+		uint16_t session_id = atem_handshake_listen(sock, atem_header_sessionid_rand(false));
 
+		// Sends packet requiring acknowledgement and ignores that acknowledgement
+		uint16_t remote_id = 0x0001;
 		atem_acknowledge_request_send(sock, session_id, remote_id);
 		atem_acknowledge_response_recv_verify(sock, session_id, remote_id);
 
+		// Sends retransmit of previous packet and waits for acknowledgment again
 		uint8_t packet[ATEM_PACKET_LEN_MAX] = {0};
 		atem_acknowledge_request_set(packet, session_id, remote_id);
 		atem_header_flags_set(packet, ATEM_FLAG_RETX);
@@ -63,12 +72,14 @@ int main(void) {
 	// Ensures there is no limit to number of retransmits allowed
 	RUN_TEST() {
 		int sock = atem_socket_create();
-		uint16_t session_id = atem_handshake_listen(sock, 0x5678);
-		uint16_t remote_id = 0x0001;
+		uint16_t session_id = atem_handshake_listen(sock, atem_header_sessionid_rand(false));
 
+		// Sends packet requiring acknowledgement
+		uint16_t remote_id = 0x0001;
 		atem_acknowledge_request_send(sock, session_id, remote_id);
 		atem_acknowledge_response_recv_verify(sock, session_id, remote_id);
 
+		// Resends packet multiple times expecting acknowledgement each time without retransmit flag set
 		for (int i = 0; i < 100; i++) {
 			uint8_t packet[ATEM_PACKET_LEN_MAX] = {0};
 			atem_acknowledge_request_set(packet, session_id, remote_id);
@@ -86,16 +97,21 @@ int main(void) {
 	// Ensures last packet is acknowledged when old packet is received
 	RUN_TEST() {
 		int sock = atem_socket_create();
-		uint16_t session_id = atem_handshake_listen(sock, 0x1234);
+		uint16_t session_id = atem_handshake_listen(sock, atem_header_sessionid_rand(false));
 
-		for (uint16_t remote_id = 1; remote_id < 0x0010; remote_id++) {
+		// Sends a few packets requiring acknowledgement
+		uint16_t remote_id = 0x0001;
+		while (remote_id < 0x0010) {
 			atem_acknowledge_request_send(sock, session_id, remote_id);
 			atem_acknowledge_response_recv_verify(sock, session_id, remote_id);
+			remote_id++;
 		}
-		atem_acknowledge_request_send(sock, session_id, 0x0010);
-		atem_acknowledge_response_recv_verify(sock, session_id, 0x0010);
+		atem_acknowledge_request_send(sock, session_id, remote_id);
+		atem_acknowledge_response_recv_verify(sock, session_id, remote_id);
+
+		// Sending old packet already being processed acknowledges most recently acknowledged packet again
 		atem_acknowledge_request_send(sock, session_id, 0x0001);
-		atem_acknowledge_response_recv_verify(sock, session_id, 0x0010);
+		atem_acknowledge_response_recv_verify(sock, session_id, remote_id);
 
 		atem_handshake_close(sock, session_id);
 		atem_socket_close(sock);
@@ -104,10 +120,11 @@ int main(void) {
 	// Ensures client requests packets it has not received when remote id is ahead in the sequence
 	RUN_TEST() {
 		int sock = atem_socket_create();
-		uint16_t session_id = atem_handshake_listen(sock, 0x1234);
+		uint16_t session_id = atem_handshake_listen(sock, atem_header_sessionid_rand(false));
 
 		uint16_t local_id = 0x0005;
 		for (uint16_t i = 1; i < local_id; i++) {
+			// Sends future packet and gets request for missing packet
 			atem_acknowledge_request_send(sock, session_id, local_id);
 			retransmit_request_recv_verify(sock, session_id, i);
 			atem_acknowledge_request_send(sock, session_id, i);
@@ -119,6 +136,7 @@ int main(void) {
 			}
 		}
 
+		// Future packet should now be acknowledged that all missing packets has been sent
 		atem_acknowledge_request_send(sock, session_id, local_id);
 		atem_acknowledge_response_recv_verify(sock, session_id, local_id);
 
@@ -129,14 +147,15 @@ int main(void) {
 	// Ensures remote id closer to being behind than ahead in sequence is responded to with last acknowledged ack id
 	RUN_TEST() {
 		int sock = atem_socket_create();
-		uint16_t session_id = atem_handshake_listen(sock, 0x0102);
+		uint16_t session_id = atem_handshake_listen(sock, atem_header_sessionid_rand(false));
 
+		// Sends oldest remote id
 		atem_acknowledge_request_send(sock, session_id, 0x4000);
 		atem_acknowledge_response_recv_verify(sock, session_id, 0x0000);
 
+		// Increments remote id and sends new oldest remote id
 		atem_acknowledge_request_send(sock, session_id, 0x0001);
 		atem_acknowledge_response_recv_verify(sock, session_id, 0x0001);
-
 		atem_acknowledge_request_send(sock, session_id, 0x4001);
 		atem_acknowledge_response_recv_verify(sock, session_id, 0x0001);
 
@@ -147,11 +166,13 @@ int main(void) {
 	// Ensures remote id closer to being ahead than behind in sequence is responded to with retransmit request
 	RUN_TEST() {
 		int sock = atem_socket_create();
-		uint16_t session_id = atem_handshake_listen(sock, 0x0102);
+		uint16_t session_id = atem_handshake_listen(sock, atem_header_sessionid_rand(false));
 
+		// Sends remote id furthest into the future
 		atem_acknowledge_request_send(sock, session_id, 0x3fff);
 		retransmit_request_recv_verify(sock, session_id, 0x0001);
 
+		// Increments remote id and sends new furthest into the future remote id
 		atem_acknowledge_request_send(sock, session_id, 0x0001);
 		atem_acknowledge_response_recv_verify(sock, session_id, 0x0001);
 
