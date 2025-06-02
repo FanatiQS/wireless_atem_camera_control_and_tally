@@ -28,7 +28,7 @@ SCRIPTS += $(SCRIPTS_DEVICE)
 
 # All ATEM client tests for both device and official clients
 EXECS_ATEM_CLIENT = atem_client_open atem_client_close atem_client_data
-EXECS_ATEM_CLIENT_EXTENDED += atem_client_open_extended atem_client_close_extended
+EXECS_ATEM_CLIENT_EXTENDED += atem_client_open_extended atem_client_close_extended atem_client_data_extended
 .PHONY: atem_client atem_client_extended
 atem_client: $(EXECS_ATEM_CLIENT)
 atem_client_extended: $(EXECS_ATEM_CLIENT_EXTENDED)
