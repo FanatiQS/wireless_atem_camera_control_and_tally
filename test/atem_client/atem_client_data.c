@@ -1,4 +1,6 @@
 #include <assert.h> // assert
+#include <stdint.h> // uint8_t, uint16_t
+#include <stdbool.h> // false
 
 #include "../utils/utils.h"
 
