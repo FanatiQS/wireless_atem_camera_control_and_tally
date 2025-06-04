@@ -260,6 +260,7 @@ void atem_session_create(uint8_t session_id_high, uint8_t session_id_low, struct
 	}
 	struct atem_session* session = atem_session_get(session_index);
 	session->remote_id = 0;
+	session->remote_id_last = 0;
 	session->peer_addr = *peer_addr;
 	session->session_id_high = session_id_high;
 	session->session_id_low = session_id_low;

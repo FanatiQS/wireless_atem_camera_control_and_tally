@@ -18,6 +18,8 @@ struct atem_session {
 	uint16_t packet_session_index_tail;
 	// The remote id is used when transmitting a packet that requires an acknowledgement
 	uint16_t remote_id;
+	// Last received acknowledged remote id
+	uint16_t remote_id_last;
 	// The session id of the session to use when iterating through all sessions instead of starting with session id
 	uint16_t session_id;
 	// Can either be server assigned session id or client assigned session id and is used when sending packets	

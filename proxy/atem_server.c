@@ -169,18 +169,47 @@ void atem_server_recv(void) {
 
 	// @todo
 	if (flags & ATEM_FLAG_ACKREQ) {
-		// @todo
-		atem_cache_update(buf, len);
+		int16_t remote_id_recved = buf[ATEM_INDEX_REMOTEID_HIGH] << 8 | buf[ATEM_INDEX_REMOTEID_LOW];
+		int16_t remote_id_expected = (session->remote_id_last + 1) & 0x7fff;
 
-		// Acknowledges request
-		uint8_t buf_ack[ATEM_LEN_HEADER] = {
-			[ATEM_INDEX_FLAGS] = ATEM_FLAG_ACK,
-			[ATEM_INDEX_LEN_LOW] = ATEM_LEN_HEADER,
-			[ATEM_INDEX_ACKID_HIGH] = buf[ATEM_INDEX_REMOTEID_HIGH],
-			[ATEM_INDEX_ACKID_LOW] = buf[ATEM_INDEX_REMOTEID_LOW]
-		};
-		atem_session_send(session, buf_ack);
-	}
+		// Processes next packet
+		if (remote_id_recved == remote_id_expected) {
+			// Updates cache with received data
+			atem_cache_update(buf, len);
+			session->remote_id_last = remote_id_recved;
+
+			// Acknowledges request
+			DEBUG_PRINTF("Acknowledging received packet\n");
+			uint8_t buf_ack[ATEM_LEN_HEADER] = {
+				[ATEM_INDEX_FLAGS] = ATEM_FLAG_ACK,
+				[ATEM_INDEX_LEN_LOW] = ATEM_LEN_HEADER,
+				[ATEM_INDEX_ACKID_HIGH] = remote_id_recved >> 8,
+				[ATEM_INDEX_ACKID_LOW] = remote_id_recved & 0xff
+			};
+			atem_session_send(session, buf_ack);
+		}
+		// Requests missing packet
+		else if (((remote_id_recved - remote_id_expected) & 0x7fff) < (0x7fff / 2)) {
+			DEBUG_PRINTF("Requests missing packet\n");
+			uint8_t buf_retxreq[ATEM_LEN_HEADER] = {
+				[ATEM_INDEX_FLAGS] = ATEM_FLAG_RETXREQ,
+				[ATEM_INDEX_LEN_LOW] = ATEM_LEN_HEADER,
+				[ATEM_INDEX_LOCALID_HIGH] = remote_id_expected >> 8,
+				[ATEM_INDEX_LOCALID_LOW] = remote_id_expected & 0xff
+			};
+			atem_session_send(session, buf_retxreq);
+		}
+		// Acknowledges previously processed request
+		else {
+			DEBUG_PRINTF("Acknowledging previously received packet again\n");
+			uint8_t buf_ack[ATEM_LEN_HEADER] = {
+				[ATEM_INDEX_FLAGS] = ATEM_FLAG_ACK,
+				[ATEM_INDEX_LEN_LOW] = ATEM_LEN_HEADER,
+				[ATEM_INDEX_ACKID_HIGH] = session->remote_id_last >> 8,
+				[ATEM_INDEX_ACKID_LOW] = session->remote_id_last & 0xff
+			};
+			atem_session_send(session, buf_ack);
+		}
 
 	// @todo
 	if (flags & ~(ATEM_FLAG_SYN | ATEM_FLAG_ACK | ATEM_FLAG_RETX | ATEM_FLAG_ACKREQ)) {
