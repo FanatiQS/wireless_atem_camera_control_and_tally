@@ -1,7 +1,7 @@
-#include <stdio.h> // FILE, fprintf, stdout, stderr
+#include <stdio.h> // FILE, fprintf, stdout, stderr, fflush, printf
 #include <stdint.h> // uint8_t
 #include <stddef.h> // size_t, NULL
-#include <string.h> // strlen, strncmp, strchr
+#include <string.h> // strlen, strncmp, strchr, memset
 #include <stdbool.h> // bool, true, false
 #include <stdlib.h> // getenv, atoi, abort
 #include <assert.h> // assert
@@ -93,4 +93,15 @@ void logs_print_string(FILE* pipe, const char* str) {
 		}
 	} while (*(++str) != '\0');
 	fprintf(pipe, "\x1b[m\n");
+}
+
+// Prints progress bar that is only visible until flush of standard out
+void logs_print_progress(size_t index, size_t max) {
+	char bar[64];
+	memset(bar, '#', sizeof(bar));
+
+	const int progress = (int)(index / (max / sizeof(bar)));
+	printf("[%.*s%-*c] %zu/%zu", progress, bar, (int)sizeof(bar) - progress, bar[0], index, max);
+	fflush(stdout);
+	printf("\r\x1b[K");
 }
