@@ -1,14 +1,12 @@
-#include <stdio.h> // fprintf, stderr, fputs
-#include <string.h> // strerror_s
+#include <stdio.h> // stderr, perror, fwprintf
 #include <stdlib.h> // exit, EXIT_FAILURE
 #include <errno.h> // errno
 #include <stddef.h> // NULL
 #include <wchar.h> // wchar_t
 
 #include <winsock2.h> // WSADATA, WSAStartup, WSAGetLastError, WSACleanup
-#include <windef.h> // MAKEWORD
 #include <winbase.h> // FormatMessage, FORMAT_MESSAGE_FROM_SYSTEM, FORMAT_MESSAGE_IGNORE_INSERTS
-#include <winnt.h> // MAKELANGID, DWORD
+#include <winnt.h> // MAKELANGID, DWORD, LANG_NEUTRAL, SUBLANG_DEFAULT
 
 // Automatically initializes WSA by putting startup code in a constructor with global instance
 
@@ -20,9 +18,9 @@ class WSAInit {
 	WSADATA wsaData;
 public:
 	WSAInit() {
-		int err = WSAStartup(MAKEWORD(2, 2), &wsaData);
+		int err = WSAStartup(0x0202, &wsaData);
 		if (!err) return;
-		fprintf(stderr, "Failed to initialize WSA: %d\n", err);
+		fwprintf(stderr, L"Failed to initialize WSA: %d\n", err);
 		exit(EXIT_FAILURE);
 	}
 	~WSAInit() {
@@ -33,40 +31,36 @@ public:
 // Global WSA class instance to force initialization to be called before main
 static WSAInit wsa;
 
-// Overwrites perror function to handle WSA errors
-extern "C" void _perror(const char* msg) {
-	char buf[1024];
-	if (!msg) return;
+// Replacement for perror function to handle WSA errors
+extern "C" void WSAperror(const char* msg) {
+	if (msg == NULL) return;
 
-	// Outputs error message from argument
-	fputs(msg, stderr);
-
-	// Outputs normal error if set
+	// Outputs normal error if set and clears errno
 	if (errno) {
-		strerror_s(buf, sizeof(buf), errno);
-		fprintf(stderr, ": %s\n", buf);
+		perror(msg);
 		errno = 0;
 		return;
 	}
 
 	// Gets WSA error string
+	wchar_t buf[1024];
 	DWORD err = WSAGetLastError();
-	DWORD len = FormatMessage(
+	DWORD len = FormatMessageW(
 		FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
 		NULL,
 		err,
 		MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-		(wchar_t*)buf,
-		sizeof(buf) / sizeof(wchar_t),
+		buf,
+		sizeof(buf) / sizeof(buf[0]),
 		NULL
 	);
 
 	// Outputs error string
 	if (len) {
-		fprintf(stderr, ": %ls\n", (wchar_t*)buf);
+		fwprintf(stderr, L"%S: %s\n", msg, buf);
 	}
 	// Outputs error code if unable to get error string
 	else {
-		fprintf(stderr, ": WSA error code %d\n", err);
+		fwprintf(stderr, L"%S: WSA error code %d\n", msg, err);
 	}
 }

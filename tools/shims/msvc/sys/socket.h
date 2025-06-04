@@ -11,6 +11,6 @@ typedef int ssize_t;
 #define SHUT_WR SD_SEND
 #define setsockopt(sock, lvl, name, value, len) setsockopt(sock, lvl, name, (const void*)value, len)
 
-#define perror(msg) _perror(msg)
+#define perror(msg) WSAperror(msg)
 
 #endif // SYS_SOCKET_H
