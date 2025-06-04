@@ -210,6 +210,7 @@ void atem_server_recv(void) {
 			};
 			atem_session_send(session, buf_ack);
 		}
+	}
 
 	// @todo
 	if (flags & ~(ATEM_FLAG_SYN | ATEM_FLAG_ACK | ATEM_FLAG_RETX | ATEM_FLAG_ACKREQ)) {
