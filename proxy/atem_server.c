@@ -236,14 +236,9 @@ void atem_server_broadcast(uint8_t* buf, uint8_t flags) {
 
 
 
-// Disconnects all sessions and closes the server
-void atem_server_close(void) {
+// Flushes all sessions by starting closing handshake
+void atem_server_flush(void) {
 	assert(atem_server.sessions != NULL);
-
-	DEBUG_PRINTF("Closing ATEM server\n");
-
-	// Disallows any more sessions to connect
-	atem_server.closing = true;
 
 	// Completes closing right away if no sessions need to be closed
 	if (atem_server.sessions_len == 0) {
@@ -277,6 +272,18 @@ void atem_server_close(void) {
 
 	// Sends close request to all sessions
 	atem_packet_broadcast_close();
+}
+
+// Disconnects all sessions and closes the server
+void atem_server_close(void) {
+	DEBUG_PRINTF("Closing ATEM server\n");
+
+	// Disallows any more sessions to connect
+	assert(atem_server.closing == false);
+	atem_server.closing = true;
+
+	// Starts disconnecting all available sessions
+	atem_server_flush();
 }
 
 // Checks if the ATEM server has fully closed

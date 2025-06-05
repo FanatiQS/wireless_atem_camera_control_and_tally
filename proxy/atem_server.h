@@ -49,6 +49,7 @@ bool atem_server_init(void);
 void atem_server_recv(void);
 void atem_server_broadcast(uint8_t* buf, uint8_t flags);
 
+void atem_server_flush(void);
 void atem_server_close(void);
 bool atem_server_closed(void);
 void atem_server_restart(void);

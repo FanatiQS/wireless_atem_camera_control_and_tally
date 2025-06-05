@@ -1,5 +1,5 @@
 #include <stdio.h> // fprintf, stderr, printf
-#include <stdint.h> // uint8_t, uint16_t, int16_t
+#include <stdint.h> // uint8_t, uint16_t, int16_t, intmax_t
 #include <time.h> // time_t, struct timespec, timespec_get
 #include <stddef.h> // size_t, NULL
 #include <assert.h> // assert
@@ -45,9 +45,9 @@ void atem_debug_print_packet(struct atem_packet* packet) {
 	printf("\t" "closing: %s\n", (packet->flags & ATEM_PACKET_FLAG_CLOSING) ? "YES" : "NO");
 	printf("\t" "release buf: %s\n", (packet->flags & ATEM_PACKET_FLAG_RELEASE) ? "YES" : "NO");
 	printf(
-		"\t" "timeout timestamp: %ld.%ld\n",
-		packet->timeout.tv_sec - atem_debug_timeout_start,
-		packet->timeout.tv_nsec / 1000000
+		"\t" "timeout timestamp: %jd.%jd\n",
+		(intmax_t)(packet->timeout.tv_sec - atem_debug_timeout_start),
+		(intmax_t)(packet->timeout.tv_nsec / 1000000)
 	);
 	printf("\t" "sessions remaining: %d\n", packet->sessions_remaining);
 	printf("\t" "sessions len: %d\n", packet->sessions_len);
