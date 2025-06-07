@@ -96,12 +96,17 @@ void logs_print_string(FILE* pipe, const char* str) {
 }
 
 // Prints progress bar that is only visible until flush of standard out
-void logs_print_progress(size_t index, size_t max) {
-	char bar[64];
-	memset(bar, '#', sizeof(bar));
+void logs_print_progress(size_t index, size_t len) {
+	assert(index < len);
 
-	const int progress = (int)(index / (max / sizeof(bar)));
-	printf("[%.*s%-*c] %zu/%zu", progress, bar, (int)sizeof(bar) - progress, bar[0], index, max);
+	// Prints progress bar
+	char bar[64];
+	const size_t progress = index / (len / sizeof(bar));
+	memset(bar, '#', progress);
+	memset(bar + progress, '.', sizeof(bar) - progress);
+	printf("[%.*s] %zu/%zu", (int)sizeof(bar), bar, index, len);
 	fflush(stdout);
+
+	// Removes progress bar on next flush to console
 	printf("\r\x1b[K");
 }
