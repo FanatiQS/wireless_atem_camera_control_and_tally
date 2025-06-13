@@ -1,10 +1,11 @@
 #include <stdlib.h> // EXIT_FAILURE, EXIT_SUCCESS
 #include <stdio.h> // perror
-#include <unistd.h> // getopt, optarg
 #include <ctype.h> // isdigit
 #include <assert.h> // assert
 #include <stdint.h> // uint16_t
 #include <stdbool.h> // true
+
+#include <getopt.h> // getopt, optarg
 
 #include "./atem_server.h" // atem_server_init
 #include "./atem_cache.h" // atem_cache_init
