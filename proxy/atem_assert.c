@@ -60,7 +60,7 @@ void atem_assert_packets(void) {
 	assert(now.tv_nsec >= 0);
 	assert(now.tv_nsec < 1000000000);
 
-	struct timespec timeout_prev = now;
+	time_t timeout_prev = -1000;
 	struct atem_packet* packet_prev = NULL;
 	while (packet != NULL) {
 		atem_assert_packet(packet);
@@ -68,11 +68,13 @@ void atem_assert_packets(void) {
 		assert(packet->timeout.tv_nsec >= 0);
 		assert(packet->timeout.tv_nsec < 1000000000);
 
-		// Asserts timeout is within expected range
-		time_t timeout_remaining = (packet->timeout.tv_sec - now.tv_sec) * 1000;
-		timeout_remaining += (time_t)((packet->timeout.tv_nsec - now.tv_nsec) / 1000000);
+		// Asserts timeout is within expected range increase throughout the list
+		time_t timeout_remaining = atem_server.retransmit_delay;
+		timeout_remaining -= (now.tv_sec - packet->timeout.tv_sec) * 1000;
+		timeout_remaining -= (time_t)((now.tv_nsec - packet->timeout.tv_nsec) / 1000000);
 		assert(timeout_remaining <= atem_server.retransmit_delay);
-		timeout_prev = packet->timeout;
+		assert(timeout_remaining >= timeout_prev);
+		timeout_prev = timeout_remaining;
 
 		assert(packet->prev == packet_prev);
 		packet_prev = packet;
