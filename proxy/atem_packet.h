@@ -63,9 +63,9 @@ void atem_packet_dequeue(struct atem_packet* packet);
 void atem_packet_flush(struct atem_packet* packet, uint16_t packet_session_index);
 void atem_packet_release(struct atem_packet* packet);
 void atem_packet_disassociate(struct atem_packet* packet, uint16_t packet_session_index);
-void atem_packet_retransmit(void);
+void atem_packet_retransmit(struct timespec* now);
 
 void atem_packet_broadcast_close(void);
-void atem_packet_broadcast_ping(void);
+void atem_packet_broadcast_ping(struct timespec* now);
 
 #endif // ATEM_PACKET_H

@@ -1,7 +1,7 @@
 #include <stddef.h> // size_t, NULL
 #include <stdlib.h> // malloc, free, abort
 #include <stdint.h> // uint8_t, uint16_t, int16_t
-#include <time.h> // timespec_get, TIME_UTC
+#include <time.h> // struct timespec, timespec_get, TIME_UTC
 #include <assert.h> // assert
 #include <stdbool.h> // true, false
 #include <string.h> // memset
@@ -26,7 +26,7 @@ static uint8_t buf_ping[ATEM_LEN_HEADER] = {
 
 
 // Requeues packet at the top of the queue to the end and updates its timestamp
-static void atem_packet_requeue(void) {
+static void atem_packet_requeue(struct timespec* now) {
 	struct atem_packet* packet = atem_server.packet_queue_head;
 	assert(packet != NULL);
 
@@ -58,8 +58,7 @@ static void atem_packet_requeue(void) {
 	}
 
 	// Updates timeout to time of requeuing
-	int timespec_result = timespec_get(&packet->timeout, TIME_UTC);
-	assert(timespec_result == TIME_UTC);
+	packet->timeout = *now;
 }
 
 
@@ -230,7 +229,7 @@ void atem_packet_flush(struct atem_packet* packet, uint16_t packet_session_index
 }
 
 // Retransmits oldest ATEM packet or drops sessions not having acknowledged it after retransmits run out
-void atem_packet_retransmit(void) {
+void atem_packet_retransmit(struct timespec* now) {
 	struct atem_packet* packet = atem_server.packet_queue_head;
 	assert(packet != NULL);
 	assert(packet->prev == NULL);
@@ -250,7 +249,7 @@ void atem_packet_retransmit(void) {
 			);
 			atem_packet_send(packet, packet_session);
 		}
-		atem_packet_requeue();
+		atem_packet_requeue(now);
 		packet->resends_remaining--;
 		return;
 	}
@@ -324,7 +323,7 @@ void atem_packet_retransmit(void) {
 	packet->resends_remaining = ATEM_RESENDS_CLOSING;
 	packet->flags = ATEM_PACKET_FLAG_CLOSING;
 	assert(packet == atem_server.packet_queue_head);
-	atem_packet_requeue();
+	atem_packet_requeue(now);
 }
 
 
@@ -362,7 +361,7 @@ void atem_packet_broadcast_close(void) {
 }
 
 // Pings all connected sessions
-void atem_packet_broadcast_ping(void) {
+void atem_packet_broadcast_ping(struct timespec* now) {
 	assert(atem_server.sessions_connected > 0);
 
 	DEBUG_PRINTF("Pings all %d connected clients\n", atem_server.sessions_connected);
@@ -370,6 +369,5 @@ void atem_packet_broadcast_ping(void) {
 	atem_server_broadcast(buf_ping, ATEM_PACKET_FLAG_NONE);
 
 	// Sets timeout for next ping
-	int timespec_result = timespec_get(&atem_server.ping_timeout, TIME_UTC);
-	assert(timespec_result == TIME_UTC);
+	atem_server.ping_timeout = *now;
 }

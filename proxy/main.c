@@ -97,10 +97,6 @@ int main(int argc, char** argv) {
 		if (pollfd.revents) {
 			atem_server_recv();
 		}
-		else {
-			assert(poll_len == 0);
-			timeout_dispatch();
-		}
 	}
 
 	return EXIT_SUCCESS;
