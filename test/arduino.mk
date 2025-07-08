@@ -1,5 +1,5 @@
 # Requirements:
-# 	GNU tools (sh, cd, cp, gnumake, grep, gzip, mkdir, mv, rm, sh, tar, uname, unzip)
+# 	GNU tools (cd, cp, gnumake, grep, gzip, mkdir, mv, rm, sh, tar, uname, unzip)
 # 	curl
 # 	python3
 
@@ -13,7 +13,7 @@ CFLAGS_ESP8266 = --build-property "compiler.c.extra_flags=$(CFLAGS)"
 CFLAGS_ESP32 = --build-property "compiler.warning_flags.all=$(CFLAGS)"
 
 # Arduino cli temporary directories and configurations
-export ARDUINO_BUILD_CACHE_PATH = $(BUILD_DIR)
+export ARDUINO_BUILD_CACHE_PATH = $(BUILD_DIR)/cache
 export ARDUINO_DIRECTORIES_DATA = $(BUILD_DIR)
 export ARDUINO_LOGGING_LEVEL = warn
 export ARDUINO_BOARD_MANAGER_ADDITIONAL_URLS = \
@@ -41,6 +41,7 @@ $(PYTHONPATH)/serial:
 $(BUILD_DIR)/packages/%: $(ARDUINO_CLI)
 	$(ARDUINO_CLI) core update-index
 	$(ARDUINO_CLI) core install $*:$*
+	$(ARDUINO_CLI) cache clean
 
 # Installs firmware sources for arduino
 $(ROOT)/arduino/src/lib_path.h:
