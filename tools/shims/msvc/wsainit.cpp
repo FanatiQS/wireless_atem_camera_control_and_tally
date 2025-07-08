@@ -1,7 +1,6 @@
 #include <stdio.h> // stderr, perror, fwprintf
 #include <stdlib.h> // exit, EXIT_FAILURE
 #include <errno.h> // errno
-#include <stddef.h> // NULL
 #include <wchar.h> // wchar_t
 
 #include <winsock2.h> // WSADATA, WSAStartup, WSAGetLastError, WSACleanup
@@ -33,7 +32,7 @@ static WSAInit wsa;
 
 // Replacement for perror function to handle WSA errors
 extern "C" void WSAperror(const char* msg) {
-	if (msg == NULL) return;
+	if (msg == nullptr) return;
 
 	// Outputs normal error if set and clears errno
 	if (errno) {
@@ -47,12 +46,12 @@ extern "C" void WSAperror(const char* msg) {
 	DWORD err = WSAGetLastError();
 	DWORD len = FormatMessageW(
 		FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
-		NULL,
+		nullptr,
 		err,
 		MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
 		buf,
 		sizeof(buf) / sizeof(buf[0]),
-		NULL
+		nullptr
 	);
 
 	// Outputs error string
