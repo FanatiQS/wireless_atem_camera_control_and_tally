@@ -4,8 +4,8 @@
 
 #define WIN32_LEAN_AND_MEAN
 #include <winsock2.h>
+#include <ws2tcpip.h> // socklen_t
 
-typedef int socklen_t;
 typedef int ssize_t;
 
 #define SHUT_WR SD_SEND
