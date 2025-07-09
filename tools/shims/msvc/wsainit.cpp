@@ -10,7 +10,9 @@
 // Automatically initializes WSA by putting startup code in a constructor with global instance
 
 // Links to systems shared libraries
+#ifdef _MSC_VER
 #pragma comment(lib, "ws2_32.lib")
+#endif // _MSC_VER
 
 // Class for WSA initialization and cleanup
 class WSAInit {
