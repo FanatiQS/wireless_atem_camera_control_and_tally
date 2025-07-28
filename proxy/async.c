@@ -129,7 +129,6 @@ bool async_init(void) {
 
 	// Sets initial value of file descriptors to poll in background threads main loop to be deactivated
 	async_loop_fds[ASYNC_LOOP_INDEX_SERVER].fd = -1;
-	async_loop_fds[ASYNC_LOOP_INDEX_RELAY].fd = -1;
 
 	// Enables all file descriptors to poll in background threads main loop for reading
 	for (size_t i = 0; i < (sizeof(async_loop_fds) / sizeof(*async_loop_fds)); i++) {
@@ -145,9 +144,9 @@ bool async_init(void) {
 	// Launches the background process
 	err = pthread_create(&async_ctx.thread, NULL, &async_loop, NULL);
 	if (err != 0) {
-		errno = err;
 		close(pipe_fds[0]);
 		close(pipe_fds[1]);
+		errno = err;
 		return false;
 	}
 	assert(err == 0);
