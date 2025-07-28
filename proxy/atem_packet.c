@@ -8,7 +8,7 @@
 
 #include "../core/atem_protocol.h" // ATEM_INDEX_REMOTEID_HIGH, ATEM_INDEX_REMOTEID_LOW, ATEM_LEN_HEADER, ATEM_INDEX_FLAGS, ATEM_FLAG_RETX, ATEM_LEN_SYN, ATEM_FLAG_SYN, ATEM_INDEX_LEN_LOW, ATEM_INDEX_OPCODE, ATEM_OPCODE_CLOSING, ATEM_RESENDS_CLOSING
 #include "./atem_server.h" // atem_server, atem_server_release, atem_server_broadcast
-#include "./atem_session.h" // struct atem_session, atem_session_send, atem_session_get, atem_session_lookup_get, atem_session_release, atem_session_terminate
+#include "./atem_session.h" // struct atem_session, atem_session_send, atem_session_get, atem_session_lookup_get, atem_session_release, atem_session_terminate, atem_session_drop
 #include "./atem_packet.h" // struct atem_packet_session, struct atem_packet, ATEM_PACKET_FLAG_NONE
 #include "./atem_debug.h" // DEBUG_PRINTF
 
