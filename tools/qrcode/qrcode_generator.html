@@ -46,6 +46,20 @@
 		outline: none;
 	}
 
+	/* Extends clickable area for .credentials-input to its .credentials-container */
+	.credentials-container {
+		position: relative;
+	}
+	.credentials-input:before {
+		content: "";
+		position: absolute;
+		top: 0;
+		left: 0;
+		height: 100%;
+		width: 100%;
+		cursor: text;
+	}
+
 	/* QRCode covers full width and fills required height based on width */
 	#qrcode {
 		position: relative;
