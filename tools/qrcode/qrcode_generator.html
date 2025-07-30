@@ -59,6 +59,13 @@
 		height: 100%;
 	}
 
+	/* Prevents displaying line breaks in contenteditable input boxes */
+	.credentials-input * {
+		display: inline;
+	}
+	.credentials-input br {
+		display: none;
+	}
 
 
 	.view-horisontal #container {
