@@ -1,46 +1,52 @@
 <!DOCTYPE html>
 <meta content="width=device-width" name="viewport">
 <title>Create configuration sticker</title>
-<script src="https://cdn.jsdelivr.net/npm/davidshimjs-qrcodejs@0.0.2/qrcode.min.js"></script>
 
-<style>
+<style> /* General styles */
 	@page {
 		size: auto;
 		margin: 0;
 	}
+</style>
+
+<style> /* Main section styles */
 	#container {
 		display: inline-block;
-		border: 0.125em solid black; /* 0.125 == (2px / 1em) */
+		border: 0.125em solid black; /* 0.125 == (2px / 1em) == (2px / 16px) */
 		border-radius: 1em;
 		padding: 1em;
 		text-align: center;
 		font-family: sans-serif;
-		min-width: 16em; /* 16em == (qrcode-width / 1em) == (256px / 1em) */
+		background: white;
 	}
 
 	#title {
-		margin: 0 1em 2.1em;
+		margin: 0 1em 2em;
 	}
 
-	.credentialsField {
-		margin: 1.1em 1em;
-		border: 0.078125em solid darkgray; /* 0.078125 == (1px / 1em) */
+	.credentials-container {
+		padding: 0 1em;
+		margin: 0 1em 1em;
+		border: 0.078125em solid darkgray; /* 0.078125 == (1px / 0.8em) == (1px / 12.8px) */
 	}
-	.credentialsField label {
+	.credentials-label {
+		display: inline-block;
+		transform: translateY(-50%);
 		padding: 0 1em;
 		margin: 0 1em;
 		background: white;
-		transform: translateY(-50%);
-		display: inline-block;
 		font-size: 1.1em;
 	}
-	.credentialsField span {
+	.credentials-container:after { /* Vertically centers input box by adding equivalent of label below */
+		content: "\00a0";
+		font-size: 1.1em;
+	}
+	.credentials-input {
 		font-size: 0.8em;
 		outline: none;
-		padding: 0.2em 1.25em 1.4em;
-		display: block;
 	}
 
+	/* QRCode covers full width and fills required height based on width */
 	#qrcode {
 		position: relative;
 		padding-bottom: 100%;
@@ -72,38 +78,44 @@
 
 </style>
 
+<!-- Main section -->
 <div id="container">
 	<div id="title">Join configuration access point</div>
-	<div class="credentialsField">
-		<label for="ssidInput">SSID:</label>
-		<span contenteditable role="textbox" id="ssidInput"></span>
+	<div class="credentials-container">
+		<div class="credentials-label">SSID:</div>
+		<div class="credentials-input" contenteditable role="textbox" id="ssid"></div>
 	</div>
-	<div class="credentialsField">
-		<label for="pskInput">PSK:</label>
-		<span contenteditable role="textbox" id="pskInput"></span>
+	<div class="credentials-container">
+		<div class="credentials-label">PSK:</div>
+		<div class="credentials-input" contenteditable role="textbox" id="psk"></div>
 	</div>
 	<div id="qrcode"></div>
 </div>
 
+<!-- QRCode generator -->
+<script src="https://cdn.jsdelivr.net/npm/davidshimjs-qrcodejs@0.0.2/qrcode.min.js"></script>
 <script>
-	const ssidInput = document.getElementById("ssidInput");
-	const pskInput = document.getElementById("pskInput");
+	"use strict";
+
+	const ssidInput = document.getElementById("ssid");
+	const pskInput = document.getElementById("psk");
 	const qrcode = new QRCode("qrcode");
 
 	function makeCode() {
-		const ssid = ssidInput.innerText.replace(/;/g, "\;");
-		const psk = pskInput.innerText.toUpperCase();
+		const ssid = ssidInput.textContent.replace(/;/g, "\;");
+		const psk = pskInput.textContent.toUpperCase();
 
 		qrcode.clear();
 		qrcode.makeCode("WIFI:T:WPA;S:" + ssid + ";P:" + psk + ";;");
 	};
 
-	ssidInput.oninput = makeCode;
-	pskInput.oninput = makeCode;
+	ssidInput.addEventListener("input", makeCode);
+	pskInput.addEventListener("input", makeCode);
+
+	window.addEventListener("load", makeCode);
 
 	const searchParams = new URL(window.location.href).searchParams;
 	ssidInput.innerText = searchParams.get("ssid");
 	pskInput.innerText = searchParams.get("psk");
 
-	makeCode();
 </script>
