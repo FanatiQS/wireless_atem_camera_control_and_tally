@@ -103,6 +103,10 @@
 		width: 5em;
 	}
 
+	/* Disables #container border */
+	#layout-state-border:checked ~ #container {
+		border-color: transparent;
+	}
 </style>
 
 </head>
@@ -110,6 +114,7 @@
 
 <!-- Layout states that controls rendering -->
 <input type="checkbox" hidden id="layout-state-horizontal">
+<input type="checkbox" hidden id="layout-state-border">
 
 <!-- Main section -->
 <div id="container">
