@@ -1,4 +1,7 @@
 <!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
 <meta content="width=device-width" name="viewport">
 <title>Create configuration sticker</title>
 
@@ -64,27 +67,49 @@
 	.credentials-input br {
 		display: none;
 	}
+</style>
 
-
-	.view-horisontal #container {
+<style> /* Layout styles */
+	/* Fills space when containers grow bigger than required by children/content */
+	#container {
 		display: inline-flex;
-		border: 0;
+		flex-direction: column;
 	}
-	.view-horisontal .credentialsField {
-		margin: 0 1em 0 0;
+	.credentials-container, .credentials-input {
+		display: flex;
+		flex-direction: column;
+		flex-grow: 1;
 	}
-	.view-horisontal .credentialsField span {
-		padding: 0.3em 1em 1em;
-		font-size: 1.6em;
+	.credentials-input {
+		justify-content: center;
 	}
-	.view-horisontal #title {
+
+	/* Horizontal "strip" layout */
+	#layout-state-horizontal:checked ~ #container {
+		flex-direction: row;
+	}
+	#layout-state-horizontal:checked ~ #container #title {
 		display: none;
 	}
-	.view-horisontal #qrcode {
+	#layout-state-horizontal:checked ~ #container .credentials-container {
+		margin: 0 1em 0 0;
+	}
+	#layout-state-horizontal:checked ~ #container .credentials-input {
+		font-size: 1.4em;
+	}
+	#layout-state-horizontal:checked ~ #container #qrcode {
 		padding-bottom: 0;
+		height: 5em;
+		width: 5em;
 	}
 
 </style>
+
+</head>
+<body>
+
+<!-- Layout states that controls rendering -->
+<input type="checkbox" hidden id="layout-state-horizontal">
 
 <!-- Main section -->
 <div id="container">
