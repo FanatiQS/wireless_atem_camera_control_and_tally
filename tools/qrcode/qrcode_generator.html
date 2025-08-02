@@ -30,20 +30,20 @@
 	.credentials-container {
 		padding: 0 1em;
 		margin: 0 1em 1em;
-		border: 0.0625rem solid darkgray; /* 0.0625 == (1px / 1em) == (1px / 16px) */
+		border: 0.0625em solid darkgray; /* 0.0625 == (1px / 1em) */
 	}
 	.credentials-label {
 		display: table;
-		line-height: 1rem;
-		margin: -0.5rem auto;
-		padding: 0 1rem;
+		line-height: 1em;
+		margin: -0.5em auto;
+		padding: 0 1em;
 		background: white;
-		font-size: 1.1rem;
+		font-size: 1.1em;
 	}
 	.credentials-input {
-		padding: 1.3rem 1rem;
-		margin: 0 -1rem;
-		font-size: 0.8rem;
+		padding: 1.6em 1.25em;
+		margin: 0 -1.25em; /* eliminates padding of .credentials-container, 1.25 == (1em / 0.8) */
+		font-size: 0.8em;
 		outline: none;
 	}
 
