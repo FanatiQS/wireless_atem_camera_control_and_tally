@@ -5,6 +5,7 @@
 #include <string.h> // memcpy
 #include <stdio.h> // sprintf, perror
 #include <stdlib.h> // abort
+#include <stdbool.h> // bool
 
 #include "../core/atem.h" // ATEM_PACKET_LEN_MAX, ATEM_PACKET_LEN_MAX_SOFT
 #include "../core/atem_protocol.h" // ATEM_LEN_HEADER
@@ -76,6 +77,7 @@ static struct {
 
 // Gets pointer to camera control parameter in cache
 static struct cc_cmd* cc_param_get(uint8_t dest, uint8_t category, uint8_t param) {
+	assert(dest > 0);
 	assert(atem_cache_data.data != NULL);
 	if (dest == 0) return NULL;
 
@@ -210,11 +212,16 @@ static void atem_cache_update_cc(uint8_t* buf_req, uint16_t len) {
 	}
 
 	// Broadcasts parameter update to all connected clients
-	uint8_t res_len = sizeof(*cc_cache) + ATEM_LEN_HEADER;
+	const uint8_t res_len = sizeof(*cc_cache) + ATEM_LEN_HEADER;
 	uint8_t* res_buf = malloc(res_len);
-	res_buf[0] = ATEM_FLAG_ACKREQ;
-	res_buf[1] = res_len;
-	memset(res_buf + 4, 0, 6);
+	res_buf[ATEM_INDEX_FLAGS] = ATEM_FLAG_ACKREQ;
+	res_buf[ATEM_INDEX_LEN_LOW] = res_len;
+	res_buf[ATEM_INDEX_ACKID_HIGH] = 0;
+	res_buf[ATEM_INDEX_ACKID_LOW] = 0;
+	res_buf[ATEM_INDEX_LOCALID_HIGH] = 0;
+	res_buf[ATEM_INDEX_LOCALID_LOW] = 0;
+	res_buf[ATEM_INDEX_UNKNOWNID_LOW] = 0;
+	res_buf[ATEM_INDEX_UNKNOWNID_LOW] = 0;
 	memcpy(res_buf + ATEM_LEN_HEADER, cc_cache, sizeof(*cc_cache));
 	atem_server_broadcast(res_buf, ATEM_PACKET_FLAG_RELEASE);
 }
@@ -462,6 +469,7 @@ void atem_cache_dump(struct atem_session* session, struct atem_packet* packet) {
 // Updates ATEM cache data from ATEM command
 void atem_cache_update(uint8_t* buf, uint16_t len) {
 	assert(buf != NULL);
+	assert(atem_server.sessions_connected > 0);
 
 	uint16_t offset = ATEM_LEN_HEADER;
 	while (offset < len) {
