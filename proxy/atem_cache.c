@@ -405,6 +405,11 @@ void atem_cache_init(uint8_t source_count) {
 	assert(data_remaining == chunk->chunk_len);
 }
 
+// Releases cache memory
+void atem_cache_release(void) {
+	free(atem_cache_data.data);
+}
+
 // Dumps entire server state on newly connected session
 void atem_cache_dump(struct atem_session* session, struct atem_packet* packet) {
 	assert(session != NULL);
