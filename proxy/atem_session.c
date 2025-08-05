@@ -363,7 +363,7 @@ void atem_session_connect(uint8_t session_id_high, uint8_t session_id_low, struc
 
 	// Enables ping interval timer if no sessions were connected before this one
 	if (atem_server.sessions_connected == 0) {
-		int timespec_result = timespec_get(&atem_server.ping_timeout, TIME_UTC);
+		int timespec_result = timespec_get(&atem_server.ping_timestamp, TIME_UTC);
 		assert(timespec_result == TIME_UTC);
 	}
 

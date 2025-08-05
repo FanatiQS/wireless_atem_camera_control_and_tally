@@ -44,18 +44,15 @@ int timeout_get(void) {
 	// Gets ATEM server ping timeout
 	if (atem_server.sessions_connected > 0) {
 		// Gets remaining time for next ATEM server ping
-		unsigned int timeout_ping = timeout_remaining(&now, &atem_server.ping_timeout, atem_server.ping_interval);
+		unsigned int timeout_ping = timeout_remaining(&now, &atem_server.ping_timestamp, atem_server.ping_interval);
 
 		// Broadcasts ping if timeout has expired
 		if (timeout_ping == 0) {
 			atem_packet_broadcast_ping(&now);
-			assert(atem_server.ping_timeout.tv_sec >= now.tv_sec);
-			assert(atem_server.ping_timeout.tv_nsec >= now.tv_nsec);
+			assert(atem_server.ping_timestamp.tv_sec >= now.tv_sec);
+			assert(atem_server.ping_timestamp.tv_nsec >= now.tv_nsec);
 			assert(atem_server.packet_queue_head != NULL);
-			DEBUG_PRINTF(
-				"Timeout ping: %dms\n",
-				timeout_remaining(&now, &atem_server.ping_timeout, atem_server.ping_interval)
-			);
+			DEBUG_PRINTF("Timeout ping: %dms\n", timeout_ping);
 		}
 		// Exposes ping timeout since it could potentially be the closes timeout
 		else {
@@ -69,7 +66,7 @@ int timeout_get(void) {
 	// Resends all retransmits that has expired and gets retransmit timeout if closer in time than ping timeout
 	while (atem_server.packet_queue_head != NULL) {
 		unsigned int timeout_retx;
-		timeout_retx = timeout_remaining(&now, &atem_server.packet_queue_head->timeout, atem_server.retransmit_delay);
+		timeout_retx = timeout_remaining(&now, &atem_server.packet_queue_head->timestamp, atem_server.retransmit_delay);
 		if (timeout_retx > 0) {
 			DEBUG_PRINTF("Timeout retransmit: %dms\n", timeout_retx);
 			if (timeout_retx < timeout) {
@@ -99,6 +96,6 @@ struct timespec* timeout_next(void) {
 	}
 	switch (timeout_index) {
 		case TIMEOUT_INDEX_RETRANSMIT: return &atem_server.packet_queue_head->timeout;
-		case TIMEOUT_INDEX_PING: return &atem_server.ping_timeout;
+		case TIMEOUT_INDEX_PING: return &atem_server.ping_timestamp;
 	}
 }

@@ -46,8 +46,8 @@ void atem_debug_print_packet(struct atem_packet* packet) {
 	printf("\t" "release buf: %s\n", (packet->flags & ATEM_PACKET_FLAG_RELEASE) ? "YES" : "NO");
 	printf(
 		"\t" "timeout timestamp: %jd.%jd\n",
-		(intmax_t)(packet->timeout.tv_sec - atem_debug_timeout_start),
-		(intmax_t)(packet->timeout.tv_nsec / 1000000)
+		(intmax_t)(packet->timestamp.tv_sec - atem_debug_timeout_start),
+		(intmax_t)(packet->timestamp.tv_nsec / 1000000)
 	);
 	printf("\t" "sessions remaining: %d\n", packet->sessions_remaining);
 	printf("\t" "sessions len: %d\n", packet->sessions_len);

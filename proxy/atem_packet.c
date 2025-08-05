@@ -57,8 +57,8 @@ static void atem_packet_requeue(struct timespec* now) {
 		assert(atem_server.packet_queue_tail->prev->next == atem_server.packet_queue_tail);
 	}
 
-	// Updates timeout to time of requeuing
-	packet->timeout = *now;
+	// Updates timestamp to time of requeuing
+	packet->timestamp = *now;
 }
 
 
@@ -126,7 +126,7 @@ void atem_packet_enqueue(struct atem_packet* packet, uint8_t flags) {
 
 	packet->flags = flags;
 	packet->resends_remaining = ATEM_RESENDS;
-	int timespec_result = timespec_get(&packet->timeout, TIME_UTC);
+	int timespec_result = timespec_get(&packet->timestamp, TIME_UTC);
 	assert(timespec_result == TIME_UTC);
 
 	if (atem_server.packet_queue_head == NULL) {
@@ -368,6 +368,6 @@ void atem_packet_broadcast_ping(struct timespec* now) {
 	buf_ping[ATEM_INDEX_FLAGS] = ATEM_FLAG_ACKREQ;
 	atem_server_broadcast(buf_ping, ATEM_PACKET_FLAG_NONE);
 
-	// Sets timeout for next ping
-	atem_server.ping_timeout = *now;
+	// Sets timestamp for next ping
+	atem_server.ping_timestamp = *now;
 }

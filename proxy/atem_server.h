@@ -35,8 +35,8 @@ struct atem_server {
 	uint16_t retransmit_delay;
 	// Configurable number of milliseconds between pings
 	uint16_t ping_interval;
-	// Timestamp for next ping
-	struct timespec ping_timeout;
+	// Timestamp from where next ping timeout is calculated from
+	struct timespec ping_timestamp;
 	// Indicates if the server has started closing
 	bool closing;
 	// Lookup table for translating session id to sessions array index

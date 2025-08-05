@@ -65,20 +65,21 @@ void atem_assert_packets(void) {
 	while (packet != NULL) {
 		atem_assert_packet(packet);
 
-		assert(packet->timeout.tv_nsec >= 0);
-		assert(packet->timeout.tv_nsec < 1000000000);
+		assert(packet->timestamp.tv_nsec >= 0);
+		assert(packet->timestamp.tv_nsec < 1000000000);
 
 		// Asserts timeout is within expected range increase throughout the list
 		time_t timeout_remaining = atem_server.retransmit_delay;
-		timeout_remaining -= (now.tv_sec - packet->timeout.tv_sec) * 1000;
-		timeout_remaining -= (time_t)((now.tv_nsec - packet->timeout.tv_nsec) / 1000000);
+		timeout_remaining -= (now.tv_sec - packet->timestamp.tv_sec) * 1000;
+		timeout_remaining -= (time_t)((now.tv_nsec - packet->timestamp.tv_nsec) / 1000000);
 		assert(timeout_remaining <= atem_server.retransmit_delay);
-		assert(timeout_remaining >= timeout_prev);
+		assert(timeout_remaining >= timeout_prev); // can trigger if DEBUG is enabled and stderr is not fully buffered
 		timeout_prev = timeout_remaining;
 
 		assert(packet->prev == packet_prev);
 		packet_prev = packet;
 		packet = packet->next;
+		assert(packet != packet_prev);
 	}
 	assert(packet == NULL);
 	assert(atem_server.packet_queue_tail == packet_prev);
@@ -235,12 +236,12 @@ void atem_assert(void) {
 		assert(timespec_get(&now, TIME_UTC) == TIME_UTC);
 		assert(now.tv_nsec >= 0);
 		assert(now.tv_nsec < 1000000000);
-		assert(atem_server.ping_timeout.tv_nsec >= 0);
-		assert(atem_server.ping_timeout.tv_nsec < 1000000000);
+		assert(atem_server.ping_timestamp.tv_nsec >= 0);
+		assert(atem_server.ping_timestamp.tv_nsec < 1000000000);
 
-		// Asserts ping timeout is within the expected range
-		time_t timeout_remaining = (atem_server.ping_timeout.tv_sec - now.tv_sec) * 1000;
-		timeout_remaining += (time_t)((atem_server.ping_timeout.tv_nsec - now.tv_nsec) / 1000000);
+		// Asserts ping timestamp is within the expected range
+		time_t timeout_remaining = (atem_server.ping_timestamp.tv_sec - now.tv_sec) * 1000;
+		timeout_remaining += (time_t)((atem_server.ping_timestamp.tv_nsec - now.tv_nsec) / 1000000);
 		assert(timeout_remaining <= atem_server.ping_interval);
 	}
 

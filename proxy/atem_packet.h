@@ -49,7 +49,7 @@ struct atem_packet {
 	// Flags for packet, refer to enum for more details
 	uint8_t flags;
 	// Timestamp for when this packet was registered to be retransmitted
-	struct timespec timeout;
+	struct timespec timestamp;
 	// Flexible array for all sessions connected to this packet
 	struct atem_packet_session sessions[];
 };
