@@ -1,20 +1,12 @@
 #include <time.h> // struct timespec, timespec_get, TIME_UTC
 #include <assert.h> // assert
 #include <stdint.h> // uint32_t
+#include <limits.h> // INT_MAX
 
 #include "./atem_server.h" // atem_server
 #include "./atem_packet.h" // atem_packet_broadcast_ping
 #include "./atem_debug.h" // DEBUG_PRINTF
 #include "./timeout.h"
-
-// Indexes for all timeouts that can be set
-enum timeout_index {
-	TIMEOUT_INDEX_RETRANSMIT,
-	TIMEOUT_INDEX_PING
-};
-
-// Index for what type of timeout was returned last
-static enum timeout_index timeout_index;
 
 // Gets remaining time between current time and specified timeout
 static unsigned int timeout_remaining(struct timespec* now, struct timespec* timeout, uint16_t delay) {
@@ -57,7 +49,6 @@ int timeout_get(void) {
 		// Exposes ping timeout since it could potentially be the closes timeout
 		else {
 			DEBUG_PRINTF("Timeout ping: %dms\n", timeout_ping);
-			timeout_index = TIMEOUT_INDEX_PING;
 			timeout = timeout_ping;
 		}
 	}
@@ -70,7 +61,6 @@ int timeout_get(void) {
 		if (timeout_retx > 0) {
 			DEBUG_PRINTF("Timeout retransmit: %dms\n", timeout_retx);
 			if (timeout_retx < timeout) {
-				timeout_index = TIMEOUT_INDEX_RETRANSMIT;
 				timeout = timeout_retx;
 			}
 			break;
@@ -86,16 +76,6 @@ int timeout_get(void) {
 		DEBUG_PRINTF("Timeout: %dms\n\n", timeout);
 	}
 
+	assert(timeout == (unsigned int)-1 || timeout < INT_MAX);
 	return (int)timeout;
-}
-
-// @todo
-struct timespec* timeout_next(void) {
-	if (timeout_get() == -1) {
-		return NULL;
-	}
-	switch (timeout_index) {
-		case TIMEOUT_INDEX_RETRANSMIT: return &atem_server.packet_queue_head->timeout;
-		case TIMEOUT_INDEX_PING: return &atem_server.ping_timestamp;
-	}
 }
