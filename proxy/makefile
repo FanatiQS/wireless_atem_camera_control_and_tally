@@ -40,16 +40,6 @@ LIB_PATH = $(BUILD_ROOT)/$(PLATFORM)/libatem_$(TARGET).a
 # Defaults to build binary
 $(BIN_PATH):
 
-# Lists all object files
-OBJS += $(BUILD_DIR)/async.o
-OBJS += $(BUILD_DIR)/atem_assert.o
-OBJS += $(BUILD_DIR)/atem_cache.o
-OBJS += $(BUILD_DIR)/atem_debug.o
-OBJS += $(BUILD_DIR)/atem_packet.o
-OBJS += $(BUILD_DIR)/atem_server.o
-OBJS += $(BUILD_DIR)/atem_session.o
-OBJS += $(BUILD_DIR)/timeout.o
-
 # Generates object files for all required sources
 $(BUILD_DIR)/async.o: ./async.c
 $(BUILD_DIR)/atem_assert.o: ./atem_assert.c
@@ -61,22 +51,42 @@ $(BUILD_DIR)/atem_session.o: ./atem_session.c
 $(BUILD_DIR)/main.o: ./main.c
 $(BUILD_DIR)/timeout.o: ./timeout.c
 
-# Rebuilds everything on makefile changes
-$(OBJS) $(BUILD_DIR)/main.o: makefile
+# Lists all object files shared between all builds
+OBJS += $(BUILD_DIR)/atem_assert.o
+OBJS += $(BUILD_DIR)/atem_cache.o
+OBJS += $(BUILD_DIR)/atem_debug.o
+OBJS += $(BUILD_DIR)/atem_packet.o
+OBJS += $(BUILD_DIR)/atem_server.o
+OBJS += $(BUILD_DIR)/atem_session.o
+OBJS += $(BUILD_DIR)/timeout.o
 
-# Includes generated dependency files if available
--include $(BUILD_DIR)/*.d
-
-# Builds object files
-$(OBJS) $(BUILD_DIR)/main.o:
-	mkdir -p $(dir $@)
-	$(CC) -c $< -o $@ -MMD $(CFLAGS) $(CPPFLAGS)
-
-# Links generated object files to a single executable
+# Builds executable
 $(BIN_PATH): $(OBJS) $(BUILD_DIR)/main.o
 	mkdir -p $(dir $@)
 	$(CC) $^ -o $@ $(LDFLAGS)
 
 # Builds static library
-$(LIB_PATH): $(OBJS)
+$(LIB_PATH): $(OBJS) $(BUILD_DIR)/async.o
+	mkdir -p $(dir $@)
 	$(AR) -rcs $@ $^
+
+# Includes all object files for remaining object file handling
+OBJS += $(BUILD_DIR)/async.o
+OBJS += $(BUILD_DIR)/main.o
+
+# Rebuilds everything on makefile changes
+$(OBJS): makefile
+
+# Includes generated dependency files if available
+-include $(BUILD_DIR)/*.d
+
+# Builds object files
+$(OBJS):
+	mkdir -p $(dir $@)
+	$(CC) -c $< -o $@ -MMD $(CFLAGS) $(CPPFLAGS)
+
+# Aliases for BIN_PATH and LIB_PATH files
+.PHONY: all lib exec
+all: $(LIB_PATH) $(BIN_PATH)
+lib: $(LIB_PATH)
+exec: $(BIN_PATH)
