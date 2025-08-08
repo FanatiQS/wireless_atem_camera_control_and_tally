@@ -1,6 +1,9 @@
-# Defaults to develompment build and native platform
+# Defaults to development build and native platform
 BUILD ?= dev
 PLATFORM ?= native
+
+# Sets build flags shared by all builds
+CFLAGS += -DDEBUG=0 -MMD
 
 # Enables many compiler warnings
 CFLAGS += -Wall -Wextra -Wpedantic -std=c11 -Wstrict-prototypes -Wshadow -Wmissing-prototypes
@@ -9,12 +12,10 @@ CFLAGS += -Wfloat-equal -Wformat=2
 CFLAGS += -Wmissing-declarations -Wmissing-include-dirs -Wnested-externs -Wpointer-arith
 CFLAGS += -Wredundant-decls -Wsequence-point -Wswitch -Wundef -Wwrite-strings
 CFLAGS += -Wunreachable-code -Wno-tautological-constant-out-of-range-compare
-CFLAGS += -DDEBUG=0 -MMD
-# CFLAGS += -Werror
 
 # Configuration specific flags
 ifeq "$(BUILD)" "release"
-CFLAGS += -DNDEBUG -O3 -Wno-unused-variable
+CFLAGS += -DNDEBUG -O3 -Werror -Wno-unused-variable
 LDFLAGS += -flto
 else ifeq "$(BUILD)" "debug"
 CFLAGS += -UDEBUG -DDEBUG=1 -g -fsanitize=address,undefined
@@ -89,3 +90,34 @@ $(OBJS):
 all: $(LIB_PATH) $(BIN_PATH)
 lib: $(LIB_PATH)
 exec: $(BIN_PATH)
+
+# Cleans generated files
+.PHONY: clean
+clean:
+	$(RM) $(OBJS) $(OBJS:.o=.d) $(BIN_PATH) $(LIB_PATH) $(BIN_PATH).dSYM $(BIN_PATH).pdb
+	-rmdir $(BUILD_DIR) $(BUILD_ROOT)/proxy $(DIST_ROOT)/proxy $(BUILD_ROOT) $(DIST_ROOT)
+
+
+
+# Sets target triple for cross compilation
+ifneq "$(PLATFORM)" "native"
+CFLAGS += --target=$(PLATFORM)
+LDFLAGS += --target=$(PLATFORM)
+endif
+
+# All cross compilation platforms
+PLATFORMS += aarch64-macos-none x86_64-macos-none
+PLATFORMS += aarch64-windows-gnu x86-windows-gnu x86_64-windows-gnu
+PLATFORMS += aarch64-linux-gnu x86-linux-gnu x86_64-linux-gnu
+
+# Allows defining variables through rules by peeling off each layer
+all_platforms/%:; $(MAKE) $(addsuffix /$*,$(PLATFORMS))
+all_builds/%:; $(MAKE) $(addsuffix /$*,release dev debug)
+$(foreach p,$(PLATFORMS), $(eval $(p)/%:; $(MAKE) $$* PLATFORM=$(p)))
+$(foreach p,release dev debug, $(eval $(p)/%:; $(MAKE) $$* BUILD=$(p)))
+
+# Cleans all platforms and builds
+.PHONY: clean_all
+clean_all:
+	$(MAKE) all_platforms/all_builds/clean
+	$(MAKE) all_builds/clean
