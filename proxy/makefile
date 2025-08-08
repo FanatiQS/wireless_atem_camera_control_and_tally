@@ -1,39 +1,38 @@
+# Defaults to develompment build and native platform
+BUILD ?= dev
+PLATFORM ?= native
+
 # Enables many compiler warnings
 CFLAGS += -Wall -Wextra -Wpedantic -std=c11 -Wstrict-prototypes -Wshadow -Wmissing-prototypes
 CFLAGS += -pedantic-errors -Waggregate-return -Wbad-function-cast -Wcast-align -Wcast-qual
-CFLAGS += -Wdeclaration-after-statement -Wfloat-equal -Wformat=2
+CFLAGS += -Wfloat-equal -Wformat=2
 CFLAGS += -Wmissing-declarations -Wmissing-include-dirs -Wnested-externs -Wpointer-arith
 CFLAGS += -Wredundant-decls -Wsequence-point -Wswitch -Wundef -Wwrite-strings
 CFLAGS += -Wunreachable-code -Wno-tautological-constant-out-of-range-compare
-CFLAGS += -DDEBUG=0
+CFLAGS += -DDEBUG=0 -MMD
 # CFLAGS += -Werror
 
-# Debug flags
-ifeq "$(TARGET)" "debug"
-CFLAGS += -UDEBUG -DDEBUG=1 -g -fsanitize=address,undefined
-LDFLAGS += -fsanitize=address,undefined
-endif
-
-# Release flags
-ifeq "$(TARGET)" "release"
+# Configuration specific flags
+ifeq "$(BUILD)" "release"
 CFLAGS += -DNDEBUG -O3 -Wno-unused-variable
 LDFLAGS += -flto
+else ifeq "$(BUILD)" "debug"
+CFLAGS += -UDEBUG -DDEBUG=1 -g -fsanitize=address,undefined
+LDFLAGS += -fsanitize=address,undefined
+else ifneq "$(BUILD)" "dev"
+$(error Invalid build mode: $(BUILD))
 endif
 
 
 
-# Defaults to current platform and development target
-PLATFORM = native
-TARGET = dev
-
 # Overwritable directories for output files
-BUILD_ROOT = ../build/proxy
-DIST_ROOT = ../dist/proxy
+BUILD_ROOT ?= ../build
+DIST_ROOT ?= ../dist
 
 # Directories and paths for generated build files and output files
-BUILD_DIR = $(BUILD_ROOT)/$(PLATFORM)/$(TARGET)
-BIN_PATH = $(DIST_ROOT)/$(PLATFORM)/proxy_$(TARGET)
-LIB_PATH = $(BUILD_ROOT)/$(PLATFORM)/libatem_$(TARGET).a
+BUILD_DIR ?= $(BUILD_ROOT)/proxy/$(PLATFORM)_$(BUILD)
+BIN_PATH ?= $(DIST_ROOT)/proxy/proxy_$(PLATFORM)_$(BUILD)
+LIB_PATH ?= $(BUILD_DIR)/libatem.a
 
 
 
@@ -78,12 +77,12 @@ OBJS += $(BUILD_DIR)/main.o
 $(OBJS): makefile
 
 # Includes generated dependency files if available
--include $(BUILD_DIR)/*.d
+-include $(OBJS:.o=.d)
 
 # Builds object files
 $(OBJS):
 	mkdir -p $(dir $@)
-	$(CC) -c $< -o $@ -MMD $(CFLAGS) $(CPPFLAGS)
+	$(CC) -c $< -o $@ $(CFLAGS) $(CPPFLAGS)
 
 # Aliases for BIN_PATH and LIB_PATH files
 .PHONY: all lib exec
