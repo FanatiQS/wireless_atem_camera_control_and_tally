@@ -6,12 +6,13 @@
 #include <winsock2.h>
 #include <ws2tcpip.h> // socklen_t
 
+#include "../wsa_shim_perror.h" // wsa_shim_perror
+
 typedef int ssize_t;
 
 #define SHUT_WR SD_SEND
 #define setsockopt(sock, lvl, name, value, len) setsockopt(sock, lvl, name, (const void*)value, len)
 
-void WSAperror(const char* msg);
-#define perror(msg) WSAperror(msg)
+#define perror(msg) wsa_shim_perror(msg)
 
 #endif // SYS_SOCKET_H
