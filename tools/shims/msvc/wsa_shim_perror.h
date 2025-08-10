@@ -2,13 +2,13 @@
 #ifndef WSA_SHIM_PERROR_H
 #define WSA_SHIM_PERROR_H
 
-#if __cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif // __cplusplus
 
 void wsa_shim_perror(const char* msg);
 
-#if __cplusplus
+#ifdef __cplusplus
 }
 #endif // __cplusplus
 

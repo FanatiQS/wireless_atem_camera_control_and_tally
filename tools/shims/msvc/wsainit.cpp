@@ -63,6 +63,6 @@ extern "C" void wsa_shim_perror(const char* msg) {
 	}
 	// Outputs error code if unable to get error string
 	else {
-		fprintf(stderr, "%s: WSA error code %d\n", msg, err);
+		fprintf(stderr, "%s: WSA error code %lu\n", msg, err);
 	}
 }
