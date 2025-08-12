@@ -279,7 +279,7 @@ void atem_session_create(uint8_t session_id_high, uint8_t session_id_low, struct
 	atem_session_lookup_set(session->session_id, session_index);
 
 	DEBUG_PRINTF(
-		"Creating session 0x%04x (0x%04x) from %d.%d.%d.%d:%d\n",
+		"Creating session 0x%04x (0x%04x) from %u.%u.%u.%u:%u\n",
 		session->session_id, request_session_id,
 		peer_addr->sin_addr.s_addr & 0xff, (peer_addr->sin_addr.s_addr >> 8) & 0xff,
 		(peer_addr->sin_addr.s_addr >> 16) & 0xff, (peer_addr->sin_addr.s_addr >> 24) & 0xff,

@@ -44,11 +44,11 @@ int timeout_get(void) {
 			assert(atem_server.ping_timestamp.tv_sec >= now.tv_sec);
 			assert(atem_server.ping_timestamp.tv_nsec >= now.tv_nsec);
 			assert(atem_server.packet_queue_head != NULL);
-			DEBUG_PRINTF("Timeout ping: %dms\n", timeout_ping);
+			DEBUG_PRINTF("Timeout ping: %ums\n", timeout_ping);
 		}
 		// Exposes ping timeout since it could potentially be the closes timeout
 		else {
-			DEBUG_PRINTF("Timeout ping: %dms\n", timeout_ping);
+			DEBUG_PRINTF("Timeout ping: %ums\n", timeout_ping);
 			timeout = timeout_ping;
 		}
 	}
@@ -59,7 +59,7 @@ int timeout_get(void) {
 		unsigned int timeout_retx;
 		timeout_retx = timeout_remaining(&now, &atem_server.packet_queue_head->timestamp, atem_server.retransmit_delay);
 		if (timeout_retx > 0) {
-			DEBUG_PRINTF("Timeout retransmit: %dms\n", timeout_retx);
+			DEBUG_PRINTF("Timeout retransmit: %ums\n", timeout_retx);
 			if (timeout_retx < timeout) {
 				timeout = timeout_retx;
 			}
@@ -73,7 +73,7 @@ int timeout_get(void) {
 		DEBUG_PRINTF("No timeout\n\n");
 	}
 	else {
-		DEBUG_PRINTF("Timeout: %dms\n\n", timeout);
+		DEBUG_PRINTF("Timeout: %ums\n\n", timeout);
 	}
 
 	assert(timeout == (unsigned int)-1 || timeout < INT_MAX);
