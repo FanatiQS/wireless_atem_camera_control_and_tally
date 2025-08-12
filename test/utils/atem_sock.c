@@ -127,7 +127,7 @@ struct sockaddr_in atem_socket_listen(int sock, uint8_t* packet) {
 				fprintf(stderr, "Received empty packet from client\n");
 			}
 			else {
-				fprintf(stderr, "Failed to recvfrom: %zu\n", recv_len);
+				fprintf(stderr, "Failed to recvfrom: %zd\n", recv_len);
 			}
 			abort();
 		}

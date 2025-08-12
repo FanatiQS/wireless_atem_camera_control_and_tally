@@ -170,7 +170,7 @@ void http_socket_recv_error(int sock, int err) {
 		fprintf(stderr, "Socket unexpectedly closed when expecting err: %d\n", err);
 	}
 	else {
-		fprintf(stderr, "Socket unexpectedly got response data: %zd\n", buf_len);
+		fprintf(stderr, "Socket unexpectedly got response data: %zu\n", buf_len);
 		logs_print_string(stderr, buf);
 	}
 	abort();

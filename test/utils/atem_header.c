@@ -62,7 +62,7 @@ void atem_header_flags_get_verify(uint8_t* packet, uint8_t flags_required, uint8
 	// Verifies only required or optional flags are set
 	uint8_t flags_illegal = ~(flags_required | flags_optional);
 	if (flags & flags_illegal) {
-		fprintf(stderr, "Unexpected illegal flag(s) 0x%02x\n", flags_illegal & flags);
+		fprintf(stderr, "Unexpected illegal flag(s) 0x%02x\n", (uint8_t)(flags_illegal & flags));
 		abort();
 	}
 }
