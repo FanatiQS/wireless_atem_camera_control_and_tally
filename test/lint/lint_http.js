@@ -2,14 +2,17 @@
 
 import { STATUS_CODES, validateHeaderName, validateHeaderValue } from "node:http";
 import { readFileSync, readdirSync } from "node:fs";
+import { basename } from "node:path";
 
 let errors = 0;
-const filesPath = `${import.meta.dirname}/../..`;
-for (const dirent of readdirSync(filesPath, { withFileTypes: true, recursive: true })) {
-	// Reads file content
-	const path = `${dirent.path}/${dirent.name}`;
+const projRoot = `${import.meta.dirname}/../..`;
+for (const dirent of readdirSync(projRoot, { withFileTypes: true, recursive: true })) {
+	// Only lints .http files
+	const path = `${dirent.parentPath}/${dirent.name}`;
 	if (!path.endsWith(".http")) continue;
 	console.log(path);
+
+	// Reads file content
 	const content = readFileSync(path).toString();
 
 	// Parses HTTP response
@@ -20,13 +23,10 @@ for (const dirent of readdirSync(filesPath, { withFileTypes: true, recursive: tr
 		errors++;
 		continue;
 	}
-	if (headerDelimiterIndex === -1) {
-		throw new Error("Unable to find HTTP header delimiter");
-	}
 	const headerLines = content.slice(0, headerDelimiterIndex).split("\r\n");
 	const statusLine = /** @type {string} */(headerLines.shift());
 
-	// Validates status line components
+	// Validates status line version
 	const protocolVersionDelimiterIndex = statusLine.indexOf(" ");
 	if (protocolVersionDelimiterIndex === -1) {
 		console.error("Unable to find status line delimiter after protocol version:", statusLine);
@@ -38,6 +38,8 @@ for (const dirent of readdirSync(filesPath, { withFileTypes: true, recursive: tr
 		console.error("Invalid HTTP protocol version:", protocolVersion);
 		errors++;
 	}
+
+	// Validates status line code
 	const statusCodeDelimiterIndex = statusLine.indexOf(" ", protocolVersionDelimiterIndex + 1);
 	if (statusCodeDelimiterIndex === -1) {
 		console.error("Unable to find status line delimiter after status code:", statusLine);
@@ -49,6 +51,8 @@ for (const dirent of readdirSync(filesPath, { withFileTypes: true, recursive: tr
 		console.error("Status code is not a valid number:", statusCode);
 		errors++;
 	}
+
+	// Validates status line message
 	const statusMessage = statusLine.slice(statusCodeDelimiterIndex + 1);
 	const statusMessageExpected = STATUS_CODES[statusCode];
 	if (statusMessage !== statusMessageExpected) {
@@ -69,7 +73,7 @@ for (const dirent of readdirSync(filesPath, { withFileTypes: true, recursive: tr
 		const key = headerLine.slice(0, headerDelimiterIndex);
 		const value = headerLine.slice(headerDelimiterIndex + headerDelimiter.length);
 
-		// Ensures header key and value does not have leading or trailing whitespace
+		// Ensures header key and value do not have leading or trailing whitespace
 		if (key.length !== key.trim().length) {
 			console.error("Header line key contained leading or trailing whitespace:", [ key ]);
 			errors++;
@@ -79,9 +83,17 @@ for (const dirent of readdirSync(filesPath, { withFileTypes: true, recursive: tr
 			errors++;
 		}
 
-		// Validates header key and value
+		// Validates header key
 		try {
 			validateHeaderName(key);
+		}
+		catch (err) {
+			console.error(err);
+			errors++;
+		}
+
+		// Validates header value
+		try {
 			validateHeaderValue(key, value);
 		}
 		catch (err) {
@@ -92,5 +104,5 @@ for (const dirent of readdirSync(filesPath, { withFileTypes: true, recursive: tr
 }
 
 // Exits with error code corresponding to number of errors encountered
-console.log(`Number of errors for ${import.meta.url.slice(import.meta.url.lastIndexOf("/") + 1)}:`, errors);
+console.log(`Number of errors for ${basename(import.meta.filename)}:`, errors);
 process.exitCode = errors;
