@@ -2,7 +2,7 @@
 
 import { STATUS_CODES, validateHeaderName, validateHeaderValue } from "node:http";
 import { readFileSync, readdirSync } from "node:fs";
-import { basename } from "node:path";
+import { basename, relative } from "node:path";
 
 let errors = 0;
 const projRoot = `${import.meta.dirname}/../..`;
@@ -10,7 +10,7 @@ for (const dirent of readdirSync(projRoot, { withFileTypes: true, recursive: tru
 	// Only lints .http files
 	const path = `${dirent.parentPath}/${dirent.name}`;
 	if (!path.endsWith(".http")) continue;
-	console.log(path);
+	console.log(relative(projRoot, path));
 
 	// Reads file content
 	const content = readFileSync(path).toString();
