@@ -1,6 +1,6 @@
 #include <setjmp.h> // longjmp, jmp_buf
 #include <signal.h> // signal, SIGABRT
-#include <stdio.h> // printf, fprintf, stderr
+#include <stdio.h> // printf, fprintf, stderr, setvbuf, _IOLBF
 #include <stdlib.h> // abort, getenv, EXIT_SUCCESS, atoi
 #include <string.h> // strcmp
 #include <stddef.h> // NULL
@@ -124,6 +124,14 @@ bool runner_filter(const char* path) {
 
 // Sets up for a new test to run
 bool runner_start(const char* path) {
+	// Line buffers both stdout and stderr to fix out of order logs when stdout is fully buffered
+	bool buffer_mode_initialized = false;
+	if (!buffer_mode_initialized) {
+		setvbuf(stdout, NULL, _IOLBF, 0);
+		setvbuf(stderr, NULL, _IOLBF, 0);
+		buffer_mode_initialized = true;
+	}
+
 	// Ignores all tests not matching filter pattern
 	if (!runner_filter(path)) {
 		printf("Test skipped: %s\n", path);
@@ -162,7 +170,7 @@ int runner_exit(void) {
 	char* mode = getenv("RUNNER_MODE");
 	if (mode == NULL || strcmp(mode, "abort") == 0) {
 		assert(runner_fails == 0);
-		printf("Number of tests competed: %d (%d skipped)\n", runner_all, runner_skipped);
+		printf("Number of tests completed: %d (%d skipped)\n", runner_all, runner_skipped);
 		return EXIT_SUCCESS;
 	}
 
