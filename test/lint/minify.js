@@ -1,12 +1,15 @@
 // @ts-check
 
+import { execSync } from "node:child_process";
+import { join } from "node:path";
+
 import htmlMinifier from "html-minifier";
-import { execSync } from "child_process";
 
 // Proves that the generated HTML can not be minified further
 let errors = 0;
+const projRoot = join(import.meta.dirname, "../..");
 for (const state of [ "ROOT", "POST_ROOT" ]) {
-	const cmd = `../../tools/extract_html/generate.sh ${state} --ssid='1 2' --psk='3 4' --name='5 6'`;
+	const cmd = `${projRoot}/tools/extract_html/generate.sh ${state} --ssid='1 2' --psk='3 4' --name='5 6'`;
 	const html1 = execSync(cmd).toString();
 
 	const html2 = htmlMinifier.minify(html1, {
@@ -51,5 +54,5 @@ for (const state of [ "ROOT", "POST_ROOT" ]) {
 }
 
 // Exits with error code corresponding to number of errors encountered
-console.log(`Number of errors for ${import.meta.url.slice(import.meta.url.lastIndexOf("/") + 1)}:`, errors);
+console.log(`Number of HTML minifier errors:`, errors);
 process.exitCode = errors;

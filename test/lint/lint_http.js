@@ -2,17 +2,17 @@
 
 import { STATUS_CODES, validateHeaderName, validateHeaderValue } from "node:http";
 import { readFileSync, readdirSync } from "node:fs";
-import { basename, relative } from "node:path";
+import { relative, join } from "node:path";
 
 let errors = 0;
-const projRoot = `${import.meta.dirname}/../..`;
+const projRoot = join(import.meta.dirname, "../..");
 for (const dirent of readdirSync(projRoot, { withFileTypes: true, recursive: true })) {
 	// Only lints .http files
-	const path = `${dirent.parentPath}/${dirent.name}`;
-	if (!path.endsWith(".http")) continue;
-	console.log(relative(projRoot, path));
+	if (!dirent.name.endsWith(".http")) continue;
 
 	// Reads file content
+	const path = `${dirent.parentPath}/${dirent.name}`;
+	console.log(`${relative(projRoot, path)}`);
 	const content = readFileSync(path).toString();
 
 	// Parses HTTP response
@@ -104,5 +104,5 @@ for (const dirent of readdirSync(projRoot, { withFileTypes: true, recursive: tru
 }
 
 // Exits with error code corresponding to number of errors encountered
-console.log(`Number of errors for ${basename(import.meta.filename)}:`, errors);
+console.log(`Number of HTTP lint errors:`, errors);
 process.exitCode = errors;
