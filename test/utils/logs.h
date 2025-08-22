@@ -9,7 +9,7 @@
 
 bool logs_find(const char* match);
 void logs_print_buffer(FILE* pipe, uint8_t* buf, size_t buf_len);
-void logs_print_string(FILE* pipe, const char* str);
+void logs_print_string(FILE* pipe, const char* str, bool chunked);
 void logs_print_progress(size_t index, size_t len);
 
 #endif // LOGS_H

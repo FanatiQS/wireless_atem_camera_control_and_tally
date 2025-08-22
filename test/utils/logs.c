@@ -71,10 +71,10 @@ void logs_print_buffer(FILE* pipe, uint8_t* buf, size_t buf_len) {
 }
 
 // Clearly prints multiline string
-void logs_print_string(FILE* pipe, const char* str) {
+void logs_print_string(FILE* pipe, const char* str, bool chunked) {
 	assert(str != NULL);
 
-	if (*str == '\0') {
+	if (str[0] == '\0') {
 		return;
 	}
 
@@ -92,7 +92,11 @@ void logs_print_string(FILE* pipe, const char* str) {
 			fprintf(pipe, "%c", c);
 		}
 	} while (*(++str) != '\0');
-	fprintf(pipe, "\x1b[m\n");
+	fprintf(pipe, "\x1b[27m");
+
+	if (!chunked) {
+		fprintf(pipe, "\n");
+	}
 }
 
 // Prints progress bar that is only visible until flush of standard out

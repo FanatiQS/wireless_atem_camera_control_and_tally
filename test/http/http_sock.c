@@ -29,7 +29,7 @@ void http_socket_send_buffer(int sock, const char* buf, size_t len) {
 	assert(len == strlen(buf));
 	if (logs_find("http_send")) {
 		printf("HTTP transmit:\n");
-		logs_print_string(stdout, buf);
+		logs_print_string(stdout, buf, false);
 	}
 	simple_socket_send(sock, buf, len);
 }
@@ -41,15 +41,38 @@ void http_socket_send_string(int sock, const char* str) {
 
 
 
+// States for chunked HTTP receive string logging
+static bool http_socket_recv_chunking_enabled = false;
+static bool http_socket_recv_chunking_started = false;
+
+// Enables logging multiple HTTP receives as a single chunk instead of individually logged packets
+void http_socket_recv_chunking_start(void) {
+	http_socket_recv_chunking_enabled = true;
+}
+
+// Terminates chunked HTTP receive log
+void http_socket_recv_chunking_end(void) {
+	http_socket_recv_chunking_enabled = false;
+	http_socket_recv_chunking_started = false;
+	if (logs_find("http_recv")) {
+		printf("\n");
+	}
+}
+
 // Reads HTTP data from stream into buffer
 size_t http_socket_recv(int sock, char* buf, size_t size) {
 	assert(size >= 2);
 	size_t len = simple_socket_recv(sock, buf, size - 1);
 	buf[len] = '\0';
 
-	if (logs_find("http_recv")) {
-		printf("HTTP receive:\n");
-		logs_print_string(stdout, buf);
+	if (logs_find("http_recv") && len > 0) {
+		if (!http_socket_recv_chunking_started) {
+			printf("HTTP receive:\n");
+			if (http_socket_recv_chunking_enabled) {
+				http_socket_recv_chunking_started = true;
+			}
+		}
+		logs_print_string(stdout, buf, http_socket_recv_chunking_enabled);
 	}
 
 	return len;
@@ -101,30 +124,27 @@ char* http_status(int code) {
 
 // Flushes HTTP stream data until match is reached
 void http_socket_recv_until(int sock, char* match) {
-	bool logging = logs_find("http_recv");
-	if (logging) {
-		printf("HTTP receive:\n");
-	}
+	http_socket_recv_chunking_start();
 
-	char buf[BUF_LEN];
-	size_t offset = 0;
+	char buf[2];
 	size_t index = 0;
 	do {
-		assert(offset < sizeof(buf));
-		assert(simple_socket_recv(sock, buf + offset, 1) == 1);
-		if (buf[offset] == match[index]) {
+		size_t recved = http_socket_recv(sock, buf, sizeof(buf));
+		if (recved == 0) {
+			http_socket_recv_chunking_end();
+			fprintf(stderr, "End of stream\n");
+			abort();
+		}
+		assert(recved == 1);
+		if (buf[0] == match[index]) {
 			index++;
-		 }
-		 else {
+		}
+		else {
 			index = 0;
-		 }
-		offset++;
+		}
 	} while (index < strlen(match));
 
-	if (logging) {
-		buf[offset] = '\0';
-		logs_print_string(stdout, buf);
-	}
+	http_socket_recv_chunking_end();
 }
 
 // Ensures data in stream is a valid HTTP 1.1 status line
@@ -140,7 +160,7 @@ void http_socket_recv_cmp_status(int sock, int code) {
 void http_socket_recv_print(int sock) {
 	char buf[BUF_LEN];
 	http_socket_recv(sock, buf, sizeof(buf));
-	logs_print_string(stdout, buf);
+	logs_print_string(stdout, buf, false);
 }
 
 
@@ -171,7 +191,7 @@ void http_socket_recv_error(int sock, int err) {
 	}
 	else {
 		fprintf(stderr, "Socket unexpectedly got response data: %zu\n", buf_len);
-		logs_print_string(stderr, buf);
+		logs_print_string(stderr, buf, false);
 	}
 	abort();
 }
