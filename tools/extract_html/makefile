@@ -1,5 +1,6 @@
 ROOT = ../..
-OUT_DIR = $(ROOT)/dist/extract_html
+DIST_ROOT = $(ROOT)/dist
+OUT_DIR = $(DIST_ROOT)/extract_html
 
 .PHONY: all
 all: $(OUT_DIR)
@@ -38,4 +39,5 @@ autoreload:
 # Cleans up generated files and directory
 .PHONY: clean
 clean:
-	$(RM) -r $(OUT_DIR)
+	$(RM) $(OUT_DIR)/*.http $(OUT_DIR)/*.html
+	-rmdir $(OUT_DIR)
