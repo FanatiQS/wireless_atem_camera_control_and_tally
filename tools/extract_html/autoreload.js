@@ -1,3 +1,5 @@
+// @ts-check
+
 const http = require("http");
 const { readFile } = require("fs/promises");
 const { watch } = require("fs");
@@ -5,35 +7,35 @@ const { exec } = require("child_process");
 const { promisify } = require("util");
 const run = promisify(exec);
 
-// Gets path to configuration file
-const configFilePath = process.argv[2];
-if (configFilePath) {
-	console.log("Using configuration file:", configFilePath);
-}
-else {
-	console.log("Not using configuration file");
-}
-
-// Reloads all connected clients when config file or source file changes
-const reloadingResponses = new Set();
+// Reloads all connected clients when source files change
+const reloadResponses = new Set();
 [
-	...(configFilePath) ? [ configFilePath ] : [],
 	"../../firmware/http_respond.c",
 	"../../firmware/version.h"
 ].forEach((path) => {
 	watch(path).on("change", () => {
-		console.log(`Reloading ${reloadingResponses.size} client(s)`);
-		reloadingResponses.forEach((res) => res.writeHead(307, { Location: "/" }).end());
+		console.log(`Reloading ${reloadResponses.size} client(s)`);
+		reloadResponses.forEach((res) => res.writeHead(307, { Location: "/" }).end());
 	});
 });
+
+// Stores posted data after POST for all further reloaded GET requests (resets on clean connect)
+/** @type {Iterable} */
+let postedConfigEntries = [];
 
 // Launches HTTP server
 http.createServer(async function (req, res) {
 	// Gets request url and queryParams
-	const { pathname, searchParams } = new URL(req.url, "http://localhost");
+	const { pathname, searchParams } = new URL(req.url || "", "http://localhost");
 
 	// Responds to POST request
 	if (req.method === "POST") {
+		// Saves posted data to for GET request
+		let body = "";
+		req.on("data", (chunk) => body += chunk);
+		await new Promise((resolve) => req.on("end", resolve));
+		postedConfigEntries = new URLSearchParams(body);
+
 		console.log("Serving response for POST request");
 		req.socket.end((await run(`./generate.sh POST_ROOT --http`)).stdout);
 	}
@@ -45,27 +47,28 @@ http.createServer(async function (req, res) {
 	// Responds to request when a file is changed
 	else if (pathname == "/reload") {
 		console.log("Registering reload client:", req.socket.remoteAddress);
-		reloadingResponses.add(res);
-		req.on("close", () => reloadingResponses.delete(res));
+		reloadResponses.add(res);
+		req.on("close", () => reloadResponses.delete(res));
 	}
 	// Generates and serves configuration page that automatically reloads when changed
 	else if (pathname === "/") {
-		// Delays fetching after POST to simulate device rebooting
-		if (req.headers.referer) {
-			await new Promise((resolve) => setTimeout(resolve, 1000));
-		}
-
 		console.log("Serving response for root page");
 
-		// Creates generator script configuration arguments from config file and query params
-		const configFile = (configFilePath) ? JSON.parse(await readFile(configFilePath)) : {};
-		const configQuery = Object.fromEntries(searchParams.entries());
-		const config = { ...configFile, ...configQuery };
-		const generator_arguments = Object.entries(config).map(([ key, value ]) => `--${key}='${value}'`).join(" ");
+		// Creates generator script configuration arguments from posted config and query params
+		const configEntries = [
+			...postedConfigEntries,
+			...searchParams
+		];
+		const generator_args = configEntries.map(([ key, value ]) => `--${key}='${value}'`).join(" ");
+
+		// Resets config on clean connection without referer (no reload)
+		if (!req.headers.referer) {
+			postedConfigEntries = [];
+		}
 
 		// Responds with generator response and appends automatic reload script on file change
 		try {
-			req.socket.write((await run(`./generate.sh ROOT --http ${generator_arguments}`)).stdout);
+			req.socket.write((await run(`./generate.sh ROOT --http ${generator_args}`)).stdout);
 			req.socket.end('<script>fetch("/reload").then(() => location.reload())</script>');
 		}
 		catch (err) {

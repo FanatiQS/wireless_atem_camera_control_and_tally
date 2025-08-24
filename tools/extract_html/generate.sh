@@ -44,8 +44,8 @@ while [ $# -gt 0 ]; do
 		--dest=*)
 			dest="${i#*=}"
 			;;
-		--atem_addr=*)
-			atem_addr="${i#*=}"
+		--atem=*)
+			atem="${i#*=}"
 			;;
 		--dhcp=*)
 			dhcp="${i#*=}"
@@ -97,7 +97,7 @@ output=$(printf '%b' "$({
 		echo "#define psk , \"${psk-"password123"}\""
 		echo "#define name , \"${name-"waccat0"}\""
 		echo "#define dest , \"${dest-4}\""
-		echo "#define atem_addr , \"${atem_addr-"192.168.1.240"}\""
+		echo "#define atem_addr , \"${atem-"192.168.1.240"}\""
 		if [ "$dhcp" = 0 ]; then
 			echo "#define CONF_FLAG_DHCP ,"
 		else
@@ -114,9 +114,6 @@ output=$(printf '%b' "$({
 
 		# Defines macros to strip out implementations
 		echo "#define HTTP_RESPONSE_CALL(fn) fn"
-		echo "#define HTTP_RESPONSE_START(label)"
-		echo "#define HTTP_RESPONSE_END"
-		echo "#define HTTP_RESPONSE_WRITE"
 
 		sed -n "/(HTTP_RESPONSE_STATE_$state)/,/HTTP_RESPONSE_END/p" ./firmware/http_respond.c
 	} | cc -E -P -xc - | sed 's/http->//'
