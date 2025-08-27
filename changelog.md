@@ -7,6 +7,7 @@
 * Sets configuration network password at first boot for ESP32.
 * Fixes configuration network not set correctly on ESP8266.
 * Deprecated single source header completely.
+* Rename configuration file and only uses ESP8266 specific default configuration for ESP8266.
 
 ### Documentation
 * Improved protocol documentation.
@@ -17,6 +18,7 @@
 * Added POSIX core API.
 * Refactored core API macro functions to inline functions.
 * Improved code documentation.
+* Added ATEM packet soft limit.
 
 ### Firmware
 * Fixed firefox popup error on HTTP form submit.
@@ -30,6 +32,7 @@
 * Added virtual tapif network interface as a compilation target.
 * Fixed default configuration inverted ESP8266 built-in LED.
 * Refactored HTTP template engine.
+* Added configuration documentation and validation to `firmware/user_config.h`.
 
 ### Test Suite
 * Added more tests for atem_server and atem_client.
@@ -49,6 +52,13 @@
 * Document available environment variables.
 * Document playground build rule.
 * Document debugger build rule.
+* Add ATEM server command tests.
+* Fixes out-of-order stderr and stdout logs.
+* Refactors DNS and config tests.
+* Updates progress printing where used.
+
+### Proxy server
+* Added ATEM emulator
 
 ### Tools
 * Added HTTP server for generated HTML to auto-reload browser on file change.
@@ -57,6 +67,9 @@
 * Added script module to overlay device configuration over existing webpage.
 * Make `/tools/configure.sh` work in any POSIX compliant shell.
 * Extract html tool now returns errors to client instead of blank page.
+* Upgraded Windows shim.
+* Windows shim works with both MinGW and MSVC.
+* Overhauled QRCode generator.
 
 
 
