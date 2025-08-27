@@ -130,7 +130,13 @@ bool atem_acknowledge_keepalive(int sock, uint8_t* packet) {
 // Flushes all data until next acknowledgement request
 uint16_t atem_acknowledge_request_flush(int sock, uint16_t session_id) {
 	uint8_t packet[ATEM_PACKET_LEN_MAX];
-	while (!atem_acknowledge_keepalive(sock, packet));
+	struct timespec mark = timediff_mark();
+	while (!atem_acknowledge_keepalive(sock, packet)) {
+		if (timediff_get(mark) > 2000) {
+			fprintf(stderr, "Did not get packet with acknowledge request\n");
+			abort();
+		}
+	}
 	atem_header_sessionid_get_verify(packet, session_id);
 	return atem_header_remoteid_get(packet);
 }
@@ -140,13 +146,14 @@ void atem_acknowledge_response_flush(int sock, uint16_t session_id, uint16_t rem
 	uint8_t packet[ATEM_PACKET_LEN_MAX];
 	struct timespec mark = timediff_mark();
 	do {
-		if (timediff_get(mark) >= 2000) {
-			fprintf(stderr, "Did not get acknowledgement for max size packet\n");
+		if (timediff_get(mark) > 2000) {
+			fprintf(stderr, "Did not get expected acknowledgement in time\n");
 			abort();
 		}
 		atem_acknowledge_keepalive(sock, packet);
 		atem_header_sessionid_get_verify(packet, session_id);
 	} while (!(atem_header_flags_get(packet) & ATEM_FLAG_ACK) || atem_header_ackid_get(packet) < remote_id);
+	atem_header_flags_isnotset(packet, ATEM_FLAG_RETX);
 	atem_header_ackid_get_verify(packet, remote_id);
 }
 
