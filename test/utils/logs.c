@@ -34,7 +34,7 @@ bool logs_find(const char* match) {
 }
 
 // Prints binary buffer in hex
-void logs_print_buffer(FILE* pipe, uint8_t* buf, size_t buf_len) {
+void logs_print_buffer(FILE* pipe, void* buf, size_t buf_len) {
 	size_t clamp_index;
 	size_t len;
 
@@ -105,7 +105,7 @@ void logs_print_progress(size_t index, size_t len) {
 
 	// Prints progress bar
 	char bar[64];
-	const size_t progress = index / (len / sizeof(bar));
+	const size_t progress = index * sizeof(bar) / len;
 	memset(bar, '#', progress);
 	memset(bar + progress, '.', sizeof(bar) - progress);
 	printf("[%.*s] %zu/%zu", (int)sizeof(bar), bar, index, len);
