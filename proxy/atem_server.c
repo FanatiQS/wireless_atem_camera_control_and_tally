@@ -4,6 +4,7 @@
 #include <stddef.h> // NULL
 #include <stdint.h> // uint8_t, uint16_t, int16_t
 #include <stdio.h> // perror
+#include <errno.h> // errno
 
 #include <sys/socket.h> // socket, AF_INET, SOCK_DGRAM, bind, struct sockaddr, recvfrom
 #include <netinet/in.h> // struct sockaddr_in
@@ -17,6 +18,7 @@
 #include "./atem_packet.h" // struct atem_packet, atem_packet_release, atem_packet_close, atem_packet_enqueue
 #include "../core/atem.h" // ATEM_PORT, ATEM_PACKET_LEN_MAX
 #include "../core/atem_protocol.h" // ATEM_RESEND_TIME, ATEM_PING_INTERVAL, ATEM_INDEX_SESSIONID_HIGH, ATEM_INDEX_FLAGS, ATEM_FLAG_SYN, ATEM_LEN_SYN, ATEM_INDEX_OPCODE, ATEM_OPCODE_OPEN
+#include "./atem_server.h"
 
 // Initializes server context with default configuration
 struct atem_server atem_server = {
@@ -58,7 +60,9 @@ bool atem_server_init(void) {
 		.sin_addr.s_addr = INADDR_ANY
 	};
 	if (bind(atem_server.sock, (struct sockaddr*)&server_addr, sizeof(server_addr))) {
+		int err = errno;
 		close(atem_server.sock);
+		errno = err;
 		return false;
 	}
 
@@ -66,7 +70,9 @@ bool atem_server_init(void) {
 	assert(atem_server.sessions == NULL);
 	atem_server.sessions = malloc(sizeof(struct atem_session) * atem_server.sessions_size);
 	if (atem_server.sessions == NULL) {
+		int err = errno;
 		close(atem_server.sock);
+		errno = err;
 		return false;
 	}
 
