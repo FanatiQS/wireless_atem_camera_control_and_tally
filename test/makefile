@@ -1,5 +1,6 @@
 # Output directory for test executables
-BUILD_DIR = ../build/test
+BUILD_ROOT = ../build
+BUILD_DIR = $(BUILD_ROOT)/test
 
 # Add compiler flags
 CFLAGS += -Wall -Wextra -Wpedantic
