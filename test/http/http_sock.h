@@ -5,6 +5,8 @@
 #include <stddef.h> // size_t
 #include <stdio.h> // FILE
 
+#define HTTP_PORT (80)
+
 int http_socket_create(void);
 
 void http_socket_send_buffer(int sock, const char* buf, size_t len);

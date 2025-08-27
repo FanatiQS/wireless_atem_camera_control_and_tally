@@ -19,11 +19,11 @@ EXECS += $(EXECS_CORE)
 
 # All tests specific to device configuration
 EXECS_DEVICE = http_parser http_close http_connect dns_parser
-$(EXECS_DEVICE:%=$(BUILD_DIR)/%): $(BUILD_DIR)/%: http/%.c http/http_sock.c
+$(EXECS_DEVICE http_config:%=$(BUILD_DIR)/%): $(BUILD_DIR)/%: http/%.c http/http_sock.c
 SCRIPTS_DEVICE += config/test_conf http/dns_lookup
 .PHONY: device_config
 device_config: $(EXECS_DEVICE) $(SCRIPTS_DEVICE)
-EXECS += $(EXECS_DEVICE)
+EXECS += $(EXECS_DEVICE) http_config
 SCRIPTS += $(SCRIPTS_DEVICE)
 
 # All ATEM client tests for both device and official clients

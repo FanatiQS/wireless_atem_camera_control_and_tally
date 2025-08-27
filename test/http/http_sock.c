@@ -10,7 +10,6 @@
 #include "../utils/logs.h" // logs_print_string, logs_find
 #include "./http_sock.h"
 
-#define HTTP_PORT (80)
 #define BUF_LEN (1024)
 
 
