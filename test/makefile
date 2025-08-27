@@ -20,7 +20,8 @@ EXECS += $(EXECS_CORE)
 
 # All tests specific to device configuration
 EXECS_DEVICE = http_parser http_close http_connect dns_parser
-$(EXECS_DEVICE http_config:%=$(BUILD_DIR)/%): $(BUILD_DIR)/%: http/%.c http/http_sock.c
+$(EXECS_DEVICE:%=$(BUILD_DIR)/%) $(BUILD_DIR)/http_config: $(BUILD_DIR)/%: http/%.c http/http_sock.c
+$(BUILD_DIR)/dns_parser: CFLAGS = -lresolv
 SCRIPTS_DEVICE += config/test_conf http/dns_lookup
 .PHONY: device_config
 device_config: $(EXECS_DEVICE) $(SCRIPTS_DEVICE)

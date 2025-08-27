@@ -9,9 +9,9 @@
 #include <sys/socket.h> // SOCK_DGRAM
 #include <arpa/inet.h> // htons, ntohs
 
-#include <arpa/nameser_compat.h> // HEADER
 #include <resolv.h> // res_nmkquery, struct __res_state
-#include <nameser.h> // ns_r_formerr, ns_r_nxdomain, ns_r_notimp, ns_t_a, ns_c_in, NS_DEFAULTPORT, NS_PACKETSZ, NS_HFIXEDSZ, ns_class, ns_type, ns_o_query, ns_rcode, ns_msg, ns_r_notimpl, ns_r_noerror
+#include <arpa/nameser_compat.h> // HEADER
+#include <arpa/nameser.h> // ns_r_formerr, ns_r_nxdomain, ns_r_notimp, ns_t_a, ns_c_in, NS_DEFAULTPORT, NS_PACKETSZ, NS_HFIXEDSZ, ns_class, ns_type, ns_o_query, ns_rcode, ns_msg, ns_r_notimpl, ns_r_noerror
 
 #include "../utils/simple_socket.h" // simple_socket_create, simple_socket_connect_env, simple_socket_send, simple_socket_recv, simple_socket_poll
 #include "../utils/logs.h" // logs_print_buffer, logs_find
@@ -35,7 +35,7 @@ static void dns_append(struct dns_packet* packet, const char* qname, ns_class qc
 	// Creates DNS query
 	uint8_t buf[NS_PACKETSZ];
 	struct __res_state res = {0};
-	int len = res_nmkquery(&res, ns_o_query, qname, qclass, qtype, NULL, 0, NULL, buf, sizeof(buf));
+	int len = res_nmkquery(&res, ns_o_query, qname, (int)qclass, (int)qtype, NULL, 0, NULL, buf, sizeof(buf));
 	if (len == -1) {
 		perror("Failed to create DNS query");
 		abort();
