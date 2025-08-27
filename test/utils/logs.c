@@ -59,7 +59,7 @@ void logs_print_buffer(FILE* pipe, uint8_t* buf, size_t buf_len) {
 		if (i != 0 && !(i % PRINT_BYTE_LEN)) {
 			fprintf(pipe, "\n\t");
 		}
-		fprintf(pipe, "%02x ", buf[i]);
+		fprintf(pipe, "%02x ", ((uint8_t*)buf)[i]);
 	}
 
 	if (buf_len > clamp_index) {
