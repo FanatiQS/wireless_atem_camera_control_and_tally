@@ -2,11 +2,11 @@
 #ifndef SHIM_TIME_H
 #define SHIM_TIME_H
 
-// Prevents warnings about include_next being a language extension
-#pragma GCC system_header
-
 // Includes standard header file
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wgnu-include-next"
 #include_next <time.h>
+#pragma GCC diagnostic pop
 
 /*
  * Shims timespec_get for non-C11 platforms that has POSIX.1-2001 support.
