@@ -24,11 +24,14 @@ typedef int ssize_t;
 #define perror(msg) wsa_shim_perror(msg)
 
 // Asserts windows defined types are the same or at least big enough
-_Static_assert(SOCKET_ERROR == -1, "SOCKET_ERROR is -1 on POSIX");
-_Static_assert((int)INVALID_SOCKET == -1, "INVALID_SOCKET is -1 on POSIX");
-_Static_assert(sizeof(SOCKET) >= sizeof(int), "winsock2 SOCKET type is an int on POSIX");
-_Static_assert(sizeof(socklen_t) == sizeof(int), "socklen_t in POSIX uses int in winsock2");
-_Static_assert(sizeof(ssize_t) >= sizeof(int), "ssize_t needs to hold at least an int");
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpre-c11-compat"
+static_assert(SOCKET_ERROR == -1, "SOCKET_ERROR is -1 on POSIX");
+static_assert((int)INVALID_SOCKET == -1, "INVALID_SOCKET is -1 on POSIX");
+static_assert(sizeof(SOCKET) >= sizeof(int), "winsock2 SOCKET type is an int on POSIX");
+static_assert(sizeof(socklen_t) == sizeof(int), "socklen_t in POSIX uses int in winsock2");
+static_assert(sizeof(ssize_t) >= sizeof(int), "ssize_t needs to hold at least an int");
+#pragma GCC diagnostic pop
 
 
 
