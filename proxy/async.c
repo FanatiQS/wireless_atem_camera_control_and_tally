@@ -11,7 +11,7 @@
 #include <poll.h> // poll, struct pollfd, POLLIN
 
 #include "./atem_server.h" // atem_server_recv
-#include "./timeout.h" // timeout_get, timeout_dispatch
+#include "./timeout.h" // timeout_next, timeout_dispatch
 #include "./async.h" // struct async_task, enum async_loop_index
 
 // Indexes used when registering file descriptors in the background processes main loop
@@ -68,7 +68,7 @@ static void async_process(void) {
 // @todo
 void async_loop_next(void) {
 	// Waits for file descriptors to have data available for read or timeout
-	int timeout = timeout_get();
+	int timeout = timeout_next();
 	assert(timeout != 0);
 	assert(timeout >= -1);
 	int poll_len = poll(async_loop_fds, ASYNC_LOOP_INDEX_MAX, timeout);

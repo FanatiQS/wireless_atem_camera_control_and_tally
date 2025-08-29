@@ -24,7 +24,7 @@ static unsigned int timeout_remaining(struct timespec* now, struct timespec* tim
 }
 
 // Dispatches timeouts and gets milliseconds to next timeout or -1 for no timeout available
-int timeout_get(void) {
+int timeout_next(void) {
 	// Timeout to return, unsigned so -1 is seen as largest number instead of smaller than everything
 	unsigned int timeout = (unsigned int)-1;
 

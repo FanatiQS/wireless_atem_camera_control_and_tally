@@ -10,7 +10,7 @@
 #include "./atem_server.h" // atem_server_init
 #include "./atem_cache.h" // atem_cache_init
 #include "./atem_assert.h" // atem_assert
-#include "./timeout.h" // timeout_get, timeout_dispatch
+#include "./timeout.h" // timeout_next, timeout_dispatch
 
 #include <poll.h> // poll, struct pollfd, POLLIN
 
@@ -86,7 +86,7 @@ int main(int argc, char** argv) {
 	// Runs ATEM proxy server event loop
 	struct pollfd pollfd = { .fd = atem_server.sock, .events = POLLIN };
 	while (true) {
-		int poll_len = poll(&pollfd, 1, timeout_get());
+		int poll_len = poll(&pollfd, 1, timeout_next());
 		if (poll_len == -1) {
 			perror("Failed to poll ATEM server socket");
 			return EXIT_FAILURE;
