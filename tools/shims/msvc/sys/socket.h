@@ -95,7 +95,15 @@ static inline ssize_t wsa_shim_sendto(
 	return sendto((SOCKET)sock, buf, (len > INT_MAX) ? -1 : (int)len, flags, dest_addr, dest_len);
 }
 
-static inline int wsa_shim_setsockopt(int sock, int lvl, int opt, const void* value, socklen_t len) {
+static inline int wsa_shim_setsockopt(int sock, int lvl, int opt, void* value, socklen_t len) {
+	// Replaces POSIX timeval for SO_RCVTIMEO/SO_SNDTIMEO with windows DWORD non-standard implementation
+	DWORD timeout;
+	if (lvl == SOL_SOCKET && (opt == SO_RCVTIMEO || opt == SO_SNDTIMEO)) {
+		struct timeval* tv = value;
+		timeout = tv->tv_sec * 1000 + tv->tv_usec / 1000;
+		value = &timeout;
+	}
+
 	errno = 0;
 	return setsockopt((SOCKET)sock, lvl, opt, value, len);
 }
