@@ -127,8 +127,7 @@ bool runner_start(const char* path) {
 	// Line buffers both stdout and stderr to fix out of order logs when stdout is fully buffered
 	bool buffer_mode_initialized = false;
 	if (!buffer_mode_initialized) {
-		setvbuf(stdout, NULL, _IOLBF, 0);
-		setvbuf(stderr, NULL, _IOLBF, 0);
+		setvbuf(stderr, NULL, _IOLBF, 0x1000);
 		buffer_mode_initialized = true;
 	}
 
