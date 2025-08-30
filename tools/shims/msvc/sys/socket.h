@@ -14,7 +14,7 @@
 #include "../wsa_shim_perror.h" // wsa_shim_perror
 
 #ifdef _MSC_VER
-typedef int ssize_t;
+typedef long ssize_t;
 #endif // _MSC_VER
 
 #define SHUT_RD   SD_RECEIVE
