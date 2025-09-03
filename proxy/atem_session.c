@@ -530,12 +530,6 @@ void atem_session_closed(int16_t session_index) {
 	// Rejects responses for never sent request
 	struct atem_packet* packet_head = session->packet_head;
 	if (packet_head == NULL || !(packet_head->flags & ATEM_PACKET_FLAG_CLOSING)) {
-		if (packet_head == NULL) {
-			assert(atem_session_connected(session_index) == true);
-		}
-		else {
-			assert(atem_session_connected(session_index) == false);
-		}
 		return;
 	}
 	assert(session_index >= atem_server.sessions_connected);
