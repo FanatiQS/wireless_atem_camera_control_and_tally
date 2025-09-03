@@ -68,7 +68,7 @@ bool atem_server_init(void) {
 
 	// Allocates sessions array for connections to be placed into
 	assert(atem_server.sessions == NULL);
-	atem_server.sessions = malloc(sizeof(struct atem_session) * atem_server.sessions_size);
+	atem_server.sessions = malloc(sizeof(*atem_server.sessions) * atem_server.sessions_size);
 	if (atem_server.sessions == NULL) {
 		int err = errno;
 		close(atem_server.sock);
@@ -104,7 +104,7 @@ void atem_server_recv(void) {
 		return;
 	}
 	if (recved < ATEM_LEN_HEADER) {
-		DEBUG_PRINTF("UDP packet as too small\n");
+		DEBUG_PRINTF("UDP packet was too small\n");
 		return;
 	}
 	uint16_t len = recved & 0xffff;
@@ -225,8 +225,7 @@ void atem_server_recv(void) {
 }
 
 // Broadcasts ATEM buffer to all connected sessions
-void atem_server_broadcast(uint8_t* buf, uint8_t flags) {
-	struct atem_packet* packet = atem_packet_create(buf, atem_server.sessions_connected);
+void atem_server_broadcast(struct atem_packet* packet, uint8_t flags) {
 	assert(packet != NULL);
 
 	for (int16_t session_index = 0; session_index < atem_server.sessions_connected; session_index++) {

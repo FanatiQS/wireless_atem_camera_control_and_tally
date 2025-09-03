@@ -2,7 +2,7 @@
 #include <stddef.h> // NULL, size_t
 #include <assert.h> // assert
 #include <stdio.h> // perror
-#include <stdlib.h> // malloc, realloc, abort
+#include <stdlib.h> // realloc, abort
 #include <stdbool.h> // bool, true, false
 #include <string.h> // memset
 #include <time.h> // timespec_get, TIME_UTC
@@ -16,7 +16,7 @@
 #include "../core/atem.h" // ATEM_PACKET_LEN_MAX
 #include "./atem_debug.h" // DEBUG_PRINTF, DEBUG_PRINT_BUF
 #include "./atem_server.h" // atem_server, atem_server_release, ATEM_SERVER_SESSIONS_MULTIPLIER
-#include "./atem_packet.h" // struct atem_packet, struct atem_packet_session, atem_packet_create, atem_packet_enqueue, atem_packet_release, atem_packet_session_update, atem_packet_disassociate, atem_packet_flush, ATEM_PACKET_FLAG_CLOSING, ATEM_PACKET_FLAG_RELEASE
+#include "./atem_packet.h" // struct atem_packet, struct atem_packet_session, atem_packet_create, atem_packet_enqueue, atem_packet_release, atem_packet_session_update, atem_packet_disassociate, atem_packet_flush, ATEM_PACKET_FLAG_CLOSING, ATEM_PACKET_FLAG_NONE
 #include "./atem_cache.h" // atem_cache_dump
 #include "./atem_session.h" // struct atem_session
 
@@ -212,7 +212,7 @@ void atem_session_create(uint8_t session_id_high, uint8_t session_id_low, struct
 		assert(packet != NULL);
 		assert(session->packet_tail == packet);
 		assert(session->packet_session_index_head == 0);
-		assert(packet->flags == ATEM_PACKET_FLAG_RELEASE);
+		assert(packet->flags == ATEM_PACKET_FLAG_NONE);
 		assert(packet->sessions_remaining == 1);
 		assert(packet->sessions[0].packet_next == NULL);
 		assert(packet->sessions[0].session_id == session->session_id);
@@ -287,23 +287,18 @@ void atem_session_create(uint8_t session_id_high, uint8_t session_id_low, struct
 	);
 
 	// Sends accept response
-	uint8_t* buf_accept = malloc(ATEM_LEN_SYN);
-	if (buf_accept == NULL) {
-		perror("Failed to allocate packet memory");
-		abort();
-	}
-	memset(buf_accept, 0, ATEM_LEN_SYN);
-	buf_accept[ATEM_INDEX_FLAGS] = ATEM_FLAG_SYN;
-	buf_accept[ATEM_INDEX_LEN_LOW] = ATEM_LEN_SYN;
-	buf_accept[ATEM_INDEX_OPCODE] = ATEM_OPCODE_ACCEPT;
-	buf_accept[ATEM_INDEX_NEWSESSIONID_HIGH] = atem_server.session_id_last >> 8;
-	buf_accept[ATEM_INDEX_NEWSESSIONID_LOW] = atem_server.session_id_last & 0xff;
-	atem_session_send(session, buf_accept);
+	struct atem_packet* packet = atem_packet_create(1, ATEM_LEN_SYN);
+	assert(packet != NULL);
+	memset(packet->buf, 0, ATEM_LEN_SYN);
+	packet->buf[ATEM_INDEX_FLAGS] = ATEM_FLAG_SYN;
+	packet->buf[ATEM_INDEX_LEN_LOW] = ATEM_LEN_SYN;
+	packet->buf[ATEM_INDEX_OPCODE] = ATEM_OPCODE_ACCEPT;
+	packet->buf[ATEM_INDEX_NEWSESSIONID_HIGH] = atem_server.session_id_last >> 8;
+	packet->buf[ATEM_INDEX_NEWSESSIONID_LOW] = atem_server.session_id_last & 0xff;
+	atem_session_send(session, packet->buf);
 
 	// Pushes packet to retransmit queue
-	struct atem_packet* packet = atem_packet_create(buf_accept, 1);
-	assert(packet != NULL);
-	atem_packet_enqueue(packet, ATEM_PACKET_FLAG_RELEASE);
+	atem_packet_enqueue(packet, ATEM_PACKET_FLAG_NONE);
 	session->packet_head = packet;
 	session->packet_tail = packet;
 	session->packet_session_index_head = 0;
@@ -379,18 +374,19 @@ void atem_session_connect(uint8_t session_id_high, uint8_t session_id_low, struc
 	assert(packet != NULL);
 	assert(session->packet_tail == packet);
 	assert(session->packet_session_index_head == 0);
-	assert(packet->flags == ATEM_PACKET_FLAG_RELEASE);
+	assert(packet->flags == ATEM_PACKET_FLAG_NONE);
 	assert(packet->sessions_remaining == 1);
 	assert(packet->sessions[0].packet_next == NULL);
 	assert(packet->sessions[0].session_id == session->session_id);
 	assert(packet->sessions[0].packet_session_index == 0);
 	assert(packet->sessions[0].remote_id_high == 0);
 	assert(packet->sessions[0].remote_id_low == 0);
+	atem_packet_release(packet);
 
 	DEBUG_PRINTF("Session connected 0x%04x\n", session->session_id);
 
 	// Dumps cached state to client
-	atem_cache_dump(session, packet);
+	atem_cache_dump(session);
 }
 
 
@@ -422,7 +418,7 @@ void atem_session_drop(int16_t session_index) {
 	// Cleans up opening handshake client session id if session is not connected
 	else {
 		assert(packet->sessions_remaining == 1);
-		assert(packet->flags == ATEM_PACKET_FLAG_RELEASE);
+		assert(packet->flags == ATEM_PACKET_FLAG_NONE);
 		uint16_t request_session_id = session->session_id_high << 8 | session->session_id_low;
 		assert(request_session_id != session->session_id);
 		assert(atem_session_lookup_get(request_session_id) == session_index);
@@ -603,7 +599,7 @@ void atem_session_acknowledge(int16_t session_index, uint16_t ack_id) {
 	}
 }
 
-// Sends packet to session peer and puts 
+// Sends packet to session peer and assigns it a remote id
 void atem_session_packet_push(struct atem_session* session, struct atem_packet* packet, uint16_t packet_session_index) {
 	// Initializes packet session for session related data located in packet queue
 	struct atem_packet_session* packet_session = atem_packet_session_get(packet, packet_session_index);

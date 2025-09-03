@@ -9,10 +9,8 @@
 enum {
 	// Packet does not have any special flags
 	ATEM_PACKET_FLAG_NONE = 0,
-	// Packet should free its buffer when releasing the packet (it is heap allocated)
-	ATEM_PACKET_FLAG_RELEASE = 1,
 	// Packet is performing a closing handshake
-	ATEM_PACKET_FLAG_CLOSING = 2
+	ATEM_PACKET_FLAG_CLOSING = 1
 };
 
 // Session information for the packet it is embedded into
@@ -56,7 +54,8 @@ struct atem_packet {
 
 struct atem_packet_session* atem_packet_session_get(struct atem_packet* packet, uint16_t packet_session_index);
 
-struct atem_packet* atem_packet_create(uint8_t* buf, uint16_t sessions_count);
+struct atem_packet* atem_packet_alloc(uint16_t sessions_count, uint16_t oversize);
+struct atem_packet* atem_packet_create(uint16_t sessions_count, uint16_t packet_len);
 void atem_packet_send(struct atem_packet* packet, struct atem_packet_session* packet_session);
 void atem_packet_enqueue(struct atem_packet* packet, uint8_t flags);
 void atem_packet_dequeue(struct atem_packet* packet);

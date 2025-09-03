@@ -3,14 +3,14 @@
 #include <stddef.h> // size_t, NULL
 #include <stdlib.h> // malloc
 #include <string.h> // memcpy
-#include <stdio.h> // sprintf, perror
+#include <stdio.h> // sprintf, fprintf, stderr, perror
 #include <stdlib.h> // abort
 #include <stdbool.h> // bool
 
 #include "../core/atem.h" // ATEM_PACKET_LEN_MAX, ATEM_PACKET_LEN_MAX_SOFT
-#include "../core/atem_protocol.h" // ATEM_LEN_HEADER
+#include "../core/atem_protocol.h" // ATEM_LEN_HEADER, ATEM_INDEX_FLAGS, ATEM_INDEX_LEN_HIGH, ATEM_INDEX_LEN_LOW, ATEM_INDEX_ACKID_HIGH, ATEM_INDEX_ACKID_LOW, ATEM_INDEX_LOCALID_HIGH, ATEM_INDEX_LOCALID_LOW, ATEM_INDEX_UNKNOWNID_HIGH, ATEM_INDEX_UNKNOWNID_LOW, ATEM_INDEX_REMOTEID_HIGH, ATEM_INDEX_REMOTEID_LOW, ATEM_FLAG_ACKREQ
 #include "./atem_session.h" // struct atem_session, atem_session_send
-#include "./atem_packet.h" // struct atem_packet, atem_packet_dequeue, atem_packet_enqueue, ATEM_PACKET_FLAG_NONE, ATEM_PACKET_FLAG_RELEASE
+#include "./atem_packet.h" // struct atem_packet, atem_packet_enqueue, ATEM_PACKET_FLAG_NONE, atem_packet_create
 #include "./atem_server.h" // atem_server, atem_server_broadcast
 #include "./atem_cache.h"
 
@@ -103,40 +103,41 @@ static struct cc_cmd* cc_param_get(uint8_t dest, uint8_t category, uint8_t param
 	}
 }
 
-// Creates ATEM packet buffer from cached data
-static uint8_t* atem_cache_buf_create(uint8_t* data, uint16_t remote_id) {
-	assert(data != NULL);
-	assert(remote_id > 0);
-
-	// Gets packet length
-	struct chunk_data* chunk = (void*)data;
-	assert(chunk->chunk_len > 0);
+// Creates, sends and enqueues an ATEM packet with data from chunk
+static struct atem_packet* atem_cache_packet_create(
+	struct atem_session* session,
+	struct chunk_data* chunk,
+	uint16_t remote_id
+) {
+	// Creates ATEM packet acknowledge request
 	uint16_t packet_len = chunk->chunk_len + ATEM_LEN_HEADER;
+	struct atem_packet* packet_next = atem_packet_create(1, packet_len);
+	packet_next->buf[ATEM_INDEX_FLAGS] = ATEM_FLAG_ACKREQ;
+	packet_next->buf[ATEM_INDEX_LEN_HIGH] |= packet_len >> 8;
+	packet_next->buf[ATEM_INDEX_LEN_LOW] = packet_len & 0xff;
+	packet_next->buf[ATEM_INDEX_ACKID_HIGH] = 0x00;
+	packet_next->buf[ATEM_INDEX_ACKID_LOW] = 0x00;
+	packet_next->buf[ATEM_INDEX_LOCALID_HIGH] = 0x00;
+	packet_next->buf[ATEM_INDEX_LOCALID_LOW] = 0x00;
+	packet_next->buf[ATEM_INDEX_UNKNOWNID_HIGH] = 0x00;
+	packet_next->buf[ATEM_INDEX_UNKNOWNID_LOW] = 0x00;
+	packet_next->buf[ATEM_INDEX_REMOTEID_HIGH] = remote_id >> 8;
+	packet_next->buf[ATEM_INDEX_REMOTEID_LOW] = remote_id & 0xff;
 
-	// Allocates buffer for packet
-	uint8_t* buf = malloc(packet_len);
-	if (buf == NULL) {
-		perror("Failed to allocate buffer for cache packet data");
-		abort();
-	}
+	// Copies over from data chunk to packet payload
+	memcpy(packet_next->buf + ATEM_LEN_HEADER, chunk, chunk->chunk_len);
 
-	// Sets packet header
-	buf[ATEM_INDEX_FLAGS] = ATEM_FLAG_ACKREQ;
-	buf[ATEM_INDEX_LEN_HIGH] |= packet_len >> 8;
-	buf[ATEM_INDEX_LEN_LOW] = packet_len & 0xff;
-	buf[ATEM_INDEX_ACKID_HIGH] = 0x00;
-	buf[ATEM_INDEX_ACKID_LOW] = 0x00;
-	buf[ATEM_INDEX_LOCALID_HIGH] = 0x00;
-	buf[ATEM_INDEX_LOCALID_LOW] = 0x00;
-	buf[ATEM_INDEX_UNKNOWNID_HIGH] = 0x00;
-	buf[ATEM_INDEX_UNKNOWNID_LOW] = 0x00;
-	buf[ATEM_INDEX_REMOTEID_HIGH] = remote_id >> 8;
-	buf[ATEM_INDEX_REMOTEID_LOW] = remote_id & 0xff;
+	// Sends packet and enqueues on global queue
+	atem_session_send(session, packet_next->buf);
+	atem_packet_enqueue(packet_next, ATEM_PACKET_FLAG_NONE);
 
-	// Copies over data to packet payload
-	memcpy(buf + ATEM_LEN_HEADER, data, packet_len - ATEM_LEN_HEADER);
+	// Sets up packet info
+	packet_next->sessions[0].session_id = session->session_id;
+	packet_next->sessions[0].packet_session_index = 0;
+	packet_next->sessions[0].remote_id_high = 0;
+	packet_next->sessions[0].remote_id_low = remote_id;
 
-	return buf;
+	return packet_next;
 }
 
 // Updates camera control data in cache
@@ -213,17 +214,17 @@ static void atem_cache_update_cc(uint8_t* buf_req, uint16_t len) {
 
 	// Broadcasts parameter update to all connected clients
 	const uint8_t res_len = sizeof(*cc_cache) + ATEM_LEN_HEADER;
-	uint8_t* res_buf = malloc(res_len);
-	res_buf[ATEM_INDEX_FLAGS] = ATEM_FLAG_ACKREQ;
-	res_buf[ATEM_INDEX_LEN_LOW] = res_len;
-	res_buf[ATEM_INDEX_ACKID_HIGH] = 0;
-	res_buf[ATEM_INDEX_ACKID_LOW] = 0;
-	res_buf[ATEM_INDEX_LOCALID_HIGH] = 0;
-	res_buf[ATEM_INDEX_LOCALID_LOW] = 0;
-	res_buf[ATEM_INDEX_UNKNOWNID_LOW] = 0;
-	res_buf[ATEM_INDEX_UNKNOWNID_LOW] = 0;
-	memcpy(res_buf + ATEM_LEN_HEADER, cc_cache, sizeof(*cc_cache));
-	atem_server_broadcast(res_buf, ATEM_PACKET_FLAG_RELEASE);
+	struct atem_packet* packet = atem_packet_create(atem_server.sessions_connected, res_len);
+	packet->buf[ATEM_INDEX_FLAGS] = ATEM_FLAG_ACKREQ;
+	packet->buf[ATEM_INDEX_LEN_LOW] = res_len;
+	packet->buf[ATEM_INDEX_ACKID_HIGH] = 0;
+	packet->buf[ATEM_INDEX_ACKID_LOW] = 0;
+	packet->buf[ATEM_INDEX_LOCALID_HIGH] = 0;
+	packet->buf[ATEM_INDEX_LOCALID_LOW] = 0;
+	packet->buf[ATEM_INDEX_UNKNOWNID_LOW] = 0;
+	packet->buf[ATEM_INDEX_UNKNOWNID_LOW] = 0;
+	memcpy(packet->buf + ATEM_LEN_HEADER, cc_cache, sizeof(*cc_cache));
+	atem_server_broadcast(packet, ATEM_PACKET_FLAG_NONE);
 }
 
 // Initializes ATEM cache data based on input source count
@@ -418,40 +419,27 @@ void atem_cache_release(void) {
 }
 
 // Dumps entire server state on newly connected session
-void atem_cache_dump(struct atem_session* session, struct atem_packet* packet) {
+void atem_cache_dump(struct atem_session* session) {
 	assert(session != NULL);
 	assert(atem_session_lookup_get(session->session_id) < atem_server.sessions_connected);
-	assert(packet != NULL);
-	assert(packet->sessions_remaining == 1);
 
 	// Gets cache data array
-	uint8_t* data = atem_cache_data.data;
-	assert(data != NULL);
+	struct chunk_data* chunk = atem_cache_data.data;
+	assert(chunk != NULL);
 
-	// Dumps first cache data buffer using existing packet
-	packet->buf = atem_cache_buf_create(data, 1);
-	atem_session_send(session, packet->buf);
-	atem_packet_dequeue(packet);
-	atem_packet_enqueue(packet, ATEM_PACKET_FLAG_NONE);
-	packet->sessions[0].remote_id_low = 1;
+	// Dumps first cache data buffer
+	struct atem_packet* packet = atem_cache_packet_create(session, chunk, 1);
+	session->packet_head = packet;
+	session->packet_tail = packet;
 
 	// Dumps remaining cache data buffers
 	for (uint16_t i = 1; i < atem_cache_data.chunks_count; i++) {
 		// Move to the next chunk
-		struct chunk_data* chunk = (void*)data;
-		data += chunk->chunk_len;
+		assert(chunk->chunk_len > 0);
+		chunk = (void*)((uint8_t*)chunk + chunk->chunk_len);
 
-		// Sends packet and enqueues on global queue
-		uint8_t* buf = atem_cache_buf_create(data, i + 1);
-		struct atem_packet* packet_next = atem_packet_create(buf, 1);
-		atem_session_send(session, packet_next->buf);
-		atem_packet_enqueue(packet_next, ATEM_PACKET_FLAG_RELEASE);
-
-		// Sets up packet info
-		packet_next->sessions[0].session_id = session->session_id;
-		packet_next->sessions[0].packet_session_index = packet->sessions[0].packet_session_index;
-		packet_next->sessions[0].remote_id_high = 0;
-		packet_next->sessions[0].remote_id_low = i + 1;
+		// Sends chunk data to session
+		struct atem_packet* packet_next = atem_cache_packet_create(session, chunk, i + 1);
 
 		// Places packet onto the local session packet queue
 		packet->sessions[0].packet_next = packet_next;

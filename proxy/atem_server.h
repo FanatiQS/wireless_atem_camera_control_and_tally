@@ -6,8 +6,8 @@
 #include <time.h> // struct timespec
 #include <stdbool.h> // bool
 
-#include "./atem_packet.h" // struct atem_packet_t
-#include "./atem_session.h" // struct atem_session_t
+#include "./atem_packet.h" // struct atem_packet
+#include "./atem_session.h" // struct atem_session
 
 // How much to grow the sessions array by when it runs out of slots
 #define ATEM_SERVER_SESSIONS_MULTIPLIER (1.6f)
@@ -47,7 +47,7 @@ extern struct atem_server atem_server;
 
 bool atem_server_init(void);
 void atem_server_recv(void);
-void atem_server_broadcast(uint8_t* buf, uint8_t flags);
+void atem_server_broadcast(struct atem_packet* packet, uint8_t flags);
 
 void atem_server_flush(void);
 void atem_server_close(void);

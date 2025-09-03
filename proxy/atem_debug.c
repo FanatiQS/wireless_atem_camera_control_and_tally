@@ -43,7 +43,6 @@ void atem_debug_print_packet(struct atem_packet* packet) {
 	printf("%p:\n", (void*)packet);
 	printf("\t" "resends remaining: %d\n", packet->resends_remaining);
 	printf("\t" "closing: %s\n", (packet->flags & ATEM_PACKET_FLAG_CLOSING) ? "YES" : "NO");
-	printf("\t" "release buf: %s\n", (packet->flags & ATEM_PACKET_FLAG_RELEASE) ? "YES" : "NO");
 	printf(
 		"\t" "timeout timestamp: %jd.%jd\n",
 		(intmax_t)(packet->timestamp.tv_sec - atem_debug_timeout_start),

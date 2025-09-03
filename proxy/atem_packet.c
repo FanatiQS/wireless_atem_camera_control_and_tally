@@ -6,6 +6,7 @@
 #include <stdbool.h> // true, false
 #include <string.h> // memset
 
+#include "../core/atem.h" // ATEM_PACKET_LEN_MAX_SOFT
 #include "../core/atem_protocol.h" // ATEM_INDEX_REMOTEID_HIGH, ATEM_INDEX_REMOTEID_LOW, ATEM_LEN_HEADER, ATEM_INDEX_FLAGS, ATEM_FLAG_RETX, ATEM_LEN_SYN, ATEM_FLAG_SYN, ATEM_INDEX_LEN_LOW, ATEM_INDEX_OPCODE, ATEM_OPCODE_CLOSING, ATEM_RESENDS_CLOSING
 #include "./atem_server.h" // atem_server, atem_server_release, atem_server_broadcast
 #include "./atem_session.h" // struct atem_session, atem_session_send, atem_session_get, atem_session_lookup_get, atem_session_release, atem_session_terminate, atem_session_drop
@@ -72,20 +73,20 @@ struct atem_packet_session* atem_packet_session_get(struct atem_packet* packet, 
 
 
 
-// Creates an ATEM packet, ready to be sent to sessions and enqueued. Buffer will be released along with packet
-struct atem_packet* atem_packet_create(uint8_t* buf, uint16_t sessions_count) {
-	assert(buf != NULL);
+/**
+ * Allocates an ATEM packet for specified number of sessions, ready to be sent to sessions and to be enqueued
+ * @attention Set oversize to 0 when not used in atem_packet_create
+ * @attention Buffer will be released along with packet
+ * @attention Assumes there are sessions available to send to
+ */
+struct atem_packet* atem_packet_alloc(uint16_t sessions_count, uint16_t oversize) {
 	assert(sessions_count > 0);
 	assert(sessions_count < INT16_MAX);
 	assert(sessions_count <= atem_server.sessions_len);
 
-	uint16_t len = (buf[ATEM_INDEX_LEN_HIGH] << 8 | buf[ATEM_INDEX_LEN_LOW]) & ATEM_PACKET_LEN_MAX;
-	assert(len >= ATEM_LEN_HEADER);
-	assert(len <= ATEM_PACKET_LEN_MAX);
-
 	// Allocates memory for ATEM packet with space for specified number of sessions to link to
-	size_t packet_session_size = sizeof(struct atem_packet_session) * sessions_count;
-	struct atem_packet* packet = malloc(sizeof(struct atem_packet) + packet_session_size);
+	size_t packet_sessions_size = sizeof(struct atem_packet_session) * sessions_count;
+	struct atem_packet* packet = malloc(sizeof(struct atem_packet) + packet_sessions_size + oversize);
 	if (packet == NULL) {
 		perror("Failed to allocate packet manager memory\n");
 		abort(); // @todo could probably return NULL instead and handle errors in the caller
@@ -93,13 +94,22 @@ struct atem_packet* atem_packet_create(uint8_t* buf, uint16_t sessions_count) {
 
 	DEBUG_PRINTF("Creating packet %p\n", (void*)packet);
 
-	// Initializes packet memory
-	packet->buf = buf;
+	// Initializes non buffer related packet data
 	packet->sessions_remaining = sessions_count;
 	#ifndef NDEBUG
 	packet->sessions_len = sessions_count;
 	#endif // NDEBUG
 
+	return packet;
+}
+
+// Creates an ATEM packet with allocated packet buffer of specified length
+struct atem_packet* atem_packet_create(uint16_t sessions_count, uint16_t packet_len) {
+	assert(packet_len >= ATEM_LEN_HEADER);
+	assert(packet_len <= ATEM_PACKET_LEN_MAX_SOFT);
+
+	struct atem_packet* packet = atem_packet_alloc(sessions_count, packet_len);
+	packet->buf = (uint8_t*)&packet->sessions[sessions_count];
 	return packet;
 }
 
@@ -179,9 +189,6 @@ void atem_packet_release(struct atem_packet* packet) {
 	DEBUG_PRINTF("Releasing packet: %p\n", (void*)packet);
 
 	// Releases packets memory
-	if (packet->flags & ATEM_PACKET_FLAG_RELEASE) {
-		free(packet->buf);
-	}
 	free(packet);
 }
 
@@ -287,9 +294,6 @@ void atem_packet_retransmit(struct timespec* now) {
 	}
 
 	// Replaces packet buffer with preallocated closing request
-	if (packet->flags & ATEM_PACKET_FLAG_RELEASE) {
-		free(packet->buf);
-	}
 	buf_closing[ATEM_INDEX_FLAGS] = ATEM_FLAG_SYN;
 	packet->buf = buf_closing;
 
@@ -336,8 +340,9 @@ void atem_packet_broadcast_close(void) {
 	assert(atem_server.packet_queue_tail == NULL);
 
 	// Creates, broadcasts and enqueues closing handshake packet
+	struct atem_packet* packet = atem_packet_alloc(atem_server.sessions_len, 0);
+	packet->buf = buf_closing;
 	buf_closing[ATEM_INDEX_FLAGS] = ATEM_FLAG_SYN;
-	struct atem_packet* packet = atem_packet_create(buf_closing, atem_server.sessions_len);
 	for (int16_t session_index = atem_server.sessions_len - 1; session_index >= 0; session_index--) {
 		struct atem_session* session = atem_session_get(session_index);
 		assert(atem_session_lookup_get(session->session_id) == session_index);
@@ -365,8 +370,10 @@ void atem_packet_broadcast_ping(struct timespec* now) {
 	assert(atem_server.sessions_connected > 0);
 
 	DEBUG_PRINTF("Pings all %d connected clients\n", atem_server.sessions_connected);
+	struct atem_packet* packet = atem_packet_alloc(atem_server.sessions_connected, 0);
+	packet->buf = buf_ping;
 	buf_ping[ATEM_INDEX_FLAGS] = ATEM_FLAG_ACKREQ;
-	atem_server_broadcast(buf_ping, ATEM_PACKET_FLAG_NONE);
+	atem_server_broadcast(packet, ATEM_PACKET_FLAG_NONE);
 
 	// Sets timestamp for next ping
 	atem_server.ping_timestamp = *now;
