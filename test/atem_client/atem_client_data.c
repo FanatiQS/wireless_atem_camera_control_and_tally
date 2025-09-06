@@ -8,11 +8,12 @@
 static void retransmit_request_recv_verify(int sock, uint16_t session_id, uint16_t local_id) {
 	uint8_t packet[ATEM_PACKET_LEN_MAX];
 	atem_socket_recv(sock, packet);
-	atem_header_flags_get_verify(packet, ATEM_FLAG_RETXREQ, ATEM_FLAG_ACK);
-	atem_header_len_get_verify(packet, ATEM_LEN_ACK);
+	atem_header_flags_get_verify(packet, ATEM_FLAG_RETXREQ, 0);
+	atem_header_len_get_verify(packet, ATEM_LEN_HEADER);
 	atem_header_sessionid_get_verify(packet, session_id);
-	atem_header_remoteid_get_verify(packet, 0x0000);
+	atem_header_ackid_get_verify(packet, 0x0000);
 	atem_header_localid_get_verify(packet, local_id);
+	atem_header_remoteid_get_verify(packet, 0x0000);
 }
 
 int main(void) {
@@ -134,10 +135,13 @@ int main(void) {
 			retransmit_request_recv_verify(sock, session_id, i);
 			atem_acknowledge_request_send(sock, session_id, i);
 
-			// Acknowledgement is individually for each packet until packet 0x0004 could acknowledge 0x0005
+			// Acknowledgement is for each packet until local_id - 1 since that can acknowledge local_id directly
 			uint16_t ack_id = atem_acknowledge_response_recv(sock, session_id);
-			if (ack_id != i) {
-				assert(ack_id == local_id && i == local_id - 1);
+			if (i == local_id - 1) {
+				assert(ack_id == i || ack_id == local_id);
+			}
+			else {
+				assert(ack_id == i);
 			}
 		}
 
