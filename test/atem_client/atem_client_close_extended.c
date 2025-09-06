@@ -8,12 +8,12 @@
 
 // Ensures the peer socket is closed and does not send any data
 static void atem_client_closed(int sock) {
-	uint8_t packet[ATEM_PACKET_LEN_MAX];
-	size_t packetLen = sizeof(packet);
+	uint8_t packet_buf[ATEM_PACKET_LEN_MAX];
+	size_t packet_len = sizeof(packet_buf);
 
-	if (!simple_socket_recv_error(sock, ECONNREFUSED, packet, &packetLen)) {
-		fprintf(stderr, "Expected no more data on socket: %zu\n", packetLen);
-		logs_print_buffer(stderr, packet, packetLen);
+	if (!simple_socket_recv_error(sock, ECONNREFUSED, packet_buf, &packet_len)) {
+		fprintf(stderr, "Expected no more data on socket: %zu\n", packet_len);
+		logs_print_buffer(stderr, packet_buf, packet_len);
 		abort();
 	}
 
@@ -24,12 +24,12 @@ int main(void) {
 	// Ensures client closes session correctly
 	RUN_TEST() {
 		int sock = atem_socket_create();
-		uint16_t sessionId = atem_handshake_listen(sock, 0x0001);
+		uint16_t session_id = atem_handshake_listen(sock, 0x0001);
 
 		uint8_t packet[ATEM_PACKET_LEN_MAX];
 		while (atem_acknowledge_keepalive(sock, packet));
-		atem_handshake_sessionid_get_verify(packet, ATEM_OPCODE_CLOSING, false, sessionId);
-		atem_handshake_sessionid_send(sock, ATEM_OPCODE_CLOSED, false, sessionId);
+		atem_handshake_sessionid_get_verify(packet, ATEM_OPCODE_CLOSING, false, session_id);
+		atem_handshake_sessionid_send(sock, ATEM_OPCODE_CLOSED, false, session_id);
 
 		atem_socket_norecv(sock);
 		atem_socket_close(sock);
@@ -38,11 +38,11 @@ int main(void) {
 	// Ensures client does not retransmit closing request if not answered
 	RUN_TEST() {
 		int sock = atem_socket_create();
-		uint16_t sessionId = atem_handshake_listen(sock, 0x0001);
+		uint16_t session_id = atem_handshake_listen(sock, 0x0001);
 
 		uint8_t packet[ATEM_PACKET_LEN_MAX];
 		while (atem_acknowledge_keepalive(sock, packet));
-		atem_handshake_sessionid_get_verify(packet, ATEM_OPCODE_CLOSING, false, sessionId);
+		atem_handshake_sessionid_get_verify(packet, ATEM_OPCODE_CLOSING, false, session_id);
 
 		atem_socket_norecv(sock);
 		atem_socket_close(sock);
@@ -51,12 +51,12 @@ int main(void) {
 	// Ensures client does not process any data after sending CLOSING request
 	RUN_TEST() {
 		int sock = atem_socket_create();
-		uint16_t sessionId = atem_handshake_listen(sock, 0x0001);
+		uint16_t session_id = atem_handshake_listen(sock, 0x0001);
 
 		uint8_t packet[ATEM_PACKET_LEN_MAX];
 		while (atem_acknowledge_keepalive(sock, packet));
-		atem_handshake_sessionid_get_verify(packet, ATEM_OPCODE_CLOSING, false, sessionId);
-		atem_acknowledge_request_send(sock, sessionId, 0x0001);
+		atem_handshake_sessionid_get_verify(packet, ATEM_OPCODE_CLOSING, false, session_id);
+		atem_acknowledge_request_send(sock, session_id, 0x0001);
 
 		atem_socket_norecv(sock);
 		atem_socket_close(sock);
@@ -67,10 +67,10 @@ int main(void) {
 	// Ensures client responds to server initiated close correctly
 	RUN_TEST() {
 		int sock = atem_socket_create();
-		uint16_t sessionId = atem_handshake_listen(sock, 0x0001);
+		uint16_t session_id = atem_handshake_listen(sock, 0x0001);
 
-		atem_handshake_sessionid_send(sock, ATEM_OPCODE_CLOSING, false, sessionId);
-		atem_handshake_sessionid_recv_verify(sock, ATEM_OPCODE_CLOSED, false, sessionId);
+		atem_handshake_sessionid_send(sock, ATEM_OPCODE_CLOSING, false, session_id);
+		atem_handshake_sessionid_recv_verify(sock, ATEM_OPCODE_CLOSED, false, session_id);
 
 		atem_socket_norecv(sock);
 		atem_socket_close(sock);
@@ -79,11 +79,11 @@ int main(void) {
 	// Ensures retransmitted closing request is not responded to
 	RUN_TEST() {
 		int sock = atem_socket_create();
-		uint16_t sessionId = atem_handshake_listen(sock, 0x0001);
+		uint16_t session_id = atem_handshake_listen(sock, 0x0001);
 
-		atem_handshake_sessionid_send(sock, ATEM_OPCODE_CLOSING, false, sessionId);
-		atem_handshake_sessionid_recv_verify(sock, ATEM_OPCODE_CLOSED, false, sessionId);
-		atem_handshake_sessionid_send(sock, ATEM_OPCODE_CLOSING, true, sessionId);
+		atem_handshake_sessionid_send(sock, ATEM_OPCODE_CLOSING, false, session_id);
+		atem_handshake_sessionid_recv_verify(sock, ATEM_OPCODE_CLOSED, false, session_id);
+		atem_handshake_sessionid_send(sock, ATEM_OPCODE_CLOSING, true, session_id);
 
 		atem_client_closed(sock);
 	}
@@ -91,10 +91,10 @@ int main(void) {
 	// Ensures data sent after closing handshake is not processed
 	RUN_TEST() {
 		int sock = atem_socket_create();
-		uint16_t sessionId = atem_handshake_listen(sock, 0x0001);
+		uint16_t session_id = atem_handshake_listen(sock, 0x0001);
 
-		atem_handshake_close(sock, sessionId);
-		atem_acknowledge_request_send(sock, sessionId, 0x0001);
+		atem_handshake_close(sock, session_id);
+		atem_acknowledge_request_send(sock, session_id, 0x0001);
 
 		atem_client_closed(sock);
 	}
