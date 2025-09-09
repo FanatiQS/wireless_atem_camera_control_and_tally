@@ -91,8 +91,8 @@ int main(void) {
 			assert((atem.cmd_buf - atem.read_buf) < atem.read_len);
 			assert(atem.cmd_len < atem.read_len);
 			assert(strcmp((char*)atem.cmd_buf, payload_buf) == 0);
-			assert(atem.cmd_len == (payload_len + ATEM_LEN_CMDHEADER));
-			len_remaining -= atem.cmd_len;
+			assert(atem.cmd_len == payload_len);
+			len_remaining -= atem.cmd_len + ATEM_LEN_CMDHEADER;
 		}
 		assert(len_remaining == ATEM_LEN_HEADER);
 		assert(atem.cmd_index_next == atem.read_len);
