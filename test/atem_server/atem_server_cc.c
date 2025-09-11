@@ -58,7 +58,7 @@ int main(void) {
 				if (atem_cmd_next(&atem) != ATEM_CMDNAME_CAMERACONTROL) continue;
 				if (!atem_cc_updated(&atem)) continue;
 				atem_cc_translate(&atem);
-				camera_control_check(atem.cmd_buf[4], atem.cmd_buf[5], &checklist);
+				camera_control_check(atem.cmd_payload_buf[4], atem.cmd_payload_buf[5], &checklist);
 			}
 		} while (atem_header_len_get(atem.read_buf) != ATEM_LEN_HEADER);
 

@@ -15,7 +15,6 @@ int main(void) {
 	// Ensures accepted handshake returns ATEM_STATUS_ACCEPTED once
 	RUN_TEST() {
 		struct atem atem = {0};
-		atem_connection_open(&atem);
 		atem_handshake_sessionid_set(atem.read_buf, ATEM_OPCODE_ACCEPT, true, atem_header_sessionid_rand(false));
 		assert(atem_parse(&atem) == ATEM_STATUS_ACCEPTED);
 		assert(atem_parse(&atem) == ATEM_STATUS_WRITE_ONLY);
@@ -24,7 +23,6 @@ int main(void) {
 	// Ensures rejected handshake returns ATEM_STATUS_REJECTED
 	RUN_TEST() {
 		struct atem atem = {0};
-		atem_connection_open(&atem);
 		atem_handshake_sessionid_set(atem.read_buf, ATEM_OPCODE_REJECT, true, atem_header_sessionid_rand(false));
 		assert(atem_parse(&atem) == ATEM_STATUS_REJECTED);
 		assert(atem_parse(&atem) == ATEM_STATUS_REJECTED);
@@ -87,12 +85,12 @@ int main(void) {
 		size_t len_remaining = atem.read_len;
 		while (atem_cmd_available(&atem)) {
 			atem_cmd_next(&atem);
-			assert(atem.cmd_buf > atem.read_buf);
-			assert((atem.cmd_buf - atem.read_buf) < atem.read_len);
-			assert(atem.cmd_len < atem.read_len);
-			assert(strcmp((char*)atem.cmd_buf, payload_buf) == 0);
-			assert(atem.cmd_len == payload_len);
-			len_remaining -= atem.cmd_len + ATEM_LEN_CMDHEADER;
+			assert(atem.cmd_payload_buf > atem.read_buf);
+			assert((atem.cmd_payload_buf - atem.read_buf) < atem.read_len);
+			assert(atem.cmd_payload_len < atem.read_len);
+			assert(strcmp((char*)atem.cmd_payload_buf, payload_buf) == 0);
+			assert(atem.cmd_payload_len == payload_len);
+			len_remaining -= atem.cmd_payload_len + ATEM_LEN_CMDHEADER;
 		}
 		assert(len_remaining == ATEM_LEN_HEADER);
 		assert(atem.cmd_index_next == atem.read_len);

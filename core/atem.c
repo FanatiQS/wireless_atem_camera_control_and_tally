@@ -1,6 +1,7 @@
 #include <stdint.h> // uint8_t, uint16_t, uint32_t
 #include <stdbool.h> // bool, false
 #include <stddef.h> // NULL
+#include <assert.h> // assert
 
 #include "./atem_protocol.h" // ATEM_LEN_SYN, ATEM_INDEX_FLAGS, ATEM_INDEX_LEN_HIGH, ATEM_INDEX_LEN_LOW, ATEM_INDEX_SESSIONID_HIGH, ATEM_INDEX_SESSIONID_LOW, ATEM_FLAG_SYN, ATEM_INDEX_OPCODE, ATEM_OPCODE_OPEN, ATEM_LEN_ACK, ATEM_FLAG_ACK, ATEM_FLAG_RETX, ATEM_OPCODE_CLOSING, ATEM_OPCODE_CLOSED, ATEM_FLAG_ACKREQ, ATEM_INDEX_REMOTEID_HIGH, ATEM_INDEX_REMOTEID_LOW, ATEM_LIMIT_REMOTEID, ATEM_INDEX_ACKID_HIGH, ATEM_INDEX_ACKID_LOW, ATEM_MASK_LEN_HIGH, ATEM_LEN_HEADER, ATEM_OPCODE_ACCEPT, ATEM_OPCODE_REJECT, ATEM_LEN_CMDHEADER, ATEM_OFFSET_CMDNAME
 #include "./atem.h" // struct atem, enum atem_status, ATEM_STATUS_CLOSED, ATEM_STATUS_WRITE_ONLY, ATEM_STATUS_WRITE, ATEM_STATUS_NONE, ATEM_STATUS_ACCEPTED, ATEM_STATUS_CLOSING, ATEM_STATUS_REJECTED, ATEM_STATUS_ERROR
@@ -53,8 +54,9 @@ static ATEM_THREAD_LOCAL uint8_t buf_retxreq[ATEM_LEN_ACK] = {
 
 
 
-// Resets write buffer to be a SYN packet for starting handshake
+// Sets write buffer to be an opening handshake SYN packet to start a new connection
 void atem_connection_open(struct atem* atem) {
+	assert(atem != NULL);
 	buf_open[ATEM_INDEX_FLAGS] = ATEM_FLAG_SYN | ((atem->write_buf == buf_open) ? ATEM_FLAG_RETX : 0);
 	atem->write_buf = buf_open;
 	atem->write_len = ATEM_LEN_SYN;
@@ -62,6 +64,7 @@ void atem_connection_open(struct atem* atem) {
 
 // Sends a close packet to close the session
 void atem_connection_close(struct atem* atem) {
+	assert(atem != NULL);
 	buf_close[ATEM_INDEX_FLAGS] = ATEM_FLAG_SYN;
 	buf_close[ATEM_INDEX_SESSIONID_HIGH] = atem->read_buf[ATEM_INDEX_SESSIONID_HIGH];
 	buf_close[ATEM_INDEX_SESSIONID_LOW] = atem->read_buf[ATEM_INDEX_SESSIONID_LOW];
@@ -72,8 +75,12 @@ void atem_connection_close(struct atem* atem) {
 
 // Parses a received ATEM UDP packet
 enum atem_status atem_parse(struct atem* atem) {
+	assert(atem != NULL);
+
 	// Resends close packet without processing potential payload
 	if (atem->write_buf == buf_close) {
+		assert(atem->write_len == ATEM_LEN_SYN);
+
 		// Sets default branch to resend closing request
 		buf_close[ATEM_INDEX_FLAGS] = ATEM_FLAG_SYN | ATEM_FLAG_RETX;
 		buf_close[ATEM_INDEX_OPCODE] = ATEM_OPCODE_CLOSING;
@@ -133,7 +140,7 @@ enum atem_status atem_parse(struct atem* atem) {
 			return ATEM_STATUS_WRITE;
 		}
 		// Sends retransmit request if received remote id is closer to being ahead than behind
-		else if (((remote_id_recved - remote_id_next) & 0x7fff) < (0x7fff / 2)) {
+		else if (((remote_id_recved - remote_id_next) & ATEM_LIMIT_REMOTEID) < (ATEM_LIMIT_REMOTEID / 2)) {
 			// Sets RETX response to be sent as response
 			atem->write_buf = buf_retxreq;
 
@@ -205,6 +212,9 @@ enum atem_status atem_parse(struct atem* atem) {
 
 // Gets next command name and sets command buffer to a pointer to its data
 uint32_t atem_cmd_next(struct atem* atem) {
+	assert(atem != NULL);
+	assert(atem->read_buf[ATEM_INDEX_FLAGS] & ATEM_FLAG_ACKREQ);
+
 	// Gets pointer to command in read buffer
 	uint8_t* const buf = &atem->read_buf[atem->cmd_index_next];
 
@@ -213,8 +223,8 @@ uint32_t atem_cmd_next(struct atem* atem) {
 	atem->cmd_index_next += cmd_len;
 
 	// Sets command buffer and length
-	atem->cmd_len = cmd_len - ATEM_LEN_CMDHEADER;
-	atem->cmd_buf = buf + ATEM_LEN_CMDHEADER;
+	atem->cmd_payload_len = cmd_len - ATEM_LEN_CMDHEADER;
+	atem->cmd_payload_buf = buf + ATEM_LEN_CMDHEADER;
 
 	// Converts command name to a 32 bit integer for easy comparison
 	return (uint32_t)(buf[4] << 24 | buf[5] << 16 | buf[6] << 8 | buf[7]);
@@ -224,8 +234,10 @@ uint32_t atem_cmd_next(struct atem* atem) {
 
 // Gets update status for camera index and updates its tally state
 bool atem_tally_updated(struct atem* atem) {
+	assert(atem != NULL);
+
 	// Ensures destination is within range of tally data length
-	if (atem->cmd_buf[TALLY_INDEX_LEN_HIGH] != 0 || atem->cmd_buf[TALLY_INDEX_LEN_LOW] < atem->dest) {
+	if (atem->cmd_payload_buf[TALLY_INDEX_LEN_HIGH] != 0 || atem->cmd_payload_buf[TALLY_INDEX_LEN_LOW] < atem->dest) {
 		return false;
 	}
 
@@ -234,8 +246,8 @@ bool atem_tally_updated(struct atem* atem) {
 	const bool tally_pvw_old = atem->tally_pvw;
 
 	// Updates states for PGM and PVW tally
-	atem->tally_pgm = atem->cmd_buf[TALLY_OFFSET + atem->dest] & TALLY_FLAG_PGM;
-	atem->tally_pvw = atem->cmd_buf[TALLY_OFFSET + atem->dest] == TALLY_FLAG_PVW;
+	atem->tally_pgm = atem->cmd_payload_buf[TALLY_OFFSET + atem->dest] & TALLY_FLAG_PGM;
+	atem->tally_pvw = atem->cmd_payload_buf[TALLY_OFFSET + atem->dest] == TALLY_FLAG_PVW;
 
 	// Returns boolean indicating if tally was updated or not
 	return (tally_pgm_old != atem->tally_pgm) || (tally_pvw_old != atem->tally_pvw);
@@ -243,32 +255,40 @@ bool atem_tally_updated(struct atem* atem) {
 
 // Translates camera control data from ATEMs protocol to Blackmagics SDI camera control protocol
 void atem_cc_translate(struct atem* atem) {
-	// Gets length of available data
-	const uint8_t len = atem->cmd_buf[5] + atem->cmd_buf[7] * 2 + atem->cmd_buf[9] * 4;
+	assert(atem != NULL);
 
-	// Header
-	atem->cmd_buf[CC_HEADER_OFFSET + 0] = atem->cmd_buf[0]; // Destination
-	atem->cmd_buf[CC_HEADER_OFFSET + 1] = CC_HEADER_LEN + len; // Length
-	atem->cmd_buf[CC_HEADER_OFFSET + 2] = 0x00; // Command
-	atem->cmd_buf[CC_HEADER_OFFSET + 3] = 0x00; // Reserved
+	// Gets length of payload and size of each value
+	const uint8_t count8 = atem->cmd_payload_buf[5];
+	const uint8_t count16 = atem->cmd_payload_buf[7];
+	const uint8_t count32 = atem->cmd_payload_buf[9];
+	const uint8_t width = (count8 > 0) + (count16 > 0) * 2 + (count32 > 0) * 4;
+	const uint8_t len = count8 + count16 * 2 + count32 * 4;
 
-	// Command
+	// Sets SDI header
+	uint8_t* const sdi_buf = &atem->cmd_payload_buf[CC_HEADER_OFFSET];
+	sdi_buf[0] = atem->cmd_payload_buf[0]; // Destination
+	sdi_buf[1] = CC_CMD_HEADER_LEN + len; // Length
+	sdi_buf[2] = 0x00; // Command
+	sdi_buf[3] = 0x00; // Reserved
+
+	// Sets SDI command header
 	// Retains byte 1 - 4 to indicate: category, parameter, data type and operation
 
-	// Data
-	const uint8_t typeSize = (atem->cmd_buf[5] > 0) + (atem->cmd_buf[7] > 0) * 2 + (atem->cmd_buf[9] > 0) * 4;
-	for (uint8_t i = 0; i < len;) {
-		for (const uint8_t offset = i; i < offset + typeSize; i++) {
-			atem->cmd_buf[CC_HEADER_LEN + CC_CMD_HEADER_LEN + CC_HEADER_OFFSET + offset + typeSize - 1 + offset - i] = atem->cmd_buf[i + CC_ATEM_DATA_OFFSET];
+	// Updates byte order from big endian from ATEM to little endian for Blackmagic SDI Camera Control protocol
+	for (uint8_t index = 0; index < len; index += width) {
+		const uint8_t* atem_cc_data_buf = &atem->cmd_payload_buf[CC_ATEM_DATA_OFFSET + index];
+		uint8_t* sdi_data_buf = &sdi_buf[CC_HEADER_LEN + CC_CMD_HEADER_LEN + index];
+		for (uint8_t offset = 0; offset < width; offset++) {
+			sdi_data_buf[offset] = atem_cc_data_buf[width - offset - 1];
 		}
 	}
 
 	// Updates translated pointer and length padded to 32 bit boundary
-	atem->cmd_len = CC_HEADER_LEN + CC_CMD_HEADER_LEN + (len + 3) / 4 * 4;
-	atem->cmd_buf += CC_HEADER_OFFSET;
+	atem->cmd_payload_len = CC_HEADER_LEN + CC_CMD_HEADER_LEN + (len + 3) / 4 * 4;
+	atem->cmd_payload_buf = sdi_buf;
 
 	// Clears padding bytes
-	for (uint16_t i = CC_HEADER_LEN + CC_CMD_HEADER_LEN + len; i < atem->cmd_len; i++) {
-		atem->cmd_buf[i] = 0x00;
+	for (uint16_t i = CC_HEADER_LEN + CC_CMD_HEADER_LEN + len; i < atem->cmd_payload_len; i++) {
+		atem->cmd_payload_buf[i] = 0x00;
 	}
 }

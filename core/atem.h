@@ -143,10 +143,10 @@ enum atem_status {
  */
 typedef struct atem {
 	uint8_t* write_buf;
-	uint8_t* cmd_buf;
+	uint8_t* cmd_payload_buf;
 	uint16_t read_len;
 	uint16_t write_len;
-	uint16_t cmd_len;
+	uint16_t cmd_payload_len;
 	uint16_t cmd_index_next;
 	uint16_t remote_id_last;
 	uint8_t dest;
@@ -262,7 +262,7 @@ uint32_t atem_cmd_next(struct atem* atem);
  * @returns The major version of the ATEM protocol.
  */
 static inline uint16_t atem_protocol_major(struct atem* atem) {
-	return (atem->cmd_buf[0] << 8 | atem->cmd_buf[1]) & 0xffff;
+	return (atem->cmd_payload_buf[0] << 8 | atem->cmd_payload_buf[1]) & 0xffff;
 }
 
 /**
@@ -276,7 +276,7 @@ static inline uint16_t atem_protocol_major(struct atem* atem) {
  * @returns The minor version of the ATEM protocol.
  */
 static inline uint16_t atem_protocol_minor(struct atem* atem) {
-	return (atem->cmd_buf[2] << 8 | atem->cmd_buf[3]) & 0xffff;
+	return (atem->cmd_payload_buf[2] << 8 | atem->cmd_payload_buf[3]) & 0xffff;
 }
 
 /**
@@ -309,7 +309,7 @@ bool atem_tally_updated(struct atem* atem);
  * commands destination identifier.
  */
 static inline bool atem_cc_updated(struct atem* atem) {
-	return (atem->cmd_buf[0] == atem->dest);
+	return (atem->cmd_payload_buf[0] == atem->dest);
 }
 
 /**
@@ -317,8 +317,8 @@ static inline bool atem_cc_updated(struct atem* atem) {
  * in ATEM packet.
  * 
  * Translates ATEM camera control protocol to Blackmagic SDI Camera Control
- * Protocol. The translated data is available in the @ref atem.cmd_buf and the
- * length of the data block in @ref atem.cmd_len.
+ * Protocol. The translated data is available in the @ref atem.cmd_payload_buf and the
+ * length of the data block in @ref atem.cmd_payload_len.
  * 
  * @attention This function can ONLY be called when atem_cmd_next() returns
  * the command name @ref ATEM_CMDNAME_CAMERACONTROL.
