@@ -214,6 +214,10 @@ enum atem_status atem_parse(struct atem* atem) {
 uint32_t atem_cmd_next(struct atem* atem) {
 	assert(atem != NULL);
 	assert(atem->read_buf[ATEM_INDEX_FLAGS] & ATEM_FLAG_ACKREQ);
+	assert(atem->read_len >= atem->cmd_index_next);
+	assert(atem->read_len <= ATEM_PACKET_LEN_MAX);
+	assert(atem->cmd_index_next >= ATEM_LEN_HEADER);
+	assert(atem->cmd_index_next <= ATEM_PACKET_LEN_MAX);
 
 	// Gets pointer to command in read buffer
 	uint8_t* const buf = &atem->read_buf[atem->cmd_index_next];
@@ -235,6 +239,8 @@ uint32_t atem_cmd_next(struct atem* atem) {
 // Gets update status for camera index and updates its tally state
 bool atem_tally_updated(struct atem* atem) {
 	assert(atem != NULL);
+	assert(atem->cmd_payload_buf >= &atem->read_buf[ATEM_LEN_HEADER]);
+	assert(atem->cmd_payload_buf < &atem->read_buf[ATEM_PACKET_LEN_MAX]);
 
 	// Ensures destination is within range of tally data length
 	if (atem->cmd_payload_buf[TALLY_INDEX_LEN_HIGH] != 0 || atem->cmd_payload_buf[TALLY_INDEX_LEN_LOW] < atem->dest) {
@@ -256,6 +262,8 @@ bool atem_tally_updated(struct atem* atem) {
 // Translates camera control data from ATEMs protocol to Blackmagics SDI camera control protocol
 void atem_cc_translate(struct atem* atem) {
 	assert(atem != NULL);
+	assert(atem->cmd_payload_buf >= &atem->read_buf[ATEM_LEN_HEADER]);
+	assert(atem->cmd_payload_buf < &atem->read_buf[ATEM_PACKET_LEN_MAX]);
 
 	// Gets length of payload and size of each value
 	const uint8_t count8 = atem->cmd_payload_buf[5];
