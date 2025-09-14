@@ -142,16 +142,62 @@ enum atem_status {
  * Contains incoming and outgoing ATEM socket data.
  */
 typedef struct atem {
+	/**
+	 * Outgoing ATEM packet to transmit if result from @ref atem_parse indicates to do so.
+	 * @attention Only valid after calling @ref atem_connection_open, @ref atem_connection_close or @ref atem_parse.
+	 * Calling these functions also invalidates the @ref atem.write_buf for every other context in the same thread.
+	 */
 	uint8_t* write_buf;
+	/**
+	 * Pointer to command payload located in @ref atem.read_buf
+	 * @attention Only valid after call to @ref atem_cmd_next
+	 */
 	uint8_t* cmd_payload_buf;
+	/**
+	 * Length of parsed ATEM packet
+	 * @attention Only valid when @ref atem_parse returns @ref ATEM_STATUS_WRITE
+	 */
 	uint16_t read_len;
+	/**
+	 * Length of outgoing ATEM packet pointed to by @ref atem.write_buf
+	 * @attention Same validity conditions as @ref atem.write_buf
+	 */
 	uint16_t write_len;
+	/**
+	 * Length of command payload pointed to by @ref atem.cmd_payload_buf
+	 * @attention Same validity conditions as @ref atem.cmd_payload_buf
+	 */
 	uint16_t cmd_payload_len;
+	/**
+	 * @private
+	 * Index of next command, used for iterating through commands in ATEM packet
+	 * @attention Only valid after calling @ref atem_cmd_next
+	 */
 	uint16_t cmd_index_next;
+	/**
+	 * @private
+	 * Last acknowledged remote id
+	 */
 	uint16_t remote_id_last;
+	/**
+	 * Camera ID to filter data for
+	 * @attention Has to be set before first call to @ref atem_tally_updated if it is to be used 
+	 */
 	uint8_t dest;
+	/**
+	 * Buffer of ATEM UDP packet to parse with @ref atem_parse
+	 * @attention Caller is responsible for filling this buffer before calling @ref atem_parse
+	 */
 	uint8_t read_buf[ATEM_PACKET_LEN_MAX];
+	/**
+	 * State of PVW tally, updated from @ref atem_tally_updated.
+	 * Can safely be accessed at any point
+	 */
 	bool tally_pvw;
+	/**
+	 * State of PGM tally, updated from @ref atem_tally_updated.
+	 * Can safely be accessed at any point
+	 */
 	bool tally_pgm;
 } atem_t;
 
