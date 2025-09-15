@@ -102,7 +102,7 @@ enum atem_posix_status atem_poll(struct atem_posix_ctx* atem_ctx) {
 }
 
 // Returns status codes or iterates through commands in ATEM packets
-uint32_t atem_next(struct atem_posix_ctx* atem_ctx) {
+int32_t atem_next(struct atem_posix_ctx* atem_ctx) {
 	assert(atem_ctx != NULL);
 	while (!atem_cmd_available(&atem_ctx->atem)) {
 		enum atem_posix_status status;
@@ -117,10 +117,10 @@ uint32_t atem_next(struct atem_posix_ctx* atem_ctx) {
 					return ATEM_POSIX_STATUS_DROPPED;
 				}
 				default: {
-					return (uint32_t)status;
+					return (int32_t)status;
 				}
 			}
 		}
 	}
-	return atem_cmd_next(&atem_ctx->atem);
+	return (int32_t)atem_cmd_next(&atem_ctx->atem);
 }
