@@ -69,7 +69,7 @@ bool atem_recv(struct atem_posix_ctx* atem_ctx) {
 	return recv(atem_ctx->sock, atem_ctx->atem.read_buf, ATEM_PACKET_LEN_MAX, 0) >= ATEM_LEN_HEADER;
 }
 
-// Reads and parses ATEM packets until a packet with payload is received
+// Reads and parses ATEM packets until a packet that could contain a payload is received
 enum atem_posix_status atem_poll(struct atem_posix_ctx* atem_ctx) {
 	assert(atem_ctx != NULL);
 
@@ -94,8 +94,8 @@ enum atem_posix_status atem_poll(struct atem_posix_ctx* atem_ctx) {
 
 	// Parses and acknowledges received ATEM packet
 	enum atem_status status = atem_parse(&atem_ctx->atem);
-	if (!(status & 1) && !atem_send(atem_ctx)) {
-		return ATEM_POSIX_STATUS_ERROR_NETWORK;
+	if (!(status & 1)) {
+		atem_send(atem_ctx);
 	}
 
 	return (enum atem_posix_status)status;
