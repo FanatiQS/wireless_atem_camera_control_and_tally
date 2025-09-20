@@ -42,7 +42,6 @@
 // ATEM protocol lengths
 #define ATEM_LEN_HEADER    12
 #define ATEM_LEN_SYN       20
-#define ATEM_LEN_ACK       12
 #define ATEM_LEN_CMDHEADER 8
 
 // ATEM remote id range mask
