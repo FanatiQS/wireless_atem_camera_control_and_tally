@@ -12,6 +12,7 @@
  * Shims timespec_get for non-C11 platforms that has POSIX.1-2001 support.
  * This includes MacOS before 10.15 and Linux with glibc older than 2.16.
  */
+#undef TIME_UTC
 #define TIME_UTC 0
 #define timespec_get(ts, base) clock_gettime(CLOCK_REALTIME, ts)
 
