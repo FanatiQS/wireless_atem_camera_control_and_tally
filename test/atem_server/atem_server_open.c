@@ -226,9 +226,11 @@ int main(void) {
 		int sock3 = atem_socket_create();
 		uint16_t session_id3 = atem_handshake_connect(sock3, atem_header_sessionid_rand(false));
 
-		// Cleans up sessions
-		atem_handshake_close(sock1, session_id1);
-		atem_handshake_close(sock2, session_id2);
+		// Cleans up sessions, all sessions should either be connected or actively dropping
+		atem_handshake_sessionid_recv_verify(sock1, ATEM_OPCODE_CLOSING, true, session_id1);
+		atem_handshake_sessionid_send(sock1, ATEM_OPCODE_CLOSED, false, session_id1);
+		atem_handshake_sessionid_recv_verify(sock2, ATEM_OPCODE_CLOSING, true, session_id2);
+		atem_handshake_sessionid_send(sock2, ATEM_OPCODE_CLOSED, false, session_id2);
 		atem_handshake_close(sock3, session_id3);
 		atem_socket_close(sock1);
 		atem_socket_close(sock2);
@@ -252,7 +254,13 @@ int main(void) {
 		} while (!(atem_header_flags_get(packet) & ATEM_FLAG_SYN));
 		atem_handshake_sessionid_get(packet, ATEM_OPCODE_CLOSING, false);
 		atem_handshake_sessionid_send(sock1, ATEM_OPCODE_CLOSED, false, session_id1);
-		atem_acknowledge_request_recv(sock2, session_id2);
+
+		// Client2 should still be connected
+		atem_socket_recv(sock2, packet);
+		atem_header_flags_get_verify(packet, ATEM_FLAG_ACKREQ, ATEM_FLAG_RETX | ATEM_FLAG_ACK);
+		atem_header_sessionid_get_verify(packet, session_id2);
+		atem_header_localid_get_verify(packet, 0x0000);
+		atem_header_ackid_get_verify(packet, 0x0000);
 
 		atem_handshake_close(sock2, session_id2);
 		atem_socket_norecv(sock1);
@@ -280,11 +288,6 @@ int main(void) {
 			atem_header_sessionid_get_verify(packet, session_id1_request);
 		}
 		atem_handshake_sessionid_get_verify(packet, ATEM_OPCODE_CLOSING, false, session_id1);
-
-		do {
-			atem_socket_recv(sock1, packet);
-			atem_header_sessionid_get_verify(packet, session_id1);
-		} while (!(atem_header_flags_get(packet) & ATEM_FLAG_SYN));
 
 		atem_handshake_close(sock1, session_id1);
 		atem_handshake_close(sock2, session_id2);
