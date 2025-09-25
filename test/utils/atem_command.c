@@ -33,7 +33,7 @@ void atem_command_append(uint8_t* packet, char* cmd_name, void* payload, uint16_
 }
 
 // Sends a command buffer
-void atem_command_send(
+size_t atem_command_send(
 	int sock,
 	uint16_t session_id, uint16_t remote_id,
 	char* cmd_name, void* payload, uint16_t len
@@ -42,6 +42,7 @@ void atem_command_send(
 	atem_acknowledge_request_set(packet, session_id, remote_id);
 	atem_command_append(packet, cmd_name, payload, len);
 	atem_socket_send(sock, packet);
+	return atem_header_len_get(packet);
 }
 
 // Enqueues command into packet and sends when packet is full to start enqueueing on the next packet

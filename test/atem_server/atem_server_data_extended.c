@@ -1,6 +1,7 @@
 #include <stdint.h> // uint8_t, uint16_t
 #include <stdbool.h> // false
 #include <time.h> // struct timespec
+#include <assert.h> // assert
 
 #include "../utils/utils.h"
 
@@ -14,7 +15,7 @@ int main(void) {
 		// Sends packet with max size
 		uint16_t remote_id = 0x0001;
 		uint8_t payload[ATEM_PACKET_LEN_MAX_SOFT - ATEM_LEN_HEADER - ATEM_LEN_CMDHEADER + 1] = {0};
-		atem_command_send(sock, session_id, remote_id, "test", payload, sizeof(payload));
+		assert(atem_command_send(sock, session_id, remote_id, "test", payload, sizeof(payload)) == (ATEM_PACKET_LEN_MAX_SOFT + 1));
 
 		// Will not receive acknowledgement for over max size request
 		struct timespec mark = timediff_mark();
