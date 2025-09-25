@@ -23,8 +23,8 @@ static void retransmit_request_recv_verify(int sock, uint16_t session_id, uint16
 	atem_header_flags_get_verify(packet, ATEM_FLAG_RETXREQ, ATEM_FLAG_ACK);
 	atem_header_len_get_verify(packet, ATEM_LEN_HEADER);
 	atem_header_sessionid_get_verify(packet, session_id);
-	atem_header_remoteid_get_verify(packet, 0x0000);
 	atem_header_localid_get_verify(packet, local_id);
+	atem_header_remoteid_get_verify(packet, 0x0000);
 }
 
 int main(void) {
@@ -267,3 +267,4 @@ int main(void) {
 	}
 
 	return runner_exit();
+}
