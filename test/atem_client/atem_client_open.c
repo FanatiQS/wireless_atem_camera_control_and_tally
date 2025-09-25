@@ -39,7 +39,7 @@ int main(void) {
 		uint16_t session_id_client = atem_handshake_start_server(sock);
 
 		// Completes opening handshake
-		uint16_t session_id_new = 0x0001;
+		uint16_t session_id_new = atem_header_sessionid_rand(false);
 		atem_handshake_newsessionid_send(sock, ATEM_OPCODE_ACCEPT, false, session_id_client, session_id_new);
 		atem_acknowledge_response_recv_verify(sock, session_id_client, 0x0000);
 
@@ -64,7 +64,7 @@ int main(void) {
 		atem_handshake_sessionid_recv_verify(sock, ATEM_OPCODE_OPEN, true, session_id_client);
 
 		// Completes opening handshake
-		uint16_t session_id_new = 0x0001;
+		uint16_t session_id_new = atem_header_sessionid_rand(false);
 		atem_handshake_newsessionid_send(sock, ATEM_OPCODE_ACCEPT, false, session_id_client, session_id_new);
 		atem_acknowledge_response_recv_verify(sock, session_id_client, 0x0000);
 
@@ -86,7 +86,7 @@ int main(void) {
 		uint16_t session_id_client = atem_handshake_start_server(sock);
 
 		// Completes opening handshake
-		uint16_t session_id_new = 0x0001;
+		uint16_t session_id_new = atem_header_sessionid_rand(false);
 		atem_handshake_newsessionid_send(sock, ATEM_OPCODE_ACCEPT, false, session_id_client, session_id_new);
 		atem_acknowledge_response_recv_verify(sock, session_id_client, 0x0000);
 
@@ -112,7 +112,7 @@ int main(void) {
 		uint16_t session_id_client = atem_handshake_start_server(sock);
 
 		// Completes opening handshake with retransmit flag
-		uint16_t session_id_new = 0x0001;
+		uint16_t session_id_new = atem_header_sessionid_rand(false);
 		atem_handshake_newsessionid_send(sock, ATEM_OPCODE_ACCEPT, true, session_id_client, session_id_new);
 		atem_acknowledge_response_recv_verify(sock, session_id_client, 0x0000);
 
@@ -177,7 +177,7 @@ int main(void) {
 	RUN_TEST() {
 		// Client connects
 		int sock = atem_socket_create();
-		uint16_t session_id = atem_handshake_listen(sock, 0x0001);
+		uint16_t session_id = atem_handshake_listen(sock, atem_header_sessionid_rand(false));
 
 		// Drops all packets for ATEM_TIMEOUT seconds
 		uint8_t packet[ATEM_PACKET_LEN_MAX];
@@ -190,7 +190,7 @@ int main(void) {
 		// Ensures client reconnects after being dropped
 		atem_socket_close(sock);
 		sock = atem_socket_create();
-		session_id = atem_handshake_listen(sock, 0x0001);
+		session_id = atem_handshake_listen(sock, atem_header_sessionid_rand(false));
 
 		atem_handshake_close(sock, session_id);
 		atem_socket_close(sock);
@@ -200,7 +200,7 @@ int main(void) {
 	RUN_TEST() {
 		// Client connects
 		int sock = atem_socket_create();
-		uint16_t session_id = atem_handshake_listen(sock, 0x0010);
+		uint16_t session_id = atem_handshake_listen(sock, atem_header_sessionid_rand(false));
 
 		// Ensures retransmit flag is cleared when new session id is used
 		uint8_t packet[ATEM_PACKET_LEN_MAX];

@@ -73,9 +73,9 @@ int main(void) {
 			atem_handshake_newsessionid_recv_verify(sock, ATEM_OPCODE_ACCEPT, true, session_id_client, session_id_new);
 		}
 
-		uint16_t serverSessionId = session_id_new | 0x8000;
-		atem_handshake_sessionid_recv_verify(sock, ATEM_OPCODE_CLOSING, false, serverSessionId);
-		atem_handshake_sessionid_send(sock, ATEM_OPCODE_CLOSED, false, serverSessionId);
+		uint16_t session_id_server = session_id_new | 0x8000;
+		atem_handshake_sessionid_recv_verify(sock, ATEM_OPCODE_CLOSING, false, session_id_server);
+		atem_handshake_sessionid_send(sock, ATEM_OPCODE_CLOSED, false, session_id_server);
 
 		atem_socket_norecv(sock);
 		atem_socket_close(sock);
@@ -91,10 +91,10 @@ int main(void) {
 			atem_handshake_newsessionid_recv_verify(sock, ATEM_OPCODE_ACCEPT, true, session_id_client, session_id_new);
 		}
 
-		uint16_t serverSessionId = session_id_new | 0x8000;
-		atem_handshake_sessionid_recv_verify(sock, ATEM_OPCODE_CLOSING, false, serverSessionId);
-		atem_acknowledge_response_send(sock, serverSessionId, 0x0000);
-		atem_handshake_sessionid_recv_verify(sock, ATEM_OPCODE_CLOSING, true, serverSessionId);
+		uint16_t session_id_server = session_id_new | 0x8000;
+		atem_handshake_sessionid_recv_verify(sock, ATEM_OPCODE_CLOSING, false, session_id_server);
+		atem_acknowledge_response_send(sock, session_id_server, 0x0000);
+		atem_handshake_sessionid_recv_verify(sock, ATEM_OPCODE_CLOSING, true, session_id_server);
 
 		atem_socket_norecv(sock);
 		atem_socket_close(sock);
@@ -117,9 +117,9 @@ int main(void) {
 			atem_handshake_newsessionid_recv_verify(sock, ATEM_OPCODE_ACCEPT, true, session_id_client, session_id_new);
 		}
 
-		uint16_t serverSessionId = session_id_new | 0x8000;
-		atem_handshake_sessionid_recv_verify(sock, ATEM_OPCODE_CLOSING, false, serverSessionId);
-		atem_handshake_sessionid_send(sock, ATEM_OPCODE_CLOSED, false, serverSessionId);
+		uint16_t session_id_server = session_id_new | 0x8000;
+		atem_handshake_sessionid_recv_verify(sock, ATEM_OPCODE_CLOSING, false, session_id_server);
+		atem_handshake_sessionid_send(sock, ATEM_OPCODE_CLOSED, false, session_id_server);
 
 		atem_socket_norecv(sock);
 		atem_socket_close(sock);

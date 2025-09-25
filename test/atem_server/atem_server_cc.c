@@ -36,7 +36,7 @@ int main(void) {
 	// Ensures all expected camera control parameters at connect are received and only those parameters
 	RUN_TEST() {
 		int sock = atem_socket_create();
-		uint16_t session_id = atem_handshake_connect(sock, 0x1234);
+		uint16_t session_id = atem_handshake_connect(sock, atem_header_sessionid_rand(false));
 
 		struct atem atem = { .dest = 1 };
 		atem_connection_open(&atem);
