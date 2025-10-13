@@ -61,9 +61,9 @@ struct source_data {
 };
 
 // Hides metadata in ATEM command header padding bytes
-struct chunk_data {
+struct atem_cache_chunk {
 	uint16_t padding;
-	uint16_t chunk_len;
+	uint16_t len;
 };
 
 // Cached ATEM server data
@@ -71,17 +71,17 @@ static struct {
 	void* data;
 	struct source_data* source_data;
 	uint16_t chunks_count;
-} atem_cache_data;
+} atem_cache;
 
 
 
 // Gets pointer to camera control parameter in cache
 static struct cc_cmd* cc_param_get(uint8_t dest, uint8_t category, uint8_t param) {
 	assert(dest > 0);
-	assert(atem_cache_data.data != NULL);
+	assert(atem_cache.data != NULL);
 	if (dest == 0) return NULL;
 
-	struct source_data* source_data = &atem_cache_data.source_data[dest - 1];
+	struct source_data* source_data = &atem_cache.source_data[dest - 1];
 	switch (category << 8 | param) {
 		case 0x0000: return &source_data->focus;
 		case 0x0002: return &source_data->iris;
@@ -106,11 +106,11 @@ static struct cc_cmd* cc_param_get(uint8_t dest, uint8_t category, uint8_t param
 // Creates, sends and enqueues an ATEM packet with data from chunk
 static struct atem_packet* atem_cache_packet_create(
 	struct atem_session* session,
-	struct chunk_data* chunk,
+	struct atem_cache_chunk* chunk,
 	uint16_t remote_id
 ) {
 	// Creates ATEM packet acknowledge request
-	uint16_t packet_len = chunk->chunk_len + ATEM_LEN_HEADER;
+	uint16_t packet_len = chunk->len + ATEM_LEN_HEADER;
 	struct atem_packet* packet_next = atem_packet_create(1, packet_len);
 	packet_next->buf[ATEM_INDEX_FLAGS] = ATEM_FLAG_ACKREQ;
 	packet_next->buf[ATEM_INDEX_LEN_HIGH] |= packet_len >> 8;
@@ -125,7 +125,7 @@ static struct atem_packet* atem_cache_packet_create(
 	packet_next->buf[ATEM_INDEX_REMOTEID_LOW] = remote_id & 0xff;
 
 	// Copies over from data chunk to packet payload
-	memcpy(packet_next->buf + ATEM_LEN_HEADER, chunk, chunk->chunk_len);
+	memcpy(packet_next->buf + ATEM_LEN_HEADER, chunk, chunk->len);
 
 	// Sends packet and enqueues on global queue
 	atem_session_send(session, packet_next->buf);
@@ -276,10 +276,10 @@ void atem_cache_init(uint8_t source_count) {
 	};
 
 	// Allocates commands memory based on commands memory requirements
-	const size_t cc_len = sizeof(*atem_cache_data.source_data) * source_count;
+	const size_t cc_len = sizeof(*atem_cache.source_data) * source_count;
 	const size_t data_len = sizeof(fixed_head) + sizeof(fixed_tail) + cc_len;
 	uint8_t* cmd_buf = malloc(data_len);
-	atem_cache_data.data = cmd_buf;
+	atem_cache.data = cmd_buf;
 	if (cmd_buf == NULL) {
 		perror("Failed to allocate cache data");
 		abort();
@@ -290,10 +290,10 @@ void atem_cache_init(uint8_t source_count) {
 	cmd_buf += sizeof(fixed_head);
 
 	// Initializes data connected to specific input source
-	atem_cache_data.source_data = (void*)cmd_buf;
+	atem_cache.source_data = (struct source_data*)cmd_buf;
 	for (uint8_t i = 0; i < source_count; i++) {
 		const uint8_t dest = i + 1;
-		atem_cache_data.source_data[i] = (const struct source_data){
+		atem_cache.source_data[i] = (const struct source_data){
 			// Input source configuration command
 			.params = {
 				0x00, 0x2c, 0x00, 0x00, 0x49, 0x6e, 0x50, 0x72,
@@ -363,10 +363,10 @@ void atem_cache_init(uint8_t source_count) {
 		};
 
 		// Sets long input source name
-		sprintf((char*)&atem_cache_data.source_data[i].params[10], "Camera %d", dest);
+		sprintf((char*)&atem_cache.source_data[i].params[10], "Camera %d", dest);
 
 		// Sets short input source name
-		uint8_t* name_short = &atem_cache_data.source_data[i].params[30];
+		uint8_t* name_short = &atem_cache.source_data[i].params[30];
 		if (dest < 10) {
 			name_short[3] = dest + '0';
 		}
@@ -383,39 +383,39 @@ void atem_cache_init(uint8_t source_count) {
 			name_short[1] = (value / 10) + '0';
 		}
 	}
-	cmd_buf += sizeof(*atem_cache_data.source_data) * source_count;
+	cmd_buf += sizeof(*atem_cache.source_data) * source_count;
 
 	// Copies over commands required after input sources data
 	memcpy(cmd_buf, fixed_tail, sizeof(fixed_tail));
 
 	// Marks chunk lengths within padding bytes in command headers
 	size_t data_remaining = data_len;
-	uint8_t* cmd_ptr = atem_cache_data.data;
-	struct chunk_data* chunk = (void*)cmd_ptr;
-	chunk->chunk_len = 0;
-	atem_cache_data.chunks_count = 1;
-	while (chunk->chunk_len < data_remaining) {
+	uint8_t* cmd_ptr = atem_cache.data;
+	struct atem_cache_chunk* chunk = (void*)cmd_ptr;
+	chunk->len = 0;
+	atem_cache.chunks_count = 1;
+	while (chunk->len < data_remaining) {
 		// Gets current commands length
 		uint16_t cmd_len = (cmd_ptr[0] << 8 | cmd_ptr[1]) & ATEM_PACKET_LEN_MAX;
 
 		// Moves to next chunk if no more data can fit
-		if ((chunk->chunk_len + cmd_len) > (ATEM_PACKET_LEN_MAX_SOFT - ATEM_LEN_HEADER)) {
-			data_remaining -= chunk->chunk_len;
+		if ((chunk->len + cmd_len) > (ATEM_PACKET_LEN_MAX_SOFT - ATEM_LEN_HEADER)) {
+			data_remaining -= chunk->len;
 			chunk = (void*)cmd_ptr;
-			chunk->chunk_len = 0;
-			atem_cache_data.chunks_count++;
+			chunk->len = 0;
+			atem_cache.chunks_count++;
 		}
 
 		// Adds command length and moves to next command
-		chunk->chunk_len += cmd_len;
+		chunk->len += cmd_len;
 		cmd_ptr += cmd_len;
 	}
-	assert(data_remaining == chunk->chunk_len);
+	assert(data_remaining == chunk->len);
 }
 
 // Releases cache memory
 void atem_cache_release(void) {
-	free(atem_cache_data.data);
+	free(atem_cache.data);
 }
 
 // Dumps entire server state on newly connected session
@@ -424,19 +424,18 @@ void atem_cache_dump(struct atem_session* session) {
 	assert(atem_session_lookup_get(session->session_id) < atem_server.sessions_connected);
 
 	// Gets cache data array
-	struct chunk_data* chunk = atem_cache_data.data;
+	struct atem_cache_chunk* chunk = atem_cache.data;
 	assert(chunk != NULL);
 
 	// Dumps first cache data buffer
 	struct atem_packet* packet = atem_cache_packet_create(session, chunk, 1);
 	session->packet_head = packet;
-	session->packet_tail = packet;
 
 	// Dumps remaining cache data buffers
-	for (uint16_t i = 1; i < atem_cache_data.chunks_count; i++) {
+	for (uint16_t i = 1; i < atem_cache.chunks_count; i++) {
 		// Move to the next chunk
-		assert(chunk->chunk_len > 0);
-		chunk = (void*)((uint8_t*)chunk + chunk->chunk_len);
+		assert(chunk->len > 0);
+		chunk = (void*)((uint8_t*)chunk + chunk->len);
 
 		// Sends chunk data to session
 		struct atem_packet* packet_next = atem_cache_packet_create(session, chunk, i + 1);
@@ -451,7 +450,7 @@ void atem_cache_dump(struct atem_session* session) {
 	packet->sessions[0].packet_next = NULL;
 	session->packet_tail = packet;
 	session->packet_session_index_tail = 0;
-	session->remote_id = atem_cache_data.chunks_count;
+	session->remote_id = atem_cache.chunks_count;
 }
 
 // Updates ATEM cache data from ATEM command
@@ -464,14 +463,16 @@ void atem_cache_update(uint8_t* buf, uint16_t len) {
 		// Parses command header
 		uint8_t* cmd_buf = &buf[offset];
 		uint16_t cmd_len = cmd_buf[0] << 8 | cmd_buf[1];
-		uint32_t cmd_name = (cmd_buf[4] << 24) | (cmd_buf[5] << 16) | (cmd_buf[6] << 8) | (cmd_buf[7]);
+		uint32_t cmd_name = ATEM_CMDNAME(cmd_buf[4], cmd_buf[5], cmd_buf[6], cmd_buf[7]);
+		uint16_t cmd_payload_len = cmd_len - ATEM_LEN_CMDHEADER;
+		uint8_t* cmd_payload_buf = cmd_buf + ATEM_LEN_CMDHEADER;
 		offset += cmd_len;
 
 		// Processes command
 		switch (cmd_name) {
 			// Updates ATEM camera control data
 			case ATEM_CMDNAME('C', 'C', 'm', 'd'): {
-				atem_cache_update_cc(cmd_buf + ATEM_LEN_CMDHEADER, cmd_len - ATEM_LEN_CMDHEADER);
+				atem_cache_update_cc(cmd_payload_buf, cmd_payload_len);
 				break;
 			}
 		}
