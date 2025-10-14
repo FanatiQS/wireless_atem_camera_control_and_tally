@@ -11,7 +11,7 @@
 #include "../core/atem.h" // ATEM_PACKET_LEN_MAX
 #include "./atem_debug.h"
 
-#if DEBUG
+#ifndef NDEBUG
 
 // Prints buffer to stderr
 void atem_debug_print_buf(const uint8_t* buf, uint16_t len) {
@@ -155,4 +155,4 @@ void atem_debug_print(void) {
 	atem_debug_print_server();
 }
 
-#endif // DEBUG
+#endif // NDEBUG
