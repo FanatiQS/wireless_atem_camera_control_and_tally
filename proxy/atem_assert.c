@@ -179,9 +179,9 @@ void atem_assert_sessions(void) {
 	assert(atem_server.sessions_len <= atem_server.sessions_limit);
 
 	// Asserts all connected sessions from sessions list
-	for (uint16_t i = 0; i < atem_server.sessions_connected; i++) {
-		assert(i < INT16_MAX);
-		atem_assert_session_connected((int16_t)i);
+	for (int16_t i = 0; i < atem_server.sessions_connected; i++) {
+		assert(i >= 0);
+		atem_assert_session_connected(i);
 	}
 
 	// Asserts all connected sessions from lookup table
