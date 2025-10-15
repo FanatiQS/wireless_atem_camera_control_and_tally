@@ -89,7 +89,7 @@ enum atem_posix_status atem_poll(struct atem_posix_ctx* atem);
  * @param atem ATEM POSIX context to read data into.
  * @return Status code from atem_poll() or command in an ATEM packet.
  */
-uint32_t atem_next(struct atem_posix_ctx* atem);
+int32_t atem_next(struct atem_posix_ctx* atem);
 
 #ifdef __cplusplus
 }
