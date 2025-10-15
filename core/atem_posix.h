@@ -29,17 +29,25 @@ struct atem_posix_ctx {
  */
 enum atem_posix_status {
 	/**
-	 * A network error occurred in either atem_send() or atem_recv. `errno` will be set
+	 * A network error occurred in either atem_send() or atem_recv(). `errno` will be set
 	 * unless atem_recv() got a packet that was shorter than minimum size for an ATEM packet.
 	 */
 	ATEM_POSIX_STATUS_ERROR_NETWORK = -2,
+	/** @copydoc ATEM_STATUS_ERROR */
 	ATEM_POSIX_STATUS_ERROR_PARSE = ATEM_STATUS_ERROR,
+	/** @copydoc ATEM_STATUS_WRITE */
 	ATEM_POSIX_STATUS_WRITE = ATEM_STATUS_WRITE,
+	/** @copydoc ATEM_STATUS_ACCEPTED */
 	ATEM_POSIX_STATUS_ACCEPTED = ATEM_STATUS_ACCEPTED,
+	/** @copydoc ATEM_STATUS_REJECTED */
 	ATEM_POSIX_STATUS_REJECTED = ATEM_STATUS_REJECTED,
+	/** @copydoc ATEM_STATUS_CLOSING */
 	ATEM_POSIX_STATUS_CLOSING = ATEM_STATUS_CLOSING,
+	/** @copydoc ATEM_STATUS_CLOSED */
 	ATEM_POSIX_STATUS_CLOSED = ATEM_STATUS_CLOSED,
+	/** @copydoc ATEM_STATUS_WRITE_ONLY */
 	ATEM_POSIX_STATUS_WRITE_ONLY = ATEM_STATUS_WRITE_ONLY,
+	/** @copydoc ATEM_STATUS_NONE */
 	ATEM_POSIX_STATUS_NONE = ATEM_STATUS_NONE,
 	/**
 	 * The connection to the ATEM server was dropped.
