@@ -4,7 +4,7 @@
 
 #include <stddef.h> // size_t
 #include <limits.h> // INT_MAX
-#include <errno.h> // errno
+#include <errno.h> // errno, EMFILE
 #include <assert.h> // _Static_assert
 
 #define WIN32_LEAN_AND_MEAN
@@ -24,50 +24,76 @@ typedef long long ssize_t;
 #define perror(msg) wsa_shim_perror(msg)
 
 // Asserts windows defined types are the same or at least big enough
-#ifdef __GNUC__
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wpre-c11-compat"
-#endif // __GNUC__
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wpre-c11-compat"
+#endif // __clang__
 static_assert(SOCKET_ERROR == -1, "SOCKET_ERROR is -1 on POSIX");
 static_assert((int)INVALID_SOCKET == -1, "INVALID_SOCKET is -1 on POSIX");
 static_assert(sizeof(SOCKET) >= sizeof(int), "winsock2 SOCKET type is an int on POSIX");
 static_assert(sizeof(socklen_t) == sizeof(int), "socklen_t in POSIX uses int in winsock2");
 static_assert(sizeof(ssize_t) >= sizeof(int), "ssize_t needs to hold at least an int");
-#ifdef __GNUC__
-#pragma GCC diagnostic pop
-#endif // __GNUC__
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif // __clang__
 
 
 
 static inline int wsa_shim_accept(int sock, struct sockaddr* addr, socklen_t* len) {
-	errno = 0;
 	SOCKET sock_accepted = accept((SOCKET)sock, addr, len);
-	if (sock_accepted > INT_MAX && sock_accepted != INVALID_SOCKET) {
-		closesocket(sock_accepted);
-		WSASetLastError(WSAEMFILE);
-		return -1;
+	if (sock_accepted > INT_MAX) {
+		if (sock_accepted != INVALID_SOCKET) {
+			closesocket(sock_accepted);
+			errno = EMFILE;
+			return -1;
+		}
+		errno = -WSAGetLastError();
 	}
 	return (int)sock_accepted;
 }
 
 static inline int wsa_shim_bind(int sock, const struct sockaddr* addr, socklen_t len) {
-	errno = 0;
-	return bind((SOCKET)sock, addr, len);
+	int result = bind((SOCKET)sock, addr, len);
+	if (result == SOCKET_ERROR) {
+		errno = -WSAGetLastError();
+	}
+	else {
+		assert(result == 0);
+	}
+	return result;
 }
 
 static inline int wsa_shim_connect(int sock, const struct sockaddr* addr, socklen_t len) {
-	errno = 0;
-	return connect((SOCKET)sock, addr, len);
+	int result = connect((SOCKET)sock, addr, len);
+	if (result == SOCKET_ERROR) {
+		errno = -WSAGetLastError();
+	}
+	else {
+		assert(result == 0);
+	}
+	return result;
 }
 
 static inline int wsa_shim_listen(int sock, int backlog) {
-	errno = 0;
-	return listen((SOCKET)sock, backlog);
+	int result = listen((SOCKET)sock, backlog);
+	if (result == SOCKET_ERROR) {
+		errno = -WSAGetLastError();
+	}
+	else {
+		assert(result == 0);
+	}
+	return result;
 }
 
 static inline ssize_t wsa_shim_recv(int sock, void* buf, size_t len, int flags) {
-	errno = 0;
-	return recv((SOCKET)sock, buf, (len > INT_MAX) ? -1 : (int)len, flags);
+	int result = recv((SOCKET)sock, buf, (len > INT_MAX) ? -1 : (int)len, flags);
+	if (result == SOCKET_ERROR) {
+		errno = -WSAGetLastError();
+	}
+	else {
+		assert(result == 0);
+	}
+	return result;
 }
 
 static inline ssize_t wsa_shim_recvfrom(
@@ -78,13 +104,25 @@ static inline ssize_t wsa_shim_recvfrom(
 	struct sockaddr* restrict addr,
     socklen_t* restrict addr_len
 ) {
-	errno = 0;
-	return recvfrom((SOCKET)sock, buf, (len > INT_MAX) ? -1 : (int)len, flags, addr, addr_len);
+	int result = recvfrom((SOCKET)sock, buf, (len > INT_MAX) ? -1 : (int)len, flags, addr, addr_len);
+	if (result == SOCKET_ERROR) {
+		errno = -WSAGetLastError();
+	}
+	else {
+		assert(result == 0);
+	}
+	return result;
 }
 
 static inline ssize_t wsa_shim_send(int sock, const void* buf, size_t len, int flags) {
-	errno = 0;
-	return send((SOCKET)sock, buf, (len > INT_MAX) ? -1 : (int)len, flags);
+	int result = send((SOCKET)sock, buf, (len > INT_MAX) ? -1 : (int)len, flags);
+	if (result == SOCKET_ERROR) {
+		errno = -WSAGetLastError();
+	}
+	else {
+		assert(result == 0);
+	}
+	return result;
 }
 
 static inline ssize_t wsa_shim_sendto(
@@ -95,8 +133,14 @@ static inline ssize_t wsa_shim_sendto(
 	const struct sockaddr* dest_addr,
     socklen_t dest_len
 ) {
-	errno = 0;
-	return sendto((SOCKET)sock, buf, (len > INT_MAX) ? -1 : (int)len, flags, dest_addr, dest_len);
+	int result = sendto((SOCKET)sock, buf, (len > INT_MAX) ? -1 : (int)len, flags, dest_addr, dest_len);
+	if (result == SOCKET_ERROR) {
+		errno = -WSAGetLastError();
+	}
+	else {
+		assert(result == 0);
+	}
+	return result;
 }
 
 static inline int wsa_shim_setsockopt(int sock, int lvl, int opt, void* value, socklen_t len) {
@@ -108,22 +152,36 @@ static inline int wsa_shim_setsockopt(int sock, int lvl, int opt, void* value, s
 		value = &timeout;
 	}
 
-	errno = 0;
-	return setsockopt((SOCKET)sock, lvl, opt, value, len);
+	int result = setsockopt((SOCKET)sock, lvl, opt, value, len);
+	if (result == SOCKET_ERROR) {
+		errno = -WSAGetLastError();
+	}
+	else {
+		assert(result == 0);
+	}
+	return result;
 }
 
 static inline int wsa_shim_shutdown(int sock, int how) {
-	errno = 0;
-	return shutdown((SOCKET)sock, how);
+	int result = shutdown((SOCKET)sock, how);
+	if (result == SOCKET_ERROR) {
+		errno = -WSAGetLastError();
+	}
+	else {
+		assert(result == 0);
+	}
+	return result;
 }
 
 static inline int wsa_shim_socket(int domain, int type, int protocol) {
-	errno = 0;
 	SOCKET sock = socket(domain, type, protocol);
-	if (sock > INT_MAX && sock != INVALID_SOCKET) {
-		closesocket(sock);
-		WSASetLastError(WSAEMFILE);
-		return -1;
+	if (sock > INT_MAX) {
+		if (sock != INVALID_SOCKET) {
+			closesocket(sock);
+			errno = EMFILE;
+			return -1;
+		}
+		errno = -WSAGetLastError();
 	}
 	return (int)sock;
 }
