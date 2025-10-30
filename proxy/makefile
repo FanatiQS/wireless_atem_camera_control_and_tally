@@ -3,7 +3,7 @@ BUILD ?= dev
 PLATFORM ?= native
 
 # Sets build flags shared by all builds
-CFLAGS += -DDEBUG=0 -MMD
+CFLAGS += -DDEBUG=0 -MMD -g
 
 # Enables many compiler warnings
 CFLAGS += -Wall -Wextra -Wpedantic -std=c11 -Wstrict-prototypes -Wshadow -Wmissing-prototypes
@@ -15,10 +15,10 @@ CFLAGS += -Wunreachable-code -Wno-tautological-constant-out-of-range-compare
 
 # Configuration specific flags
 ifeq "$(BUILD)" "release"
-CFLAGS += -DNDEBUG -O3 -Werror -Wno-unused-variable
+CFLAGS += -DNDEBUG -g0 -O3 -Werror -Wno-unused-variable
 LDFLAGS += -flto
 else ifeq "$(BUILD)" "debug"
-CFLAGS += -UDEBUG -DDEBUG=1 -g -fsanitize=address,undefined
+CFLAGS += -UDEBUG -DDEBUG=1 -fsanitize=address,undefined
 LDFLAGS += -fsanitize=address,undefined
 else ifneq "$(BUILD)" "dev"
 $(error Invalid build mode: $(BUILD))
