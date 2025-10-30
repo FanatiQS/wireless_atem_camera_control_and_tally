@@ -30,10 +30,15 @@ endif
 BUILD_ROOT ?= ../build
 DIST_ROOT ?= ../dist
 
+# Overwritable names for output files
+BUILD_NAME ?= proxy/$(PLATFORM)_$(BUILD)
+BIN_NAME ?= proxy/proxy_$(PLATFORM)_$(BUILD)
+LIB_NAME ?= atem
+
 # Directories and paths for generated build files and output files
-BUILD_DIR ?= $(BUILD_ROOT)/proxy/$(PLATFORM)_$(BUILD)
-BIN_PATH ?= $(DIST_ROOT)/proxy/proxy_$(PLATFORM)_$(BUILD)
-LIB_PATH ?= $(BUILD_DIR)/libatem.a
+BUILD_DIR ?= $(BUILD_ROOT)/$(BUILD_NAME)
+BIN_PATH ?= $(DIST_ROOT)/$(BIN_NAME)
+LIB_PATH ?= $(BUILD_DIR)/lib$(LIB_NAME).a
 
 
 
@@ -77,13 +82,15 @@ OBJS += $(BUILD_DIR)/main.o
 # Rebuilds everything on makefile changes
 $(OBJS): makefile
 
-# Includes generated dependency files if available
--include $(OBJS:.o=.d)
-
 # Builds object files
 $(OBJS):
 	mkdir -p $(dir $@)
 	$(CC) -c $< -o $@ $(CFLAGS) $(CPPFLAGS)
+
+# Includes generated dependency files if available
+-include $(OBJS:.o=.d)
+
+
 
 # Aliases for BIN_PATH and LIB_PATH files
 .PHONY: all lib exec
