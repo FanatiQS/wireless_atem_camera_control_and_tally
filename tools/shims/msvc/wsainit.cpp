@@ -1,6 +1,7 @@
 #include <stdio.h> // stderr, fprintf
 #include <stdlib.h> // exit, EXIT_FAILURE
 
+#define WIN32_LEAN_AND_MEAN
 #include <winsock2.h> // WSADATA, WSAStartup, WSACleanup
 
 // Automatically initializes WSA by putting startup code in a constructor with global instance
