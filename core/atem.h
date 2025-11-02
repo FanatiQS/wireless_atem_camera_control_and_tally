@@ -18,7 +18,9 @@
 
 /**
  * Defines if data in @ref atem.write_buf is not thread safe.
- * Can be set manually or defaults to being thread safe if supported.
+ * Automatically defaults to being thread safe if supported.
+ * Can be set manually to enable or disable thread safety.
+ * When manually enabling thread safety, ATEM_THREAD_LOCAL can be used to specify thread safety implementation.
  */
 #ifndef ATEM_NO_THREAD_SAFE
 #if defined(__STDC_NO_THREADS__) || __STDC_VERSION__ < 201112

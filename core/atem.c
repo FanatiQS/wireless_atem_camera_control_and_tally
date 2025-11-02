@@ -25,9 +25,11 @@
 #define CC_HEADER_OFFSET -3
 #define CC_ATEM_DATA_OFFSET 16
 
-// Strips thread safety from static buffers if ATEM_NO_THREAD_SAFE set
+// Strips thread safety from static buffers if ATEM_NO_THREAD_SAFE is set and uses ATEM_THREAD_LOCAL if defined
 #if ATEM_NO_THREAD_SAFE
 #define thread_local
+#elif defined(ATEM_THREAD_LOCAL)
+#define thread_local ATEM_THREAD_LOCAL
 #elif __STDC_VERSION__ < 202311
 #include <threads.h> // thread_local
 #endif // ATEM_NO_THREAD_SAFE
