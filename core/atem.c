@@ -25,10 +25,17 @@
 #define CC_HEADER_OFFSET -3
 #define CC_ATEM_DATA_OFFSET 16
 
+// Strips thread safety from static buffers if ATEM_NO_THREAD_SAFE set
+#if ATEM_NO_THREAD_SAFE
+#define thread_local
+#elif __STDC_VERSION__ < 202311
+#include <threads.h> // thread_local
+#endif // ATEM_NO_THREAD_SAFE
+
 
 
 // Buffer to send to ATEM when establishing connection
-static ATEM_THREAD_LOCAL uint8_t buf_open[ATEM_LEN_SYN] = {
+static thread_local uint8_t buf_open[ATEM_LEN_SYN] = {
 	[ATEM_INDEX_LEN_LOW] = ATEM_LEN_SYN,
 	[ATEM_INDEX_SESSIONID_HIGH] = 0x13,
 	[ATEM_INDEX_SESSIONID_LOW] = 0x37,
@@ -36,18 +43,18 @@ static ATEM_THREAD_LOCAL uint8_t buf_open[ATEM_LEN_SYN] = {
 };
 
 // Buffer to modify and send to ATEM when acknowledging a received packet
-static ATEM_THREAD_LOCAL uint8_t buf_ack[ATEM_LEN_HEADER] = {
+static thread_local uint8_t buf_ack[ATEM_LEN_HEADER] = {
 	[ATEM_INDEX_FLAGS] = ATEM_FLAG_ACK,
 	[ATEM_INDEX_LEN_LOW] = ATEM_LEN_HEADER
 };
 
 // Buffer to modify and send to ATEM to close the connection or respond to closing request
-static ATEM_THREAD_LOCAL uint8_t buf_close[ATEM_LEN_SYN] = {
+static thread_local uint8_t buf_close[ATEM_LEN_SYN] = {
 	[ATEM_INDEX_LEN_LOW] = ATEM_LEN_SYN
 };
 
 // Buffer to request a packet to be retransmitted
-static ATEM_THREAD_LOCAL uint8_t buf_retxreq[ATEM_LEN_HEADER] = {
+static thread_local uint8_t buf_retxreq[ATEM_LEN_HEADER] = {
 	[ATEM_INDEX_FLAGS] = ATEM_FLAG_RETXREQ,
 	[ATEM_INDEX_LEN_LOW] = ATEM_LEN_HEADER
 };

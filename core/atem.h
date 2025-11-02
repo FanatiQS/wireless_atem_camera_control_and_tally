@@ -16,20 +16,17 @@
 /** Bluetooth characteristic UUID for sending camera control data to blackmagic cameras */
 #define ATEM_BLE_UUID_CHARACTERISTIC "5DD3465F-1AEE-4299-8493-D2ECA2F8E1BB"
 
-// Gets thread local implementation
-#if !defined(ATEM_THREAD_LOCAL)
-// C23 has native support with keyword
-#if __STDC_VERSION__ >= 202311
-#define ATEM_THREAD_LOCAL thread_local
-// C11 has support with wrapper in <thread.h> header that doesn't have to be supported
-#elif __STDC_VERSION__ >= 201112
-#define ATEM_THREAD_LOCAL _Thread_local
-// No thread safe support
+/**
+ * Defines if data in @ref atem.write_buf is not thread safe.
+ * Can be set manually or defaults to being thread safe if supported.
+ */
+#ifndef ATEM_NO_THREAD_SAFE
+#if defined(__STDC_NO_THREADS__) || __STDC_VERSION__ < 201112
+#define ATEM_NO_THREAD_SAFE (1)
 #else
-#define NO_ATEM_THREAD_LOCAL
-#define ATEM_THREAD_LOCAL
-#endif
-#endif // !defined(ATEM_THREAD_LOCAL)
+#define ATEM_NO_THREAD_SAFE (0)
+#endif // __STDC_NO_THREADS__ || __STDC_VERSION__
+#endif // ATEM_NO_THREAD_SAFE
 
 /**
  * Default port for ATEM
