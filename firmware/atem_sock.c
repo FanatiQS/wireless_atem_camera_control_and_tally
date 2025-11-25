@@ -202,7 +202,7 @@ static inline void atem_process(struct udp_pcb* pcb) {
 #endif // DEBUG_CC
 
 			// Writes camera control data over SDI
-			sdi_write_cc(atem.cmd_payload_buf - 2, atem.cmd_len);
+			sdi_write_cc(atem.cmd_payload_buf - 2, atem.cmd_payload_len);
 
 			break;
 		}
