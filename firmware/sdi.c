@@ -35,19 +35,19 @@
 #define kRegCONTROL_TOVERIDE_Mask 0x02
 
 // Writes variadic number of bytes to SDI shield register
-#define SDI_WRITE_BUF(buf) I2C_WRITE(buf, sizeof(buf) / sizeof(buf[0]))
+#define SDI_WRITE_BUF(buf) i2c_write(buf, sizeof(buf) / sizeof(buf[0]))
 #define SDI_WRITE(reg, ...) SDI_WRITE_BUF(((uint8_t[]){ (reg) & 0xff, (reg) >> 8, __VA_ARGS__ }))
 
-// Reads SDI shield data from registers to buffer
-static void sdi_read(uint16_t reg, uint8_t* readBuf, uint8_t readLen) {
-	SDI_WRITE_BUF(((uint8_t[]){ reg & 0xff, reg >> 8 }));
-	I2C_READ(readBuf, readLen);
+// Reads SDI shield register data to buffer
+static void sdi_read(uint16_t reg, uint8_t* read_buf, uint8_t read_len) {
+	uint8_t write_buf[] = { reg & 0xff, reg >> 8 };
+	i2c_write_read(write_buf, sizeof(write_buf), read_buf, read_len);
 }
 
 // Prints an SDI version type read from shield
 #if DEBUG
 static void sdi_version_print(const char* label, uint16_t reg) {
-	uint8_t buf[2];
+	uint8_t buf[2] = {0};
 	sdi_read(reg, buf, sizeof(buf));
 	DEBUG_PRINTF("SDI shield %s version: %d.%d\n", label, buf[1], buf[0]);
 }
@@ -59,7 +59,7 @@ static void sdi_version_print(const char* label, uint16_t reg) {
 
 // Checks if SDI shield FPGA has booted
 static bool sdi_connect(void) {
-	uint32_t buf;
+	uint32_t buf = 0;
 	sdi_read(kRegIDENTIFIER, (uint8_t*)&buf, sizeof(buf));
 	return buf == *(uint32_t*)"SDIC";
 }
@@ -67,7 +67,7 @@ static bool sdi_connect(void) {
 // Tries to connect to the SDI shield
 bool sdi_init(uint8_t dest) {
 	// Initializes I2C driver
-	I2C_INIT(PIN_SCL, PIN_SDA);
+	i2c_init();
 
 	// Awaits SDI shields FPGA booting up
 	while (!sdi_connect()) {
@@ -94,7 +94,7 @@ bool sdi_init(uint8_t dest) {
 
 // Awaits SDI shield override bank to be ready for write
 static void sdi_flush(uint16_t reg) {
-	uint8_t busy;
+	uint8_t busy = 0;
 	do {
 		sdi_read(reg, &busy, sizeof(busy));
 	} while (busy);
@@ -113,7 +113,7 @@ void sdi_write_cc(uint8_t* buf, uint16_t len) {
 	SDI_WRITE(kRegOCLENGTH, len & 0xff, len >> 8);
 	buf[0] = kRegOCDATA & 0xff;
 	buf[1] = kRegOCDATA >> 8;
-	I2C_WRITE(buf, len + 2);
+	i2c_write(buf, len + 2);
 	SDI_WRITE(kRegOCARM, true);
 }
 
