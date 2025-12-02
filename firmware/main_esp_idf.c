@@ -22,6 +22,7 @@
 #include "./flash.h" // struct flash_config, flash_config_read
 #include "./dns.h" // captive_portal_init
 #include "./wlan.h" // wlan_station_dhcp_get
+#include "./sensors.h" // sensors_init
 
 
 
@@ -87,7 +88,10 @@ void app_main(void) {
 	// Initializes captive portal
 	captive_portal_init();
 
-	// Enables handling softap connections even if the initilization fails further down
+	// Initializes ADC voltage and temperature sensors
+	sensors_init();
+
+	// Enables handling softap connections even if the initialization fails further down
 	ESP_ERROR_CHECK(esp_wifi_start());
 
 	// Enable wlan station along with existing softap
@@ -138,7 +142,7 @@ void app_main(void) {
 		DEBUG_ERR_PRINTF("Failed to register wlan reconnect callback\n");
 	}
 
-	// Reads configuration from non-volotile flash memory
+	// Reads configuration from non-volatile flash memory
 	struct flash_config conf;
 	if (!flash_config_read(&conf)) {
 		return;

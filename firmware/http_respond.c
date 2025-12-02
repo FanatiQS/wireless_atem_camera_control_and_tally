@@ -1,6 +1,6 @@
 #include <time.h> // time, NULL, time_t
 #include <stdio.h> // sprintf
-#include <string.h> // strnlen, strlen
+#include <string.h> // strlen
 #include <stdint.h> // uint32_t
 #include <stddef.h> // size_t
 #include <stdbool.h> // bool, false, true
@@ -23,6 +23,7 @@
 #include "./http_respond.h" // http_respond, http_err, http_post_err
 #include "./flash.h" // CONF_FLAG_DHCP, flash_cache_write
 #include "./wlan.h" // wlan_station_rssi, WLAN_STATION_NOT_CONNECTED
+#include "./sensors.h" // sensors_voltage_read, sensors_temperature_read
 
 
 
@@ -33,7 +34,7 @@ static void http_reboot_callback_defer(void* arg) {
 	flash_cache_write(&http->cache);
 }
 
-// Restarts device on client timeout or successfull close
+// Restarts device on client timeout or successful close
 static err_t http_reboot_callback(void* arg, struct tcp_pcb* pcb) {
 	tcp_err(pcb, NULL);
 	tcp_recv(pcb, NULL);
@@ -118,6 +119,28 @@ static inline bool http_write_wifi(struct http_ctx* http) {
 	// Writes signal strength of network connection
 	char buf[sizeof("-128 dBm")];
 	int len = sprintf(buf, "%d dBm", rssi);
+	return tcp_write(http->pcb, buf, len, TCP_WRITE_FLAG_COPY) == ERR_OK;
+}
+
+// Writes boards input source voltage
+static inline bool http_write_voltage(struct http_ctx* http) {
+	float voltage;
+	if (!sensors_voltage_read(&voltage)) {
+		return HTTP_SEND(http, "NULL");
+	}
+	char buf[sizeof("12.00v")];
+	int len = sprintf(buf, "%.02fv", voltage);
+	return tcp_write(http->pcb, buf, len, TCP_WRITE_FLAG_COPY) == ERR_OK;
+}
+
+// Writes MCUs internal temperature
+static inline bool http_write_temp(struct http_ctx* http) {
+	float temp;
+	if (!sensors_temperature_read(&temp)) {
+		return HTTP_SEND(http, "NULL");
+	}
+	char buf[sizeof("100°C")];
+	int len = sprintf(buf, "%d°C", (int)temp);
 	return tcp_write(http->pcb, buf, len, TCP_WRITE_FLAG_COPY) == ERR_OK;
 }
 
@@ -288,6 +311,10 @@ bool http_respond(struct http_ctx* http) {
 			"<tr><td>Firmware Version:<td>" FIRMWARE_VERSION_STRING
 			"<tr><td>WiFi signal strength:<td>"
 		HTTP_RESPONSE_CALL(http_write_wifi(http))
+			"<tr><td>Battery level:<td>"
+		HTTP_RESPONSE_CALL(http_write_voltage(http))
+			"<tr><td>Temperature:<td>"
+		HTTP_RESPONSE_CALL(http_write_temp(http))
 			"<tr><td>ATEM connection status:<td>"
 		HTTP_RESPONSE_FLUSH
 			atem_state
