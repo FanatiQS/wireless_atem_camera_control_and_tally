@@ -23,6 +23,12 @@ while [ $# -gt 0 ]; do
 		--wifi_status=*)
 			wifi_status="${i#*=}"
 			;;
+		--batt=*)
+			batt="${i#*=}"
+			;;
+		--temp=*)
+			temp="${i#*=}"
+			;;
 		--atem_status=*)
 			atem_status="${i#*=}"
 			;;
@@ -89,7 +95,9 @@ output=$(printf '%b' "$({
 		echo "#include \"./firmware/version.h\" // FIRMWARE_VERSION_STRING"
 
 		# Defines macros to replace configurations
-		echo "#define http_write_wifi(http) \"${wifi_status-"-50 dBm"}\""
+		echo "#define http_write_wifi(http) \"${wifi_status-"-50"} dBm\""
+		echo "#define http_write_voltage(http) \"${batt-"12"} v\""
+		echo "#define http_write_temp(http) \"${temp-"69"}°C\""
 		echo "#define atem_state \"${atem_status-"Connected"}\""
 		echo "#define http_write_uptime(http) \"${uptime-"0h 13m 37s"}\""
 		echo "#define http_write_local_addr(http) \"${current_addr-"192.168.1.69"}\""
