@@ -137,7 +137,7 @@ void waccat_init(void) {
 	// Disables station scanning when soft ap is used to fix soft ap stability issue
 	wifi_set_event_handler_cb(network_callback);
 
-	// Reads configuration from non-volotile flash memory
+	// Reads configuration from non-volatile flash memory
 	struct flash_config conf;
 	if (!flash_config_read(&conf)) {
 		return;

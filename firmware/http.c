@@ -114,10 +114,10 @@ static inline bool http_cmp_incomplete(struct http_ctx* http) {
 	return (http->cmp == NULL);
 }
 
-// Consumes characters up to next occurance of a substring in HTTP stream
+// Consumes characters up to next occurrence of a substring in HTTP stream
 static bool http_find(struct http_ctx* http, const char* cmp) {
 	while (http_char_available(http)) {
-		// Resets back to beginning of compare string if comparison failes
+		// Resets back to beginning of compare string if comparison fails
 		if (http_char_consume(http) != cmp[http->offset]) {
 			http->offset = 0;
 		}
@@ -396,7 +396,7 @@ static inline void http_parse(struct http_ctx* http, struct pbuf* p) {
 	while (true) switch (http->state) {
 
 // =====================================
-// HTTP GET request hander chain
+// HTTP GET request handler chain
 // =====================================
 
 		// Parses HTTP GET method
@@ -505,7 +505,7 @@ static inline void http_parse(struct http_ctx* http, struct pbuf* p) {
 				http->index++;
 			}
 		}
-		// Rejects client if content length value has non numeric characers before line termination
+		// Rejects client if content length value has non numeric characters before line termination
 		/* FALLTHROUGH */
 		case HTTP_STATE_POST_ROOT_HEADER_CONTENT_LENGTH_CRLF: {
 			if (!http_cmp(http, "\r\n")) {
@@ -769,7 +769,7 @@ static inline void http_parse(struct http_ctx* http, struct pbuf* p) {
 
 
 
-// Closes HTTP connection and prevents dispaching invalid events after close
+// Closes HTTP connection and prevents dispatching invalid events after close
 static inline err_t http_close(struct http_ctx* http) {
 	err_t err = tcp_close(http->pcb);
 	if (err != ERR_OK) {
@@ -895,7 +895,7 @@ struct tcp_pcb* http_init(void) {
 		return NULL;
 	}
 
-	// Allows TCP listener to listen for incomming traffic
+	// Allows TCP listener to listen for incoming traffic
 	struct tcp_pcb* pcb_listen = tcp_listen(pcb);
 	if (pcb_listen == NULL) {
 		DEBUG_ERR_PRINTF("Failed to set up HTTP listening pcb\n");
