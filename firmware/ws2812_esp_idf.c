@@ -11,7 +11,7 @@
 #include <driver/rmt_common.h> // rmt_enable
 #include <driver/rmt_encoder.h> // rmt_bytes_encoder_config_t, rmt_new_bytes_encoder
 #include <rom/ets_sys.h> // ets_delay_us
-#include <freertos/portmacro.h> // portMAX_DELAY
+#include <freertos/FreeRTOS.h> // portMAX_DELAY
 
 #include "./debug.h" // DEBUG_ERR_PRINTF
 #include "./ws2812.h"
