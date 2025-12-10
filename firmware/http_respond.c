@@ -5,16 +5,14 @@
 #include <stddef.h> // size_t
 #include <stdbool.h> // bool, false, true
 
-#include <lwip/tcp.h> // struct tcp_pcb, tcp_write, TCP_WRITE_FLAG_COPY, tcp_sndbuf, tcp_output, tcp_sndqueuelen, tcp_err, tcp_recv, tcp_poll, tcp_sent, tcp_abort, tcp_shutdown, tcp_recv_fn
+#include <lwip/tcp.h> // struct tcp_pcb, tcp_write, TCP_WRITE_FLAG_COPY, tcp_sndbuf, tcp_output, tcp_sndqueuelen, tcp_err, tcp_recv, tcp_poll, tcp_sent, tcp_abort, tcp_shutdown
 #include <lwip/timeouts.h> // sys_timeout
 #include <lwip/arch.h> // LWIP_UNUSED_ARG
 #include <lwip/def.h> // LWIP_MIN
-#include <lwip/err.h> // ERR_OK, ERR_ABRT
+#include <lwip/err.h> // err_t, ERR_OK, ERR_ABRT
 #include <lwip/ip_addr.h> // ip_addr_t, IPADDR4_INIT, ipaddr_ntoa
-#include <lwip/err.h> // err_t
 #include <lwip/pbuf.h> // struct pbuf
-#include <lwip/ip4_addr.h> // ip4_addr_t
-#include <lwip/netif.h> // struct netif, netif_ip_addr4, netif_default
+#include <lwip/netif.h> // netif_ip_addr4, netif_default
 
 #include "./debug.h" // DEBUG_ERR_PRINTF, DEBUG_HTTP_PRINTF
 #include "./http.h" // struct http_ctx
@@ -24,6 +22,7 @@
 #include "./flash.h" // CONF_FLAG_DHCP, flash_cache_write
 #include "./wlan.h" // wlan_station_rssi, WLAN_STATION_NOT_CONNECTED
 #include "./sensors.h" // sensors_voltage_read, sensors_temperature_read
+#include "./user_config.h" // PIN_BATTREAD, NO_TEMPERATURE_READ
 
 
 
@@ -122,6 +121,7 @@ static inline bool http_write_wifi(struct http_ctx* http) {
 	return tcp_write(http->pcb, buf, len, TCP_WRITE_FLAG_COPY) == ERR_OK;
 }
 
+#ifdef PIN_BATTREAD
 // Writes boards input source voltage
 static inline bool http_write_voltage(struct http_ctx* http) {
 	float voltage;
@@ -132,8 +132,10 @@ static inline bool http_write_voltage(struct http_ctx* http) {
 	int len = sprintf(buf, "%.02fv", voltage);
 	return tcp_write(http->pcb, buf, len, TCP_WRITE_FLAG_COPY) == ERR_OK;
 }
+#endif // PIN_BATTREAD
 
 // Writes MCUs internal temperature
+#if !NO_TEMPERATURE_READ
 static inline bool http_write_temp(struct http_ctx* http) {
 	float temp;
 	if (!sensors_temperature_read(&temp)) {
@@ -143,6 +145,7 @@ static inline bool http_write_temp(struct http_ctx* http) {
 	int len = sprintf(buf, "%d°C", (int)temp);
 	return tcp_write(http->pcb, buf, len, TCP_WRITE_FLAG_COPY) == ERR_OK;
 }
+#endif // !NO_TEMPERATURE_READ
 
 // Writes local ip address of default netif
 static inline bool http_write_local_addr(struct http_ctx* http) {
@@ -311,10 +314,14 @@ bool http_respond(struct http_ctx* http) {
 			"<tr><td>Firmware Version:<td>" FIRMWARE_VERSION_STRING
 			"<tr><td>WiFi signal strength:<td>"
 		HTTP_RESPONSE_CALL(http_write_wifi(http))
+#ifdef PIN_BATTREAD
 			"<tr><td>Battery level:<td>"
 		HTTP_RESPONSE_CALL(http_write_voltage(http))
+#endif // PIN_BATTREAD
+#if !NO_TEMPERATURE_READ
 			"<tr><td>Temperature:<td>"
 		HTTP_RESPONSE_CALL(http_write_temp(http))
+#endif // !NO_TEMPERATURE_READ
 			"<tr><td>ATEM connection status:<td>"
 		HTTP_RESPONSE_FLUSH
 			atem_state
