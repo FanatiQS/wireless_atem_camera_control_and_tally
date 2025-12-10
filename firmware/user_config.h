@@ -2,7 +2,8 @@
 #ifndef USER_CONFIG_H
 #define USER_CONFIG_H
 
-#ifdef NO_CONFIG_INCLUDE
+// Includes users actual configuration file unless that is handled manually by defining NO_CONFIG_INCLUDE
+#ifndef NO_CONFIG_INCLUDE
 #include <waccat_config.h>
 #endif // NO_CONFIG_INCLUDE
 
