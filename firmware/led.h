@@ -23,13 +23,6 @@
 #define PIN_PVW_MASK (0)
 #endif // PIN_PVW
 
-// Bit mask for CONN (connection) pin
-#ifdef PIN_CONN
-#define PIN_CONN_MASK (1 << PIN_CONN)
-#else // PIN_CONN
-#define PIN_CONN_MASK (0)
-#endif // PIN_CONN
-
 // Bit mask for both tally pins
 #define PIN_TALLY_MASK (PIN_PGM_MASK | PIN_PVW_MASK)
 
@@ -59,7 +52,7 @@ static inline void led_init(const uint32_t pin) {
 }
 
 // Writes bit field to GPIO and/or RTC register
-// Pin masks are known at compiletime so conditionals can be eliminated by compiler
+// Pin masks are known at compile time so set/clr conditionals can be eliminated by compiler
 static inline void gpio_write(const bool set, const bool clr, const uint32_t mask, const uint32_t values) {
 	if (set && (mask & GPIO_OUT_W1TC_DATA_MASK)) {
 		GPIO_REG_WRITE(GPIO_OUT_W1TS_ADDRESS, values & GPIO_OUT_W1TC_DATA_MASK);
@@ -83,7 +76,7 @@ static inline void led_init(const uint32_t pin) {
 }
 
 // Writes bit field to GPIO register
-// Pin masks are known at compiletime so conditionals can be eliminated by compiler
+// Pin masks are known at compile time so set/clr conditionals can be eliminated by compiler
 static inline void gpio_write(const bool set, const bool clr, const uint32_t mask, const uint32_t values) {
 	if (set) {
 		GPIO.out_w1ts.val = values;
@@ -100,16 +93,26 @@ static inline void gpio_write(const bool set, const bool clr, const uint32_t mas
 #error Platform does not support LED control
 #endif // PIN_PGM || PIN_PVW || PIN_CONN
 
-// Strips out LED setters for platforms without LED support
-#define LED_TALLY(pgm, pvw)
-#define LED_CONN(state)
-
 #endif
 
 
 
+// Strips LED_TALLY if neither pin is defined
+#if !defined(PIN_PGM) && !defined(PIN_PVW)
+#undef LED_TALLY
+#define LED_TALLY(pgm, pvw)
+#endif // !PIN_PGM || !PIN_PVW
+
+// Strips LED_CONN if pin is not defined
+#ifndef PIN_CONN
+#undef LED_CONN
+#define LED_CONN(state)
+#endif // !PIN_CONN
+
+
+
 // Writes LED state to pin
-#define LED_STATE(mask, state) gpio_write((state), (!state), mask, (state) * mask)
+#define LED_STATE(mask, state) gpio_write(state, !(state), mask, (state) * mask)
 
 // Uses gpio_write if LED_TALLY is not defined to write tally states to registers as bit fields
 #ifndef LED_TALLY
@@ -118,7 +121,7 @@ static inline void gpio_write(const bool set, const bool clr, const uint32_t mas
 
 // Uses gpio_write if LED_CONN is not defined to write connection state to register as bit field
 #ifndef LED_CONN
-#define LED_CONN(state) LED_STATE(PIN_CONN_MASK, state ^ PIN_CONN_INVERTED)
+#define LED_CONN(state) LED_STATE(1 << PIN_CONN, state ^ PIN_CONN_INVERTED)
 #endif // LED_CONN
 
 #endif // LED_H
