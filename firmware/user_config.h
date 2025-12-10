@@ -7,6 +7,10 @@
 #include <waccat_config.h>
 #endif // NO_CONFIG_INCLUDE
 
+// Checks for duplicate pin definitions at compile time
+#define CHECK_DUPLICATE_PIN_MAKE_NAME(pin) PIN_WAS_DEFINED_MORE_THAN_ONCE_USING_VALUE_ ## pin
+#define CHECK_DUPLICATE_PIN(pin) enum { CHECK_DUPLICATE_PIN_MAKE_NAME(pin) }
+
 /**
  * @def DEBUG
  * @brief Enables or disables base level logging and is required for other log levels.
@@ -129,5 +133,94 @@
 #error Invalid configuration value for DEBUG_DNS
 #endif // DEBUG_DNS != 0 && DEBUG_DNS != 1
 #endif // DEBUG_DNS
+
+
+
+/**
+ * @def PIN_PGM
+ * @brief Sets pin number to use when outputting program tally to LED.
+ * 
+ * Program tally LED is disabled when this macro is not defined.
+ * 
+ * Valid numbers are any positive integer supported by the platform.
+ */
+#if defined(PIN_PGM) && PIN_PGM >= 0
+CHECK_DUPLICATE_PIN(PIN_PGM);
+#endif // PIN_PGM && PIN_PGM >= 0
+
+/**
+ * @def PIN_PVW
+ * @brief Sets pin number to use when outputting preview tally to LED.
+ *
+ * Preview tally LED is disabled when this macro is not defined.
+ *
+ * Valid numbers are any positive integer supported by the platform.
+ */
+#if defined(PIN_PVW) && PIN_PVW >= 0
+CHECK_DUPLICATE_PIN(PIN_PVW);
+#endif // PIN_PVW && PIN_PVW >= 0
+
+/**
+ * @def PIN_CONN
+ * @brief Sets pin number to use when outputting ATEM connection status to LED.
+ *
+ * ATEM connection status LED is disabled when this macro is not defined.
+ *
+ * Valid numbers are any positive integers supported by the platform.
+ */
+#if defined(PIN_CONN) && PIN_CONN >= 0
+CHECK_DUPLICATE_PIN(PIN_CONN);
+#endif // PIN_CONN && PIN_CONN >= 0
+
+/**
+ * @def PIN_TALLY_RGB
+ * @brief Sets pin number to use when outputting tally to RGB LED matrix.
+ *
+ * Tally RGB LED is disabled when this macro is not defined.
+ *
+ * Valid numbers are any positive integers.
+ */
+#if defined(PIN_TALLY_RGB) && PIN_TALLY_RGB >= 0
+CHECK_DUPLICATE_PIN(PIN_TALLY_RGB);
+#endif // PIN_TALLY_RGB && PIN_TALLY_RGB >= 0
+
+/**
+ * @def PIN_SCL
+ * @brief Sets pin number to use for I2C SCL.
+ *
+ * This macro requires PIN_SDA to also be defined.
+ * I2C is disabled when this macro and PIN_SDA are not defined.
+ *
+ * Valid numbers are any positive integers supported by the platform.
+ */
+#if defined(PIN_SCL) && PIN_SCL >= 0
+CHECK_DUPLICATE_PIN(PIN_SCL);
+#endif // PIN_SCL && PIN_SCL >= 0
+
+
+/**
+ * @def PIN_SDA
+ * @brief Sets pin number to use for I2C SDA.
+ *
+ * This macro requires PIN_SCL to also be defined.
+ * I2C is disabled when this macro and PIN_SCL are not defined.
+ *
+ * Valid numbers are any positive integers supported by the platform.
+ */
+#if defined(PIN_SDA) && PIN_SDA >= 0
+CHECK_DUPLICATE_PIN(PIN_SDA);
+#endif // PIN_SDA && PIN_SDA >= 0
+
+/**
+ * @def PIN_BATTREAD
+ * @brief Sets pin number to use when reading battery voltage.
+ *
+ * Battery voltage reading is disabled when this macro is not defined.
+ *
+ * Valid numbers are any positive integers supported by the platform.
+ */
+#if defined(PIN_BATTREAD) && PIN_BATTREAD >= 0
+CHECK_DUPLICATE_PIN(PIN_BATTREAD);
+#endif // PIN_BATTREAD && PIN_BATTREAD >= 0
 
 #endif // USER_CONFIG_H
