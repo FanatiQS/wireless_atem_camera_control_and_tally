@@ -9,6 +9,8 @@
 
 #include <stdbool.h> // bool
 #include <stdint.h> // uint8_t, uint16_t
+#include <assert.h> // assert
+#include <stddef.h> // NULL
 
 /** Bluetooth service UUID for communicating with blackmagic cameras */
 #define ATEM_BLE_UUID_SERVICE "291D567A-6D75-11E6-8B77-86F30CA893D3"
@@ -274,6 +276,7 @@ enum atem_status atem_parse(struct atem* atem);
  * @returns Indicates if there are commands available to process.
  */
 static inline bool atem_cmd_available(struct atem* atem) {
+	assert(atem != NULL);
 	return (atem->cmd_index_next < atem->read_len);
 }
 
@@ -307,6 +310,7 @@ uint32_t atem_cmd_next(struct atem* atem);
  * @returns The major version of the ATEM protocol.
  */
 static inline uint16_t atem_protocol_major(struct atem* atem) {
+	assert(atem != NULL);
 	return (atem->cmd_payload_buf[0] << 8 | atem->cmd_payload_buf[1]) & 0xffff;
 }
 
@@ -321,6 +325,7 @@ static inline uint16_t atem_protocol_major(struct atem* atem) {
  * @returns The minor version of the ATEM protocol.
  */
 static inline uint16_t atem_protocol_minor(struct atem* atem) {
+	assert(atem != NULL);
 	return (atem->cmd_payload_buf[2] << 8 | atem->cmd_payload_buf[3]) & 0xffff;
 }
 
@@ -354,6 +359,7 @@ bool atem_tally_updated(struct atem* atem);
  * commands destination identifier.
  */
 static inline bool atem_cc_updated(struct atem* atem) {
+	assert(atem != NULL);
 	return (atem->cmd_payload_buf[0] == atem->dest);
 }
 
