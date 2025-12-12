@@ -45,6 +45,8 @@ int main(void) {
 
 		// Expects parse to fail
 		assert(atem_recv(&posix_client) == ATEM_POSIX_STATUS_ERROR_PARSE);
+
+		atem_socket_close(server_sock);
 	}
 
 	// Ensures timing out returns correct status enum
