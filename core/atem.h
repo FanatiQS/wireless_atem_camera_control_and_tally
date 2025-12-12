@@ -19,18 +19,18 @@
 #define ATEM_BLE_UUID_CHARACTERISTIC "5DD3465F-1AEE-4299-8493-D2ECA2F8E1BB"
 
 /**
- * Defines if data in @ref atem.write_buf is not thread safe.
- * Automatically defaults to being thread safe if supported.
- * Can be set manually to enable or disable thread safety.
- * When manually enabling thread safety, ATEM_THREAD_LOCAL can be used to specify thread safety implementation.
+ * Defines if data in @ref atem.write_buf is thread safe or not.
+ * No thread safety is on by default but can be enabled by defining this macro to a truthy value when compiling atem.c.
+ * In other translation units, it will only indicate safety of the buffers but can not affect it.
+ * When enabled, ATEM_THREAD_LOCAL can be used to specify thread safety implementation.
  */
-#ifndef ATEM_NO_THREAD_SAFE
+#ifndef ATEM_THREAD_SAFE
 #if defined(__STDC_NO_THREADS__) || __STDC_VERSION__ < 201112
-#define ATEM_NO_THREAD_SAFE (1)
+#define ATEM_THREAD_SAFE (0)
 #else
-#define ATEM_NO_THREAD_SAFE (0)
+#define ATEM_THREAD_SAFE (1)
 #endif // __STDC_NO_THREADS__ || __STDC_VERSION__
-#endif // ATEM_NO_THREAD_SAFE
+#endif // ATEM_THREAD_SAFE
 
 /**
  * Default port for ATEM
