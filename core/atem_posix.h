@@ -29,8 +29,7 @@ struct atem_posix_ctx {
  */
 enum atem_posix_status {
 	/**
-	 * A network error occurred in either atem_send() or atem_recv(). `errno` will be set
-	 * unless atem_recv() got a packet that was shorter than minimum size for an ATEM packet.
+	 * A network error occurred in either atem_send() or atem_recv(). `errno` will be set.
 	 */
 	ATEM_POSIX_STATUS_ERROR_NETWORK = -2,
 	/** @copydoc ATEM_STATUS_ERROR */
@@ -79,11 +78,12 @@ bool atem_init(struct atem_posix_ctx* atem, in_addr_t addr);
 bool atem_send(struct atem_posix_ctx* atem);
 
 /**
- * @brief Reads next UDP packet into ATEM context.
+ * @brief Reads next UDP packet into ATEM context and parses its content.
  * @param atem ATEM POSIX context to read data into.
- * @return Indicates if packet was read successful or not, `errno` is set unless received packet was too short.
+ * @return Status code describing the result from reading and parsing ATEM packet.
+ * @throw On status code ATEM_POSIX_ERROR_NETWORK, `errno` is set.
  */
-bool atem_recv(struct atem_posix_ctx* atem);
+enum atem_posix_status atem_recv(struct atem_posix_ctx* atem);
 
 /**
  * @brief Receives and parses ATEM packets.
