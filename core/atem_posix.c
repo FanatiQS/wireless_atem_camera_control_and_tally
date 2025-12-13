@@ -107,7 +107,7 @@ enum atem_posix_status atem_poll(struct atem_posix_ctx* atem_ctx) {
 
 	// Parses and acknowledges received ATEM packet
 	enum atem_posix_status status = atem_recv(atem_ctx);
-	if (status > 0 && !(status & 1)) {
+	if (status >= 0 && !(status & 1)) {
 		atem_send(atem_ctx);
 	}
 	return status;
