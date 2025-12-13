@@ -47,6 +47,7 @@ bool atem_init(struct atem_posix_ctx* atem_ctx, in_addr_t addr) {
 	}
 
 	// Initializes context and starts opening handshake
+	atem_ctx->atem.read_len = 0;
 	atem_ctx->atem.tally_pgm = 0;
 	atem_ctx->atem.tally_pvw = 0;
 	atem_connection_open(&atem_ctx->atem);
