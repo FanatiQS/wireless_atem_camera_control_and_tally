@@ -7,9 +7,9 @@
 #include <stdbool.h> // bool, true, false
 #include <assert.h> // assert
 
+#include <limits.h> // OPEN_MAX
 #include <unistd.h> // close, sleep
 
-#include "./simple_socket.h" // SIMPLE_SOCKET_MAX_FD
 #include "../../core/atem.h" // ATEM_TIMEOUT
 #include "./runner.h"
 
@@ -34,7 +34,7 @@ static void runner_fail(int sig) {
 	runner_fails++;
 
 	// Cleans up ALL open file descriptors other than stdin/stdout/stderr
-	for (int fd = 3; fd < SIMPLE_SOCKET_MAX_FD; fd++) {
+	for (int fd = 3; fd < OPEN_MAX; fd++) {
 		close(fd);
 	}
 	sleep(ATEM_TIMEOUT);

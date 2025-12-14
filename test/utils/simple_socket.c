@@ -4,6 +4,7 @@
 #include <stdbool.h> // bool, true, false
 #include <errno.h> // errno, EINPROGRESS
 #include <stdint.h> // uint16_t
+#include <assert.h> // assert
 
 #include <sys/socket.h> // socket, AF_INET, connect, struct sockaddr, setsockopt, SOL_SOCKET, SO_RCVTIMEO, SO_SNDTIMEO, ssize_t, send, recv, bind
 #include <poll.h> // struct pollfd, poll, POLLIN
@@ -11,8 +12,9 @@
 #include <netinet/in.h> // struct sockaddr_in, INADDR_ANY, in_addr_t
 #include <arpa/inet.h> // htons, inet_addr
 #include <unistd.h> // close
+#include <limits.h> // OPEN_MAX
 
-#include "./simple_socket.h" // SIMPLE_SOCKET_MAX_FD
+#include "./simple_socket.h"
 
 // Number of seconds a send or recv call waits before timing out
 #ifndef SOCKET_TIMEOUT
@@ -27,12 +29,8 @@ int simple_socket_create(int type) {
 		perror("Failed to create socket");
 		abort();
 	}
-
-	// Ensures socket is within SIMPLE_SOCKET_MAX_FD so it will be closed on caught abort for runner mode all
-	if (sock >= SIMPLE_SOCKET_MAX_FD) {
-		fprintf(stderr, "Socket was assigned too high: %d\n", sock);
-		abort();
-	}
+	assert(sock <= OPEN_MAX);
+	assert(sock >= 0);
 
 	// Sets socket timeouts for reading and writing
 	struct timeval tv = { .tv_sec = SOCKET_TIMEOUT };
