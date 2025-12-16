@@ -186,7 +186,7 @@ void atem_socket_recv_print(int sock) {
 
 // Ensures no more data is written when expecting session to be closed
 void atem_socket_norecv(int sock) {
-	if (simple_socket_poll(sock, ATEM_TIMEOUT_MS - 1) == 0) return;
+	if (simple_socket_poll(sock, ATEM_TIMEOUT_MS - 10) == 0) return;
 
 	uint8_t packet[ATEM_PACKET_LEN_MAX];
 	atem_socket_recv(sock, packet);
