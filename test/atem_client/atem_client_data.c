@@ -17,7 +17,7 @@ static void retransmit_request_recv_verify(int sock, uint16_t session_id, uint16
 	atem_header_remoteid_get_verify(packet, 0x0000);
 }
 
-int main(void) {
+void atem_client_data(void) {
 	// Ensures acknowledge request is acknowledged correctly
 	// @attention test is duplicated in test/atem_server/atem_server_data.c
 	RUN_TEST() {
@@ -219,6 +219,4 @@ int main(void) {
 		atem_handshake_close(sock, session_id);
 		atem_socket_close(sock);
 	}
-
-	return runner_exit();
 }

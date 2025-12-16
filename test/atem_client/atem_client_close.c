@@ -3,9 +3,7 @@
 
 #include "../utils/utils.h"
 
-
-
-int main(void) {
+void atem_client_close(void) {
 	// Ensures successful closing request closes the session
 	RUN_TEST() {
 		int sock = atem_socket_create();
@@ -79,6 +77,4 @@ int main(void) {
 		atem_handshake_sessionid_send(sock, ATEM_OPCODE_CLOSED, false, session_id);
 		atem_socket_norecv(sock);
 	}
-
-	return runner_exit();
 }

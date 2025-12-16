@@ -16,4 +16,6 @@
 #include "./simple_socket.h"
 #include "../http/http_sock.h"
 
+#include "../atem_client/atem_client.h"
+
 #endif // UTILS_H

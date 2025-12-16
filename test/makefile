@@ -29,14 +29,8 @@ EXECS += $(EXECS_DEVICE) http_config
 SCRIPTS += $(SCRIPTS_DEVICE)
 
 # All ATEM client tests for both device and official clients
-EXECS_ATEM_CLIENT = atem_client_open atem_client_close atem_client_data
-EXECS_ATEM_CLIENT_EXTENDED += atem_client_open_extended atem_client_close_extended atem_client_data_extended
-.PHONY: atem_client atem_client_extended
-atem_client: $(EXECS_ATEM_CLIENT)
-atem_client_extended: $(EXECS_ATEM_CLIENT_EXTENDED)
-EXECS_ATEM_CLIENT += $(EXECS_ATEM_CLIENT_EXTENDED)
-$(EXECS_ATEM_CLIENT:%=$(BUILD_DIR)/%): $(BUILD_DIR)/%: atem_client/%.c
-EXECS += $(EXECS_ATEM_CLIENT)
+EXECS_MAIN += atem_client atem_client_open atem_client_close atem_client_data
+EXECS_MAIN += atem_client_extended atem_client_open_extended atem_client_close_extended atem_client_data_extended
 
 # All ATEM server tests for both proxy server and official switchers
 EXECS_ATEM_SERVER = atem_server_open atem_server_close atem_server_data atem_server_cc
@@ -63,12 +57,17 @@ $(BUILD_DIR)/utilsmain: utils/main.c
 $(EXECS:%=$(BUILD_DIR)/%): | utilsmain
 EXECS += utilsmain
 
+# Automatically maps defined tests entry functions
+$(EXECS_MAIN:%=$(BUILD_DIR)/%): CFLAGS += -DMAIN=$(notdir $@)
+EXECS += $(EXECS_MAIN)
+
 # Builds all tests
 .PHONY: build
 build: $(EXECS:%=$(BUILD_DIR)/%)
 
 # Shared source files
 $(EXECS:%=$(BUILD_DIR)/%) $(PLAYGROUNDS): \
+	main.c \
 	utils/simple_socket.c \
 	utils/atem_sock.c \
 	utils/atem_header.c \
@@ -80,7 +79,14 @@ $(EXECS:%=$(BUILD_DIR)/%) $(PLAYGROUNDS): \
 	utils/timediff.c \
 	utils/runner.c \
 	../core/atem.c \
-	../core/atem_posix.c
+	../core/atem_posix.c \
+	atem_client/atem_client_open.c \
+	atem_client/atem_client_open_extended.c \
+	atem_client/atem_client_close.c \
+	atem_client/atem_client_close_extended.c \
+	atem_client/atem_client_data.c \
+	atem_client/atem_client_data_extended.c \
+	atem_client/atem_client.c
 
 # Includes dependency files for test executables
 -include $(EXECS:%=$(BUILD_DIR)/%.d)

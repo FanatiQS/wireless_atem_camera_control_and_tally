@@ -1,6 +1,6 @@
 #include "../utils/utils.h"
 
-int main(void) {
+void atem_client_open(void) {
 	// Ensures an unanswered opening handshake request is retransmitted at least ATEM_RESENDS times
 	RUN_TEST() {
 		// Gets initial opening handshake request from client
@@ -213,6 +213,4 @@ int main(void) {
 
 		atem_socket_close(sock);
 	}
-
-	return runner_exit();
 }

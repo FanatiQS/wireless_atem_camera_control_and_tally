@@ -8,7 +8,7 @@
 
 #include "../utils/utils.h"
 
-int main(void) {
+void atem_client_open_extended(void) {
 	// Ensures client resends opening handshake exactly ATEM_RESENDS times on a ATEM_RESEND_TIME ms interval
 	RUN_TEST() {
 		// Gets initial opening handshake request from client
@@ -122,6 +122,4 @@ int main(void) {
 
 		atem_socket_close(sock);
 	}
-
-	return runner_exit();
 }

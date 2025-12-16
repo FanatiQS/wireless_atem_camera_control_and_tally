@@ -20,7 +20,7 @@ static void atem_client_closed(int sock) {
 	atem_socket_close(sock);
 }
 
-int main(void) {
+void atem_client_close_extended(void) {
 	// Ensures client closes session correctly
 	RUN_TEST() {
 		int sock = atem_socket_create();
@@ -140,6 +140,4 @@ int main(void) {
 			atem_socket_close(sock);
 		}
 	}
-
-	return runner_exit();
 }
