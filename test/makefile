@@ -14,7 +14,7 @@ $(BUILD_DIR)/configure_script: configure_script/configure_script.c http/http_soc
 EXECS += configure_script
 
 # All core API tests
-EXECS_CORE = core
+EXECS_CORE = core core_posix
 $(EXECS_CORE:%=$(BUILD_DIR)/%): $(BUILD_DIR)/%: core/%.c
 EXECS += $(EXECS_CORE)
 
