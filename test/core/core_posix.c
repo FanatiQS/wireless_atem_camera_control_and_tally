@@ -1,11 +1,14 @@
 #include <assert.h> // assert
-#include <errno.h> // errno, EFAULT
+#include <errno.h> // errno, EFAULT, EBADF
 #include <stdbool.h> // true, false
 #include <stdint.h> // uint8_t
+#include <stddef.h> // NULL
 
 #include <arpa/inet.h> // htonl
 #include <netinet/in.h> // INADDR_LOOPBACK, in_addr_t
 #include <sys/socket.h> // socklen_t, struct sockaddr, getsockname, connect
+#include <pthread.h> // pthread_create
+#include <stdlib.h> // setenv
 
 #include "../utils/utils.h"
 
