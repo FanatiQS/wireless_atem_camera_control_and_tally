@@ -9,6 +9,17 @@
 
 #include "../utils/utils.h"
 
+// Runs ATEM client, reinitializes when test failure in main thread nukes all file descriptors
+static void* atem_posix_thread(void* arg) {
+	(void)arg;
+	struct atem_posix_ctx ctx;
+	while (true) {
+		assert(atem_init(&ctx, htonl(INADDR_LOOPBACK)));
+		assert(atem_send(&ctx));
+		while (atem_next(&ctx) != ATEM_POSIX_STATUS_ERROR_SYSTEM || errno != EBADF);
+	}
+}
+
 int main(void) {
 	// Ensures valid ip address argument is accepted
 	RUN_TEST() {
@@ -55,4 +66,12 @@ int main(void) {
 		assert(atem_init(&posix_client, htonl(INADDR_LOOPBACK)));
 		assert(atem_poll(&posix_client) == ATEM_POSIX_STATUS_DROPPED);
 	}
+
+	// Runs ATEM client tests against POSIX client running in background thread
+	pthread_t pid;
+	assert(pthread_create(&pid, NULL, atem_posix_thread, NULL) == 0);
+	setenv("ATEM_CLIENT_ADDR", "127.0.0.1", true);
+	atem_client();
+
+	return runner_exit();
 }
