@@ -19,7 +19,7 @@ static void* atem_posix_thread(void* arg) {
 	while (true) {
 		assert(atem_init(&ctx, htonl(INADDR_LOOPBACK)));
 		assert(atem_send(&ctx));
-		while (atem_next(&ctx) != ATEM_POSIX_STATUS_ERROR_SYSTEM || errno != EBADF);
+		while (atem_next(&ctx) != ATEM_POSIX_STATUS_ERROR_NETWORK || errno != EBADF);
 	}
 }
 
