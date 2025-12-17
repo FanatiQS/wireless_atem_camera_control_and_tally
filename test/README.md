@@ -51,15 +51,16 @@ The IP address of the ATEM client to test.
 
 #### LOGS
 Comma separated list (without spaces) of logging types:
-| Command     | Description                       |
-| ----------- | --------------------------------- |
-| `atem_send` | Prints all ATEM packets sent      |
-| `atem_recv` | Prints all ATEM packets received  |
-| `http_send` | Prints all HTTP messages sent     |
-| `http_recv` | Prints all HTTP messages received |
-| `dns_send`  | Prints all DNS packets sent       |
-| `dns_recv`  | Prints all DNS packets received   |
-| `timer`     | Prints all timer deltas           |
+| Command     | Description                        |
+| ----------- | ---------------------------------- |
+| `atem_send` | Prints all ATEM packets sent       |
+| `atem_recv` | Prints all ATEM packets received   |
+| `http_send` | Prints all HTTP messages sent      |
+| `http_recv` | Prints all HTTP messages received  |
+| `dns_send`  | Prints all DNS packets sent        |
+| `dns_recv`  | Prints all DNS packets received    |
+| `timer`     | Prints all timer deltas            |
+| `progress`  | Prints progress bar for some tests |
 
 #### LOGS_BUFFER_CLAMP
 Limits the number of rows to print when logging buffers.

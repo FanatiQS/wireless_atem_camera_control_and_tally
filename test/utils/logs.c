@@ -103,6 +103,9 @@ void logs_print_string(FILE* pipe, const char* str, bool chunked) {
 void logs_print_progress(size_t index, size_t len) {
 	assert(index < len);
 
+	// Only logs progress bar when log flag is set
+	if (!logs_find("progress")) return;
+
 	// Prints progress bar
 	char bar[64];
 	const size_t progress = index * sizeof(bar) / len;
