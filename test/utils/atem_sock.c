@@ -104,6 +104,10 @@ struct sockaddr_in atem_socket_listen(int sock, uint8_t* packet) {
 		abort();
 	}
 	const in_addr_t cmp_addr = inet_addr(env_value);
+	if (cmp_addr == (in_addr_t)-1) {
+		fprintf(stderr, "Invalid IP address '%s' from %s\n", env_value, env_key);
+		abort();
+	}
 
 	struct timespec timeout_start = timediff_mark();
 	struct sockaddr_in peer_addr;
