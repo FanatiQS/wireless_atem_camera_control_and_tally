@@ -33,14 +33,8 @@ EXECS_MAIN += atem_client atem_client_open atem_client_close atem_client_data
 EXECS_MAIN += atem_client_extended atem_client_open_extended atem_client_close_extended atem_client_data_extended
 
 # All ATEM server tests for both proxy server and official switchers
-EXECS_ATEM_SERVER = atem_server_open atem_server_close atem_server_data atem_server_cc
-EXECS_ATEM_SERVER_EXTENDED += atem_server_open_extended atem_server_data_extended
-.PHONY: atem_server atem_server_extended
-atem_server: $(EXECS_ATEM_SERVER)
-atem_server_extended: $(EXECS_ATEM_SERVER_EXTENDED)
-EXECS_ATEM_SERVER += $(EXECS_ATEM_SERVER_EXTENDED)
-$(EXECS_ATEM_SERVER:%=$(BUILD_DIR)/%): $(BUILD_DIR)/%: atem_server/%.c
-EXECS += $(EXECS_ATEM_SERVER)
+EXECS_MAIN += atem_server atem_server_open atem_server_close atem_server_data atem_server_cc
+EXECS_MAIN += atem_server_extended atem_server_open_extended atem_server_close_extended atem_server_data_extended
 
 # Ensures everything is ready for release
 $(BUILD_DIR)/release: release/main.c
@@ -86,7 +80,15 @@ $(EXECS:%=$(BUILD_DIR)/%) $(PLAYGROUNDS): \
 	atem_client/atem_client_close_extended.c \
 	atem_client/atem_client_data.c \
 	atem_client/atem_client_data_extended.c \
-	atem_client/atem_client.c
+	atem_client/atem_client.c \
+	atem_server/atem_server_open.c \
+	atem_server/atem_server_open_extended.c \
+	atem_server/atem_server_close.c \
+	atem_server/atem_server_data.c \
+	atem_server/atem_server_data_extended.c \
+	atem_server/atem_server_commands.c \
+	atem_server/atem_server_cc.c \
+	atem_server/atem_server.c
 
 # Includes dependency files for test executables
 -include $(EXECS:%=$(BUILD_DIR)/%.d)

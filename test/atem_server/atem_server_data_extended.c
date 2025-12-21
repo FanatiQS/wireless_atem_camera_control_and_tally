@@ -5,7 +5,7 @@
 
 #include "../utils/utils.h"
 
-int main(void) {
+void atem_server_data_extended(void) {
 	// Ensures packet with length over soft max size is not acknowledged
 	RUN_TEST() {
 		// Connects to ATEM switcher
@@ -30,6 +30,4 @@ int main(void) {
 		atem_handshake_close(sock, session_id);
 		atem_socket_close(sock);
 	}
-
-	return runner_exit();
 }

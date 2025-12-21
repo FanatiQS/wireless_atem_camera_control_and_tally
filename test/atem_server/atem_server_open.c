@@ -17,7 +17,7 @@ static void test_connected_and_close(int sock, uint16_t session_id) {
 	atem_socket_close(sock);
 }
 
-int main(void) {
+void atem_server_open(void) {
 	// Ensures successful opening handshake works as expected
 	RUN_TEST() {
 		int sock = atem_socket_create();
@@ -316,6 +316,4 @@ int main(void) {
 		atem_socket_close(sock1);
 		atem_socket_close(sock2);
 	}
-
-	return runner_exit();
 }

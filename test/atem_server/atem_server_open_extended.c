@@ -1,6 +1,6 @@
 #include "../utils/utils.h"
 
-int main(void) {
+void atem_server_open_extended(void) {
 	// Ensures client resends opening handshake response exactly ATEM_RESENDS times on a specified interval
 	RUN_TEST() {
 		uint16_t session_id_client = atem_header_sessionid_rand(false);
@@ -20,6 +20,4 @@ int main(void) {
 		atem_socket_norecv(sock);
 		atem_socket_close(sock);
 	}
-
-	return runner_exit();
 }

@@ -33,7 +33,7 @@ static uint16_t test_connect_and_drop(int sock) {
 	return session_id;
 }
 
-int main(void) {
+void atem_server_close(void) {
 	// Ensures server closes session if not acknowledging opening handshake response
 	RUN_TEST() {
 		uint16_t session_id_client = atem_header_sessionid_rand(false);
@@ -306,6 +306,4 @@ int main(void) {
 		atem_handshake_close(sock, session_id);
 		atem_socket_norecv(sock);
 	}
-
-	return runner_exit();
 }

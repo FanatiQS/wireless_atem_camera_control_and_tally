@@ -32,7 +32,7 @@ static void camera_control_check(uint8_t category, uint8_t parameter, size_t* ch
 	);
 }
 
-int main(void) {
+void atem_server_cc(void) {
 	// Ensures all expected camera control parameters at connect are received and only those parameters
 	RUN_TEST() {
 		int sock = atem_socket_create();
@@ -81,6 +81,4 @@ int main(void) {
 			abort();
 		}
 	}
-
-	return runner_exit();
 }

@@ -17,5 +17,6 @@
 #include "../http/http_sock.h"
 
 #include "../atem_client/atem_client.h"
+#include "../atem_server/atem_server.h"
 
 #endif // UTILS_H

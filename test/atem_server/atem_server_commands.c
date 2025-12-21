@@ -74,7 +74,7 @@ static uint32_t cmds[] = {
 	ATEM_CMDNAME_CAMERACONTROL, // CCdP
 };
 
-int main(void) {
+void atem_server_commands(void) {
 	// Ensures no unknown commands are being transmitted by switcher at full state dump
 	RUN_TEST() {
 		// Connects to ATEM switcher
@@ -119,6 +119,4 @@ int main(void) {
 			abort();
 		}
 	}
-
-	return runner_exit();
 }
