@@ -10,7 +10,7 @@
 #include <esp_err.h> // esp_err_t, ESP_OK, ESP_ERROR_CHECK, esp_err_to_name
 
 #include "./debug.h" // DEBUG_ERR_PRINTF, DEBUG_PRINTF
-#include "./user_config.h" // PIN_BATTREAD, VOLTAGE_READ_R1, VOLTAGE_READ_R2, NO_TEMPERATURE_READ
+#include "./user_config.h" // PIN_BATTREAD, VOLTAGE_READ_R1, VOLTAGE_READ_R2, NO_TEMPERATURE_SENSOR
 #include "./sensors.h"
 
 
@@ -22,9 +22,9 @@ static adc_cali_handle_t sensors_voltage_cali_handle;
 #endif // PIN_BATTREAD
 
 // Internal temperature sensor handle
-#if !NO_TEMPERATURE_READ
+#if !NO_TEMPERATURE_SENSOR
 static temperature_sensor_handle_t sensors_temp_handle;
-#endif // !NO_TEMPERATURE_READ
+#endif // !NO_TEMPERATURE_SENSOR
 
 
 
@@ -89,11 +89,11 @@ void sensors_init(void) {
 #endif // PIN_BATTREAD
 
 	// Initializes internal temperature sensor
-#if !NO_TEMPERATURE_READ
+#if !NO_TEMPERATURE_SENSOR
 	temperature_sensor_config_t config_temp = TEMPERATURE_SENSOR_CONFIG_DEFAULT(-10, 80);
 	ESP_ERROR_CHECK(temperature_sensor_install(&config_temp, &sensors_temp_handle));
 	ESP_ERROR_CHECK(temperature_sensor_enable(sensors_temp_handle));
-#endif // !NO_TEMPERATURE_READ
+#endif // !NO_TEMPERATURE_SENSOR
 }
 
 // Reads input voltage before voltage divider
@@ -125,7 +125,7 @@ bool sensors_voltage_read(float* voltage) {
 #endif // PIN_BATTREAD
 
 // Reads chips internal temperature
-#if !NO_TEMPERATURE_READ
+#if !NO_TEMPERATURE_SENSOR
 bool sensors_temperature_read(float* temp) {
 	assert(temp != NULL);
 	esp_err_t err = temperature_sensor_get_celsius(sensors_temp_handle, temp);
@@ -135,4 +135,4 @@ bool sensors_temperature_read(float* temp) {
 	}
 	return true;
 }
-#endif // !NO_TEMPERATURE_READ
+#endif // !NO_TEMPERATURE_SENSOR

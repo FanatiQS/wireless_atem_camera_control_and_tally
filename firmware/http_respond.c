@@ -22,7 +22,7 @@
 #include "./flash.h" // CONF_FLAG_DHCP, flash_cache_write
 #include "./wlan.h" // wlan_station_rssi, WLAN_STATION_NOT_CONNECTED
 #include "./sensors.h" // sensors_voltage_read, sensors_temperature_read
-#include "./user_config.h" // PIN_BATTREAD, NO_TEMPERATURE_READ
+#include "./user_config.h" // PIN_BATTREAD, NO_TEMPERATURE_SENSOR
 
 
 
@@ -135,7 +135,7 @@ static inline bool http_write_voltage(struct http_ctx* http) {
 #endif // PIN_BATTREAD
 
 // Writes MCUs internal temperature
-#if !NO_TEMPERATURE_READ
+#if !NO_TEMPERATURE_SENSOR
 static inline bool http_write_temp(struct http_ctx* http) {
 	float temp;
 	if (!sensors_temperature_read(&temp)) {
@@ -145,7 +145,7 @@ static inline bool http_write_temp(struct http_ctx* http) {
 	int len = sprintf(buf, "%d°C", (int)temp);
 	return tcp_write(http->pcb, buf, len, TCP_WRITE_FLAG_COPY) == ERR_OK;
 }
-#endif // !NO_TEMPERATURE_READ
+#endif // !NO_TEMPERATURE_SENSOR
 
 // Writes local ip address of default netif
 static inline bool http_write_local_addr(struct http_ctx* http) {
@@ -318,10 +318,10 @@ bool http_respond(struct http_ctx* http) {
 			"<tr><td>Battery level:<td>"
 		HTTP_RESPONSE_CALL(http_write_voltage(http))
 #endif // PIN_BATTREAD
-#if !NO_TEMPERATURE_READ
+#if !NO_TEMPERATURE_SENSOR
 			"<tr><td>Temperature:<td>"
 		HTTP_RESPONSE_CALL(http_write_temp(http))
-#endif // !NO_TEMPERATURE_READ
+#endif // !NO_TEMPERATURE_SENSOR
 			"<tr><td>ATEM connection status:<td>"
 		HTTP_RESPONSE_FLUSH
 			atem_state
