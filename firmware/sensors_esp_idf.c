@@ -30,9 +30,20 @@ static temperature_sensor_handle_t sensors_temp_handle;
 
 // Initializes voltage and temperature sensors
 void sensors_init(void) {
-#ifdef PIN_BATTREAD
 	esp_err_t err;
 
+	// Initializes internal temperature sensor
+#if !NO_TEMPERATURE_SENSOR
+	temperature_sensor_config_t config_temp = TEMPERATURE_SENSOR_CONFIG_DEFAULT(-10, 80);
+	if ((err = temperature_sensor_install(&config_temp, &sensors_temp_handle)) != ESP_OK) {
+		DEBUG_PRINTF("Failed to install temperature sensor\n");
+	}
+	else if ((err = temperature_sensor_enable(sensors_temp_handle)) != ESP_OK) {
+		DEBUG_PRINTF("Failed to enable temperature sensor\n");
+	}
+#endif // !NO_TEMPERATURE_SENSOR
+
+#ifdef PIN_BATTREAD
 	// Creates ADC for voltage reading
 	adc_oneshot_unit_init_cfg_t config_voltage_init = {
 		.unit_id = ADC_UNIT_1
@@ -40,14 +51,18 @@ void sensors_init(void) {
 	err = adc_oneshot_new_unit(&config_voltage_init, &sensors_voltage_handle);
 	if (err != ESP_OK) {
 		DEBUG_ERR_PRINTF("Failed to create ADC handle: %s\n", esp_err_to_name(err));
+		return;
 	}
-	else {
-		// Configures ADC voltage reader
-		adc_oneshot_chan_cfg_t config_voltage_chan = {
-			.atten = ADC_ATTEN_DB_12,
-			.bitwidth = ADC_BITWIDTH_DEFAULT
-		};
-		ESP_ERROR_CHECK(adc_oneshot_config_channel(sensors_voltage_handle, PIN_BATTREAD, &config_voltage_chan));
+
+	// Configures ADC voltage reader
+	adc_oneshot_chan_cfg_t config_voltage_chan = {
+		.atten = ADC_ATTEN_DB_12,
+		.bitwidth = ADC_BITWIDTH_DEFAULT
+	};
+	err = adc_oneshot_config_channel(sensors_voltage_handle, PIN_BATTREAD, &config_voltage_chan);
+	if (err != ESP_OK) {
+		DEBUG_ERR_PRINTF("Failed to configure ADC handle: %s\n", esp_err_to_name(err));
+		return;
 	}
 
 	// Creates curve-fitting calibration
@@ -61,39 +76,28 @@ void sensors_init(void) {
 	err = adc_cali_create_scheme_curve_fitting(&config_voltage_cali_curve, &sensors_voltage_cali_handle);
 	if (err == ESP_OK) {
 		DEBUG_PRINTF("Calibration scheme used for voltage reading: Curve Fitting\n");
+		return;
 	}
-	else {
-		DEBUG_ERR_PRINTF("Failed to calibrate voltage reader with curve-fitting: %s\n", esp_err_to_name(err));
+	DEBUG_ERR_PRINTF("Failed to calibrate voltage reader with curve-fitting: %s\n", esp_err_to_name(err));
 #endif // ADC_CALI_SCHEME_CURVE_FITTING_SUPPORTED
+
 	// Falls back to line-fitting calibration if curve-fitting is not available or failed
 #if ADC_CALI_SCHEME_LINE_FITTING_SUPPORTED
-		adc_cali_line_fitting_config_t config_voltage_cali_line = {
-			.unit_id = ADC_UNIT_1,
-			.atten = ADC_ATTEN_DB_12,
-			.bitwidth = ADC_BITWIDTH_DEFAULT,
-		};
-		err = adc_cali_create_scheme_line_fitting(&config_voltage_cali_line, &sensors_voltage_cali_handle);
-		if (err == ESP_OK) {
-			DEBUG_PRINTF("Calibration scheme used for voltage reading: Line Fitting\n");
-		}
-		else {
-			DEBUG_ERR_PRINTF("Failed to calibrate voltage reader with line-fitting: %s\n", esp_err_to_name(err));
-#endif // ADC_CALI_SCHEME_LINE_FITTING_SUPPORTED
-	DEBUG_PRINTF("No voltage calibration used\n");
-#if ADC_CALI_SCHEME_LINE_FITTING_SUPPORTED
-		}
-#endif // ADC_CALI_SCHEME_LINE_FITTING_SUPPORTED
-#if ADC_CALI_SCHEME_CURVE_FITTING_SUPPORTED
+	adc_cali_line_fitting_config_t config_voltage_cali_line = {
+		.unit_id = ADC_UNIT_1,
+		.atten = ADC_ATTEN_DB_12,
+		.bitwidth = ADC_BITWIDTH_DEFAULT,
+	};
+	err = adc_cali_create_scheme_line_fitting(&config_voltage_cali_line, &sensors_voltage_cali_handle);
+	if (err == ESP_OK) {
+		DEBUG_PRINTF("Calibration scheme used for voltage reading: Line Fitting\n");
+		return;
 	}
-#endif // ADC_CALI_SCHEME_CURVE_FITTING_SUPPORTED
-#endif // PIN_BATTREAD
+	DEBUG_ERR_PRINTF("Failed to calibrate voltage reader with line-fitting: %s\n", esp_err_to_name(err));
+#endif // ADC_CALI_SCHEME_LINE_FITTING_SUPPORTED
 
-	// Initializes internal temperature sensor
-#if !NO_TEMPERATURE_SENSOR
-	temperature_sensor_config_t config_temp = TEMPERATURE_SENSOR_CONFIG_DEFAULT(-10, 80);
-	ESP_ERROR_CHECK(temperature_sensor_install(&config_temp, &sensors_temp_handle));
-	ESP_ERROR_CHECK(temperature_sensor_enable(sensors_temp_handle));
-#endif // !NO_TEMPERATURE_SENSOR
+	DEBUG_PRINTF("No voltage calibration used\n");
+#endif // PIN_BATTREAD
 }
 
 // Reads input voltage before voltage divider
