@@ -33,7 +33,7 @@ EXECS_MAIN += atem_client atem_client_open atem_client_close atem_client_data
 EXECS_MAIN += atem_client_extended atem_client_open_extended atem_client_close_extended atem_client_data_extended
 
 # All ATEM server tests for both proxy server and official switchers
-EXECS_MAIN += atem_server atem_server_open atem_server_close atem_server_data atem_server_cc
+EXECS_MAIN += atem_server atem_server_open atem_server_close atem_server_data atem_server_cc atem_server_commands
 EXECS_MAIN += atem_server_extended atem_server_open_extended atem_server_close_extended atem_server_data_extended
 
 # All ATEM tests
