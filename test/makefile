@@ -36,6 +36,12 @@ EXECS_MAIN += atem_client_extended atem_client_open_extended atem_client_close_e
 EXECS_MAIN += atem_server atem_server_open atem_server_close atem_server_data atem_server_cc
 EXECS_MAIN += atem_server_extended atem_server_open_extended atem_server_close_extended atem_server_data_extended
 
+# All ATEM tests
+$(BUILD_DIR)/atem_software_control: atem_client/main.c
+$(BUILD_DIR)/atem_switcher: atem_server/main.c
+$(BUILD_DIR)/proxy: proxy.c
+EXECS += atem_software_control atem_switcher proxy
+
 # Ensures everything is ready for release
 $(BUILD_DIR)/release: release/main.c
 EXECS += release
