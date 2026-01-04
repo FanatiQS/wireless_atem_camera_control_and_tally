@@ -28,10 +28,12 @@
 #endif // TALLY_RGB_RGBW
 
 // Defaults to Green,Red,Blue color order like Adafruits NeoPixel library
-#if !defined(TALLY_RGB_OFFSET_RED) || !defined(TALLY_RGB_OFFSET_GREEN)
+#if !defined(TALLY_RGB_OFFSET_RED) && !defined(TALLY_RGB_OFFSET_GREEN)
 #define TALLY_RGB_OFFSET_RED   (1)
 #define TALLY_RGB_OFFSET_GREEN (0)
-#endif // TALLY_RGB_OFFSET_RED || TALLY_RGB_OFFEST_GREEN
+#elif !defined(TALLY_RGB_OFFSET_RED) || !defined(TALLY_RGB_OFFSET_GREEN)
+#error Need to define both TALLY_RGB_OFFSET_RED and TALLY_RGB_OFFSET_GREEN or non of them
+#endif // TALLY_RGB_OFFSET_RED || TALLY_RGB_OFFSET_GREEN
 
 // Nanosecond timings for ws2812 RGB LED matrix
 #define LED_RMT_T0H_NS   (300)
