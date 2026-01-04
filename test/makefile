@@ -57,13 +57,17 @@ $(BUILD_DIR)/utilsmain: utils/main.c
 $(EXECS:%=$(BUILD_DIR)/%): | utilsmain
 EXECS += utilsmain
 
-# Automatically maps defined tests entry functions
-$(EXECS_MAIN:%=$(BUILD_DIR)/%): CFLAGS += -DMAIN=$(notdir $@)
-EXECS += $(EXECS_MAIN)
+# Runs all tests
+.PHONY: all
+all: $(EXECS) $(SCRIPTS)
 
 # Builds all tests
 .PHONY: build
 build: $(EXECS:%=$(BUILD_DIR)/%)
+
+# Automatically maps defined tests entry functions
+$(EXECS_MAIN:%=$(BUILD_DIR)/%): CFLAGS += -DMAIN=$(notdir $@)
+EXECS += $(EXECS_MAIN)
 
 # Shared source files
 $(EXECS:%=$(BUILD_DIR)/%) $(PLAYGROUNDS): \
@@ -118,10 +122,6 @@ $(EXECS) $(PLAYGROUNDS:$(BUILD_DIR)/%=%): %: $(BUILD_DIR)/%
 .PHONY: $(SCRIPTS)
 $(SCRIPTS):
 	./$@.sh
-
-# Runs all tests
-.PHONY: all
-all: $(EXECS) $(SCRIPTS)
 
 # Launches LLDB with test
 .PHONY: lldb_%
