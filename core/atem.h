@@ -25,11 +25,7 @@
  * When enabled, ATEM_THREAD_LOCAL can be used to specify thread safety implementation.
  */
 #ifndef ATEM_THREAD_SAFE
-#if defined(__STDC_NO_THREADS__) || __STDC_VERSION__ < 201112
 #define ATEM_THREAD_SAFE (0)
-#else
-#define ATEM_THREAD_SAFE (1)
-#endif // __STDC_NO_THREADS__ || __STDC_VERSION__
 #endif // ATEM_THREAD_SAFE
 
 /**
