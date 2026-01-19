@@ -301,7 +301,7 @@ void atem_cc_translate(struct atem* atem) {
 	}
 
 	// Updates translated pointer and length padded to 32 bit boundary
-	atem->cmd_payload_len = CC_HEADER_LEN + CC_CMD_HEADER_LEN + (len + 3) / 4 * 4;
+	atem->cmd_payload_len = CC_HEADER_LEN + CC_CMD_HEADER_LEN + ((len + 3) & ~3);
 	atem->cmd_payload_buf = sdi_buf;
 
 	// Clears padding bytes
